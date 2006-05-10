@@ -1,0 +1,68 @@
+[%#
+    Template for Bigtop Config section of tenter.tt home page.
+    Expects these view.data parameters:
+
+    engine                - the name of the engine pick from MP13, MP20, or CGI
+    tempate_engine        - the name of the template engine pick from
+                            TT or Default
+    app                   - the application portion of the AST, used to
+                            retrieve various things (like statements)
+%]
+<table>
+  <tr>
+      <td>App Name:</td>
+      <td> <input onblur='javascript:update_tree(
+                      "std", "appname", this.value
+                  )'
+                  type='text'
+                  value='[% view.data.app.get_name %]'></td>
+  </tr>
+  [% INCLUDE select_row
+         label          = 'Engine:'
+         name           = 'engine'
+         selected_value = view.data.engine
+         options = [
+             { value = 'MP13' label = 'mod_perl 1.3' },
+             { value = 'MP20' label = 'mod_perl 2.0' },
+             { value = 'CGI'  label = 'CGI/FastCGI'  },
+         ]
+  %]
+  [% INCLUDE select_row
+        label          = 'Template Engine:'
+        name           = 'template_engine'
+        selected_value = view.data.template_engine
+        options = [
+            { value = 'TT'      label = 'Template Toolkit' },
+            { value = 'Default' label = 'Plain Text'       },
+        ]
+  %]
+</table>
+
+[% BLOCK select_row %]
+<tr>
+  <td>[% label %]
+  </td>
+  <td>
+    <select name='[% name %]'
+            onchange='javascript:update_tree(
+                "std", "[% name %]", this.value
+            )'
+    >
+    [% FOREACH option IN options %]
+        [% INCLUDE option_item
+                value = option.value
+                label = option.label
+                owner = selected_value %]
+    [% END %]
+    </select>
+  </td>
+</tr>
+[% END %]
+
+[% BLOCK option_item %]
+          <option value='[% value %]'
+            [% IF owner == value %] selected='selected' [% END %]
+          >
+            [% label %]
+          </option>
+[% END %]

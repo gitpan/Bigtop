@@ -1,0 +1,152 @@
+=head1 Workflows for WADL
+
+For purposes of the following discussions, suppose your app is called
+Apps::Name.
+
+These are normal workflows which WADL is trying to support:
+
+=over 4
+
+=item 1.  Initial application creation
+
+To build your app, you should first make a wadl file (else why are you
+considering this product).  Call it name.wadl (or anything you like).
+At a minimum the file should have:
+
+    config {
+        base_dir    /absolute/path/to/app/working/dir
+        Init        Std
+    }
+    app App::Name {
+    }
+
+There are two sections to the file.  config controls what could be generated
+and where.  app controls the contents of the built files.
+
+Make the base_dir an absolute path, the wadl file is likely to move (see
+below).  Init Std means that the Init::Std module will be asked to gen_Init,
+see exactly what that builds below.
+
+Every app must have a name which is a valid Perl module name.  The empty
+braces are required (but you can put things inside them).
+
+Once you build the above wadl file, you can type:
+
+    wadlgen --Init name.wadl
+
+This step is similar to h2xs.  It makes stubs of the following:
+
+    Apps-Name/
+    Apps-Name/Build.PL
+    Apps-Name/Changes
+    Apps-Name/MANIFEST
+    Apps-Name/MANIFEST.SKIP
+    Apps-Name/README
+    Apps-Name/lib/
+    Apps-Name/t/
+
+It also copies your name.wadl file into the Apps-Name directory.
+
+Change into the Apps-Name directory and expand the .wadl file to be more
+like this:
+
+    config {
+        base_dir    /absolute/path/to/app/working/dir
+        Init        Std
+        SQL         Postgres
+        HttpdConf   Gantry
+        Model       CDBI
+        Control     Gantry
+    }
+    app App::Name {
+        sequence address_seq {}
+        table address {
+            sequence address_seq;
+            field id { is int, primary_key, assign_by_sequence; }
+            field first {
+                is             varchar;
+                label          `First Name`;
+                html_form_type text;
+            }
+            field last {
+                is             varchar;
+                label          `Last Name`;
+                html_form_type text;
+            }
+            field phone {
+                is             varchar;
+                label          `Phone Number`;
+                html_form_type text;
+            }
+        }
+        controller Address {
+            uses           Your::Favorite::Module;
+            controls_table address;
+            method some_method is handler {
+            }
+        }
+    }
+
+Now you can build your app's specifics with:
+
+    wadlgen --gen=all
+
+Alternatively, you can build any subset of the config defined items.  Suppose
+you wanted only the SQL and HttpdConf:
+
+    wadlgen --gen=SQL --gen=HttpdConf
+
+This will build all sorts of files:
+    schema.sql               - ready for use with psql to create the database
+                               in Postgres
+    httpd.conf               - ready to be an Includ in the system httpd.conf
+                               (think inside a virtual host)
+    lib/Apps/Name.pm         - a base module
+    lib/Apps/Name/Address.pm - a module meant as the controller for the address
+                               table.
+    lib/Apps/Name/Model.pm   - a single file with Class DBI packages for
+                               each table
+
+If all goes well, all you have to do is create your database, Include the
+httpd.conf in a virtual host in your system httpd.conf, restart your server
+and point your browser.
+
+=item 2. Changes to code
+
+Once wadlgen makes files, you are free to edit away and never use it again,
+but you can also use wadlgen in the future IF you follow its plan.  The
+plan is simple, NEVER edit a file marked NEVER EDIT.  These files are not
+stubs, but complete pieces.  Don't change them.  Instead, change the files
+which use them.
+
+=item 3. Changes to the model
+
+If you data changes, you want to have wadlgen update your app.  Simply
+change your .wadl file then type:
+
+    wadlgen --gen=all
+
+This will rebuild all of the NEVER EDIT files without comment.  It will
+warn you that there are existing files it could have made as it sees them.
+
+If you don't want a NEVER EDIT file rebuilt (likely because you didn't follow
+the NEVER EDIT advice, but I'm a forgiving guy), append : no_build to its
+line in the config section:
+
+    config {
+        ...
+        HttpdConf   Gantry:no_gen
+        ...
+    }
+
+You could also remove the line from the config section altogether, but this
+has two negative side effects.  First, it removes from your memory that
+the item was ever built.  Second, it does not allow WADL::HttpdConf::Gantry
+to register keywords.  That could cause the parse to fail.
+
+=item 4. Clean rebuild
+
+If you ever decide to start from scratch, simply change the base_dir
+parameter to a new directory and start with step 1.
+
+=back

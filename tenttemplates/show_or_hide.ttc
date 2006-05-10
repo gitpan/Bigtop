@@ -1,0 +1,37 @@
+[%#
+    You should use this template in a WRAPPER directive.
+
+    Template component for clickable headings which reveal/hide their
+    content.  Designed to be used as a wrapper around the content to
+    be toggled into/out of view.
+
+    Requires a javascript function called show_or_hide to be in scope
+    to do the work.
+
+    Expects these parameters:
+
+        label                 - The link text shown to the user
+        clickable_id          - div id of the label
+        element_under_control - div id of the content to reveal or hide
+        heading_level         - h1, h2, h3, ...
+                                If you don't want your label in a heading,
+                                make this 'none'
+%]
+<div id='[% clickable_id %]'
+     onclick='javascript:show_or_hide(
+         "[% element_under_control %]"
+      )';
+     style='color: blue; cursor: pointer'
+>
+    [% IF heading_level == 'none' %]
+        [% label %]
+    [% ELSE %]
+        <[% heading_level || 'h2' %]>
+            [% label %]
+        </[% heading_level || 'h2' %]>
+    [% END %]
+
+</div>
+<div id='[% element_under_control %]' style='display: none'>
+  [% content %]
+</div>

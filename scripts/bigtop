@@ -1,0 +1,173 @@
+#!perl
+use strict;
+
+use Bigtop::Parser;
+use Getopt::Long;
+use File::Spec;
+use File::Find;
+
+my $usage       = "usage: $0 [options] bigtop_file all|SQL|...\n";
+
+my $create;
+my $new;
+my $keeping_inline;
+
+GetOptions(
+    'create|c'      => \$create,
+    'new|n=s'       => \$new,
+    'keep_inline|k' => \$keeping_inline,
+);
+
+if ( $new ) {
+    my $bigtop_string = <<"EO_BIGTOP";
+config {
+    Init Std {}
+}
+app $new {
+}
+EO_BIGTOP
+
+    # form names
+    my $bigtop_dir  = $new;
+    $bigtop_dir     =~ s/::/-/g;
+    my $bigtop_name = lc $bigtop_dir . '.bigtop';
+
+    # do the directory only build
+    Bigtop::Parser->gen_from_string(
+        $bigtop_string, $bigtop_name, 'create', 'Init'
+    );
+
+    # make the .bigtop file in docs subdir of build dir
+    my $bigtop_file
+            = File::Spec->catfile( $bigtop_dir, 'docs', $bigtop_name );
+
+    if ( open my $BIGTOP, ">", $bigtop_file ) {
+        $bigtop_string =~ s/\{\}/{ no_gen 1; }/;
+        print $BIGTOP $bigtop_string;
+        close $BIGTOP;
+    }
+    else {
+        die "Couldn't write $bigtop_file: $!\n";
+    }
+}
+else {
+    my $bigtop_file = shift or die $usage;
+
+    unless ( @ARGV ) { die $usage; }
+
+    Bigtop::Parser->gen_from_file( $bigtop_file, $create, @ARGV );
+}
+
+# Remove inline directory
+
+if ( not $keeping_inline and -d '_Inline' ) {
+
+    my $purger = sub {
+        my $name = $_;
+
+        if    ( -f $name ) { unlink $name; }
+        elsif ( -d $name ) { rmdir $name;  }
+    };
+
+    finddepth( $purger, '_Inline' );
+    rmdir '_Inline';
+}
+
+=head1 NAME
+
+bigtop - the parser/generater for the bigtop langauge
+
+=head1 SYNOPSIS
+
+    bigtop [options] file.bigtop all
+
+=head1 DESCRIPTION
+
+To learn more about bigtop, consult its Guide.pod (in the docs directory
+of the distribution) or read the perldoc for the modules beginning with
+Bigtop::Parser.
+
+This script takes a bigtop input file and a list of things to build.  The
+things you can build have the same names as the blocks in the config
+section of your bigtop file.  You may also choose C<all> which will
+build all of those things in the order they appear in the config section.
+
+=head1 OPTIONS
+
+There are only two options at present.
+
+=over 4
+
+=item --create (or -c)
+
+This will make an h2xs style path under the current directory for the
+bigtop file.  It will even copy that bigtop file into the new path.
+
+Without this option, if the current directory looks like a bad place to
+build, a fatal error will result and you will have to use this option.
+A bad place to build is a place where building seems not to have happened
+before.  If any of these are missing, then the directory is bad:
+
+    Build.PL
+    Changes
+    t/
+    lib/
+
+When create is in effect, the following bigtop config options affect the
+location of the initial build:
+
+    base_dir - the directory under which all building will happen
+               Defaults to the current directory.
+
+    app_dir  - the subdirectory of base_dir where Build.PL and friends
+               will live
+               Defaults to the h2xs style directory name based on your app's
+               name.  If your app section starts:
+                   app App::Name::SubName
+               then the default app_dir is:
+                   App-Name-SubName
+
+When create is not in effect, these config parameters are ignored WITH a
+warning.
+
+=item --new (or -n) App::Name
+
+Use this option to create a trivial application from scratch.  It will
+use this bigtop specification:
+
+    config {
+        Init Std {}
+    }
+    app App::Name {
+    }
+
+When it finishes, there will be an App-Name subdirectory of the current
+directory.  In it will be all the usual pieces describing an app.  The
+bigtop file will be in the docs directory.
+
+=item --keep_inline (or -k)
+
+Normally, this script removes all traces of the _Inline directory it
+used while building your app.  Use this option if you want to save
+a microscopic amount of time on each regeneration or if you have an
+incurable curiosity.
+
+Note that the directory will only be removed if it is really _Inline
+in the current directory.  If you have a .Inline directory under
+home directory etc., the script will not affect it.
+
+=back
+
+=head1 AUTHOR
+
+Phil Crow <philcrow2000@yahoo.com>
+
+=head1 COPYRIGHT and LICENSE
+
+Copyright (C) 2005-6 by Phil Crow
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.6 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut

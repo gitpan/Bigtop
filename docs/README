@@ -1,0 +1,4 @@
+The useful contents of this directory have been moved.
+
+All relavent docs are kept up to date in modules under the Bigtop::Docs
+namespace.  Look for Tutorial.pm, Keywords.pm, Syntax.pm, etc.

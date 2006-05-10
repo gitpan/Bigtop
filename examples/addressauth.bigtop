@@ -1,0 +1,123 @@
+config {
+    engine          MP13;
+    template_engine TT;
+    Init            Std           {}
+    SQL             Postgres      {}
+    HttpdConf       Gantry        {}
+    Control         Gantry        {}
+    Model           GantryCDBI    {}
+    SiteLook        GantryDefault {
+        gantry_wrapper `/home/pcrow/srcgantry/root/sample_wrapper.tt`;
+    }
+}
+app Apps::AddressBook {
+    authors `Phil Crow`;
+    email   `philcrow2000@yahoo.com`;
+    config {
+        dbconn      `dbi:Pg:dbname=address`          => no_accessor;
+        dbuser      apache                           => no_accessor;
+        auth_dbconn `dbi:Pg:dbname=address`          => no_accessor;
+        auth_dbuser apache                           => no_accessor;
+        template_wrapper `wrapper.tt`              => no_accessor;
+        root      `/home/pcrow/Bigtop/examples/Apps-Address/html:/home/pcrow/srcgantry/root`
+                                                   => no_accessor;
+        css_root  `/home/pcrow/srcgantry/root/css` => no_accessor;
+        css_rootp `/css`                           => no_accessor;
+        app_rootp `/`                              => no_accessor;
+    }
+    sequence address_seq        {}
+    sequence auth_users_seq {}
+    table    auth_users {
+        not_for          SQL;
+        model_base_class Gantry::Utils::AuthCDBI;
+        sequence         auth_users_seq;
+        foreign_display  `%first_name %last_name`;
+        field id {
+            is int4, `not null default nextval('auth_users_seq'::text)`;
+        }
+        field user_id {
+            is int4, primary_key, `default currval('auth_users_seq'::text)`;
+        }
+        field active     { is boolean;                                        }
+        field user_name  { is varchar;                                        }
+        field passwd     { is varchar;                                        }
+        field crypt      { is varchar;                                        }
+        field first_name { is varchar;                                        }
+        field last_name  { is varchar;                                        }
+        field email      { is varchar;                                        }
+    }
+    sequence auth_groups_seq {}
+    table    auth_groups {
+        not_for          SQL;
+        model_base_class Gantry::Utils::AuthCDBI;
+        sequence         auth_groups_seq;
+        foreign_display  `%name`;
+        field id          { is int4, primary_key, auto;     }
+        field name        { is varchar; label `User Class`; }
+        field ident       { is varchar;                     }
+        field description { is varchar;                     }
+    }
+    sequence auth_groups_members_seq {}
+    table auth_group_members    {
+        not_for          SQL;
+        model_base_class Gantry::Utils::AuthCDBI;
+        sequence         auth_group_members_seq;
+
+        field id          { is int4, primary_key, auto;                     }
+        field user_id     { is int4; refers_to auth_users;                  }
+        field group_id    { is int4; refers_to auth_groups;                 }
+    }
+    table    address {
+        sequence address_seq;
+        field id { is int4, primary_key, assign_by_sequence; }
+        field name {
+            is             varchar;
+            label          Name;
+            html_form_type text;
+        }
+        field street {
+            is             varchar;
+            label          Street;
+            html_form_type text;
+        }
+        field city {
+            is             varchar;
+            label          City;
+            html_form_type text;
+        }
+        field state {
+            is             varchar;
+            label          State;
+            html_form_type text;
+        }
+        field zip {
+            is             varchar;
+            label          Zip;
+            html_form_type text;
+        }
+        field phone {
+            is             varchar;
+            label          Number;
+            html_form_type text;
+        }
+    }
+    controller Address {
+        controls_table   address;
+        rel_location     address;
+        uses             Gantry::Plugins::AutoCRUD;
+        text_description `address`;
+        page_link_label  `Address`;
+        method do_main is main_listing {
+            title            `Address`;
+            cols             name, phone;
+            header_options   Add;
+            row_options      Edit, Delete;
+        }
+        method _form is AutoCRUD_form {
+            form_name        address;
+            all_fields_but   id;
+            extra_keys
+                legend     => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+        }
+    }
+}

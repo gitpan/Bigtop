@@ -1,0 +1,45 @@
+
+Main steps:
+Build your data model (draw, etc).
+Key in your bigtop file from the data model.
+
+Run:
+    bigtop file.bigtop all
+Change to the app_dir.
+
+Create the databse (createdb for postgres).
+Build the database structure (psql dbname -U username < docs/schema.sql).
+
+Put in require valid-user (if you need it) in docs/httpd.conf.
+Make a virtual host (including use lib for the app_dir, if not installing).
+Start or Restart the web server.
+
+Edit the README.
+Update the docs.
+
+Mention these things during tutorial:
+
+Extra args to controller methods must be simple scalars and should not
+have the $ sigil.
+
+The order of things is usually not that important, but things are built in
+the order listed.  This means Init needs to be first (it builds the dirs).
+It also means that sequence blocks must come before tables that use the
+sequences they define.  But it doesn't matter whether controllers are listed
+before or after the tables.  The controller order itself governs their
+appearance order in httpd.conf (so sub controllers must come after
+their parents) and in the links in the menu.
+
+select for refers to fields has - Select - at the top, then all
+the fields in string sort order by foreign_display columns.
+
+select for non refers to fields has exactly what you put, the first
+item is the default.
+
+html_form_optional means the user does not have to enter it on the form.
+
+non_essential means that CDBI will not fetch it by default.
+
+explain how dates work with the plugin.
+
+Note that row_option Delete is not always a wise one to give.

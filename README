@@ -1,0 +1,38 @@
+Bigtop version 0.06
+===========================
+
+Bigtop is a central place to collect everything that has anything to
+do with your database driven web application.  I call it a Web Application
+Data Language.
+
+By specifying a Bigtop file and running bigtop on it, you can generate
+a working web application.  As things change (like the data model), you
+can rerun bigtop to update the generated parts of the application without
+fear of loosing the parts you wrote by hand.
+
+See Bigtop::Docs::Tutorial for details.
+
+INSTALLATION
+
+To install this module type:
+
+    perl Build.PL
+    ./Build
+    ./Build test
+    ./Build install
+
+DEPENDENCIES
+
+This module requires these other modules and libraries:
+
+COPYRIGHT AND LICENCE
+
+Put the correct copyright and license info here.
+
+Copyright (c) 2005 by 
+
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.6 or,
+at your option, any later version of Perl 5 you may have available.
+

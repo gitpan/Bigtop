@@ -1,0 +1,119 @@
+[%#
+    Template for the method blocks inside controller blocks.
+
+    Expects these parameter directly:
+
+    item  - hash describing the method
+    block - a hash.  only needs one key (name): the name of the item's parent
+
+    Expects this parameter in view.data:
+
+    statements       - hash describing statements built by
+                       Bigtop::Parser::get_keyword_docs
+%]
+    <div class='app_block_element'
+         id='div_[% item.ident %]'
+         style='border: 1px solid grey; padding: 4px'>
+        [% blockname  = block.name
+           methodname = item.name
+           fullname   = "controller_method_${blockname}::$methodname" %]
+         <table>
+            <tr>
+                <td> Method Name: </td>
+                <td>
+                  <input type='text'
+                         id='method_name::[% item.ident %]'
+                         value='[% item.name %]'
+                         onblur='javascript:update_tree(
+                             "name",
+                             "method::[% item.ident %]",
+                             this.value
+                         )'
+                  />
+                </td>
+            </tr>
+            <tr>
+                <td> Method Type: </td>
+                <td>
+                    <select
+                        id='method_type_[% block.ident %]::[% item.ident %]'
+                        onchange='javascript:type_change(
+                            "[% item.ident %]",
+                            this.value
+                        )'
+                    >
+                      <option value='stub'
+    [% IF item.method_type == 'stub' %]selected='selected'[% END %] >
+                        stub
+                      </option>
+                      <option value='main_listing'
+    [% IF item.method_type == 'main_listing' %]selected='selected'[% END %] >
+                        main_listing
+                      </option>
+                      <option value='AutoCRUD_form'
+    [% IF item.method_type == 'AutoCRUD_form' %]selected='selected'[% END %] >
+                        AutoCRUD_form
+                      </option>
+                      <option value='CRUD_form'
+    [% IF item.method_type == 'CRUD_form' %]selected='selected'[% END %] >
+                        CRUD_form
+                      </option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan='2'>
+                  [% WRAPPER show_or_hide.ttc
+                     clickable_id            = "heading_$fullname"
+                     element_under_control   = "hideable_$fullname"
+                     label                   = 'Body:'
+                     heading_level           = 'none'
+                  %]
+                    [% INCLUDE method_statement_table
+                               method = item %]
+                  [% END %] </td>
+            </tr>
+         </table>
+
+         [% INCLUDE delete_button.ttc
+                    name  = "app_body_delete::$item.ident"
+                    label = "Method" %]
+
+         <br style='clear: both' />
+
+    </div>
+
+[% BLOCK method_statement_table %]
+  <table class='bordered'>
+    <tr>
+        <th> Keyword     </th>
+        <th> Value(s)    </th>
+        <th> Applies to  </th>
+        <th> Description </th>
+    </tr>
+  [% FOREACH method_statement IN view.data.statements.method.statements %]
+    [% keyword = method_statement.keyword %]
+    <tr>
+        <td> [% keyword %] </td>
+        <td>
+
+            [% values       = method.statements.$keyword.get_unquoted_args
+               single_value = values.0 %]
+            [% INCLUDE input_boxes.ttc
+                       statement      = method_statement
+                       keyword_prefix = "$method.ident::"
+                       name_prefix    = "$block.name::$method.name::"
+                       method_group   = 'method_statement'
+                       key            = keyword
+            %]
+        </td>
+        <td>
+            [% method_statement.applies_to %]
+        </td>
+        <td>
+            [% method_statement.descr %]
+        </td>
+    </tr>
+  [% END %]
+  </table>
+[% END %][%# end of method_statement_table %]

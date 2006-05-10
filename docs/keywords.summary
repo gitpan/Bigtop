@@ -1,0 +1,138 @@
+**********************************************
+**********************************************
+** WARNING:                                 **
+** This file is no longer maintained.       **
+** See Bigtop::Docs::Keywords               **
+**********************************************
+**********************************************
+
+ config {}
+    base_dir        - in create mode, the directory under which all things live
+    app_dir         - in create mode, the subdirectory of base_dir where
+                      Build.PL and company reside
+    engine          - mod_perl or cgi choose from MP13, MP20, or CGI
+    template_engine - the templating system to use choose from TT or TT.
+
+    Init      Std           {}
+        Makes: Build.PL, Change, README, lib/, t/, docs/file.bigtop
+    Control   Gantry        {}
+        Makes: modules in lib (including GEN modules, but not models)
+    HttpdConf Gantry        {}
+        Makes: docs/httpd.conf
+    Model     GantryCDBI    {}
+        Makes: lib/Model modules (including GEN modules)
+    SQL       Postgres      {}
+        Makes: docs/schema.sql
+    SiteLook  GantryDefault {}
+        Makes: html/wrapper.html
+        gantry_wrapper - file name of gantry's sample_wrapper.tt
+
+    [Note: All config backend blocks can have a no_gen statement, which if true
+    will cause the parser to skip the whole backend.]
+
+ app name {}
+    authors          - comma separated list of authors
+    email            - one author's address
+    copyright_holder - defaults to first author
+    license_text     - defaults to text from h2xs for Perl 5.8.0
+    location         - root Apache Location for the app
+
+    set_vars {}
+        any_keyword its_value;    - creates:
+            (1) a PerlSetVar at the base location in httpd.conf,
+            (2) a statement to retrieve the set var in the base init method,
+            (3) an accessor in the base module
+        OR
+        key value => no_accessor; - same as above, but makes no accessor
+
+    literal Location `...`; - a literal string to include in the base
+                              Location directive for the app
+
+    literal SQL `...`;      - a literal string to include in schema.sql
+
+    sequence name {}
+        (none of these work yet:)
+        starting_value
+        maximum_value
+        increment
+
+    table name {}
+        field name {}
+            is        - valid sql modifiers like int4, primary key, etc.
+            label     - what the user will see when this field appears on
+                        screen or in reports
+            refers_to - table to which this field points as a foreign key
+            html_form...
+                _type         - text, textarea, select
+                _optional     - unvalidated during form submission, if true
+                _rows         - how long a textarea appears
+                _cols         - how wide a textarea appears
+                _display_size - how wide a text field appears
+                _options      - comma separated list of option hashes for
+                                select lists (don't use this if field is
+                                a foreign key)
+            non_essential - excludes field from greedy retrieval, if true
+
+        data      - a comma separated list of key value pairs which become
+                    a literal INSERT INTO for this table
+
+        sequence  - what sequence the table will use (must refer to a
+                    sequence defined by an earlier sequence block)
+
+        not_for   - tells a back end to skip this table valid choices:
+                    SQL or Model or both (separate with commas)
+
+    controller name {}
+        controls_table  - name of one table which this controller works on
+        location        - absolute Apache Location
+        rel_location    - location relative to the site's base location
+        template        - used for generating the stub (once) and its GEN
+                          module (on every regen)
+        text_description- used only by AutoCRUD to fill in Delete this ___?
+        uses            - places use statement(s) at the top of the stub
+                          and gen modules
+        page_link_label - Indicates that this controller should be in the
+                          site's nav menu.  The value is the text to use
+                          for the nav link.
+        set_vars {}
+            name value - works like app level set_vars, but at the controller's
+                         location
+        literal Location `...` - copied directly into Apache Location
+                                 for this controller
+
+        method name is type {}
+        All types use:
+            extra_args - a comma separated list of literal perl variables
+                         (complete with sigils) to add at the end of this
+                         methods arg list.  Example: extra_args `$id`, `@junk`;
+        Types:
+            stub         - empty except for arg capture
+            main_listing - call this do_main
+                cols       - list of columns for the main listing table
+                col_labels - list of columns labels (optional). By
+                             default the label is taken from the field in
+                             its table or from its name there if no label was
+                             given (the later results in a warning).
+                             Items in this list can be label => href pairs.
+                             Then, the href must be valid Perl
+                             code which will be executed to obtain the href
+                             of the link.
+                header_options - These appear in the order given as links
+                                 at the right side of the label bar over the
+                                 table.  Use either strings or text => link
+                                 pairs.
+                row_options    - Like header_options, but appear at the end
+                                 of each row.  If you specify text => link
+                                 pairs, remember to include $id.
+                title          - browser window title for page made by do_main
+            AutoCRUD_form - call this _form, for use with Gantry AutoCRUD
+                fields         - which fields to include on the form
+                all_fields_but - which fields to exclude, all others appear in
+                                 the order they appear in their table's
+                                 definition
+                form_name      - (not xhtml compliant) the name of the form
+                                 element (needed for calendar popups)
+                extra_keys     - Things to include in generated method's
+                                 returned hash.  These are taken literally.
+            CRUD_form - Just like AutoCRUD_form, but result works with
+                        Gantry::Plugins::CRUD instead.

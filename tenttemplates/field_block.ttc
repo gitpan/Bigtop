@@ -1,0 +1,86 @@
+[%#
+    Template for the Field Body Block section of a table_statement_table.
+
+    Expects these parameter directly:
+
+    item  - hash describing the field
+    block - a hash.  only needs one key (name): the name of the item's parent
+
+    Expects this parameter in view.data:
+
+    statements       - hash describing statements built by
+                       Bigtop::Parser::get_keyword_docs
+%]
+    <div class='app_block_element'
+         id='div_[% item.ident %]'
+         style='border: 1px solid grey; padding: 4px'>
+        [% blockname = block.name
+           fieldname = item.name
+           fullname  = "table_field_${blockname}::$fieldname" %]
+         <table>
+            <tr>
+                <td> Field Name: </td>
+                <td>
+                  <input type='text'
+                         id='field_name::[% item.ident %]'
+                         value='[% item.name %]'
+                         onblur='javascript:update_tree(
+                             "name",
+                             "field::[% item.ident %]",
+                             this.value
+                         )'
+                  />
+                </td>
+            </tr>
+            <tr>
+                <td colspan='2'>
+                  [% WRAPPER show_or_hide.ttc
+                     clickable_id            = "heading_$fullname"
+                     element_under_control   = "hideable_$fullname"
+                     label                   = 'Body:'
+                     heading_level           = 'none'
+                  %]
+                    [% INCLUDE field_statement_table
+                               field = item %]
+                  [% END %] </td>
+            </tr>
+         </table>
+
+         [% INCLUDE delete_button.ttc
+                    name  = "app_body_delete::$item.ident"
+                    label = "Field" %]
+
+         <br style='clear: both' />
+
+    </div>
+
+[% BLOCK field_statement_table %]
+  <table class='bordered'>
+    <tr>
+        <th> Keyword     </th>
+        <th> Value(s)    </th>
+        <th> Description </th>
+    </tr>
+  [% FOREACH field_statement IN view.data.statements.field.statements %]
+    [% keyword = field_statement.keyword %]
+    <tr>
+        <td> [% keyword %] </td>
+        <td>
+
+            [% values       = field.statements.$keyword.get_unquoted_args
+               single_value = values.0 %]
+            [% INCLUDE input_boxes.ttc
+                       statement      = field_statement
+                       keyword_prefix = "$field.ident::"
+                       name_prefix    = "$block.name::$field.name::"
+                       method_group   = 'field_statement'
+                       key            = keyword
+            %]
+        </td>
+        <td>
+            [% field_statement.descr %]
+        </td>
+    </tr>
+  [% END %]
+  </table>
+[% END %][%# end of field_statement_table %]

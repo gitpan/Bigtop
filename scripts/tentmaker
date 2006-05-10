@@ -1,0 +1,70 @@
+#!/usr/bin/perl
+use strict;
+
+BEGIN {
+    eval { require Gantry::Server; };
+    if ( $@ ) {
+        my $msg = "\n  You need to install Gantry, rerun Bigtop's Build.PL,\n"
+                . "  and reinstall Bigtop before using tentmaker.\n\n";
+
+        die $msg;
+    }
+}
+
+use File::Spec;
+use Getopt::Long;
+use Gantry::Server;
+
+use lib '/home/pcrow/Bigtop/lib', '/home/pcrow/srcgantry/lib';
+
+use Bigtop::TentMaker qw{ -Engine=CGI -TemplateEngine=TT };
+use Bigtop::TentMakerPath;
+
+my $port = 8080;
+
+GetOptions(
+    'port|p=s' => \$port,
+);
+
+my $file = shift || '';
+
+my $template_path = Bigtop::TentMakerPath->get_template_path();
+
+$template_path = File::Spec->catfile(
+        Bigtop::TentMakerPath->get_template_path(), 'tenttemplates'
+);
+
+my $cgi = Gantry::Engine::CGI->new(
+    {
+        config => {
+            root => $template_path,
+            file => $file,
+        },
+        locations => {
+            '/', 'Bigtop::TentMaker'
+        }
+    }
+);
+
+my $server = Gantry::Server->new( $port );
+$server->set_engine_object( $cgi );
+
+Bigtop::TentMaker->take_performance_hit( $file );
+
+$server->run();
+
+=head1 NAME
+
+tentmaker - browser based bigtop file editor
+
+=head1 USAGE
+
+    tentmaker [ --port=8192 ] [ file ]
+
+=head1 DESCRIPTION
+
+This script is a simple web server.  Tell it what file you want to
+edit (or start from scratch) and an optional port (defaults to 8080).
+Point your browser to that port and edit away.
+
+=cut

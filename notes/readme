@@ -1,0 +1,41 @@
+This directory has my beginning thoughts on a new data language.  It would
+embody the reality that applications are often driven by data (and in some
+cases all they do is maninupate a database).  Thus I feel the need for a
+new lanuage which would describe all aspects of the data in an application.
+This includes at least:
+
+    The names of the tables and columns in the database and enough info to
+    generate the sql necessary to initiall build that database.
+
+    How the add/edit forms look for each table, including the html field
+    type and its attributes and the label the user will see for the field.
+
+    How data from the forms is validated and filtered prior to database
+    updates with it.
+
+    Whether the field appears in summary listings like our do_mains.
+
+    Which fields are foreign keys, what table they point to (whether
+    to have the db enforce this constraint) and which fields the user
+    should see when choosing them from a list on a form.
+
+So here is the syntax.
+
+data_descr   : table_def(s)
+
+table_def    : 'table' ident '{' field_def(s) '}'
+
+field_def    : 'field' ident '{' property_def(s) '}'
+
+property_def : 'is'            sql_type
+             | 'refers_to'     ident
+             | 'display_as'    display_method
+             | 'appears_on'    do_main
+             | 'validate_with' validation_method
+             | 'filter_with'   filter_method
+
+sql_type     : 'int' | 'varchar' | 'text' | 'date'
+
+display_method : display_method_name parameter_list
+
+ident        : /^\w[\w\d_]*/

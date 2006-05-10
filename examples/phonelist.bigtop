@@ -1,0 +1,61 @@
+config {
+    engine          MP13;
+    template_engine TT;
+    Init            Std           {}
+    SQL             Postgres      {}
+    HttpdConf       Gantry        {}
+    Control         Gantry        {}
+    Model           GantryCDBI    {}
+    SiteLook        GantryDefault {
+        gantry_wrapper `/home/pcrow/srcgantry/root/sample_wrapper.tt`;
+    }
+}
+app Apps::Phone {
+    location `/phone`;
+    authors `Phil Crow`;
+    email   `philcrow2000@yahoo.com`;
+    config {
+        dbconn    `dbi:Pg:dbname=phone`            => no_accessor;
+        dbuser    apache;
+        template_wrapper `wrapper.tt`              => no_accessor;
+        root      `/home/pcrow/Apps-Phone/html:/home/pcrow/srcgantry/root`
+                                                   => no_accessor;
+        css_root  `/home/pcrow/srcgantry/root/css` => no_accessor;
+        css_rootp `/css`                           => no_accessor;
+        app_rootp `/phone`                         => no_accessor;
+    }
+    sequence numbers_seq        {}
+    table    numbers      {
+        sequence numbers_seq;
+        field id { is int4, primary_key, assign_by_sequence; }
+        field name {
+            is             varchar;
+            label          Name;
+            html_form_type text;
+        }
+        field number {
+            is             varchar;
+            label          Number;
+            html_form_type text;
+        }
+    }
+    controller Numbers {
+        controls_table   numbers;
+        rel_location     numbers;
+        uses             Gantry::Plugins::AutoCRUD;
+        text_description `phone number`;
+        page_link_label  `Phone Numbers`;
+        method do_main is main_listing {
+            title            `Phone Numbers`;
+            cols             name, number;
+            header_options   Add;
+            row_options      Edit, Delete;
+        }
+        method _form is AutoCRUD_form {
+            form_name        numbers;
+            fields           name, number;
+            extra_keys
+                legend     => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+        }
+    }
+}

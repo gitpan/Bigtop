@@ -1,0 +1,331 @@
+[%#
+    Template for the App Body section of TentMaker home page.
+
+    Expects this to be in view.data
+    statements       - hash describing statements built by
+                       Bigtop::Parser::get_keyword_docs
+
+    Expects this parameter directly:
+    block            - hash describing one these app level constructs:
+                       sequence, table, controller, or literals.
+%]
+  <div class='app_block'
+       id='div_[% block.ident %]'
+       style='border: 1px solid grey; padding: 4px'>
+
+      [% IF    block.type == 'sequence'   %]
+        [% type_label = 'Sequence' %]
+        <table>
+            <tr>
+                <td> Type:            </td>
+                <td> [% type_label %] </td>
+            </tr>
+            <tr>
+                <td> Name: </td>
+                <td>
+                    <input type='text'
+                           id='app_block::[% block.ident %]'
+                           value='[% block.name %]'
+                           onblur='javascript:update_tree(
+                               "name",
+                               "sequence::[% block.ident %]",
+                               this.value
+                           )'
+                    />
+                </td>
+            </tr>
+        </table>
+      [% ELSIF block.type == 'table'      %]
+        [% type_label = 'Table' %]
+        <table>
+            <tr>
+                <td> Type:            </td>
+                <td> [% type_label %] </td>
+            </tr>
+            <tr>
+                <td> Name: </td>
+                <td>
+                    <input type='text'
+                           id='app_block::[% block.ident %]'
+                           value='[% block.name %]'
+                           onblur='javascript:update_tree(
+                               "name",
+                               "table::[% block.ident %]",
+                               this.value
+                           )'
+                    />
+                </td>
+            </tr>
+            <tr>
+                <td colspan='2'>
+                  [% WRAPPER show_or_hide.ttc
+                     clickable_id            = "table_heading_$block.ident"
+                     element_under_control   = "hideable_$block.ident"
+                     label                   = 'Body:'
+                     heading_level           = 'none'
+                  %]
+                    [% INCLUDE table_block %]
+                  [% END %] </td>
+            </tr>
+        </table>
+
+      [% ELSIF block.type == 'controller' %]
+        [% type_label = 'Controller' %]
+        <table>
+            <tr><td> Type: </td>
+                <td> [% type_label %] </td>
+            </tr>
+            <tr>
+                <td> Name: </td>
+                <td>
+                    <input type='text'
+                           id='app_block::[% block.ident %]'
+                           value='[% block.name %]'
+                           onblur='javascript:update_tree(
+                               "name",
+                               "controller::[% block.ident %]",
+                               this.value
+                           )'
+                    />
+                </td>
+            </tr>
+            <tr><td> [% type_label %] Type: </td>
+                <td>
+                    <select
+                        id='[% type_label %]::type_select::[% block.ident %]'
+                        onchange='javascript:type_change(
+                            "[% block.ident %]",
+                            this.value
+                        )'
+                    >
+                        <option value='stub'
+  [% IF block.controller_type == 'stub' %]selected='selected'[% END %]
+                        > stub     </option>
+
+                        <option value='AutoCRUD'
+  [% IF block.controller_type == 'AutoCRUD' %]selected='selected'[% END %]
+                        > AutoCRUD </option>
+
+                        <option value='CRUD'
+  [% IF block.controller_type == 'CRUD' %]selected='selected'[% END %]
+                        > CRUD     </option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan='2'>
+                  [% WRAPPER show_or_hide.ttc
+                     clickable_id          = "controller_heading_$block.ident"
+                     element_under_control = "hideable_$block.ident"
+                     label                 = 'Body:'
+                     heading_level         = 'none'
+                  %]
+                    [% INCLUDE controller_block %]
+                  [% END %] </td>
+            </tr>
+        </table>
+
+      [% ELSE %][%# must be a literal %]
+        [% type_label = 'Literal' %]
+        <table>
+            <tr><td> Type: </td>
+                <td> [% type_label %] </td>
+            </tr>
+            <tr><td> [% type_label %] Type: </td>
+                <td>
+                    <select
+                        id='[% type_label %]::type_select::[% block.ident %]'
+                        onchange='javascript:type_change(
+                            "[% block.ident %]",
+                            this.value
+                        )'
+                    >
+                        <option value='Location'
+  [% IF block.keyword == 'Location' %]selected='selected'[% END %]
+                        > Location     </option>
+
+                        <option value='HttpdConf'
+  [% IF block.keyword == 'HttpdConf' %]selected='selected'[% END %]
+                        > HttpdConf </option>
+
+                        <option value='SQL'
+  [% IF block.keyword == 'SQL' %]selected='selected'[% END %]
+                        > SQL     </option>
+
+                        <option value='PerlTop'
+  [% IF block.keyword == 'PerlTop' %]selected='selected'[% END %]
+                        > PerlTop     </option>
+
+                        <option value='PerlBlock'
+  [% IF block.keyword == 'PerlBlock' %]selected='selected'[% END %]
+                        > PerlBlock     </option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td> String: </td>
+                <td>
+                    <input type='text'
+                           id='app_block::[% block.ident %]'
+                           value='[% block.name %]'
+                           onblur='javascript:update_tree(
+                               "literal",
+                               "[% block.ident %]",
+                               this.value
+                           )'
+                    />
+                </td>
+            </tr>
+        </table>
+
+      [% END %]
+
+      [% INCLUDE delete_button.ttc
+            name  = "app_body_delete::$block.ident"
+            label = type_label
+      %]
+
+      <br style='clear: both' />
+
+  </div>
+
+[% BLOCK table_block %]
+
+  [% INCLUDE table_statement_table
+             statements = block.body.statements %]
+ 
+  <br />
+
+  <div class='app_block_element' style='border: 1px solid grey; padding: 4px'>
+    <span style='font-weight=bold'> Add Field </span>
+    <table>
+      <tr><td> Name: </td>
+          <td>
+              <input type='text' id='new_field_[% block.ident %]' />
+          </td>
+      </tr>
+      <tr><td colspan='2'>
+              <button type='button'
+                      name='new_field_[% block.ident %]_create'
+                      onclick='javascript:create_field( "[% block.ident %]" )'
+              > Create Field </button>
+          </td>
+    </table>
+  </div>
+
+  <br />
+
+  [% FOREACH item IN block.body.fields %]
+    [% IF    item.type == 'field'     %]
+      [% INCLUDE field_block.ttc %]
+    [% END %]
+    <br />
+  [% END %]
+
+[% END %][%# end table_block %]
+
+[% BLOCK table_statement_table %]
+  <table class='bordered'>
+    <tr>
+        <th> Keyword     </th>
+        <th> Value(s)    </th>
+        <th> Description </th>
+    </tr>
+  [% FOREACH table_statement IN view.data.statements.table.statements %]
+    [% keyword = table_statement.keyword %]
+    [% NEXT IF keyword == 'data' %]
+    <tr>
+        <td> [% keyword %] </td>
+        <td>
+            [% values       = statements.$keyword.get_unquoted_args
+               single_value = values.0 %]
+            [% INCLUDE input_boxes.ttc
+                       statement      = table_statement
+                       keyword_prefix = "$block.ident::"
+                       name_prefix    = "$block.ident::"
+                       method_group   = 'table_statement'
+                       key            = keyword
+            %]
+        </td>
+        <td>
+            [% table_statement.descr %]
+        </td>
+    </tr>
+  [% END %]
+  </table>
+[% END %][%# end of table_statement_table %]
+
+[% BLOCK controller_block %]
+
+  [% INCLUDE controller_statement_table
+             statements = block.body.statements %]
+ 
+  <br />
+
+  <div class='app_block_element' style='border: 1px solid grey; padding: 4px'>
+    <span style='font-weight=bold'> Add Method </span>
+    <table>
+      <tr><td> Name: </td>
+          <td>
+              <input type='text' id='new_method_[% block.ident %]' />
+          </td>
+      </tr>
+      <tr>
+          <td> Method Type: </td>
+          <td>
+            <select id='new_method_type_[% block.ident %]'>
+              <option value='stub'>          stub          </option>
+              <option value='main_listing'>  main_listing  </option>
+              <option value='AutoCRUD_form'> AutoCRUD_form </option>
+              <option value='CRUD_form'>     CRUD_form     </option>
+            </select>
+          </td>
+      </tr>
+      <tr><td colspan='2'>
+              <button type='button'
+                      name='new_method_[% block.ident %]_create'
+                      onclick='javascript:create_method( "[% block.ident %]" )'
+              > Create Method </button>
+          </td>
+    </table>
+  </div>
+
+  <br />
+
+  [% FOREACH item IN block.body.methods %]
+      [% INCLUDE method_block.ttc %]
+    <br />
+  [% END %]
+
+[% END %]
+
+[% BLOCK controller_statement_table %]
+  <table class='bordered'>
+    <tr>
+        <th> Keyword     </th>
+        <th> Value(s)    </th>
+        <th> Description </th>
+    </tr>
+  [% FOREACH controller_statement IN
+             view.data.statements.controller.statements %]
+    [% keyword = controller_statement.keyword %]
+    <tr>
+        <td> [% keyword %] </td>
+        <td>
+            [% values       = statements.$keyword.get_unquoted_args
+               single_value = values.0 %]
+            [% INCLUDE input_boxes.ttc
+                       statement      = controller_statement
+                       keyword_prefix = "$block.ident::"
+                       name_prefix    = "$block.ident::"
+                       method_group   = 'controller_statement'
+                       key            = keyword
+            %]
+        </td>
+        <td>
+            [% controller_statement.descr %]
+        </td>
+    </tr>
+  [% END %]
+  </table>
+[% END %]

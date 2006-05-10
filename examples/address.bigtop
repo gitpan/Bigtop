@@ -1,0 +1,91 @@
+config {
+    engine          MP20;
+    template_engine TT;
+    Init            Std           {}
+    SQL             Postgres      {}
+    HttpdConf       Gantry        {}
+    Control         Gantry        {}
+    Model           GantryCDBI    {}
+    SiteLook        GantryDefault {
+        gantry_wrapper `/home/pcrow/srcgantry/root/sample_wrapper.tt`;
+    }
+}
+app Apps::AddressBook {
+    authors `Phil Crow`, `Joe Smith`;
+    email   `philcrow2000@yahoo.com`;
+    config {
+        dbconn    `dbi:Pg:dbname=address`          => no_accessor;
+        dbuser    apache                           => no_accessor;
+        template_wrapper `wrapper.tt`              => no_accessor;
+        root      `/home/pcrow/Bigtop/examples/Apps-AddressBook/html:/home/pcrow/srcgantry/root`
+                                                   => no_accessor;
+    }
+    sequence address_seq        {}
+    table    address {
+        sequence address_seq;
+        field id { is int4, primary_key, assign_by_sequence; }
+        field name {
+            is             varchar;
+            label          Name;
+            html_form_type text;
+        }
+        field street {
+            is             varchar;
+            label          Street;
+            html_form_type text;
+        }
+        field city {
+            is             varchar;
+            label          City;
+            html_form_type text;
+        }
+        field state {
+            is             varchar;
+            label          State;
+            html_form_type text;
+        }
+        field zip {
+            is             varchar;
+            label          Zip;
+            html_form_type text;
+        }
+        field phone {
+            is             varchar;
+            label          Number;
+            html_form_type text;
+        }
+        field send_xmas_card {
+            is             boolean;
+            label          `Send Christmas Card`;
+            html_form_type select;
+            html_form_options `Yes` => 1, `No, they never send us one` => 0;
+        }
+        field relationship {
+            is             varchar;
+            label          `How they are related`;
+            html_form_type select;
+            html_form_options
+                    `Relative`   => `stuck_with`,
+                    `Friend`     => `picked`,
+                    `Colleague`  => `stuck_working_with`;
+        }
+    }
+    controller Address {
+        controls_table   address;
+        rel_location     address;
+        uses             Gantry::Plugins::AutoCRUD;
+        text_description `address`;
+        method do_main is main_listing {
+            title            `Address`;
+            cols             name, phone;
+            header_options   Add;
+            row_options      Edit, Delete;
+        }
+        method _form is AutoCRUD_form {
+            form_name        address;
+            all_fields_but   id;
+            extra_keys
+                legend     => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+        }
+    }
+}

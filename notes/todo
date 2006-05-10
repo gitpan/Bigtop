@@ -1,0 +1,825 @@
+Build.PL needs to test for the presence of Gantry before dealing with
+the tentmaker.
+
+Allow for multiple config blocks with user defined types:
+    config for default {}
+    config for dev     {}
+    config for prod    {}
+    config for phil    {}
+    config for tim     {}
+and a way to pick one of these during generation:
+    bigtop --config=phil --create file.bigtop all
+
+Implement DBIx::Class support.
+
+Why is a missing controlls table only a warning?  Could it refuse
+to build the stub iff there is a main_listing, form, or crud_form?
+
+Figure out the literals allowed in Bigtop::Conf::General.  Document
+and test them.
+
+Change docs to reflect the move of all backends to the Backend namespace.
+
+1   Allow cells in main_listings to be hrefs.  (See customer search page
+    of Quixote.)
+        This requires a change to Gantry's results.tt.
+
+2   Add field level keywords to support user configurable model accessor names
+    and whether they get a mutator.
+
+3   handle internal alignments, e.g. in schema.sql it should be like
+        name    varchar;
+        address varchar;
+    not
+        name varchar;
+        address varchar;
+    This would really require only a bit of extra work.  Consider.
+    Assume a width for the keyword on the left.  If the actual word
+    is longer tough, but everything else would still be aligned.
+    The templates can make adjustments like this.
+        Low.
+
+4   Reorganize the sql_block subrules so they are more like the control_block
+    ones.  Namely, stop blessing different kinds of things into the same
+    class, then if testing on attributes to tell them apart.
+        This really only applies to table_element_blocks and the only
+        test I found questionable today is a test of leaf vs. interior node.
+        Priority: low to not to be done
+
+    Make the grammar report better errors.
+        Place holder for problems found in the future.
+
+Not to be Done:
+    Move keywords registered in Parser.pm to a more logical place.
+    Consider Init.pm or Conf.pm.
+    Some of these should really be in the Control.pm (think engine
+    and template_engine).
+        I don't think there is a backend type that everyone can always
+        be expected to load.
+
+    Fatal errors from bigtop should be trapped and reported as warnings.
+    This allows the rest of the gen to work.
+        There is no harm in fixing the error and rerunning.  Anything
+        that wasn't already written is written at that time.  Anything that
+        worked stays.
+
+    Unify the naming of AST node keys so that code can be shared across
+    packages.  Move common code into two or three non-node ancestor
+    packages.
+        Nice, but only affects Bigtop::Parser which already works.
+        Note that not everything can be shared in obvious ways.
+        In particular, direct inheritence is generally useless since it
+        leads to too much sharing.
+
+    Make a way for Build.PL to be regened (MANIFEST has a target in Build.PL)
+    with knowledge of what was gened.
+        Low priority.  These changes are infrequent and minor.
+        No.  This must be hand maintained to catch things like prereqs.
+
+    factor setup_template out of the backend modules (into WADL.pm?)
+        This turns out to be difficult since Inline::TT normally binds
+        to the current package and convincing it to do otherwise was
+        beyond me.  I should write to the Inline list for advice.
+        Very low, essentially cosmetic in the source code.
+
+    Possibly include do_main (which sets main.tt) in the base module.
+        Low.  (but Tim might say otherwise)
+        We both thought better of this.
+
+    Possibly include do_default (fallback) routine in base module.
+        Low.  (but Tim might say otherwise)
+        We both thought better of this.
+
+    Add a force flag scheme so stubs can be regenerated, but only on
+    demand.  Backup in this case.
+        Medium.
+
+    Add a force command line flag to bigtop or a new script which
+    overrides the the no_gens in the file.
+        bigtopforce Control:name
+    It still shouldn't regen a GEN method marked no_gen.
+        No.  If the users wants to regen a stub, they should delete theirs
+        (or more likely rename it).  Then regular generation will make a
+        new one.  I like being able to say: "It never overwrites a stub,
+        full stop."
+
+    generate app_navigation with proper links in W::C::Gantry.
+        App navigation has rightly moved to the app specific wrapper.
+        While a generator for it might be nice, most of it is really
+        the css and layout of the hosting site.
+
+    Add comment stubs for methods imported from uses statements.
+        This is just litter.
+
+Done:
+
+    Figure out how to install tentmaker so it can find its templates and
+    javascript.
+
+    Allow port to be specified from command line in stand alone server.
+
+    Make CGI Gantry work with Gantry::Conf.
+
+    Add an app level uses statement which will add use statements to the base
+    module.
+
+    Improve the generated Build.PL so it installs templates, etc.
+        improviing as Tim uses it, but still needs testing
+
+    When a config statement has an extra semi-colon the config block is
+    rejected with an indirect error message:
+    config {
+        #...
+        root `/long/path/to/apps/html/directory:/with/path/to/gantry/root`;
+                no_accessor;
+    }
+    Yields:
+        Error: invalid keyword 'config' (line 18) near:
+         {
+        I was expecting one of these: ..., or a valid block (... config, ...)
+    The emphasis here belongs on the work 'valid' the config block is not.
+        This now reports as bad config statement, possible extra semicolon...
+
+    When generating stubs, skip (or comment out) the init sub if their are
+    no parameters to fish for.
+
+    Make a backend which understands config blocks and makes Gantry::Conf
+    files.  Add not_for to config blocks to control which backends see
+    the config (so I can say not_for HttpdConf to avoid set_vars).
+        Using not_for is a bad idea, since it looks just like another
+        set var statement.  Instead, any conf backend can have a statement
+        in its block in the bigtop config section with skip_configs or
+        skip_set_vars or whatever makes sense for it.
+
+    We need control over where the engine and template engine config statements
+    go.  They might be better as app level statements.  Backends that could
+    care about them should declare their intentions in their config blocks.
+        There is a new config_instance statement in the config section of
+        Bigtop files.  There are full_use statements for the Gantry control
+        and httpd conf backends.
+
+    Add field level keyword which allows for control of Data::FormValidator.
+    And/or allow for some other validation procedure.
+        the word is html_form_constraint
+
+    Change set_vars to config everywhere (with set_vars as a synonym as
+    appropriate).
+
+    docs:
+        developer docs for those who want to write their own generators
+            requires quite a bit of effort, must explain the basics of:
+                the grammar
+                the lookup hash
+                the package mixin scheme
+            remember to mention setup_template and Inline::TT
+
+    Misspelled literals do not result in quality error messages, they are
+    just ignored.
+        literal types became regular keywords which backends must register
+
+    Misspelled block names result in strange errors about expected
+    simple statements.
+        The list of expected items now include ..., or a valid
+        block (controller, sequence, set_vars, or table).
+
+    Allow for use statements with explicit exports in controllers.
+
+    We need more literals:
+    1. Perl block in httpd.conf (immediately after the #! line or at the end)
+        literal PerlTop
+        literal PerlBlock
+            Done.  This was really a minor rearrangement, since PerlBlock was
+            already there.
+    2. Full apache access between controller locations.
+        literal HttpdConf
+    3. use libs and other preamble statements in cgi scripts.
+        Done.  I just made the CGI backend for Gantry honor PerlTop literals.
+
+    Allow for mulitple data sources (more than one database connection).
+        Connections are actually controlled by the modeler.  To make
+        an extra connection one needs to create a subclass of
+        Gantry::Utils::Model or Class::DBI for it.  Then you can simply put
+        a model_base_class statement in the bigtop for that table.
+
+    Add use_clean_dates to the generated crud constructor call for controllers
+    of type CRUD.
+
+    Frank suggested moving from mixin to inheritance for the GEN modules.
+    I agree.  Then you can override GEN methods at will without sub redefine
+    warnings.  We need some docs explaining where to look for an explanation
+    of the scheme and a diagram of the inheritance tree.
+        This will not work smoothly with Class::DBI since the methods it
+        generates are bound invocant package.
+        Implemented for hand rolled models.
+
+    Tim wants more help with non-auto CRUD.
+        created controller types: stub (like now), AutoCRUD (just puts in
+        a uses Gantry::Plugins::AutoCRUD statement for you), and CRUD
+        (generates a single crud object and all the methods it uses, you
+        still have to define the form, but it senses the name).
+
+    Have bigtop remove _Inline directories on completion.
+
+    make a backend which outputs hand rolled data model modules
+
+    retrieve_all_for_main_listing could be a little more helpful if
+    it took an option hash (or hash ref, one or the other not both).
+    If that list was supplied, it would use search instead of retrieve.
+
+    We need more control over how the models get generated.  For example,
+    we need to be able to define an auth_groups table and have a controller
+    for it, but locate the table in a different database and access it with
+    a different dbh.  Currently, all tables are thought to live in one
+    database and all models use the same base class and therefore share
+    a dbh.
+        This is probably as simple as combining a new keyword with
+        not_for SQL in the table.  The new keyword could be used like so:
+            model_base_class Gantry::Utils::AuthCDBI
+        whose default value is chosen by the Model backend (e.g.
+        Model GantryCDBI uses default Gantry::Utils::CDBI while
+        Model Gantry use default Gantry::Utils::Model)
+
+    When set_vars are marked no_accessor, they should also be left out of the
+    init method.  The presumption is that Gantry.pm is handling them.
+
+    in main_listing, include a column_labels option that allows both
+    Label, Label
+        and
+    Label => link, Label => link, unlinked_label, Label => link
+    ( This is to support Tasks.pm style from Billing sample app. )
+        Low.
+
+    Make a way for there to be controller level set_vars.  These would
+    be processed by the controller backends, and would land in the
+    controller's location block in the httpd.conf.
+    You should also be able to feed arbitrary data into the location block
+    and to the top level Perl block.  But, set vars need accessors somewhere.
+    Make sure that location level init methods are only generated if there
+    is something for them to do (the same might go for app level, but
+    do nothing inits seem less likely, at least for us).
+
+    Rename url keyword to location and rename location at the controller
+    level to rel_location.  Implement absolute location at controller level.
+
+    Generate the CGI dispatching script which replaces httpd.conf for
+    cgi environments.
+
+    Allow direct statements to feed into Perl block and Location blocks
+    of httpd.conf.  (This allows for loading of common modules on startup
+    and directives like require valid-user.  Thus, removing much potential
+    magic.)
+        Medium.
+
+    Allow sql statements like index creation.
+
+    Fix the granularity of no_gen so all app level block have one
+    and the backends pay attention to it.
+    Deal with regeneration with non-overwrite protection.
+        We need better granularity.  We need to separate the models
+        into two pieces like the controllers.
+            Done
+            no_gen now works for these levels:
+              . the whole app nothing is gened, no backends are even called.
+              . backend type, marked in config block for the backend
+                the gen_* for that backend is not called
+              . controller, nothing is gened for the controller (neither
+                stub nor GEN module)
+              . individual files made by Init
+              . models (requires table keyword not_for)
+              . individual controller methods (so they don't go in the GEN
+                module and result in a redefinition warning)
+            no_gen needs to work for these:
+            not_for needs to work for:
+              . SQL backend (maybe, low priority)
+            Further, Init backends should only be called in --create mode.
+                Done if you use --new to make the app initially
+
+    When Init::Std is run on docs/name.bigtop it complains that the
+    that file and its destination are identical.  It should keep quiet.
+    Actually, it shouldn't overwrite that file.
+    In fact, Init modules should never work outside of --create mode.
+        The final answer: Use bigtop --new App::Name.  It generates
+        the stub of your .bigtop file with Init marked no_gen.
+
+    We still need a way to generate a working location from thin air:
+        bigtop --new App::Name
+    builds App-Name under the current dir, makes a bigtop file in docs:
+        config {
+            Init Std {}
+        }
+        app App::Name {
+        }
+    and does build all there.
+
+    Change the name of the generation script to bigtop everywhere.
+
+    Add a config param for the license which will go into the readme
+    and into the Build.PL file.
+        Low. h2xs never did this
+
+    The name statement in AutoCRUD_form method blocks should be called
+    form_name.
+
+    Controllers with names like Name::Subname, the stub is correctly
+    generated, but the GEN file is not (presumably because the proper
+    GEN subdir is not made).
+
+    Controllers must have a body at present.  It should make a stub
+    for any controller, even if there is nothing in it.
+
+    Though not normally needed, some apps need to have the model disagree
+    with the database.  Our auth_users table needs an id column to make
+    the auth modules happy, but the internal model for the table should not
+    include it, since that confuses CDBI (it thinks all primary key columns
+    should be called id).  So, a new statement for fields should be:
+        not_for Model;
+
+    Allow abbreviated flags for bigtop:
+    GetOptions(
+        'new|n=s'       => \$grace_template,
+        'create|c'      => \$help
+    );
+
+    The docs for extra_args in B::Control::Gantry are made false by the
+    code.  Make the code match the docs.
+
+    The base_dir scheme is not good for general use.  It should work like
+    this:
+        The script should be called bigtop.
+        Running bigtop file.bigtop all builds all files relative to current
+        directory, so users are responsible for making the build home.
+        Running bigtop --create=/path will make the path, then build.
+        If the current directory doesn't smell right, a warning is issued:
+            Bigtop is not built here yet, are you sure you want it to? [N/y]
+        Almost.  --create expects base_dir and app_dir to be defined in config
+        otherwise base_dir defaults to '.' and app_dir defaults to the h2xs
+        subdir name based on the app name.
+
+    Bigtop::Control:: modules should not make the GEN file if there are
+    no methods to put there (if the export list is empty, don't make the
+    file).  And, the stub should not use the module that was not GENed.
+
+    Warnings are chattering.  There should be a way to make it quiet.
+    There should also be a way to make it say what all it is building
+    or even what it would build (like make -n).
+
+    A vim syntax color file would be nice.
+
+    MANIFEST.SKIP does not skip vim litter files start with . and
+    end with .swp.
+
+    Allow an app level keyword license_text.  If it's there, use it
+    instead of the Perl boilerplate which is the default.
+
+    Gen better doc stubs.
+    Namely, the pod should list all generated methods.
+    Make a SEE ALSO that lists all the modules that are used.
+
+    SiteLook should not call a fatal error if a controller has no
+    page_link_label, it should just leave it out.
+
+    When there are no controllers, but you ask for SiteLook GantryDefault,
+    it has no links to insert into the wrapper and warns as a result.
+    It should avoid the sub if it has nothing to insert.
+
+    When a method block is empty (which is not really an error for a stub)
+    it should either work or note the real cause of the problem not:
+    Error: invalid keyword 'controller' (line 355) near:
+        I just made empty blocks legal.  They make sense for stubs.
+
+    In Init::Std, look for file no_gen statements.
+
+    Tease apart the generated bits of the models from a stub file where
+    users can put their code.
+
+    docs:
+        end user tutorial: building a sample app with bigtop
+            first draft done
+        detailed user syntax for bigtop files
+            done, pending normal edits
+    Allow h2xs relatives to be controlled by templates.
+        This is mostly available now, at least as available as for other
+        modules.  What remains is to provide a way for the user
+        to specify their template file names and pass those to the
+        proper setup_template methods.
+
+    Figure out a way to hide the perldoc in Control::Gantry's 
+    module template.  It's coming out with the perldoc for the module.
+        Perhaps that module's pod should just come first with a note to
+        ignore the template pod that follows.
+
+    Allow templates to be specified in config backend blocks.  Like this:
+    Control Gantry { template `/home/user/file.tt`; }
+
+    Add data to the following to the comment in the controller template:
+        DESCRIPTION
+        AUTHOR
+
+    Remove unix specificity from find_all_files_in in Init::Std.
+        This sub was replaced by ExtUtils::mkmanifest.
+
+    Add keywords for where templates live (their directory, their file
+    glob, etc.).
+        Actually, this is handled via a PerlSetVar in httpd.conf.
+
+    Include a doc stub at the bottom of the main module.
+        This is actually more important than it might seem.  Failure to
+        include an AUTHOR section in the pod causes Module::Build to
+        die.
+
+    Make a tutorial that walks through building an app.  Make sure
+    that app runs.
+
+    Use the authors, email, and copyright_holder values in the README.
+        It turns out that READMEs usually only have copyright year and
+        holder.  So copyright_holder goes into README or first name
+        in authors as a default (or blank if neither is given).
+
+    When an arg_element should be quoted we usually get a missing semi-colon
+    error.
+    This may be fixed, because the last time it happened to me I got the
+    far more useful:
+        Error: I was expecting an argument or argument list on line n near:
+            '$id';
+
+    Figure out what is up with undef dates and make a better solution.
+        This was fixed with a new function in Gantry's AutoCRUD.pm
+
+    Correct information about escaping quotes.  You need two in the tests
+    because you are interpolating.  Users don't because they aren't.
+
+    Make 'require valid-user' in root location controllable.
+        I just decided to leave all auth out of the bigtop for now.
+
+    Allow templates to be specified in the config section.
+
+    Document the syntax of the bigtop files fully.
+
+    Document the various Bigtop modules.
+
+    Make the copyright year on generated modules the year of generation.
+
+    Complete the pod for in Control::Gantry's template.
+
+    Move the keyword registration begin blocks to sharable modules.  For
+    example, move the begin block at the top of Bigtop::SQL::Postgres
+    to a new module is uses as a base called Bigtop::SQL.  Do the same for
+    other categories.  This would create a central place to define a
+    defacto api.  But, it would also mean that users might have to look
+    in multiple places to find the available keywords.
+
+    Add an error message when anything but space comes between a registered
+    keyword and its value:
+        foreign_display => `%descr`;
+    results in rejected table, making table an invalid app keyword.
+
+    Rename Bigtop::Model::CDBI to Bigtop::Model::GantryCDBI.
+
+    Second and following use statements in httpd.conf are indented one
+    extra space.
+
+    Add a blank line between Location directives in httpd.conf.
+
+    Allow a data section in the table block (possibly a block) so users
+    can populate type names from the bigtop file.
+    Make data table keyword functional.  It is a repeatable statement
+    with data to put into the table.
+
+    Stop generating Model.pm use Gantry::Utils::Model in the models.
+
+    make controllers generate test stubs
+        There is a compile only test, but no individual tests.
+
+    Have gen_Init copy the bigtop source file into the build dir.
+
+    Correct the is handler, is main_listing, ... so they don't take $r.
+
+    When Data::FormValidator doesn't like something, all data is lost.
+    This could be an error with Gantry or its autocrud.
+        This was an error with communication between Gantry, its autocrud,
+        and class dbi.
+
+    Add -- Select -- to foreign key selection in Model.pm.
+
+    Add method heads to class accessors in controller stubs.
+
+    Remove all gen_all methods, they are no longer called.
+
+    Default edit and delete links did not have ids on them.
+
+    Generated Location urls could have duplicate slashes if the user
+    types some.
+
+    Correct the spacing when a uses entry has includes (use some
+    standard module that has exports for the test).
+
+    Add an error message when type in: method name is type {}
+    is not one of the known types.
+
+    all_fields_but is not working when the table has a defined sequence
+
+    in AutoCRUD_form allow an exclude_fields which takes everthing but
+    the ones named.
+        Done, but the name is all_fields_but.
+
+    automate MANIFEST updates in some nice way at the beginning of a project
+    so the steps are simpler than:
+        wadlgen --gen=Init
+        cd $build_dir
+        wadlgen --gen=all
+        perl Build.PL
+        ./Build
+        ./Build manifest
+        ./Build realclean
+        perl Build.PL
+        code away
+    This should probably be done by directly using
+        ExtUtils::Manifest::mkmanifest()
+    as the last step in --gen=all or when the user says --update_manifest
+    Then the above steps reduce to:
+        wadlgen --gen=all --update_manifest
+        cd $build_dir
+        code away
+    See ACTION_manifest in Module::Build::Base for how to do this.
+
+    Allow an app level url which sets the root for all the other urls.
+
+    Make a way for there to be engine level set_vars.  These would not
+    be processed by the controller backends, but would land in the root
+    location block in the httpd.conf.
+        app level set_vars can now be marked => no_accessor.
+
+    Add set var control to the grammar.  This should be at the app
+    and/or controller level at the user's option.
+
+    Generate init in the base module which fishes out all the set vars.
+    This is part of a general effort to handle set vars.
+
+    make a backend which outputs data model modules for Class::DBI
+        But Frank might come forward with this piece
+
+    Make the grammar report better errors.  Example when it doesn't see
+    a semi-colon at the end of a simple statement, that should fail close to
+    the error not at the block level.
+        This particular example seems to be solved, but there are likely
+        others.
+
+    Correct Model.pm so that its get_select_lists produces output
+    the template will actually take.
+
+    Change the test that uses Gantry::Plugins::AutoCRUD to use something
+    that is not installed, so we don't get one result on systems that
+    have it and another on systems that don't.
+
+    clean up after Init::Std test (think purge dir)
+
+    Add generation of text_descr and get_model_name to controllers.
+
+    Change the name everywhere.
+
+    Add check during controller generation so stubs don't get overwritten.
+        Each backend is reponsible for keeping track of what is a stub
+        and what is a generated piece.  Stubs should not be overwritten
+        if present on the disk (but maybe there should be a force option).
+        Gen pieces are always overwritten unless the backend has a true
+        no_gen flag in its config section.
+
+    make command line tool
+        Include a way to add keywords to the grammar in case only some
+        of the back end modules will be loaded.
+            NO.  All back modules are always loaded, but not all have their
+            gen_* method called.
+
+    Make it possible to mark gen modules as no_gen in the config section.
+    This is needed so their keywords are still registered, but the user
+    controls whether what they gen could ever be overwritten.
+    Maybe config items should be like app section items.  That is, they
+    could be simple statements or named blocks.  But, the block names
+    could be any valid backend.
+        I decided on that later with one minor exception, all simple
+        statements take a single item, not a list.
+
+    make the files that h2xs makes:
+        A directory based app name Module::Name -> ./Module-Name
+        check Changes
+        check Build.PL
+        check MANIFEST
+        check MANIFEST.SKIP
+        check README
+        check t/
+        check lib/
+
+    split controller generation in W::C::Gantry so generated bits are
+    separate from the user editable stub.
+
+    make a backend which outputs controller modules
+
+    Make the cols option in main_listing methods accept things like
+    company_id.name.
+        Done, but I opted for noticing that the field refers_to another
+        table, then generated $row->col_name->foreign_display()
+        allowing the model for the foreign key's table to care for
+        what displays there.
+
+    Make it possible to use values which are not simple ints or valid idents.
+        Anything in backquotes is taken literally.
+
+	make the grammar check keywords
+
+    make it possible to change legal keywords in grammar
+
+    do for controller_keyword what you did for field_keyword
+
+    Convert walk_postorder to collect objects instead of strings.  The
+    gen methods will stringify the result as needed.
+
+    Convert method_keyword, controller_keyword, etc to keyword('type') in
+    the grammar.
+
+    Move to a two D hash for keyword validation.
+
+    Add method type keywords to the keyword validation.
+
+Issues that needed resolving (with resolutions):
+    Allow refers_to to take table.column instead of assuming column is id.
+        This doesn't really apply.  Gantry assumes all tables have unique id
+        as the single primary key.  Class::DBI doesn't care so long as the
+        has_a value points to a table with a defined primary key.  The key name
+        doesn't matter.
+        Other backends can add a different field keyword like foreign_key
+        to handle the situation.
+
+    What should the name be.  Candidates:
+        WAFL   - Web App Framework Language (or W. Australia Football League)
+
+        bigtop - one place where almost all the action is
+                 think perl-bigtop.org or maybe even bigtop.perl.org.
+            THIS IS THE ONE.
+
+        GCS    - Grand Central Station where all the Perl apps on rails
+                 gather for departure
+
+        PSC    - Perl Space Center
+
+    Question: How does AutoCRUD_form name differ from controls_table's value.
+        controls_table's value is the name of the controlled table.
+        AutoCRUD_form's name is the name of the form for javascript purposes.
+        While it might be nice to provide the table name as a default,
+        I don't see any compelling reason to do so.
+
+    Question: Should methods list the fields they want to see, or should
+    the fields say which methods should host them.
+        A. All field data should be in the field block of the table.
+           This makes a central place to look for all things relating to
+           the field.
+        B. Methods are the natural place to look for why a method's output
+           is wrong.  Field blocks are a less natural starting point.
+    Conclusion:
+        Methods should list the fields they want.  The field should not
+        know who is looking at it, only how it should look in different
+        circumstances.  There could be two different forms for a table
+        (say one for CSR and one for Admin).  One form could have fewer
+        fields.  You shouldn't need to change the field block because the
+        second form was created and you sure shouldn't have to register
+        a new keyword for the new form.
+
+    Problem: Single quotes need to be escaped in some cases.  In particular,
+    if the wadl file backquoted string will be single quoted, any single
+    quotes in it must be escaped.  Likewise for double quotes bound for double
+    quoting.  Options:
+        Blindly escape quotes embedded in text strings in the grammar's
+        token action
+            This is almost sure to lead to visible backslashes in the output.
+        Do it for the user in the template with filters
+            This seems best, after all the template is where the final
+            double or single quotes appear.  But it would require installing
+            non-standard template plugins.  Further, the templates generally
+            appear in the code files or are supplied by casual developers.
+        Do it in the code generators
+            This is tedious, but provides control in a reasonable place
+            and requires effort on the part of deep developers.
+        Loudly tell user to do it
+            This provides the most control and these things lead to compile
+            errors in the generated code.  That's easy to see, but will
+            annoy new comers.
+    Conclusion:
+        Users are the most reliable on knowing when quotes appear and
+        will easily notice when they are wrong.  They should not have to
+        fight internal magic (too hard) to influence the quotes.
+
+What I had to do to get from
+    bigtop bailey.bigtop all
+to a working app:
+
+    Created the doc root dir where the templates will live (at
+    least during development).  Created the app's TT wrapper.
+        I should be generating a basic wrapper and index page with
+        the site nav options.
+
+Rebuilt and tried the result:
+
+    Correct the is handler, is main_listing, ... so they don't take $r.
+
+Third attempt:
+    A charm (though there may have been a couple of little tries in the
+    middle).
+
+Second attempt:
+    All the Location urls, except the root, have leading double slashes.
+        This was previously noted and is now fixed.
+
+    All of my javascript keys have the same table name it they are all wrong.
+        This was user error in the bigtop file.
+
+    app_navigation is still being generated despite it relocation to the
+    wrapper.
+        Fixed.
+
+Resolved in Bailey rebuild:
+
+    Create a sub directory docs where schema.sql and httpd.conf live.
+        DONE.
+
+    Copy the generated files from ~/Apps-Bailey to ~/src/Apps/Bailey.
+        This is normal.  bigtop does what h2xs does.  You need to
+        move them into the proper checked out svn repo in order to check
+        them in.
+        But, it might be nice to allow a config parameter that would
+        control this.
+        I remember now that app_dir already controls this.
+
+    Add use Apps::Bailey to httpd.conf.
+        DONE.
+
+    Remove use Gantry from httpd.conf or change it to:
+        use Gantry qw{ -Engine=MP13 -TemplateEngine=TT };
+    In addition, change Gantry so using it without an engine is a fatal error.
+        DONE (except for the change to Gantry, see its todo).
+
+    I made an error in bailey.bigtop.  I should have left out the main
+    app url, since we want /.  I had to correct the conf.
+
+    Added our @ISA = ( 'Gantry' ); to Bailey.pm.
+    
+    Adjusted layout of use statements in controllers.
+
+    Changed the last line of Apps::Bailey init from base_model to
+    get_model_name.
+
+    Changed the base Model.pm to fish connection data using accessors
+    instead of hash peeking.
+
+    Implemented retrieve_all_for_main_listing in Model.pm.
+
+    Added 1; at the bottom of the model .pm files.
+
+    Added root (and many other Gantry level) set_var.  See Gantry->init
+    for a list of the possible variables.
+        This would only require changing the bigtop file
+
+    Created wrapper template.
+
+    Decided against having email/event in favor of emailevent (think
+    Location directive misordering).  This was really a problem with
+    the bigtop file.  If you want subordinate directories, you need
+    to put them after their parents.
+
+    Corrected location lookup in do_main to use accessor.
+
+    Replaced _form which was somehow not generated.  This was due
+    to the misspelling of AutoCRUD, not to a bug in Bigtop.
+
+    Added _form to the export list of the GEN module and to the import
+    list of the stub (this should be an artifact of not generating the
+    _form methods via output_AutoCRUD).
+
+    Added quotes around all items on the form which have digits in their
+    names.
+
+    Corrected Model->get_form_selections to reflect that
+    get_foreign_display_fields returns an array ref.
+
+    Corrected lookup of Apache request object (r) in site object to use
+    an accessor in generated _form.
+
+    Corrected lookup of location in options list in row loop of do_main
+    for GEN/Customer.pm.
+
+    Added 'require valid-user' in root location block.
+
+    Added javascript => $self->calendar_month_js( 'customer' ),
+    to _form's return value in GEN/Customer.pm.
+        This is something the user needs to request in the bigtop file.
+        They do this with the new (optional) extra_keys method body
+        statement.
+        The legend should probably be handled this way, to avoid
+        magic and give the bigtop author more control.
+
+    Added use Gantry::Plugins::Calendar to Customer.pm.  I think this should
+    have been included in the bigtop file, so this is user error.
+
+    Correct MANIFEST errors.  When I build it, nothing is ignored.
+    I really should be using the standard approach generate MANIFEST.SKIP
+    the use:
+        ExtUtils::Manifest::mkmanifest()
+

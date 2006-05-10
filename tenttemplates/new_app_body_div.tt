@@ -1,0 +1,9 @@
+[%#
+    Template for generating divs containing app body blocks (including
+    literals).  Pass it the following parameters in view.data:
+
+        block      - the app_block_hashes output for the new block
+        statements - hash returned by Bigtop::Parser::get_keyword_docs
+%]
+[% INCLUDE app_body_div.ttc
+           block      = view.data.block %]

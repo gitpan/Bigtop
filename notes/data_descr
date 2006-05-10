@@ -1,0 +1,82 @@
+# This file is an example of a new language for expressing data driven
+# applications.
+
+table billing_invoice_tasks {
+    field id {
+        is int, primary_key, assign_by_sequence;
+    }
+    field invoice_id {
+        is             int;
+        refers_to      billing_invoices;
+        display_as     select_unique( field: this, foreign_field: number );
+        appears_on     do_main;
+    }
+    field task_id {
+        is int;
+        refers_to      billing_tasks;
+        display_as     select_unique( field: this, foreign_field: name );
+        appears_on     do_main;
+    }
+}
+
+table billing_invoices {
+    field id {
+        is int, primary_key,assign_by_sequence;
+        display_as     not_shown;
+    }
+    field created {
+        is date;
+        optional;
+        display_as     select_date;
+        validate_with  valid_date;
+    }
+    field number {
+        is int;
+        display_as     text( width: 25 );
+        validate_with  valid_int;
+        apears_on      do_main;
+    }
+    field sent {
+        is date;
+        optional;
+        display_as     select_date;
+        validate_with  valid_date;
+        apears_on      do_main;
+    }
+    field company_id {
+        is int,
+        refers_to      billing_companies;
+        display_as     select_unique( field: this, foreign_field: short_name );
+        apears_on      do_main;
+    }
+    field customer_id {
+        is int,
+        refers_to      billing_customers;
+        display_as     select_unique( field: this, foreign_field: short_name );
+        apears_on      do_main;
+    }
+    field notes {
+        is varchar;
+        optional;
+        display_as    text_area( rows: 5, cols: 45 );
+        filter_with   make_html_entities;
+    }
+    field description {
+        is varchar;
+        optional;
+        display_as    text_area( rows: 5, cols: 45 );
+        filter_with   make_html_entities;
+    }
+    field payment_received {
+        is date;
+        optional;
+        display_as    select_date;
+        validate_with valid_date;
+    }
+    field modified {
+        is date;
+        optional;
+        display_as    select_date;
+        validate_with valid_date;
+    }
+}

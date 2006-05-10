@@ -1,0 +1,8 @@
+--- #YAML:1.0
+name: Bigtop
+version: 0.09
+author:
+  - Phil Crow, E<lt>philcrow2000@yahoo.comE<gt>
+abstract: A Web Application Data Language processor
+license: perl
+generated_by: Module::Build version 0.2611, without YAML.pm
