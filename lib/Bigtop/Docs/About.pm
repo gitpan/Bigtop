@@ -10,7 +10,7 @@ Bigtop is a little language for describing the basic structure of web apps
 including their database layouts and the management of them.
 
 By editing in a single description file (with your favorite text editor
-or the tentmaker browser based editor), you can have a working web app
+or the browser based 'tentmaker'), you can have a working web app
 by code generation.  If your data model changes, you can regenerate without
 risk of loosing anything you wrote yourself.  The pieces available include:
 

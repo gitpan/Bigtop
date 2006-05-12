@@ -1,6 +1,8 @@
-Announcing Bigtop a language for describing database backed web
-applications and a code generator which makes web apps from those
-descriptions.
+SUMMARY
+
+Announcing Bigtop [cue the circus music] a language for describing
+database backed web applications and a code generator which makes web
+apps from those descriptions.
 
 Bigtop allows for generation of...
   sql to build the database
@@ -33,7 +35,8 @@ keywords is large.  The tentmaker knows them all, how to spell them
 correctly, and whether they take single or multiple values.  It color
 codes the input elements to indicate which keywords are important
 and which are more obscure.  It includes documentation on what all
-the keywords mean.
+the keywords mean.  It stays current by using the same data structures
+the generators use to register their keywords.
 
 Plugins
 
@@ -45,3 +48,9 @@ as the supplied generators.  The new plugin may even register additional
 keywords with the grammar, if the current language is not rich enough for
 its purpose.  If done carefully, the new keywords will even work with the
 tentmaker.
+
+LONG FORM
+
+And now for more detail...
+
+[ see whatisbigtop at this point ]

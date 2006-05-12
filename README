@@ -25,12 +25,20 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
+    Module::Build
+    Config::General
+    Template
+    Inline
+    Inline::TT
+
+It also requires these modules during testing:
+
+    Test::More
+    Test::Warn
+
 COPYRIGHT AND LICENCE
 
-Put the correct copyright and license info here.
-
-Copyright (c) 2005 by 
-
+Copyright (c) 2005 by Phil Crow.
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.6 or,

@@ -198,9 +198,8 @@ Tentmaker does not do everything.  Here's a list of what it can't handle:
 
     * comment preservation or management
 
-    * table level data statements
-
-    * literal blocks
+    * table level data statements (but you can fake these with literal SQL
+      statements
 
     * non-standard destinations for do_add, do_edit, etc.
 

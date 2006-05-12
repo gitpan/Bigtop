@@ -15,6 +15,50 @@ BEGIN {
     );
 }
 
+package sql_block;
+use strict; use warnings;
+
+sub get_create_keyword {
+    my $self = shift;
+
+    return $self->{__BODY__}->create_keyword();
+}
+
+sub _skip_this_block {
+    my $self = shift;
+
+    my $skip = $self->walk_postorder( 'skip_this' );
+
+    return pop @{ $skip };
+
+    return 0;
+}
+
+package sequence_body;
+use strict; use warnings;
+
+sub create_keyword { return 'SEQUENCE' }
+
+package table_body;
+use strict; use warnings;
+
+sub create_keyword { return 'TABLE' }
+
+package table_element_block;
+use strict; use warnings;
+
+sub skip_this {
+    my $self         = shift;
+
+    if ( $self->{__BODY__} eq 'not_for' ) {
+        foreach my $skipped_backend ( @{ $self->{__VALUE__} } ) {
+            if ( $skipped_backend eq 'SQL' ) {
+                return [ 1 ];
+            }
+        }
+    }
+}
+
 1;
 
 =head1 NAME

@@ -1,5 +1,8 @@
-Build.PL needs to test for the presence of Gantry before dealing with
-the tentmaker.
+Add meaningful response to bigtop --help
+
+Tests need to be skipped if modules the generators target are absent.
+In particular, if there is no gantry, the t/gantry and t/ganmodel tests
+should just be skipped.
 
 Allow for multiple config blocks with user defined types:
     config for default {}
@@ -112,6 +115,9 @@ Not to be Done:
         This is just litter.
 
 Done:
+
+    Build.PL needs to test for the presence of Gantry before dealing with
+    the tentmaker.
 
     Figure out how to install tentmaker so it can find its templates and
     javascript.

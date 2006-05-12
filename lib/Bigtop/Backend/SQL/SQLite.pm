@@ -1,4 +1,4 @@
-package Bigtop::Backend::SQL::Postgres;
+package Bigtop::Backend::SQL::SQLite;
 use strict; use warnings;
 
 use Bigtop::Backend::SQL;
@@ -6,7 +6,7 @@ use Inline;
 
 sub what_do_you_make {
     return [
-        [ 'docs/schema.postgres' => 'Postgres database schema' ],
+        [ 'docs/schema.sqlite' => 'SQLite database schema' ],
     ];
 }
 
@@ -26,14 +26,14 @@ sub gen_SQL {
 
     # walk tree generating sql
     my $lookup       = $tree->{application}{lookup};
-    my $sql          = $tree->walk_postorder( 'output_sql', $lookup );
+    my $sql          = $tree->walk_postorder( 'output_sql_lite', $lookup );
     my $sql_output   = join '', @{ $sql };
 
     # write the schema.postgres
     my $docs_dir     = File::Spec->catdir( $base_dir, 'docs' );
     mkdir $docs_dir;
 
-    my $sql_file     = File::Spec->catfile( $docs_dir, 'schema.postgres' );
+    my $sql_file     = File::Spec->catfile( $docs_dir, 'schema.sqlite' );
 
     open my $SQL, '>', $sql_file or die "Couldn't write $sql_file: $!\n";
 
@@ -89,7 +89,7 @@ sub setup_template {
 package sql_block;
 use strict; use warnings;
 
-sub output_sql {
+sub output_sql_lite {
     my $self         = shift;
     my $child_output = shift;
 
@@ -97,7 +97,7 @@ sub output_sql {
 
     my $child_out_str = join "\n", @{ $child_output };
 
-    my $output = Bigtop::Backend::SQL::Postgres::sql_block(
+    my $output = Bigtop::Backend::SQL::SQLite::sql_block(
         {
             keyword      => $self->get_create_keyword(),
             child_output => $child_out_str,
@@ -111,16 +111,14 @@ sub output_sql {
 package sequence_body;
 use strict; use warnings;
 
-sub output_sql {
-    # XXX for now, just end the line.
-    # Watch this space for something more interesting.
-    return [ ';' ];
+sub output_sql_lite {
+    die "SQLite does not support user defined sequences.\n";
 }
 
 package table_body;
 use strict; use warnings;
 
-sub output_sql {
+sub output_sql_lite {
     my $self         = shift;
     my $child_output = shift;
 
@@ -130,7 +128,7 @@ sub output_sql {
         push @{ $output{ $type } }, $output;
     }
 
-    my $output = Bigtop::Backend::SQL::Postgres::table_body(
+    my $output = Bigtop::Backend::SQL::SQLite::table_body(
         { child_output => $output{table_body} }
     );
 
@@ -144,7 +142,7 @@ sub output_sql {
 package table_element_block;
 use strict; use warnings;
 
-sub output_sql {
+sub output_sql_lite {
     my $self         = shift;
     my $child_output = shift;
 
@@ -152,7 +150,7 @@ sub output_sql {
 
         my $child_out_str = join "\n", @{ $child_output };
 
-        my $output = Bigtop::Backend::SQL::Postgres::table_element_block(
+        my $output = Bigtop::Backend::SQL::SQLite::table_element_block(
             { name => $self->get_name(), child_output => $child_out_str }
         );
 
@@ -172,7 +170,7 @@ sub output_sql {
             push @values,  $value;
         }
 
-        my $output = Bigtop::Backend::SQL::Postgres::insert_statement(
+        my $output = Bigtop::Backend::SQL::SQLite::insert_statement(
             {
                 table   => $self->get_table_name,
                 columns => \@columns,
@@ -186,29 +184,14 @@ sub output_sql {
 package field_statement;
 use strict; use warnings;
 
-my %code_for = (
-    primary_key        => sub { 'PRIMARY KEY' },
-    assign_by_sequence => \&gen_seq_text,
-    auto               => \&gen_seq_text,
+my %expansion_for = (
+    int4               => 'INTEGER',
+    primary_key        => 'PRIMARY KEY',
+    assign_by_sequence => 'AUTOINCREMENT',
+    auto               => 'AUTOINCREMENT',
 );
 
-sub gen_seq_text {
-    my $self       = shift;
-    my $lookup     = shift;
-
-    my $table      = $self->get_table_name();
-
-    my $sequence   = $lookup->{tables}{$table}{sequence}{__ARGS__}[0];
-
-    unless ( defined $sequence ) {
-        die "I can't assign_by_sequence for table $table.\n"
-             .  "You didn't define a sequence for it.\n";
-    }
-
-    return "DEFAULT NEXTVAL( '$sequence' )";
-}
-
-sub output_sql {
+sub output_sql_lite {
     my $self   = shift;
     shift;  # there is no child output
     my $lookup = shift;
@@ -217,16 +200,16 @@ sub output_sql {
 
     my @keywords;
     foreach my $arg ( @{ $self->{__DEF__}{__ARGS__} } ) {
-        my $code = $code_for{$arg};
+        my $expanded_form = $expansion_for{$arg};
 
-        if ( defined $code ) {
-            push @keywords, $code->( $self, $lookup );
+        if ( defined $expanded_form ) {
+            push @keywords, $expanded_form;
         }
         else {
             push @keywords, $arg;
         }
     }
-    my $output = Bigtop::Backend::SQL::Postgres::field_statement(
+    my $output = Bigtop::Backend::SQL::SQLite::field_statement(
         { keywords => \@keywords }
     );
 
@@ -236,7 +219,7 @@ sub output_sql {
 package literal_block;
 use strict; use warnings;
 
-sub output_sql {
+sub output_sql_lite {
     my $self = shift;
 
     return $self->make_output( 'SQL' );
@@ -248,14 +231,14 @@ __END__
 
 =head1 NAME
 
-Bigtop::Backend::SQL::Postgres - backend to generate sql for Postgres database creation
+Bigtop::Backend::SQL::SQLite - backend to generate sql for SQLite database creation
 
 =head1 SYNOPSIS
 
 If your bigtop file looks like this:
 
     config {
-        SQL  Postgres {}
+        SQL  SQLite {}
     }
     app App::Name {
     }
@@ -273,17 +256,19 @@ or
 You can feed that file directly to psql, once you have created
 a database.  That is type:
 
-    createdb dbname -U user
-    psql dbname -U user < docs/schema.postgres
+    sqlite dbname < docs/schema.sqlite
 
 =head1 DESCRIPTION
 
-This is a Bigtop backend which generates SQL Postgres can understand.
+This is a Bigtop backend which generates SQL SQLite can understand.
 
 =head1 KEYWORDS
 
 This module defines no keywords.  Look in Bigtop::SQL for a list
 of the keywords you can use in table and sequence blocks.
+
+Note that SQLite does not support sequences.  Trying to use them with
+this backend will be fatal.
 
 =head1 SHORTHAND for is arguments
 
@@ -296,7 +281,7 @@ for the arguments of the is field statement.
 
 This translates into:
 
-    id int4 PRIMARY KEY DEFAULT NEXTVAL( 'your_sequence' ),
+    id INTEGER PRIMARY KEY AUTOINCREMENT
 
 You can also type 'assign_by_sequence' instead of 'auto'.  That might
 aid understanding, if you can type it correctly.

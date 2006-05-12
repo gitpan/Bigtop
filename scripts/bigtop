@@ -16,6 +16,7 @@ GetOptions(
     'create|c'      => \$create,
     'new|n=s'       => \$new,
     'keep_inline|k' => \$keeping_inline,
+    'help|h'        => \&full_usage,
 );
 
 if ( $new ) {
@@ -71,6 +72,25 @@ if ( not $keeping_inline and -d '_Inline' ) {
 
     finddepth( $purger, '_Inline' );
     rmdir '_Inline';
+}
+
+sub full_usage {
+    print << 'EO_HELP';
+usage: bigtop [options] file.bigtop something_to_gen [something_to_gen...]
+
+    options:
+
+            --help        - this message
+            --create      - initial build, makes directories
+            --new         - initial build, give it an app name (not a
+                            file name), but don't give it a build list
+            --keep_inline - does not remove _Inline
+
+    somethings_to_gen is either 'all' or a
+    backend type (like 'SQL' or 'Control')
+
+EO_HELP
+    exit 0;
 }
 
 =head1 NAME

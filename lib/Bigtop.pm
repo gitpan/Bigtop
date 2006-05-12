@@ -5,7 +5,7 @@ use warnings::register;
 use Carp;
 use File::Spec;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 sub write_file {
     my $file_name    = shift;
@@ -87,7 +87,7 @@ __END__
 
 =head1 NAME
 
-Bigtop - A Web Application Data Language processor
+Bigtop - A web application data language processor
 
 =head1 SYNOPSIS
 
