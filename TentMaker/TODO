@@ -1,5 +1,5 @@
-rel_location and location are not highlighting properly at the controller
-level.
+The tooltips for backend keywords were lost, we should probably create a
+third subcolumn in the Config Statements column to show them.
 
 Features not in first version:
     main_listing row_options and header_options don't allow alternate urls
@@ -67,6 +67,11 @@ than like other statements, since they can be repeated and their order
 could conceivably matter).
 
 Done:
+
+rel_location and location are not highlighting properly at the controller
+level.
+    This was a problem with the httpd conf backend not using B::Keywords
+    to register its keywords.
 
 Implement literal blocks
     These are avaiable at the app level only.

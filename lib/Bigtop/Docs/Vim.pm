@@ -6,7 +6,7 @@ Bigtop::Docs::Vim - How to get vim syntax things for Bigtop files
 
 =head1 How To
 
-There is are syntax file for vim in the Bigtop distribution's vim subdirectory.
+There are syntax files for vim in the Bigtop distribution's vim subdirectory.
 To use them do the following:
 
 =over 4
@@ -36,7 +36,8 @@ Start vim on a bigtop file and see the pretty colors.
 =back
 
 You could also just cp -R * from the Bigtop vim directory into
-your .vim directory and skip to step 5.
+your .vim directory and skip to step 5, but that would overwrite your
+filetype.vim, if you have one.
 
 =head1 Folding
 

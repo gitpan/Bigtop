@@ -29,6 +29,7 @@ lib/Bigtop/Backend/Model/Gantry.pm
 lib/Bigtop/Backend/Model/GantryCDBI.pm
 lib/Bigtop/Backend/SiteLook/GantryDefault.pm
 lib/Bigtop/Backend/SQL.pm
+lib/Bigtop/Backend/SQL/MySQL.pm
 lib/Bigtop/Backend/SQL/Postgres.pm
 lib/Bigtop/Backend/SQL/SQLite.pm
 lib/Bigtop/bigtop.grammar
@@ -39,7 +40,8 @@ lib/Bigtop/Docs/Keywords.pm
 lib/Bigtop/Docs/Modules.pm
 lib/Bigtop/Docs/QuickRef.pm
 lib/Bigtop/Docs/Syntax.pm
-lib/Bigtop/Docs/TentMaker.pm
+lib/Bigtop/Docs/TentTut.pm
+lib/Bigtop/Docs/TOC.pm
 lib/Bigtop/Docs/Tutorial.pm
 lib/Bigtop/Docs/Vim.pm
 lib/Bigtop/Grammar.pm
@@ -121,6 +123,11 @@ t/sqlite/02_external_template.t
 t/sqlite/03_gen.t
 t/sqlite/04_config_template.t
 t/sqlite/ext.tt
+t/mysql/01_tiny.t
+t/mysql/02_external_template.t
+t/mysql/03_gen.t
+t/mysql/04_config_template.t
+t/mysql/ext.tt
 t/Purge.pm
 t/sitelook/01_tiny.t
 t/sitelook/sample_wrapper.tt

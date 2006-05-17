@@ -22,6 +22,13 @@ my $email      = 'somebody@example.com';
 
 mkdir $play_dir;
 
+SKIP: {
+
+    eval { require Gantry::Plugins::AutoCRUD; };
+    my $skip_all = ( $@ ) ? 1 : 0;
+
+    skip "Gantry::Plugins::AutoCRUD not installed", 3 if $skip_all;
+
 #------------------------------------------------------------------------
 # Comprehensive test of controller generation for Gantry
 #------------------------------------------------------------------------
@@ -478,3 +485,5 @@ file_ok(
 );
 
 Purge::real_purge_dir( $play_dir );
+
+} # END of SKIP block

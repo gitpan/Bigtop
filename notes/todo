@@ -1,9 +1,3 @@
-Add meaningful response to bigtop --help
-
-Tests need to be skipped if modules the generators target are absent.
-In particular, if there is no gantry, the t/gantry and t/ganmodel tests
-should just be skipped.
-
 Allow for multiple config blocks with user defined types:
     config for default {}
     config for dev     {}
@@ -115,6 +109,17 @@ Not to be Done:
         This is just litter.
 
 Done:
+
+    Tests need to be skipped if modules the generators target are absent.
+    In particular, if there is no gantry, the t/gantry and t/ganmodel tests
+    should just be skipped.
+        Actually, the only ones that were problems were the gantry control
+        gen tests because they produce full import lists for
+        Gantry::Plugins::AutoCRUD when it is installed and empty lists when
+        it isn't.
+        Those tests are now skipped.
+
+    Add meaningful response to bigtop --help
 
     Build.PL needs to test for the presence of Gantry before dealing with
     the tentmaker.

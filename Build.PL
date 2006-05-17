@@ -33,6 +33,7 @@ my $build = $subclass->new(
         't/init/*.t',
         't/postgres/*.t',
         't/sqlite/*.t',
+        't/mysql/*.t',
         't/gantry/*.t',
         't/cdbi/*.t',
         't/sitelook/*.t',
