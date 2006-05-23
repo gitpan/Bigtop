@@ -1,3 +1,20 @@
+If you list multiple compatible backends, they should all do their things.
+
+There should be a special top level controller block like
+    root_controller {
+    }
+which can take all the statements and blocks a regular controller can
+take.  This will put code into the app's base module.  (Syntax is
+subject to discussion, but I object to bare words at the app level like
+controls_table etc.  Although there is already a location directive, but
+since you have to have it (or take the default) and in other controllers
+you must have exactly one of location or rel_location the app level
+can't really function as a controller block wihtout more work.)
+
+When there are multiple authors, there should be multiple email addresses.
+These should be generated correction on separate lines with line breaks
+so Module::Build does not become confused.
+
 Allow for multiple config blocks with user defined types:
     config for default {}
     config for dev     {}

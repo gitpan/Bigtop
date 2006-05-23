@@ -88,6 +88,8 @@ sub what_do_you_make {
             'Class::DBI style model stubs [safe to change]'                 ],
         [ 'lib/AppName/Model/GEN/*.pm' =>
             'Class::DBI style model specifications [please, do not change]' ],
+        [ 'note' =>
+            'This backend is incompatible with other Model backends.' ],
     ];
 }
 
@@ -273,20 +275,6 @@ sub output_model {
 
 package table_element_block;
 use strict; use warnings;
-
-sub _not_for_model {
-    my $field = shift;
-
-    if ( $field->{not_for} ) {
-        my $skipped_backends = $field->{not_for}{args};
-
-        foreach my $skipped_backend ( @{ $skipped_backends } ) {
-            return 1 if ( $skipped_backend eq 'Model' );
-        }
-    }
-
-    return 0;
-}
 
 sub output_all_fields_cdbi {
     my $self         = shift;

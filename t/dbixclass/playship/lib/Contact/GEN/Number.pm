@@ -1,6 +1,6 @@
 # NEVER EDIT this file.  It was generated and will be overwritten without
 # notice upon regeneration of this application.  You have been warned.
-package Apps::Checkbook::GEN::PayeeOr;
+package Contact::GEN::Number;
 
 use strict;
 
@@ -11,8 +11,8 @@ our @EXPORT = qw(
     form
 );
 
-use Apps::Checkbook::Model::payee qw(
-    $PAYEE
+use Contact::Model::number qw(
+    $NUMBER
 );
 
 #-----------------------------------------------------------------
@@ -22,21 +22,27 @@ sub do_main {
     my ( $self ) = @_;
 
     $self->stash->view->template( 'results.tt' );
-    $self->stash->view->title( 'Payees' );
+    $self->stash->view->title( 'Contacts' );
 
     my $retval = {
         headings       => [
             'Name',
+            'Number',
         ],
         header_options => [
             {
                 text => 'Add',
-                link => $self->exoticlocation() . "/strangely_named_add",
+                link => $self->location() . "/add",
+            },
+            {
+                text => 'CSV',
+                link => $self->location() . "/csv",
             },
         ],
     };
 
-    my @rows = $PAYEE->get_listing();
+    my $schema = $self->get_schema();
+    my @rows   = $NUMBER->get_listing( { schema => $schema } );
 
     foreach my $row ( @rows ) {
         my $id = $row->id;
@@ -44,15 +50,12 @@ sub do_main {
             @{ $retval->{rows} }, {
                 data => [
                     $row->name,
+                    $row->number,
                 ],
                 options => [
                     {
                         text => 'Edit',
                         link => $self->location() . "/edit/$id",
-                    },
-                    {
-                        text => 'Make Some',
-                        link => $self->location() . "/make_some/$id",
                     },
                     {
                         text => 'Delete',
@@ -72,17 +75,21 @@ sub do_main {
 sub form {
     my ( $self, $row ) = @_;
 
-    my $selections = $PAYEE->get_form_selections();
+    my $selections = $NUMBER->get_form_selections();
 
     return {
-        name       => 'payee',
+        name       => 'contact',
         row        => $row,
-        legend => $self->path_info =~ /edit/i ? 'Edit' : 'Add',
         fields     => [
             {
-                display_size => 20,
                 name => 'name',
                 label => 'Name',
+                type => 'text',
+                is => 'varchar',
+            },
+            {
+                name => 'number',
+                label => 'Number',
                 type => 'text',
                 is => 'varchar',
             },

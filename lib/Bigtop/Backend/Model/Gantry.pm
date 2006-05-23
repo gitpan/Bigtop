@@ -198,6 +198,7 @@ sub what_do_you_make {
             'Gantry style model stubs [safe to change]'                 ],
         [ 'lib/AppName/Model/GEN/*.pm' =>
             'Gantry style model specifications [please, do not change]' ],
+        [ note => 'This backend is incompatible with other Model backends. '],
     ];
 }
 

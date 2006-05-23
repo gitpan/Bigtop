@@ -544,6 +544,41 @@ sub walk_postorder {
     return $self->{application}->walk_postorder( $action, $data );
 }
 
+sub get_authors {
+    my $self = shift;
+
+    if ( defined $self->{application}{lookup}{app_statements}{authors} ) {
+        return $self->{application}{lookup}{app_statements}{authors};
+    }
+    else {
+        return [];
+    }
+}
+
+sub get_email {
+    my $self = shift;
+
+    return $self->{application}{lookup}{app_statements}{email}[0];
+}
+
+sub get_copyright_holder {
+    my $self       = shift;
+    my $statements = $self->{application}{lookup}{app_statements};
+
+    if ( defined $statements->{copyright_holder} ) {
+        return $statements->{copyright_holder}[0];
+    }
+    else {
+        return $statements->{authors}[0];
+    }
+}
+
+sub get_license_text {
+    my $self = shift;
+
+    return $self->{application}{lookup}{app_statements}{license_text}[0];
+}
+
 sub get_config {
     my $tree = shift;
 

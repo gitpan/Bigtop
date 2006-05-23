@@ -71,6 +71,23 @@ sub _build_foreign_display_body {
     return $retval;
 }
 
+package table_element_block;
+use strict; use warnings;
+
+sub _not_for_model {
+    my $field = shift;
+
+    if ( $field->{not_for} ) {
+        my $skipped_backends = $field->{not_for}{args};
+
+        foreach my $skipped_backend ( @{ $skipped_backends } ) {
+            return 1 if ( $skipped_backend eq 'Model' );
+        }
+    }
+
+    return 0;
+}
+
 1;
 
 =head1 NAME

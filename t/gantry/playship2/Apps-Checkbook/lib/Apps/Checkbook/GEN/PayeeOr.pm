@@ -36,7 +36,7 @@ sub do_main {
         ],
     };
 
-    my @rows = $PAYEE->retrieve_all_for_main_listing();
+    my @rows = $PAYEE->get_listing();
 
     foreach my $row ( @rows ) {
         my $id = $row->id;

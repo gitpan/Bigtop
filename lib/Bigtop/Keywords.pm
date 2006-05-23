@@ -361,6 +361,14 @@ my %doc_for = (
             multiple => 0,
             urgency  => 1,
         },
+        autocrud_helper => {
+            keyword  => 'autocrud_helper',
+            label    => 'AutoCRUDHelper',
+            descr    => 'Gantry::Plugins::AutoCRUDHelper for your ORM',
+            type     => 'text',
+            mulitple => 0,
+            urgency  => 0,
+        },
     },
 
     controller_literal => {

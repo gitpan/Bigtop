@@ -409,6 +409,15 @@ use Bigtop;
 BEGIN {
     Bigtop::Parser->add_valid_keywords(
         Bigtop::Keywords->get_docs_for(
+            'controller',
+            qw(
+                autocrud_helper
+            )
+        )
+    );
+
+    Bigtop::Parser->add_valid_keywords(
+        Bigtop::Keywords->get_docs_for(
             'method',
             qw(
                 extra_args
@@ -638,6 +647,23 @@ our @EXPORT = qw(
 );
 [% END %]
 
+[% BLOCK dbix_uses %]
+[% use_my_model %]
+use [% base_model %];
+sub schema_base_class { return '[% base_model %]'; }
+use Gantry::Plugins::DBIxClassConn qw( get_schema );
+[% END %]
+
+[% BLOCK get_orm_helper %]
+#-----------------------------------------------------------------
+# get_orm_helper( )
+#-----------------------------------------------------------------
+sub get_orm_helper {
+    return 'Gantry::Plugins::AutoCRUDHelper::DBIxClass';
+}
+
+[% END %]
+
 [% BLOCK class_access %]
 #-----------------------------------------------------------------
 # get_model_name( )
@@ -739,7 +765,14 @@ sub [% config %] {
 [% END %]
 
 [% BLOCK main_table %]
-    my @rows = $[% model %]->retrieve_all_for_main_listing();
+[%- IF dbix -%]
+    my $schema = $self->get_schema();
+    my @rows   = $[% model %]->get_listing( { schema => $schema } );
+
+[%- ELSE -%]
+    my @rows = $[% model %]->get_listing();
+
+[%- END -%]
 
     foreach my $row ( @rows ) {
         my $id = $row->id;
@@ -918,6 +951,12 @@ sub backend_block_keywords {
           descr   => 'use Gantry qw( -engine=... ); [defaults to true]',
           type    => 'boolean',
           default => 'true' },
+
+        { keyword => 'dbix',
+          label   => 'For use with DBIx::Class',
+          descr   => 'Makes controllers usable with DBIx::Class',
+          type    => 'boolean',
+          default => 'false' },
     ];
 }
 
@@ -945,25 +984,14 @@ sub gen_Control {
     my $app_name            = $bigtop_tree->get_appname();
     my $lookup              = $bigtop_tree->{application}{lookup};
     my $app_stmnts          = $lookup->{app_statements};
-    my $authors             = $app_stmnts->{authors};
-    my $email               = $app_stmnts->{email}[0];
+    my $authors             = $bigtop_tree->get_authors();
+    my $email               = $bigtop_tree->get_email();
     my @external_modules;
-    my $copyright_holder;
-    my $license_text;
+    my $copyright_holder    = $bigtop_tree->get_copyright_holder();
+    my $license_text        = $bigtop_tree->get_license_text();
 
     @external_modules    = @{ $app_stmnts->{uses} }
             if defined ( $app_stmnts->{uses} );
-
-    if ( defined $app_stmnts->{copyright_holder} ) {
-        $copyright_holder   = $app_stmnts->{copyright_holder}[0];
-    }
-    else {
-        $copyright_holder   = $authors->[0];
-    }
-
-    if ( defined $app_stmnts->{license_text} ) {
-        $license_text = $app_stmnts->{license_text}[0];
-    }
 
     my $year                = ( localtime )[5];
     $year                  += 1900;
@@ -1518,6 +1546,14 @@ sub is_crud {
     return ( $controller_type eq 'CRUD' );
 }
 
+sub is_dbix_class {
+    my $self         = shift;
+    my $data         = shift;
+    my $config_block = $data->{ tree }->get_config()->{ Control };
+
+    return $config_block->{ dbix };
+}
+
 sub controls_table {
     my $self             = shift;
     my $child_output     = shift;
@@ -1532,18 +1568,32 @@ sub controls_table {
     my $output           = Bigtop::Backend::Control::Gantry::use_stub(
         { module => $model, imports => "\$$model_alias" }
     );
+    my $gen_output       = $output;
 
-    my $class_access;
+    my $class_access     = '';
+
     unless ( $self->is_crud( $data ) ) {
         $class_access     = Bigtop::Backend::Control::Gantry::class_access(
             { model_alias => $model_alias }
+        );
+
+        if ( $self->is_dbix_class( $data ) ) {
+            $class_access .=
+                Bigtop::Backend::Control::Gantry::get_orm_helper( {} );
+        }
+    }
+
+    if ( $self->is_dbix_class( $data ) ) {
+        my $base_model = $data->{app_name} . '::Model';
+        $output = Bigtop::Backend::Control::Gantry::dbix_uses(
+            { base_model => $base_model, use_my_model => $output }
         );
     }
 
     # This use statement goes in both stub and gen output.
     return [
         output       => $output,
-        gen_output   => $output,
+        gen_output   => $gen_output,
         class_access => $class_access,
         used_modules => [ $model ],
     ];
@@ -1869,6 +1919,7 @@ sub output_main_listing {
             model       => $data->{model_alias},
             data_cols   => \@cols,
             row_options => $row_options,
+            dbix        => $self->is_dbix_class( $data ),
         }
     );
 
@@ -1890,6 +1941,14 @@ sub output_main_listing {
         }
     ];
 } # END output_main_listing
+
+sub is_dbix_class {
+    my $self         = shift;
+    my $data         = shift;
+    my $config_block = $data->{ tree }->get_config()->{ Control };
+
+    return $config_block->{ dbix };
+}
 
 # Given
 #   [ Label => url, Label2 => url2, Label_no_url; ]

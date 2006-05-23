@@ -1,15 +1,11 @@
 Build.PL
 Changes
-docs/announcement
 docs/keywords.summary
 docs/quicktable.html
 docs/README
-docs/whatisbigtop
 examples/address.bigtop
 examples/address.server
 examples/address2.bigtop
-examples/address2.native.bigtop
-examples/addressauth.bigtop
 examples/billing.bigtop
 examples/billing_model.png
 examples/checking.bigtop
@@ -79,6 +75,16 @@ t/cdbi/playship/lib/Apps/Checkbook/Model/GEN/payee.pm
 t/cdbi/playship/lib/Apps/Checkbook/Model/GEN/trans.pm
 t/cdbi/playship/lib/Apps/Checkbook/Model/payee.pm
 t/cdbi/playship/lib/Apps/Checkbook/Model/trans.pm
+t/dbixclass/01_dbixclass.t
+t/dbixclass/playship/lib/Contact.pm
+t/dbixclass/playship/lib/Contact/Model.pm
+t/dbixclass/playship/lib/Contact/Number.pm
+t/dbixclass/playship/lib/Contact/GEN/Number.pm
+t/dbixclass/playship/lib/Contact/Model/bday.pm
+t/dbixclass/playship/lib/Contact/Model/number.pm
+t/dbixclass/playship/lib/Contact/Model/GEN/bday.pm
+t/dbixclass/playship/lib/Contact/Model/GEN/number.pm
+t/dbixclass/playship/t/01_use.t
 t/cleanup/99_kill_inline.t
 t/ExportingModule.pm
 t/ganmodel/01_model.t
@@ -160,3 +166,4 @@ tenttemplates/tenter.tt
 vim/filetype.vim
 vim/README
 vim/syntax/bigtop.vim
+Makefile.PL

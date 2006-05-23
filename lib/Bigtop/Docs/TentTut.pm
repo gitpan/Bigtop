@@ -146,9 +146,9 @@ Object-Relational Mapper (like the classic Class::DBI).
 This pane overflows, so you will need to use the scroll bar to see all
 of your options.  This figure shows the top of the pane:
 
-=for html <img src='http://www.usegantry.org/tenttut/backends.png' alt='Backends Pane' />
+=for html <img src='http://www.usegantry.org/images/tenttut/backends.png' alt='Backends Pane' />
 
-    http://www.usegantry.org/tenttut/backends.png
+    http://www.usegantry.org/images/tenttut/backends.png
 
 There are four columns here:
 
@@ -269,9 +269,9 @@ Next, click on the 'App Level Statements' tab.
 Here you will see a table of statements which describe the app that
 looks like this:
 
-=for html <img src='http://www.usegantry.org/tenttut/appstat.png' alt='App Level Statements' />
+=for html <img src='http://www.usegantry.org/images/tenttut/appstat.png' alt='App Level Statements' />
 
-    http://www.usegantry.org/tenttut/appstat.png
+    http://www.usegantry.org/images/tenttut/appstat.png
 
 The most important statement is colored red.  It is the list of authors.
 Module::Build requires at least one author in order to build a distribution.
@@ -291,9 +291,9 @@ Click on the 'App Config' tab.
 This shows a table of configuration information for the application like
 this:
 
-=for html <img src='http://www.usegantry.org/tenttut/appconfig.png' alt='App Config' />
+=for html <img src='http://www.usegantry.org/images/tenttut/appconfig.png' alt='App Config' />
 
-    http://www.usegantry.org/tenttut/appconfig.png
+    http://www.usegantry.org/images/tenttut/appconfig.png
 
 There is a row for each config parameter.  Each row has four columns:
 
@@ -359,9 +359,9 @@ Finally, we are ready to describe the details of the app.  Click on the
 'App Body' link.  When you first do this on the default skeleton all you
 see is this invitation to make something:
 
-=for html <img src='http://www.usegantry.org/tenttut/appbody.png' alt='App Body' />
+=for html <img src='http://www.usegantry.org/images/tenttut/appbody.png' alt='App Body' />
 
-    http://www.usegantry.org/tenttut/appbody.png
+    http://www.usegantry.org/images/tenttut/appbody.png
 
 You may make any of these things in the app body:
 
@@ -406,15 +406,15 @@ This is important, because the sequence creation statement must come
 before the creation statement for the table which uses it, otherwise your
 database will be unhappy.  Now the screen should look like this:
 
-=for html <img src='http://www.usegantry.org/tenttut/seqtab.png' alt='App Body showing a sequence and a table' />
+=for html <img src='http://www.usegantry.org/images/tenttut/seqtab.png' alt='App Body showing a sequence and a table' />
 
-    http://www.usegantry.org/tenttut/seqtab.png
+    http://www.usegantry.org/images/tenttut/seqtab.png
 
 Click on the blue 'Body:' link.  Scroll until you see something more like this:
 
-=for html <img src='http://www.usegantry.org/tenttut/newtable.png' alt='App Body a table body' />
+=for html <img src='http://www.usegantry.org/images/tenttut/newtable.png' alt='App Body a table body' />
 
-    http://www.usegantry.org/tenttut/newtable.png
+    http://www.usegantry.org/images/tenttut/newtable.png
 
 As with the App Level Statements, there are table level statements which
 describe the table as a whole.  Again, these are color coded (remember
@@ -489,9 +489,9 @@ This method must be called 'form' so that the AutoCRUD plugin can call it.
 Click on the 'Body:' link of the do_main method.  You'll see something like
 this:
 
-=for html <img src='http://www.usegantry.org/tenttut/do_mainbody.png' alt='main_listing method body' />
+=for html <img src='http://www.usegantry.org/images/tenttut/do_mainbody.png' alt='main_listing method body' />
 
-    http://www.usegantry.org/tenttut/do_mainbody.png
+    http://www.usegantry.org/images/tenttut/do_mainbody.png
 
 As with other keyword/value entry tables, this one has 'Keyword',
 'Values', and 'Description' columns.  But, it also has 'Applies to'.
@@ -501,9 +501,9 @@ the 'Applies to' column is either your method's type or 'All'.
 It will be easier to understand the other items if we see an example, so
 here is a sample of the main listing presented to users of the app:
 
-=for html <img src='http://www.usegantry.org/tenttut/main_listingout.png' alt='example main listing' />
+=for html <img src='http://www.usegantry.org/images/tenttut/main_listingout.png' alt='example main listing' />
 
-    http://www.usegantry.org/tenttut/main_listingout.png
+    http://www.usegantry.org/images/tenttut/main_listingout.png
 
 The title of the listing box comes directly from the 'title' value.
 This also appears in the browser window's title bar.

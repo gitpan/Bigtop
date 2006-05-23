@@ -13,6 +13,7 @@ my $subclass = Module::Build->subclass(
 my $build = $subclass->new(
     module_name         => 'Bigtop',
     license             => 'perl',
+    create_makefile_pl  => 'passthrough',
     requires            => {
         'Config::General' => 0,
         'Template'        => 2.0,
@@ -29,6 +30,7 @@ my $build = $subclass->new(
     tentmaker_files     => [ glob( 'tenttemplates/*' ) ],
     test_files          => [
         't/*.t',
+        't/dbixclass/*.t',
         't/tentmaker/*.t',
         't/init/*.t',
         't/postgres/*.t',

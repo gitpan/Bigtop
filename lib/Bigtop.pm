@@ -5,7 +5,7 @@ use warnings::register;
 use Carp;
 use File::Spec;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 sub write_file {
     my $file_name    = shift;
@@ -91,16 +91,17 @@ Bigtop - A web application data language processor
 
 =head1 SYNOPSIS
 
+See Bigtop::Docs::TentTut or Bigtop::Docs::Tutorial for how to create
+a Bigtop file.
+
 The real synopsis:
 
-    vi your_app.bigtop
+    vi your_app.bigtop (or use tentmaker see Bigtop::Docs::TentTut)
     bigtop --create your_app.bigtop all
 
 Modify your bigtop file and try again:
 
-    bigtop your_app.bigtop all
-
-See Bigtop::Docs::Tutorial for a guide to Bigtop syntax.
+    bigtop docs/your_app.bigtop all
 
 =head1 DESCRIPTION
 
@@ -206,6 +207,16 @@ target.  For example, there might be some Postgres specific keyword
 which doesn't apply to other databases.  It should be defined in
 Bigtop::SQL::Postgres.  (But currently only on Bigtop::Control::Gantry,
 of the backend implementations, actually defines target specifc keywords).
+
+=head1 JOIN US
+
+Bigtop is discussed on the Gantry mailing list.  Please visit
+http://www.usegantry.org, and click on the Mailing List tab under the
+banner, for instructions.
+
+Bigtop source is available for svn checkout:
+
+    svn checkout http://svn.usegantry.org/repo/bigtop/trunk/
 
 =head1 AUTHOR
 

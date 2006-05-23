@@ -36,6 +36,17 @@ It also requires these modules during testing:
     Test::More
     Test::Warn
 
+JOIN US
+
+If you would like to discuss bigtop, please join the Gantry mailing list.
+Go to http://www.usegantry.org and click on the Mailing List tab under the
+banner for instructions.
+
+If you want to see the most recent version of Bigtop before it hits CPAN,
+you may check it out:
+
+    svn checkout http://svn.usegantry.org/repo/bigtop/trunk/ yourdir
+
 COPYRIGHT AND LICENCE
 
 Copyright (c) 2005 by Phil Crow.

@@ -1,5 +1,12 @@
 Revision history for Perl extension Bigtop.
 
+0.12 Tue May 23 10:58:22 CDT 2006
+    - Added create_makefile_pl => 'passthrough', to Build.PL so users relying
+      on make (aka CPAN shell users) can install without so much hastle.
+    - Corrected images links in the tentmaker tutorial (thanks Krassi).
+    - Added support for DBIx::Class.
+    - Updated MANIFEST and made it agree with what is checked into svn.
+
 0.11 Wed May 17 12:48:11 CDT 2006
     - Added skips so gantry controller tests won't fail when
       Gantry::Plugins::AutoCRUD is not installed.

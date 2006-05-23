@@ -95,7 +95,10 @@ sub output_sql_mysql {
 
     return if ( $self->_skip_this_block );
 
-    my $child_out_str = join "\n", @{ $child_output };
+    my $child_out_str = '';
+    if ( defined $child_output ) {
+        $child_out_str = join "\n", @{ $child_output };
+    }
 
     my $output = Bigtop::Backend::SQL::MySQL::sql_block(
         {
@@ -112,7 +115,8 @@ package sequence_body;
 use strict; use warnings;
 
 sub output_sql_mysql {
-    die "MySQL does not support user defined sequences.\n";
+    warn "MySQL does not support user defined sequences.\n";
+    return;
 }
 
 package table_body;

@@ -39,7 +39,7 @@ sub do_main {
         ],
     };
 
-    my @rows = $TRANS->retrieve_all_for_main_listing();
+    my @rows = $TRANS->get_listing();
 
     foreach my $row ( @rows ) {
         my $id = $row->id;

@@ -15,11 +15,11 @@ Order adjustments are not even conceived yet, but we need them for:
 Tests.
     More are always merrier, but there are quite a few.
 
-Have a way for backends to register legal controller and method types
-and to say which statements apply to that type.  Then either show only
-those statements or at least enable only those supported by the current
-type.  Also, include a required flag for statements which must appear
-(like controls_table for main_listing methods).
+Have a way for backends to register legal controller and method types and
+to say which statements apply to that type.  Then either show only those
+statements or at least enable or highlight only those supported by the
+current type.  Also, include a required flag for statements which must
+appear (like controls_table for main_listing methods).
 
 Disable app statement boxes when none of the understanding backends is
 selected?
