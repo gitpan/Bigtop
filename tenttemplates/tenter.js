@@ -216,13 +216,25 @@ function delete_block ( doomed_element ) {
     var doomed_div      = document.getElementById( 'div_' + doomed_ident );
     var grieving_parent = doomed_div.parentNode;
     var whitespace      = doomed_div.nextSibling;
-    var useless_break   = whitespace.nextSibling;
-    var more_whitespace = useless_break.nextSibling;
+    var useless_break;
+    var more_whitespace;
 
-    grieving_parent.removeChild( doomed_div );
-    grieving_parent.removeChild( whitespace );
-    grieving_parent.removeChild( useless_break );
-    grieving_parent.removeChild( more_whitespace );
+    try {
+        useless_break   = whitespace.nextSibling;
+        try {
+            more_whitespace = useless_break.nextSibling;
+        }
+        catch ( missing_whitespace ) { }
+
+        grieving_parent.removeChild( doomed_div );
+        grieving_parent.removeChild( whitespace );
+        grieving_parent.removeChild( useless_break );
+        grieving_parent.removeChild( more_whitespace );
+    }
+    catch ( any_exception ) {
+    //    chat( 'debug_chatter', "error " + any_exception.message );
+    }
+
 }
 
 /*
@@ -405,6 +417,8 @@ function update_pairs (update_type, parameter, one_input) {
 
     var update_url    = '/update_' + update_type + '/'
                         + parameter + '?' + output_query;
+
+    //chat( 'debug_chatter', update_url );
 
     var loader        = new net.ContentLoader( update_url, redraw );
 

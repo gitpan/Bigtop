@@ -109,7 +109,8 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-package application;
+package # application
+    application;
 use strict; use warnings;
 
 sub output_gantry_locations {
@@ -133,7 +134,8 @@ sub output_gantry_locations {
     return [ $output ];
 }
 
-package app_statement;
+package # app_statement
+    app_statement;
 use strict; use warnings;
 
 sub output_base_location {
@@ -146,7 +148,8 @@ sub output_base_location {
     return [ $location ];
 }
 
-package app_config_block;
+package # app_config_block
+    app_config_block;
 use strict; use warnings;
 
 sub output_setvars {
@@ -169,7 +172,8 @@ sub output_setvars {
     return [ $output ];
 }
 
-package app_config_statement;
+package # app_config_statement
+    app_config_statement;
 use strict; use warnings;
 
 sub output_setvars {
@@ -180,7 +184,8 @@ sub output_setvars {
     return [ { __NAME__ => $self->{__KEY__}, __VALUE__ => $output_vals } ];
 }
 
-package literal_block;
+package # literal_block
+    literal_block;
 use strict; use warnings;
 
 sub output_top_level_literal {
@@ -195,7 +200,8 @@ sub output_gantry_locations {
     return $self->make_output( 'Conf' );
 }
 
-package controller_block;
+package # controller_block
+    controller_block;
 use strict; use warnings;
 
 sub output_gantry_locations {
@@ -243,7 +249,8 @@ sub output_gantry_locations {
     return [ $output ];
 }
 
-package controller_statement;
+package # controller_statement
+    controller_statement;
 use strict; use warnings;
 
 sub output_gantry_locations {
@@ -260,7 +267,8 @@ sub output_gantry_locations {
     }
 }
 
-package controller_config_block;
+package # controller_config_block
+    controller_config_block;
 use strict; use warnings;
 
 sub output_gantry_location_configs {
@@ -284,7 +292,8 @@ sub output_gantry_location_configs {
     return [ $output ];
 }
 
-package controller_config_statement;
+package # controller_config_statement
+    controller_config_statement;
 use strict; use warnings;
 
 sub output_gantry_location_configs {
@@ -295,7 +304,8 @@ sub output_gantry_location_configs {
     return [ { __NAME__ => $self->{__KEY__}, __VALUE__ => $output_vals } ];
 }
 
-package controller_literal_block;
+package # controller_literal_block
+    controller_literal_block;
 use strict; use warnings;
 
 sub output_gantry_location_literal {

@@ -23,7 +23,8 @@ BEGIN {
     );
 }
 
-package sql_block;
+package # sql_block
+    sql_block;
 use strict; use warnings;
 
 sub _find_primary_key {
@@ -71,7 +72,8 @@ sub _build_foreign_display_body {
     return $retval;
 }
 
-package table_element_block;
+package # table_element_block
+    table_element_block;
 use strict; use warnings;
 
 sub _not_for_model {

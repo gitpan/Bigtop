@@ -301,20 +301,25 @@ A comma separated list of authors (use backquotes around these to
 protect spaces, etc.).  These authors will be put into the README
 file and into the AUTHORS section of the stub modules' POD.
 
-    authors `Phil Crow`, `My Friend`;
+    authors `Phil Crow` => `philcrow2000@yahoo.com, `My Friend`;
+
+Each author item may be either a name or name => email pair.
 
 Note that Bigtop::Init:Std apps use Module::Build.  It requires a meaningful
 authors section for ./Build dist.  So this statement is not usually
 optional.
 
-=item email
+=item contact_us
 
 (registered by Bigtop::Control and Bigtop::Init::Std)
 
-A single point of contact email address for your application, often
-the first author's address or a mailing list address.
+Describe how to contact or join project developers:
 
-    email `pcrow@example.com`;
+     contact_us `Visit us at www.useourproject.org, or join our mailing
+ list by sending subscribe to list-sub@useourproject.org`;
+
+Note that all manner of whitespace is legal inside the quotes, the
+value will be used literally.
 
 =item copyright_holder
 

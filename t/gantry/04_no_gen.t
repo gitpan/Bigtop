@@ -28,8 +28,7 @@ config {
     Control         Gantry { }
 }
 app Apps::Checkbook {
-    authors   `Somebody Somewhere`;
-    email     `$email`;
+    authors   `Somebody Somewhere` => `$email`;
     config {
         DB     app_db => no_accessor;
         DBName someone;
@@ -173,8 +172,7 @@ config {
 }
 app Apps::Checkbook {
     no_gen    1;
-    authors   `Somebody Somewhere`;
-    email     `$email`;
+    authors   `Somebody Somewhere` => `$email`;
     config {
         DB     app_db => no_accessor;
         DBName someone;

@@ -161,7 +161,8 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-package application;
+package # application
+    application;
 use strict; use warnings;
 
 sub output_perl_block {
@@ -224,7 +225,8 @@ sub output_httpd_conf_locations {
     return [ $output ];
 }
 
-package app_statement;
+package # app_statement
+    app_statement;
 use strict; use warnings;
 
 sub output_httpd_conf_loc {
@@ -237,7 +239,8 @@ sub output_httpd_conf_loc {
     return [ $location ];
 }
 
-package app_config_block;
+package # app_config_block
+    app_config_block;
 use strict; use warnings;
 
 sub output_configs {
@@ -262,7 +265,8 @@ sub output_configs {
     return [ $output ];
 }
 
-package app_config_statement;
+package # app_config_statement
+    app_config_statement;
 use strict; use warnings;
 
 sub output_configs {
@@ -273,7 +277,8 @@ sub output_configs {
     return [ { __NAME__ => $self->{__KEY__}, __VALUE__ => $output_vals } ];
 }
 
-package literal_block;
+package # literal_block
+    literal_block;
 use strict; use warnings;
 
 sub output_perl_block {
@@ -298,7 +303,8 @@ sub output_httpd_conf_locations {
     return $self->make_output( 'HttpdConf' );
 }
 
-package controller_block;
+package # controller_block
+    controller_block;
 use strict; use warnings;
 
 sub output_perl_block {
@@ -353,7 +359,8 @@ sub output_httpd_conf_locations {
     return [ $output ];
 }
 
-package controller_statement;
+package # controller_statement
+    controller_statement;
 use strict; use warnings;
 
 sub output_httpd_conf_locations {
@@ -370,7 +377,8 @@ sub output_httpd_conf_locations {
     }
 }
 
-package controller_config_block;
+package # controller_config_block
+    controller_config_block;
 use strict; use warnings;
 
 sub output_controller_configs {
@@ -395,7 +403,8 @@ sub output_controller_configs {
     return [ $output ];
 }
 
-package controller_config_statement;
+package # controller_config_statement
+    controller_config_statement;
 use strict; use warnings;
 
 sub output_controller_configs {
@@ -406,7 +415,8 @@ sub output_controller_configs {
     return [ { __NAME__ => $self->{__KEY__}, __VALUE__ => $output_vals } ];
 }
 
-package controller_literal_block;
+package # controller_literal_block
+    controller_literal_block;
 use strict; use warnings;
 
 sub output_location_literal {

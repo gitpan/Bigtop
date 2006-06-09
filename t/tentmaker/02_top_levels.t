@@ -40,8 +40,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }
 EO_sample_input
 
@@ -83,8 +82,7 @@ app MySample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }
 EO_changed_app_name
 
@@ -118,8 +116,7 @@ app MySample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }
 EO_backend_keyword
 
@@ -153,8 +150,7 @@ app MySample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }
 EO_change_backend_keyword
 
@@ -186,8 +182,7 @@ app MySample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }
 EO_add_bool
 
@@ -219,8 +214,7 @@ app MySample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }
 EO_change_backend_keyword
 
@@ -252,9 +246,8 @@ app MySample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
     location `/site`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }
 EO_add_app_st
 

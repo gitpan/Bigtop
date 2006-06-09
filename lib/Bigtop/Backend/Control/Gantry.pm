@@ -587,9 +587,16 @@ You might even want to describe the table this module controls here.
 
 =head1 AUTHOR
 
-[% author %][% IF email %], E<lt>[% email %]E<gt>[% END %]
+[% FOREACH author IN authors %]
+[% author.0 %][% IF author.1 %], E<lt>[% author.1 %]E<gt>[% END +%]
 
+[% END %]
+[%- IF contact_us %]
+=head1 CONTACT US
 
+[% contact_us +%]
+
+[% END -%]
 =head1 COPYRIGHT AND LICENSE
 
 Copyright (C) [% year %] [% copyright_holder %]
@@ -985,7 +992,7 @@ sub gen_Control {
     my $lookup              = $bigtop_tree->{application}{lookup};
     my $app_stmnts          = $lookup->{app_statements};
     my $authors             = $bigtop_tree->get_authors();
-    my $email               = $bigtop_tree->get_email();
+    my $contact_us          = $bigtop_tree->get_contact_us();
     my @external_modules;
     my $copyright_holder    = $bigtop_tree->get_copyright_holder();
     my $license_text        = $bigtop_tree->get_license_text();
@@ -995,8 +1002,6 @@ sub gen_Control {
 
     my $year                = ( localtime )[5];
     $year                  += 1900;
-
-    my $author_str          = join ', ', @{ $authors };
 
     my ( $module_dir, @sub_dirs )
                     = Bigtop::make_module_path( $build_dir, $app_name );
@@ -1010,8 +1015,8 @@ sub gen_Control {
             app_name         => $app_name,
             lookup           => $lookup,
             tree             => $bigtop_tree,
-            author_str       => $author_str,
-            email            => $email,
+            authors          => $authors,
+            contact_us       => $contact_us,
             copyright_holder => $copyright_holder,
             license_text     => $license_text,
             year             => $year,
@@ -1043,8 +1048,8 @@ sub gen_Control {
             methods          => \@pod_methods,
             other_module_text=> 'SEE ALSO',
             used_modules     => [ 'Gantry', @{ $sub_modules } ],
-            author           => $author_str,
-            email            => $email,
+            authors          => $authors,
+            contact_us       => $contact_us,
             copyright_holder => $copyright_holder,
             license_text     => $license_text,
             sub_module       => 0,
@@ -1161,7 +1166,8 @@ sub build_config_lists {
 #   Packages named in the grammar
 #-----------------------------------------------------------------
 
-package sql_block;
+package # sql_block
+    sql_block;
 use strict; use warnings;
 
 sub output_field_names {
@@ -1176,7 +1182,8 @@ sub output_field_names {
     return $child_output;
 }
 
-package table_element_block;
+package # table_element_block
+    table_element_block;
 use strict; use warnings;
 
 sub output_field_names {
@@ -1187,7 +1194,8 @@ sub output_field_names {
     return [ $self->{__NAME__} ];
 }
 
-package controller_block;
+package # controller_block
+    controller_block;
 use strict; use warnings;
 
 use Bigtop;
@@ -1327,8 +1335,8 @@ sub output_controller {
             mixins           => $gen_method_names,
             other_module_text=> 'DEPENDENCIES',
             used_modules     => $used_modules,
-            author           => $data->{author_str},
-            email            => $data->{email},
+            authors          => $data->{authors},
+            contact_us       => $data->{contact_us},
             copyright_holder => $data->{copyright_holder},
             license_text     => $data->{license_text},
             sub_module       => 1,
@@ -1450,7 +1458,8 @@ sub _extract_output_from {
     );
 }
 
-package controller_statement;
+package # controller_statement
+    controller_statement;
 use strict; use warnings;
 
 sub output_controller {
@@ -1619,7 +1628,8 @@ sub text_description {
     }
 }
 
-package controller_method;
+package # controller_method
+    controller_method;
 use strict; use warnings;
 
 sub output_controller {
@@ -1752,7 +1762,8 @@ sub output_controller {
     ];
 }
 
-package method_body;
+package # method_body
+    method_body;
 use strict; use warnings;
 
 sub get_table_name_for {
@@ -2148,7 +2159,8 @@ sub _find_all_fields_but {
     return \@retval;
 }
 
-package method_statement;
+package # method_statement
+    method_statement;
 use strict; use warnings;
 
 sub walker_output {

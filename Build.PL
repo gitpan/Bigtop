@@ -30,16 +30,16 @@ my $build = $subclass->new(
     tentmaker_files     => [ glob( 'tenttemplates/*' ) ],
     test_files          => [
         't/*.t',
-        't/dbixclass/*.t',
         't/tentmaker/*.t',
         't/init/*.t',
         't/postgres/*.t',
         't/sqlite/*.t',
         't/mysql/*.t',
         't/gantry/*.t',
-        't/cdbi/*.t',
         't/sitelook/*.t',
         't/ganmodel/*.t',
+        't/dbixclass/*.t',
+        't/cdbi/*.t',
         't/cleanup/*.t',
 	],
 );

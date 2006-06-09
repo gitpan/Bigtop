@@ -288,21 +288,20 @@ sub gen_from_string {
     }
 
     # generate the files
-    GENERATION:
     foreach my $gen_type ( @gen_list ) {
 
-        if ( defined $config->{$gen_type}{no_gen}
-                and
-             $config->{$gen_type}{no_gen} )
-        {
-            next GENERATION;
-        }
+        BACKEND:
+        foreach my $backend ( @{ $config->{__BACKENDS__}{ $gen_type } } ) {
 
-        my $module = join '::', (
-            'Bigtop', 'Backend', $gen_type, $config->{$gen_type}{__NAME__} );
-        my $method = "gen_$gen_type";
-                $module->$method( $build_dir, $bigtop_tree, $bigtop_file
-        );
+            next BACKEND
+                    if ( defined $backend->{no_gen} and $backend->{no_gen} );
+
+            my $module = join '::', (
+                'Bigtop', 'Backend', $gen_type, $backend->{__NAME__}
+            );
+            my $method = "gen_$gen_type";
+            $module->$method( $build_dir, $bigtop_tree, $bigtop_file );
+        }
     }
 }
 
@@ -315,19 +314,20 @@ sub load_backends {
 
     my @modules_to_require;
     my @build_types;
+    my %seen_build_type;
 
-    CONFIG_KEY:
-    foreach my $key ( keys %{ $config } ) {
-        next CONFIG_KEY if ( $class->is_valid_keyword( 'config', $key ) );
-        next CONFIG_KEY if ( $key eq '__STATEMENTS__' );
+    foreach my $backend_type ( keys %{ $config->{__BACKENDS__} } ) {
 
-        my $backend  = $config->{$key}{__NAME__};
-        my $template = $config->{$key}{template} || '';
+        foreach my $backend ( @{ $config->{__BACKENDS__}{$backend_type} } ) {
+            my $backend_name = $backend->{__NAME__};
+            my $template     = $backend->{template} || '';
 
-        my $module_str = join '=', $key, $backend, $template;
+            my $module_str = join '=', $backend_type, $backend_name, $template;
 
-        push @modules_to_require, $module_str;
-        push @build_types, $key;
+            push @modules_to_require, $module_str;
+            push @build_types, $backend_type
+                    unless ( $seen_build_type{ $backend_type }++ );
+        }
     }
 
     $class->import( @modules_to_require );
@@ -509,7 +509,8 @@ sub parse_file {
 #   better it looks relative to a regular dump.
 #---------------------------------------------------------------------
 
-package application_ancestor;
+package # application_ancestor
+    application_ancestor;
 use strict; use warnings;
 
 sub set_parent {
@@ -533,7 +534,8 @@ sub dumpme {
     $self->{__PARENT__} = $parent;
 }
 
-package bigtop_file;
+package  # bigtop_file
+    bigtop_file;
 use strict; use warnings;
 
 sub walk_postorder {
@@ -548,17 +550,39 @@ sub get_authors {
     my $self = shift;
 
     if ( defined $self->{application}{lookup}{app_statements}{authors} ) {
-        return $self->{application}{lookup}{app_statements}{authors};
+        my $authors = $self->{application}{lookup}{app_statements}{authors};
+
+        my $retval  = [];
+
+        foreach my $author ( @{ $authors } ) {
+            if ( ref( $author ) eq 'HASH' ) {
+                push @{ $retval }, [ %{ $author } ];
+            }
+            else {
+                push @{ $retval }, [ $author, '' ];
+            }
+        }
+
+        $retval;
     }
     else {
         return [];
     }
 }
 
-sub get_email {
-    my $self = shift;
+sub get_contact_us {
+    my $self       = shift;
+    my $statements = $self->{application}{lookup}{app_statements};
 
-    return $self->{application}{lookup}{app_statements}{email}[0];
+    if ( defined $statements->{contact_us} ) {
+        return $statements->{contact_us}[0];
+    }
+    elsif ( defined $statements->{email} ) {
+        return $statements->{email}[0];
+    }
+    else {
+        return '';
+    }
 }
 
 sub get_copyright_holder {
@@ -569,7 +593,8 @@ sub get_copyright_holder {
         return $statements->{copyright_holder}[0];
     }
     else {
-        return $statements->{authors}[0];
+        my $first_author = $self->get_authors->[0];
+        return $first_author->[0] || '';
     }
 }
 
@@ -681,7 +706,14 @@ sub change_statement {
     my $self   = shift;
     my $params = shift;
 
+    my ( undef, $doc_hash ) = Bigtop::Keywords->get_docs_for(
+        $params->{type}, $params->{keyword}
+    );
+
+    $params->{ pair_required } = $doc_hash->{ pair_required };
+
     my $walk_action = "change_$params->{ type }_statement";
+
     my $result      = $self->walk_postorder( $walk_action, $params );
 
     if ( @{ $result } == 0 ) {
@@ -764,7 +796,8 @@ sub type_change {
     $self->walk_postorder( 'change_type', $params );
 }
 
-package application;
+package  # application
+    application;
 use strict; use warnings;
 
 sub get_blocks {
@@ -805,8 +838,24 @@ sub set_app_statement {
     );
 
     unless ( defined $success->[0] ) { # no existing statement, make one
-        my @keys = sort keys %{ $self };
         $self->{app_body}->add_last_statement( $keyword, $value );
+    }
+}
+
+sub set_app_statement_pairs {
+    my $self    = shift;
+    my $params  = shift;
+
+    my ( undef, $doc_hash ) = Bigtop::Keywords->get_docs_for(
+        'app', $params->{keyword}
+    );
+
+    $params->{ pair_required } = $doc_hash->{ pair_required };
+
+    my $success = $self->walk_postorder( 'set_statement_pairs', $params );
+
+    unless ( defined $success->[0] ) { # make a new statement
+        $self->{app_body}->add_last_statement_pair( $params );
     }
 }
 
@@ -873,7 +922,8 @@ sub walk_postorder {
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
 
-package app_body;
+package  # app_body
+    app_body;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1065,6 +1115,30 @@ sub add_last_statement {
     $lookup->{app_statements}{ $keyword } = arg_list->new( \@values );
 }
 
+sub add_last_statement_pair {
+    my $self          = shift;
+    my $params        = shift;
+
+    my $new_statement = block->new_statement_pair( $self, $params );
+
+    my $index         = $self->last_statement_index();
+
+    if ( $index >= 0 ) {
+        splice @{ $self->{ 'block(s?)' } }, $index, 0, $new_statement;
+    }
+    else { # We're so excited, this is our first child!!!
+        $self->{ 'block(s?)' } = [ $new_statement ];
+    }
+
+    # Untested, but should update the lookup hash, in case anyone cares
+    my $lookup = $self->{__PARENT__}->{lookup};
+
+    $lookup->{app_statements}{ $params->{keyword} } = arg_list->new(
+                    $params->{ new_value },
+                    $params->{ pair_required },
+    );
+}
+
 sub last_statement_index {
     my $self = shift;
 
@@ -1096,7 +1170,8 @@ sub build_lookup_hash {
     return [ %output ];
 }
 
-package block;
+package  # block
+    block;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1113,6 +1188,21 @@ sub new_statement {
     };
 
     $self->{app_statement} = app_statement->new( $self, $keyword, $values ),
+
+    return bless $self, $class;
+}
+
+sub new_statement_pair {
+    my $class  = shift;
+    my $parent = shift;
+    my $params = shift;
+
+    my $self = {
+        __RULE__    => 'block',
+        __PARENT__  => $parent,
+    };
+
+    $self->{app_statement} = app_statement->new_pair( $self, $params );
 
     return bless $self, $class;
 }
@@ -1209,7 +1299,8 @@ sub build_lookup_hash {
     return $child_output;
 }
 
-package app_statement;
+package  # app_statement
+    app_statement;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1229,6 +1320,23 @@ sub new {
     return bless $self, $class;
 }
 
+sub new_pair {
+    my $class   = shift;
+    my $parent  = shift;
+    my $params  = shift;
+
+    my $self    = {
+        __PARENT__  => $parent,
+        __KEYWORD__ => $params->{ keyword },
+        __ARGS__    => arg_list->new(
+                $params->{ new_value },
+                $params->{ pair_required },
+        ),
+    };
+
+    return bless $self, $class;
+}
+
 sub get_keyword {
     my $self = shift;
 
@@ -1242,7 +1350,22 @@ sub set_statement {
 
     return unless ( $data->{keyword} eq $self->{__KEYWORD__} );
 
-    $self->{__ARGS__}->set_args_from( $data->{value} );
+    $self->{__ARGS__}->set_args_from( $data->{value}, $data->{pair_required} );
+
+    return [ 1 ];
+}
+
+sub set_statement_pairs {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless ( $data->{keyword} eq $self->{__KEYWORD__} );
+
+    $self->{__ARGS__}->set_args_from(
+            $data->{new_value},
+            $data->{pair_required},
+    );
 
     return [ 1 ];
 }
@@ -1287,7 +1410,8 @@ sub build_lookup_hash {
     ];
 }
 
-package literal_block;
+package  # literal_block
+    literal_block;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1398,7 +1522,8 @@ sub make_output {
     }
 }
 
-package sql_block;
+package  # sql_block
+    sql_block;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1700,7 +1825,8 @@ sub remove_table_statement {
     return [ 1 ];
 }
 
-package sequence_body;
+package  # sequence_body
+    sequence_body;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1751,7 +1877,8 @@ sub build_lookup_hash {
 
 }
 
-package sequence_statement;
+package  # sequence_statement
+    sequence_statement;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1785,7 +1912,8 @@ sub build_lookup_hash {
     ];
 }
 
-package table_body;
+package  # table_body
+    table_body;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1823,7 +1951,8 @@ sub walk_postorder {
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
 
-package table_element_block;
+package  # table_element_block
+    table_element_block;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1981,7 +2110,10 @@ sub change_table_keyword_value {
 
     return unless ( $self->{__BODY__} eq $data->{keyword} );
 
-    $self->{__VALUE__}->set_args_from( $data->{new_value} );
+    $self->{__VALUE__}->set_args_from(
+            $data->{new_value},
+            $data->{pair_required},
+    );
 
     return [ 1 ];
 }
@@ -1999,9 +2131,12 @@ sub change_field_statement {
     unless ( defined $success->[0] ) { # make new statement
 
         my $new_statement = field_statement->new_statement(
-            $self->{__BODY__},
-            $data->{keyword},
-            $data->{new_value},
+            {
+                parent        => $self->{__BODY__},
+                keyword       => $data->{keyword},
+                new_value     => $data->{new_value},
+                pair_required => $data->{pair_required} || 0,
+            }
         );
 
         my $blocks = $self->{ __BODY__ }{ 'field_statement(s?)' };
@@ -2066,7 +2201,8 @@ sub change_name_field {
     return [ 1 ];
 }
 
-package field_body;
+package  # field_body
+    field_body;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -2113,23 +2249,34 @@ sub walk_postorder {
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
 
-package field_statement;
+package  # field_statement
+    field_statement;
 use strict; use warnings;
 
 use base 'application_ancestor';
 
 sub new_statement {
     my $class   = shift;
-    my $parent  = shift;
-    my $keyword = shift;
-    my $values  = shift;
+    my $params  = shift;
+#    my $parent  = shift;
+#    my $keyword = shift;
+#    my $values  = shift;
 
-    my $self    = {
-        __PARENT__ => $parent,
-        __NAME__   => $keyword,
-        __DEF__    => field_statement_def->new( $values ),
+    my $self = {
+        __PARENT__ => $params->{ parent },
+        __NAME__   => $params->{ keyword },
+        __DEF__    => field_statement_def->new(
+            $params->{ new_value },
+            $params->{ pair_required },
+        ),
     };
 
+#    my $self    = {
+#        __PARENT__ => $parent,
+#        __NAME__   => $keyword,
+#        __DEF__    => field_statement_def->new( $values ),
+#    };
+#
     $self->{__DEF__}{__PARENT__} = $self;
 
     return bless $self, $class;
@@ -2171,7 +2318,10 @@ sub change_field_keyword_value {
     return unless ( $data->{type}         eq 'field'          );
     return unless ( $self->{__NAME__}     eq $data->{keyword} );
 
-    $self->{__DEF__}{__ARGS__}->set_args_from( $data->{new_value} );
+    $self->{__DEF__}{__ARGS__}->set_args_from(
+            $data->{new_value},
+            $data->{pair_required},
+    );
 
     return [ 1 ];
 }
@@ -2208,17 +2358,19 @@ sub build_lookup_hash {
     ];
 }
 
-package field_statement_def;
+package  # field_statement_def
+    field_statement_def;
 use strict; use warnings;
 
 use base 'application_ancestor';
 
 sub new {
-    my $class  = shift;
-    my $values = shift;
+    my $class         = shift;
+    my $values        = shift;
+    my $pair_required = shift;
 
     my $self   = {
-        __ARGS__ => arg_list->new( $values ),
+        __ARGS__ => arg_list->new( $values, $pair_required ),
     };
 
     return bless $self, $class;
@@ -2246,7 +2398,8 @@ sub build_lookup_hash {
     return [ 'args' => $self->{__ARGS__} ];
 }
 
-package controller_block;
+package  # controller_block
+    controller_block;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -2494,7 +2647,8 @@ sub build_lookup_hash {
     ];
 }
 
-package controller_body;
+package  # controller_body
+    controller_body;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -2541,7 +2695,8 @@ sub build_lookup_hash {
     return [ %output ];
 }
 
-package controller_method;
+package  # controller_method
+    controller_method;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -2647,6 +2802,7 @@ sub change_method_statement {
             $self->{__BODY__},
             $data->{keyword},
             $data->{new_value},
+            $data->{pair_required},
         );
 
         my $blocks = $self->{ __BODY__ }{ 'method_statement(s?)' };
@@ -2740,7 +2896,8 @@ sub build_lookup_hash {
     ];
 }
 
-package method_body;
+package  # method_body
+    method_body;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -2796,7 +2953,8 @@ sub walk_postorder {
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
 
-package method_statement;
+package  # method_statement
+    method_statement;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -2823,7 +2981,10 @@ sub change_method_keyword_value {
 
     return unless ( $self->{__KEY__}     eq $data->{keyword} );
 
-    $self->{__ARGS__}->set_args_from( $data->{new_value} );
+    $self->{__ARGS__}->set_args_from(
+            $data->{new_value},
+            $data->{pair_required},
+    );
 
     return [ 1 ];
 }
@@ -2859,7 +3020,8 @@ sub build_lookup_hash {
     return [ $self->{__KEY__} => $self->{__ARGS__} ];
 }
 
-package controller_literal_block;
+package  # controller_literal_block
+    controller_literal_block;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -2900,7 +3062,8 @@ sub make_output {
     }
 }
 
-package controller_statement;
+package  # controller_statement
+    controller_statement;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -2927,7 +3090,10 @@ sub change_controller_keyword_value {
 
     return unless ( $self->{__KEYWORD__} eq $data->{keyword} );
 
-    $self->{__ARGS__}->set_args_from( $data->{new_value} );
+    $self->{__ARGS__}->set_args_from(
+            $data->{new_value},
+            $data->{pair_required},
+    );
 
     return [ 1 ];
 }
@@ -2972,7 +3138,8 @@ sub build_lookup_hash {
     ];
 }
 
-package app_config_block;
+package  # app_config_block
+    app_config_block;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -3056,7 +3223,8 @@ sub build_lookup_hash {
     return $child_output;
 }
 
-package controller_config_block;
+package  # controller_config_block
+    controller_config_block;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -3089,7 +3257,8 @@ sub build_lookup_hash {
     return $child_output;
 }
 
-package app_config_statement;
+package  # app_config_statement
+    app_config_statement;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -3207,7 +3376,8 @@ sub build_lookup_hash {
     ];
 }
 
-package controller_config_statement;
+package  # controller_config_statement
+    controller_config_statement;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -3241,18 +3411,21 @@ sub build_lookup_hash {
     ];
 }
 
-package arg_list;
+package  # arg_list
+    arg_list;
 use strict; use warnings;
 
 sub new {
-    my $class  = shift;
-    my $values = shift;
+    my $class         = shift;
+    my $values        = shift;
+    my $pair_required = shift;
 
-    return bless build_values( $values ), $class;
+    return bless build_values( $values, $pair_required ), $class;
 }
 
 sub build_values {
-    my $values = shift;
+    my $values        = shift;
+    my $pair_required = shift;
 
     if ( ref( $values ) eq 'ARRAY' ) {
         return $values;
@@ -3264,11 +3437,33 @@ sub build_values {
         my @retvals;
 
         for ( my $i = 0; $i < @keys; $i++ ) {
-            if ( defined $values[ $i ] and $values[ $i ] ne 'undefined' ) {
-                push @retvals, { $keys[ $i ] => $values[ $i ] };
+            if ( $pair_required ) {
+                my $push_value = defined ( $values[ $i ] )
+                               ? $values[ $i ]
+                               : '';
+
+                push @retvals, { $keys[ $i ] => $push_value };
+            }
+            elsif ( defined $pair_required ) {
+                if ( not defined $values[ $i ]
+                        or
+                     $values[ $i ] eq 'undefined'
+                        or
+                     not $values[ $i ]
+                ) {
+                    push @retvals, $keys[ $i ];
+                }
+                else {
+                     push @retvals, { $keys[ $i ] => $values[ $i ] };
+                }
             }
             else {
-                push @retvals, $keys[ $i ];
+                if ( defined $values[ $i ] and $values[ $i ] ne 'undefined' ) {
+                     push @retvals, { $keys[ $i ] => $values[ $i ] };
+                }
+                else {
+                    push @retvals, $keys[ $i ];
+                }
             }
         }
 
@@ -3357,12 +3552,13 @@ sub get_unquoted_args {
 }
 
 sub set_args_from {
-    my $self       = shift;
-    my $new_values = shift;
+    my $self          = shift;
+    my $new_values    = shift;
+    my $pair_required = shift;
 
     pop  @{ $self } while ( @{ $self } );
 
-    my $paired_values = build_values( $new_values );
+    my $paired_values = build_values( $new_values, $pair_required );
 
     push @{ $self }, @{ $paired_values };
 }

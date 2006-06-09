@@ -11,8 +11,8 @@ config {
     }
 }
 app Apps::AddressBook {
-    authors `Phil Crow`, `Joe Smith`;
-    email   `philcrow2000@yahoo.com`;
+    authors `Phil Crow` => `philcrow2000@yahoo.com`,
+            `Joe Smith`;
     config {
         dbconn    `dbi:Pg:dbname=address`          => no_accessor;
         dbuser    apache                           => no_accessor;

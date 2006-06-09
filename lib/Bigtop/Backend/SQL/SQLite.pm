@@ -86,7 +86,8 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-package sql_block;
+package # sql_block
+    sql_block;
 use strict; use warnings;
 
 sub output_sql_lite {
@@ -111,16 +112,18 @@ sub output_sql_lite {
     return [ $output ];
 }
 
-package sequence_body;
+package # sequence_body
+    sequence_body;
 use strict; use warnings;
 
 sub output_sql_lite {
-    warn "SQLite does not support user defined sequences.\n";
+    warn "Warning: SQLite does not support user defined sequences.\n";
 
     return;
 }
 
-package table_body;
+package # table_body
+    table_body;
 use strict; use warnings;
 
 sub output_sql_lite {
@@ -144,7 +147,8 @@ sub output_sql_lite {
     return [ $output ]
 }
 
-package table_element_block;
+package # table_element_block
+    table_element_block;
 use strict; use warnings;
 
 sub output_sql_lite {
@@ -186,7 +190,8 @@ sub output_sql_lite {
     }
 }
 
-package field_statement;
+package # field_statement
+    field_statement;
 use strict; use warnings;
 
 my %expansion_for = (
@@ -221,7 +226,8 @@ sub output_sql_lite {
     return [ $output ];
 }
 
-package literal_block;
+package # literal_block
+    literal_block;
 use strict; use warnings;
 
 sub output_sql_lite {

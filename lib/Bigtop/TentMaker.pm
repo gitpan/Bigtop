@@ -366,6 +366,36 @@ sub do_update_app_statement_bool {
     $self->complete_update();
 }
 
+sub do_update_app_statement_pair {
+    my $self      = shift;
+    my $keyword   = shift;
+    my %params    = $self->get_param_hash();
+
+    if ( defined $params{keys} and $params{keys} ) {
+        eval {
+            $tree->get_app->set_app_statement_pairs(
+                {
+                    keyword   => $keyword,
+                    new_value => \%params,
+                }
+            );
+        };
+        if ( $@ ) {
+            warn "error: $@\n";
+        }
+    }
+    else {
+        eval {
+            $tree->get_app->remove_app_statement( $keyword );
+        };
+        if ( $@ ) {
+            warn "error: $@\n";
+        }
+    }
+
+    return $self->complete_update();
+}
+
 # AJAX handlers for managing app level blocks (including literals)
 
 sub do_create_app_block {
@@ -594,6 +624,49 @@ sub do_update_subblock_statement_text {
 
     $self->complete_update();
 }
+
+    # This one takes its args from the query string.
+sub do_update_subblock_statement_pair {
+    my $self      = shift;
+    my $type      = shift;
+    my $parameter = shift;
+    my %params    = $self->get_param_hash();
+
+    if ( $parameter =~ /(.*)::(.*)/ ) {
+        my ( $ident, $statement ) = ( $1, $2 );
+
+        eval {
+            if ( $params{ keys } ) {
+                $tree->change_statement(
+                    {
+                        type      => $type,
+                        ident     => $ident,
+                        keyword   => $statement,
+                        new_value => \%params,
+                    }
+                );
+            }
+            else {
+                $tree->remove_statement(
+                    {
+                        type    => $type,
+                        ident   => $ident,
+                        keyword => $statement,
+                    }
+                );
+            }
+        };
+        if ( $@ ) {
+            warn "Error changing paired statement: $@\n";
+        }
+    }
+    else {
+        warn "error: mal-formed do_update_*_statement_pair request\n";
+        return;
+    }
+
+    $self->complete_update();
+}
 # AJAX handlers for table blocks (inside the app block)
 
 sub do_update_table_statement_text {
@@ -660,44 +733,8 @@ sub do_update_field_statement_text {
 
     # This one takes its args from the query string.
 sub do_update_field_statement_pair {
-    my $self      = shift;
-    my $parameter = shift;
-    my %params    = $self->get_param_hash();
-
-    if ( $parameter =~ /(.*)::(.*)/ ) {
-        my ( $field_ident, $statement ) = ( $1, $2 );
-
-        eval {
-            if ( $params{ keys } ) {
-                $tree->change_statement(
-                    {
-                        type      => 'field',
-                        ident     => $field_ident,
-                        keyword   => $statement,
-                        new_value => \%params,
-                    }
-                );
-            }
-            else {
-                $tree->remove_statement(
-                    {
-                        type    => 'field',
-                        ident   => $field_ident,
-                        keyword => $statement,
-                    }
-                );
-            }
-        };
-        if ( $@ ) {
-            warn "Error changing paired statement: $@\n";
-        }
-    }
-    else {
-        warn "error: mal-formed do_update_field_statement_pair request\n";
-        return;
-    }
-
-    $self->complete_update();
+    my $self = shift;
+    return $self->do_update_subblock_statement_pair( 'field', @_ )
 }
 
 # AJAX handlers for controller blocks (inside the app block)
@@ -748,6 +785,12 @@ sub do_update_method_statement_bool {
         $parameter,
         $new_value,
     );
+}
+
+    # This one takes its args from the query string.
+sub do_update_method_statement_pair {
+    my $self = shift;
+    return $self->do_update_subblock_statement_pair( 'method', @_ )
 }
 
 sub do_type_change {
@@ -1246,6 +1289,5 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }

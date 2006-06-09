@@ -42,8 +42,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }
 EO_sample_input
 
@@ -78,8 +77,7 @@ app Sample {
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
         new_conf_st new_value;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }
 EO_brand_new_config
 

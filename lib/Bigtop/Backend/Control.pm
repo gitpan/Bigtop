@@ -24,7 +24,7 @@ BEGIN {
     Bigtop::Parser->add_valid_keywords(
         Bigtop::Keywords->get_docs_for(
             'app',
-            qw( authors email copyright_holder license_text uses )
+            qw( authors contact_us email copyright_holder license_text uses )
         )
     );
 }
@@ -86,9 +86,15 @@ This module registers these keywords in app blocks:
 
 =item authors
 
-These are the authors' names which Control backends will put in the pod
-stub for each generated module.  The first author will also be used as
-the copyright holder (at least until further notice).
+These are the authors which Control backends will put in the pod
+stub for each generated module.  Unless you use the copyright_holder
+statement, the first author will also be used as the copyright holder.
+
+Entries in this list may be either simple names or name => email pairs.
+
+=item contact_us
+
+Text to include in the CONTACT US section of the base module's POD.
 
 =item copyright_holder
 
@@ -96,6 +102,8 @@ This string will come at the end of the phrase Copyright...
 in the pod.  By default, it will be the first person in the authors list.
 
 =item email
+
+Deprecated synonymn for contact_us.
 
 This will be presented by the Control backend as the author's email
 in the AUTHOR section of the pod block at the bottom of each module.

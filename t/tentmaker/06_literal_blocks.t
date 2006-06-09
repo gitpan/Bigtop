@@ -44,8 +44,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     literal None
       ``;
 
@@ -80,8 +79,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     literal Location
       ``;
 
@@ -116,8 +114,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     literal Location
       `    require valid-user`;
 
@@ -152,8 +149,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
 }
 EO_delete_literal
 

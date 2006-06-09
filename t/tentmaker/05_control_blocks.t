@@ -44,8 +44,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
 
     }
@@ -82,8 +81,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
         method do_main is main_listing {
 
@@ -122,8 +120,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
         method do_main is main_listing {
 
@@ -163,8 +160,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
         method do_main is main_listing {
 
@@ -203,8 +199,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
         method do_main is main_listing {
             page_link_label `A Label`;
@@ -243,8 +238,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
         method do_main is main_listing {
             page_link_label Addresses;
@@ -283,8 +277,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller AddressControl is AutoCRUD {
         method do_main is main_listing {
             page_link_label Addresses;
@@ -323,8 +316,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller AddressControl is AutoCRUD {
         method do_main_listing is main_listing {
             page_link_label Addresses;
@@ -364,8 +356,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller AddressControl is AutoCRUD {
         method do_main_listing is main_listing {
             page_link_label Addresses;
@@ -403,8 +394,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller AddressControl is AutoCRUD {
         method do_main_listing is main_listing {
 
@@ -440,8 +430,7 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor`;
-    email `author@example.com`;
+    authors `A. U. Thor` => `author@example.com`;
     controller AddressControl is AutoCRUD {
 
     }

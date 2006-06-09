@@ -86,7 +86,8 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-package sql_block;
+package # sql_block
+    sql_block;
 use strict; use warnings;
 
 sub output_sql {
@@ -108,7 +109,8 @@ sub output_sql {
     return [ $output ];
 }
 
-package sequence_body;
+package # sequence_body
+    sequence_body;
 use strict; use warnings;
 
 sub output_sql {
@@ -117,7 +119,8 @@ sub output_sql {
     return [ ';' ];
 }
 
-package table_body;
+package # table_body
+    table_body;
 use strict; use warnings;
 
 sub output_sql {
@@ -141,7 +144,8 @@ sub output_sql {
     return [ $output ]
 }
 
-package table_element_block;
+package # table_element_block
+    table_element_block;
 use strict; use warnings;
 
 sub output_sql {
@@ -183,7 +187,8 @@ sub output_sql {
     }
 }
 
-package field_statement;
+package # field_statement
+    field_statement;
 use strict; use warnings;
 
 my %code_for = (
@@ -233,7 +238,8 @@ sub output_sql {
     return [ $output ];
 }
 
-package literal_block;
+package # literal_block
+    literal_block;
 use strict; use warnings;
 
 sub output_sql {

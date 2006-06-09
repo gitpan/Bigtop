@@ -165,7 +165,8 @@ sub build_links {
     return $links;
 }
 
-package controller_block;
+package # controller_block
+    controller_block;
 use strict; use warnings;
 
 sub output_controller_name {

@@ -15,8 +15,6 @@ use File::Spec;
 use Getopt::Long;
 use Gantry::Server;
 
-use lib '/home/pcrow/Bigtop/lib', '/home/pcrow/srcgantry/lib';
-
 use Bigtop::TentMaker qw{ -Engine=CGI -TemplateEngine=TT };
 use Bigtop::TentMakerPath;
 
@@ -28,9 +26,7 @@ GetOptions(
 
 my $file = shift || '';
 
-my $template_path = Bigtop::TentMakerPath->get_template_path();
-
-$template_path = File::Spec->catfile(
+my $template_path = File::Spec->catfile(
         Bigtop::TentMakerPath->get_template_path(), 'tenttemplates'
 );
 

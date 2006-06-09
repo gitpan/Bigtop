@@ -154,9 +154,17 @@
 [% ELSIF statement.type == 'pair' %]
       <table id='[% full_name %]_input_table'>
         <tr><th> [% statement.pair_labels.0 %] </th>
-            <th> [% statement.pair_labels.1 %] </th></tr>
+            <th> [% statement.pair_labels.1 %]
+                 [% UNLESS statement.pair_required %]
+                    [optional]
+                 [% END %]
+            </th></tr>
     [% FOREACH existing_value IN values %]
       [% choice_parts = existing_value.split(' => ') %]
+      [% pair_urgency = statement.urgency || 0 %]
+      [% UNLESS statement.pair_required %]
+        [% pair_urgency = 0 %]
+      [% END %]
         <tr><td>
                 <input
                     type='text'
@@ -175,7 +183,7 @@
                     type='text'
                     name='[% full_name %]_value'
                     value='[% choice_parts.1 %]'
-                    class='urgency_[% statement.urgency || 0 %]'
+                    class='urgency_[% pair_urgency %]'
                     onblur='javascript:update_pairs(
                         "[% method_group %]_pair",
                         "[% full_key %]",
@@ -201,7 +209,7 @@
                 <input
                     type='text'
                     name='[% full_name %]_value'
-                    class='urgency_[% statement.urgency || 0 %]'
+                    class='urgency_[% pair_urgency %]'
                     onblur='javascript:update_pairs(
                         "[% method_group %]_pair",
                         "[% full_key %]",

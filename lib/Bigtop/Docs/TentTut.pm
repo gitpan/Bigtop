@@ -1,10 +1,10 @@
 package Bigtop::Docs::TentTut;
 
-=head1 NAME
+=head1 Name
 
 Bigtop::Docs::TentTut - tentmaker Tutorial (best viewed in html)
 
-=head1 INTRO
+=head1 Intro
 
 If you don't know what Bigtop is, you might want to start by reading
 Bigtop::Docs::About.
@@ -13,20 +13,22 @@ Bigtop is a language of simple structure, but with many keywords.  In an
 effort to make it easier to use, I have written tentmaker, which amounts
 to a wizard for building web apps.  Yet, tentmaker is not as simple as the
 wizards so frequently presented by desktop OSes, hence this document.
+(Further, tentmaker can be used repeatedly, even after an app has been
+built and deployed.)
 
 Here I will walk you through using tentmaker to generate a bigtop file.
 Then I will show how to use bigtop to turn that into a web app.  Then
 I will return to expand the example in a second iteration of feature
-additions.  There a plenty of screen shots here, so it is best to view
+additions.  There are plenty of screen shots here, so it is best to view
 this document with a browser.  If you are viewing it with perldoc, you
 may want to consult the screen shots with another program.  You can
 find them in the docs directory of the Bigtop distribution and on the
 web at http://www.usegantry.org/images/tenttut.
 
 The example app I will build here is a contact database.  It will initially
-store names and phone numbers.  In the second iteration we will expand it.
+store names and phone numbers.  In the second iteration I will expand it.
 
-=head1 STARTING
+=head1 Starting
 
 When I start tentmaker, I give it a file name and a port number.  The
 file is a skeleton with paths set up properly for my development machine.
@@ -38,7 +40,7 @@ needs to change.
 
 Before using tentmaker, you must install Gantry (and the Template Toolkit).
 Then you must install Bigtop, answering yes when asked if you want to
-install tentmaker's templates (you must also provide a directory in
+install tentmaker's templates (you must also provide a writeable directory in
 which to place them).
 
 Once Bigtop installation is complete, you may start tentmaker at any time
@@ -59,10 +61,10 @@ C<HTTP::Server::Simple: You can connect to your server at
 http://localhost:8080/>.  This is testament to my laziness as the line
 reveals HTTP::Server::Simple as that actual server.  But you don't need
 to think about tentmaker as a server (but realize it is listening on
-a port, so becareful of who is allowed to talk to it, think firewall).
+a port, so be careful of who is allowed to talk to it, think firewall).
 You need to know how to use it as an app, read on.
 
-=head1 BUILDING AN APP
+=head1 Building an App
 
 Start a web browser and point it to the server.  (The browser needs to
 understand the Javascript DOM1 standard or a good approximation of it, like
@@ -83,7 +85,7 @@ Immediately above the bigtop file dump is a 'Save As:' button and
 its file name box.  I will say more about it when we have something worth
 saving.
 
-From this you can see that there are five tabbed panes in tentmaker:
+The rest of the screen is occupied by five tabbed panes:
 
 =over 4
 
@@ -136,12 +138,13 @@ This is the least interesting pane.  Let's move along.
 
 Click on the 'Backends' tab.
 
-When I wrote this, there were already 10 backends and the number is likely
-growing.  Each backend represents a generator that bigtop uses to make
-some part of your app.  For example, backends of type SQL make schema
-files ready to create your database tables, etc. via your database's
+When I originally wrote this, there were already 10 backends and the number
+is likely still growing.  Each backend represents a generator that bigtop
+uses to make some part of your app.  For example, backends of type SQL make
+schema files ready to create your database tables, etc. via your database's
 command line tool.  Backends of type Model build code for your
-Object-Relational Mapper (like the classic Class::DBI).
+Object-Relational Mapper -- ORM -- (like the classic Class::DBI or the
+newer DBIx::Class).
 
 This pane overflows, so you will need to use the scroll bar to see all
 of your options.  This figure shows the top of the pane:
@@ -204,10 +207,10 @@ If you want to do that in your httpd.conf, you should uncheck the box.
 
 =item Init Std
 
-This is really useful only when you first build an app.  It is responsible
+This is really useful, but only when you first build an app.  It is responsible
 for building the directories and default distribution files (like Changes
 and README).  When we revise the app in the last section we will turn this
-backend off, so that it can't overwrite Change, README, etc.
+backend off, so that it can't overwrite Changes, README, etc.
 
 =item Model GantryCDBI
 
@@ -246,10 +249,20 @@ you are using mod_perl.
 This makes the modules you need to use Gantry's native ORM scheme.
 It responds to a subset of the Class::DBI API.
 
+=item Model GantryDBIxClass
+
+Makes the modules needed to use DBIx::Class with Gantry.  It is designed
+to be used in the best practice way (and not in the Class::DBI compat mode).
+
 =item SQL SQLite
 
 Generates a file of SQL statements, describing your database, ready for 
 use with SQLite.
+
+=item SQL MySQL
+
+Generates a file of SQL statements, describing your database, ready for 
+use with MySQL.
 
 =item ???
 
@@ -258,7 +271,7 @@ Other backends may have appeared since this was written.
 =back
 
 We only need to make one change on this pane.  For the SiteLook GantryDefault
-'Gantry Wrapper', make sure the value is a valid path to ther
+'Gantry Wrapper', make sure the value is a valid path to the
 sampler_wrapper.tt that ships in the C<root> directory of the Gantry
 distribution.
 
@@ -277,12 +290,19 @@ The most important statement is colored red.  It is the list of authors.
 Module::Build requires at least one author in order to build a distribution.
 
 Change 'A. U. Thor' to your name.  Add the names of anyone who will be
-assisting you.  Then put a real email address in the C<Email> box.  This
-could be the address of the lead author or a mailing list address.
+assisting you.  Then put real email addresses in the C<Email Address> column.
+The email addresses are optional.  If you supply them, they appear next
+to the authors' names in the POD section.
+
+If you have a project home page, mailing list, etc., write a blurb about it
+in the 'Contact Us' box.
 
 If you need to note a copyright holder (such as your employer) do so.
 If the copyright holder does not like the standard Perl license,
 enter their prefered license text (such as 'All rights reserved.').
+
+If you know in advance that your base module will need to use certain
+Perl modules, you might want to list them under 'Modules Used'.
 
 =head1 App Config
 
@@ -314,7 +334,7 @@ a built-in accessor for it.  For instance, Gantry already provides accessors
 for dbconn, dbuser, dbpass, root, template_wrapper, and several others.
 If your frameword provides the accessor, you should check the 'Skip Accessor?'
 box so bigtop does not make a duplicate accessor for the keyword in your
-app's base perl module.
+app's base module.
 
 =item Delete Buttons
 
@@ -369,7 +389,9 @@ You may make any of these things in the app body:
 
 =item Sequence
 
-This is an SQL sequence.  Only make these if your database understands them.
+This is an SQL sequence.  Only make these if at least one of your desired
+databases understands them.  SQL backends, whose databases don't provide
+sequences, will generate warnings when they ignore your sequence.
 
 =item Table
 
@@ -390,8 +412,8 @@ a good idea).  I won't say more about these here.
 
 =back
 
-In our shop, we have traditionally made a sequence for each table that
-generates the primary keys, which we always call C<id>.  So begin by
+In our shop, we have traditionally made a sequence for each table, to
+generate the primary keys, which we always call C<id>.  So begin by
 choosing sequence (which might already be selected), typing a name
 like C<contact_seq> into the box, and pressing 'Create Block'.
 The new block should appear below the 'Create Block' button.
@@ -424,15 +446,15 @@ green means usually needed, blue means frequently used.
 In this case, we need to fill in the sequence with the name of the
 sequence we made above.  Mine was called C<contact_seq>.
 
-If this table were on the receiving end of a foreign key, it should have
+If this table were on the receiving end of a foreign key, it would need
 a foreign_display to tell other tables which fields they should
 show to summarize its rows in their own output.  Even though our rows are
 not the object of foriegn attention, we still need a foreign_disply,
-because it also controls the sort order for the main listing.  Ours should
+to control the sort order for the main listing.  Ours should
 be C<%name>.
 
 Note that one field has already been made for us.  In our shop, we religiously
-make the first column in any table the id and have the database generate a
+make the first column, in most tables, the id and have the database generate a
 sequential value for it.  This saves difficulties when everything else in
 the row is subject to change.  The tentmaker makes this C<id> field for us.
 Feel free to click on the id field's 'Body:' to see what it did.
@@ -496,7 +518,8 @@ this:
 As with other keyword/value entry tables, this one has 'Keyword',
 'Values', and 'Description' columns.  But, it also has 'Applies to'.
 This tells you what method type understands the keyword.  Make sure that
-the 'Applies to' column is either your method's type or 'All'.
+the 'Applies to' column is either your method's type or 'All'.  There
+is on input validation in the tentmaker.
 
 It will be easier to understand the other items if we see an example, so
 here is a sample of the main listing presented to users of the app:
@@ -510,7 +533,7 @@ This also appears in the browser window's title bar.
 
 A main_listing shows some columns from each row in the underlying database
 table.  Here we want to show both the name and the number for each
-person.  So, we enter C<name> and C<number> in separate cols boxes.
+person.  So, we enter C<name> and C<number> in separate 'cols' boxes.
 Note that as you add values, more empty boxes appear.  Enter as many
 cols as you like, but keep in mind that screen space will eventually
 run out.
@@ -518,18 +541,24 @@ run out.
 To the right of the column labels, in the picture above, is a link labeled
 'Add'.  This is a header_option.  Let's include 'Add' and 'CSV' (in case
 someone wants to dump the contents in an exportable way).  Put these into
-boxes next to 'header_options'.  We can enter any number of these (including
-zero).  We need to define a do_ method for each one of the options.
-The name of the do_ method will be the value of the label in all lowercase,
-so 'Add' will be implemented in 'do_add'.  AutoCRUD will supply do_add for
-us, but we must write do_csv.
+the 'Label' boxes next to 'header_options'.  We can enter any number of
+these (including zero).  We need to define a do_ method for each one of
+the options.  The name of the do_ method will be the value of the 'Label'
+in all lowercase, so 'Add' will be implemented in 'do_add'.  AutoCRUD will
+supply do_add for us, but we must write do_csv.
+
+If we didn't want the header_options to link as described above, we could
+put Perl code to generate a valid URL into 'Location' boxes next to
+the labels.  This is not commonly needed.
 
 Finally, to the right of each row of data, there are two links: one
 for editing the current row and the other for deleting it.
-Enter C<Edit> and C<Delete> in row_options boxes to get these.
+Enter C<Edit> and C<Delete> in row_options 'Label' boxes to get these.
 As with header_options, row_options can be anything you like.  Simply
 implement a do_ method for each one, where the name is again the lowercase
 of the label.  AutoCRUD supplies do_edit and do_delete for us.
+(And again, you can control where the links take the user by entering
+Perl code to generate the URL into the 'Location' boxes of your choice.)
 
 Now go to the form method body.  We need to tell this method what fields
 to show the user.  We want all the fields except the id.  So enter C<id>
@@ -549,8 +578,8 @@ to 'Save As:' just above the 'Current bigtop file' dump.  If you supply
 a relative path, it will be relative to where you started tentmaker.
 
 Once you press the 'Save As:' button, a message should appear immediately
-below it.  It will either confirm that the file was saved, or report the
-error that resulted when tentmaker attempted to save it.
+below it, either confirming that the file was saved, or reporting an
+error.
 
 =head1 Building with Bigtop
 
@@ -579,7 +608,7 @@ Now create your database.  If you are using SQLite, that is as simple as:
 
     sqlite contact < docs/schema.sqlite
 
-For Postgres it might look more like this:
+For Postgres it looks more like this:
 
     createdb contact -U postgres
     psql contact -U regular_user < docs/schema.postgres
@@ -663,7 +692,7 @@ the things you don't want updated.  For example, this could allow Bigtop
 to keep the MANIFEST up to date.
 
 By checking 'No Gen' instead of deselecting the backend, you allow it to
-keep registering its keywords, so you don't have alter the rest of the
+keep registering its keywords, so you don't have to alter the rest of the
 file.  This doesn't really matter for Init Std, since all the keywords
 it registers are also regiestered by others.  It is a real issue
 for the other backends.
@@ -757,7 +786,7 @@ own backends, see Bigtop::Docs::Modules.
 
 All of the doc modules are described briefly in Bigtop::Docs::TOC.
 
-=head1 AUTHOR
+=head1 Author
 
 Phil Crow
 

@@ -26,8 +26,7 @@ config {
     Control Gantry {  }
 }
 app Name {
-    authors `Phil Crow`, `Tim Keefer`;
-    email `philcrow2000\@yahoo.com`;
+    authors `Phil Crow` => `philcrow2000\@yahoo.com`, `Tim Keefer`;
     config {
         dbconn `dbi:Pg:dbname=sample` => no_accessor;
         var value;
@@ -85,8 +84,7 @@ config {
     Control Gantry {}
 }
 app Name {
-    authors `Phil Crow`, `Tim Keefer`;
-    email `philcrow2000@yahoo.com`;
+    authors `Phil Crow` => `philcrow2000@yahoo.com`, `Tim Keefer`;
     config {
         dbconn `dbi:Pg:dbname=sample` => no_accessor;
         var value;

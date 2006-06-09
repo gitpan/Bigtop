@@ -51,20 +51,31 @@ my %doc_for = (
             urgency  => 0,
         },
         authors => {
-            keyword  => 'authors',
-            label    => 'Authors',
-            descr    => 'Who to blame for the app',
-            type     => 'text',
-            multiple => 1,
-            urgency  => 10,
+            keyword    => 'authors',
+            label      => 'Authors',
+            descr      => 'Who to blame for the app',
+            type       => 'pair',
+            multiple   => 1,
+            urgency    => 10,
+            pair_labels => [ 'Name', 'Email Address' ],
+            pair_required => 0,
+        },
+
+        contact_us => {
+            keyword  => 'contact_us',
+            label    => 'Contact Us',
+            descr    => 'How to send complaints or join the project',
+            type     => 'textarea',
+            multiple => 0,
+            urgency  => 0,
         },
         email => {
             keyword  => 'email',
-            label    => 'Email',
-            descr    => 'Where to send complaints',
-            type     => 'text',
+            label    => 'Extra Email',
+            descr    => 'Where to send complaints (think mailing list)',
             multiple => 0,
             urgency  => 0,
+            type       => 'deprecated',
         },
         copyright_holder => {
             keyword  => 'copyright_holder',
@@ -289,6 +300,7 @@ my %doc_for = (
             field_type  => 'select',
             multiple    => 1,
             pair_labels => [ 'Label', 'Database Value' ],
+            pair_required => 1,
         },
 
         date_select_text => {
@@ -460,14 +472,15 @@ my %doc_for = (
             urgency     => 0,
         },
         header_options => {
-            keyword     => 'header_options',
-            label       => 'Header Options',
-            descr       => 'User actions affecting the table [like Add]',
-#            type        => 'text_or_pair',
-            type        => 'text',
-            applies_to  => 'main_listing',
-            multiple    => 1,
-            urgency     => 5,
+            keyword       => 'header_options',
+            label         => 'Header Options',
+            descr         => 'User actions affecting the table [like Add]',
+            type          => 'pair',
+            pair_labels   => [ 'Label', 'Location' ],
+            pair_required => 0,
+            applies_to    => 'main_listing',
+            multiple      => 1,
+            urgency       => 5,
         },
         html_template => {
             keyword     => 'html_template',
@@ -480,14 +493,15 @@ my %doc_for = (
             urgency     => 0,
         },
         row_options => {
-            keyword     => 'row_options',
-            label       => 'Row Options',
-            descr       => 'User actions affecting rows [like Edit]',
-#            type        => 'text_or_pair',
-            type        => 'text',
-            applies_to  => 'main_listing',
-            multiple    => 1,
-            urgency     => 5,
+            keyword       => 'row_options',
+            label         => 'Row Options',
+            descr         => 'User actions affecting rows [like Edit]',
+            type          => 'pair',
+            pair_required => 0,
+            pair_labels   => [ 'Label', 'Location' ],
+            applies_to    => 'main_listing',
+            multiple      => 1,
+            urgency       => 5,
         },
         title => {
             keyword     => 'title',
@@ -516,3 +530,275 @@ sub get_docs_for {
 }
 
 1;
+
+=head1 NAME
+
+Bigtop::Keywords - A central place to describe all bigtop keywords
+
+=head1 SYNOPSIS
+
+In your backend or backend type module:
+
+    use Bigtop::Keywords;
+    # There is no need to use Bigtop::Parser since it uses you.
+
+    BEGIN {
+        Bigtop::Parser->add_valid_keywords(
+            Bigtop::Keywords->get_docs_for(
+                $keyword_level,
+                qw( your keywords here )
+            )
+        );
+    }
+
+Note that this must be done in a BEGIN block.
+
+=head1 DESCRIPTION
+
+Since many backends need to use the same keywords, it eventually dawned
+on me that a central place to describe would be a good thing.  This is
+that place.  By keeping all the keyword definitions here, all backends
+can share them.  This became especially helpful with the birth of tentmaker.
+It wants to consistently tell users about the keywords.
+
+If you write or modify a backend and need new keywords in the process,
+define them here and send in a patch.  This will avoid name collisions
+and keep the tentmaker functioning.  Read on for how to define the keywords.
+
+=head1 DEFINING KEYWORDS
+
+To define a new keyword, first decide at what level it will be used.
+That is, does it apply inside controller blocks, table blocks, or somewhere
+else.  See L<KEYWORD LEVELS> for a list of all the choices.
+
+Once you know where your keyword should be legal, find its level among
+the top level keys in the C<%docs_for> in this file.  Inside the hash for
+your level add a new hash keyed by your keyword name (pick the name
+carefully, changing them after release is painful).  The value for your
+new hash key is itself a hash.  Here are the legal keys for the hash (all
+keys are optional unless marked required):
+
+=over 4
+
+=item keyword
+
+Required and must be the same as the key for the hash.  The official name
+of the keyword.  The user must type this to use the keyword (or get a tool
+to do it for her).
+
+=item label
+
+Required for tentmaker.  The name tentmaker shows its users for this keyword.
+Traditionally, this is just the keyword beautified so the label for
+keyword 'contact_us' is 'Contact Us'.
+
+=item descr
+
+tentmaker shows this next to the input box for the keyword.  Feel free
+to use a bit of html in the value for descr.  For instance, when providing
+examples, surround them with pre tags.
+
+=item multiple
+
+Indicates that the keyword can accept a list of values (or pairs of them
+if its type is pair).  This only applies to types text, pair, and select.
+The others ignore it.  See below for information about types.
+
+=item pair_labels
+
+You probably want to use this key if your keyword's type is pair.
+A two element array reference with the labels to display over the two
+input columns of keywords whose type is pair.  Example:
+
+    pair_labels => [ 'Name', 'Email Address' ],
+
+=item pair_required
+
+Required for keywords of type pair.
+
+Use this key for all pair keywords.  Make it true if a pair is always
+required for the keyword and false if items may have only the first half
+of a pair (like author pairs where the name is in the hash key position
+and the optional email address is in the value position).
+
+Look for keywords of type pair for examples.
+
+=item options
+
+An array reference of hashes describing the options for the keyword.  Use
+this only for keywords of type select.  Example:
+
+    options => [
+        { label => 'User Sees This', value => 'internal_value' },
+        { label => 'Hourly',         value => '24'             },
+    ],
+
+If you don't want a default, you should include a hash like this:
+
+    { label => '-- Choose One --', value => 'undefined' },
+
+The value 'undefined' is special to JavaScript.  So, tentmaker will unset
+the value if you the user selects '-- Choose One --'.
+
+=item urgency
+
+Indicates how useful the keyword is.  Most have urgency 0, they show
+up white on the screen.  tentmaker currently understands these urgency values:
+
+  value  screen color  implied meaning
+  -----------------------------------------------------------------
+    10   red           required by someone
+     5   yellow        this or a related keyword is likely required
+     3   green         many people use this regularly
+     1   blue-green    many people use this at least occasionally
+     0   white         less frequently used
+
+Note that only values from the above list are understood by tentmaker.
+If you use other values, they will be treated as zero.
+
+=item applies_to
+
+This tells tentmaker that a method keyword is only for certain method types.
+Currently it just displays this on the screen and lets the user do as she may.
+Eventually, I would like to either remove keywords that don't apply to the
+selected type or at least reorder them so the applicable ones are at
+the top of the list.
+
+=item field_type
+
+Not yet used.  Meant to tell tentmaker that a field keyword only applies
+to a certain html_form_type.
+
+=item type
+
+Essentially the tentmaker html form element for the keyword.
+Note that literal keywords do not need to set this key (and if they do,
+it will be ignored).  They always get a textarea for their input.
+For other keyword levels choose from these input types (in order by
+utility):
+
+=over 4
+
+=item text
+
+This is the most common type.
+It tells tentmaker to use a text input box for the keyword.
+
+=item boolean
+
+Indicates that the value is either 1 or 0 and tells tentmaker to use
+a checkbox for the keyword.
+
+=item pair
+
+Indicates that the keyword admits either single values or pairs.
+A pair is two things separated by =>, like
+
+    name => `email@example.com`
+
+You want to use the pair_labels and pair_required keys if you use this
+type, trust me.
+
+=item textarea
+
+Indicates that typical values for this keyword are large text blocks,
+so tentmaker should use a textarea for their input.
+
+=item select
+
+Indicates that only certain values are legal so tentmaker users should
+pick them from a list.  You must use the options key with this type.
+You might also want to use the multiple key.
+
+=item deprecated
+
+Tells tentmaker not to show this keyword, which is usually an archaic
+spelling for a keyword.
+
+=back
+
+=back
+
+=head2 KEYWORD LEVELS
+
+There are several levels in the parse tree where keywords may appear.
+These are the levels:
+
+=over 4
+
+=item config
+
+Keywords in the bigtop level config block (where the backends are defined).
+
+=item app
+
+Keywords at the top level of the bigtop app block.
+
+=item app_literal
+
+The legal names of literal statements at the bigtop app block level.
+
+=item table
+
+Keywords at the top level of table blocks.
+
+=item field
+
+Keywords in field blocks (inside table blocks).
+
+=item controller
+
+Keywords at the top level of controller blocks.
+
+=item controller_literal
+
+The legal names of literal statements at the controller block level.
+
+=item method
+
+Keywords in method blocks (inside controller blocks).
+
+=back
+
+There are no other valid keyword locations in the current grammar.  Adding
+new levels will require substantial change to the grammar, the parser,
+and all the backends.  Thus, such changes are extremely unlikely (though
+some are in the back of my mind).
+
+=head1 METHODS
+
+There is only one method defined in this module.  Use it as shown in
+the SYNOPSIS above.
+
+=over 4
+
+=item get_docs_for
+
+Parameters:
+
+    keyword_level
+    list of keywords
+
+Returns:
+
+an array whose first element is the keyword_level and whose remaining
+elements are keyword hashes.
+This return is designed for direct passing to the add_valid_keywords
+method of Bigtop::Parser
+
+=back
+
+=head1 AUTHOR
+
+Phil Crow E<lt>philcrow2000@yahoo.comE<gt>
+
+=head1 COPYRIGHT and LICENSE
+
+Copyright (C) 2006 by Phil Crow
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.6 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut
+

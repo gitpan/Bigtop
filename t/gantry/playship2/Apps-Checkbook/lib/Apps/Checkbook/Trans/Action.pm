@@ -89,6 +89,8 @@ You might even want to describe the table this module controls here.
 
 Somebody Somewhere, E<lt>somebody@example.comE<gt>
 
+Somebody Else
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright (C) 2006 Somebody Somewhere

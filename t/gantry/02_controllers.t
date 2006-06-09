@@ -38,11 +38,12 @@ config {
     base_dir        `$play_dir`;
     engine          MP20;
     template_engine TT;
-    Control         Gantry { full_use 1; }
+    Control         Gantry   { full_use 1; }
+    SQL             Postgres { no_gen 1; }
 }
 app Apps::Checkbook {
-    authors          `Somebody Somewhere`;
-    email            `$email`;
+    authors          `Somebody Somewhere` => `$email`,
+                     `Somebody Else`;
     copyright_holder `Somebody Somewhere`;
     license_text     `All rights reserved.`;
     config {
@@ -184,7 +185,7 @@ EO_Bigtop_File
 # strip_decimal_point and insert_decimal_point would be functions in the
 # data model class.
 
-Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'Control' );
+Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'all' );
 
 compare_dirs_ok( $play_dir, $ship_dir, 'gantry controls' );
 
@@ -262,9 +263,8 @@ config {
     Control         Gantry { full_use 0; }
 }
 app Apps::Checkbook {
-    authors          `Somebody Somewhere`;
-    email            `$email`;
-    copyright_holder `Somebody Somewhere`;
+    authors          `Somebody Somewhere` => `$email`;
+    copyright_holder `Somebody SomewhereElse`;
     license_text     `All rights reserved.`;
     uses              Some::Module, Some::Other::Module;
     config {
@@ -471,7 +471,7 @@ Somebody Somewhere, E<lt>somebody@example.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 Somebody Somewhere
+Copyright (C) 2006 Somebody SomewhereElse
 
 All rights reserved.
 

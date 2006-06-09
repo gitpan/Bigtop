@@ -99,6 +99,7 @@
 </form>
 
 <div id="chatter"></div>
+<div id="debug_chatter"></div>
 
 <h3>Current bigtop file</h3>
 

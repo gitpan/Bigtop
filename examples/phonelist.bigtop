@@ -12,8 +12,7 @@ config {
 }
 app Apps::Phone {
     location `/phone`;
-    authors `Phil Crow`;
-    email   `philcrow2000@yahoo.com`;
+    authors `Phil Crow` =>   `philcrow2000@yahoo.com`;
     config {
         dbconn    `dbi:Pg:dbname=phone`            => no_accessor;
         dbuser    apache;

@@ -21,15 +21,15 @@ config {
     app_dir         ``;
     Model           GantryDBIxClass { }
     Control         Gantry { dbix 1; }
-    SQL             Postgres { no_gen 1; }
+    SQL             Postgres { }
+    SQL             MySQL    { }
 }
 app Contact {
     config {
         dbconn `dbi:Pg:dbname=contact` => no_accessor;
         dbuser `apache` => no_accessor;
     }
-    authors `Phil Crow`;
-    email `philcrow2000\@yahoo.com`;
+    authors `Phil Crow` => `philcrow2000\@yahoo.com`;
     sequence number_seq {}
     table number {
         field id   { is int4, primary_key, assign_by_sequence; }

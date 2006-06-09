@@ -1,5 +1,29 @@
 Revision history for Perl extension Bigtop.
 
+0.13 Fri Jun  9 08:08:16 CDT 2006
+    - Made it possible for compatible backends of the same type to all
+      generate.  For instance, this allows you to generate all types of SQL
+      schema at once.  Note that most backends still can't work together
+      since they want to write the same file (like models and controllers).
+    - Converted authors app level keyword to allow name => user@example.com.
+    - Since the above change left the app level keyword email unused,
+      I changed it to contact_us which now makes a CONTACT US POD section 
+      in the base module with whatever you want to appear there.
+    - Added docs to Bigtop::Keywords explaining how to add your own keywords.
+    - Tried to hide the AST package statements from the PAUSE indexer
+      without hiding them during vim folding.
+    - Added pair_required to Bigtop::Keywords keys so we can support things
+      like Gantry main listing header_options.
+    - Added config level model_base_class keyword to each Model backend.
+      This allows you to control it once for all tables, but still lets
+      individual tables override it with their own table level model_base_class.
+    - Corrected the javascript error that was preventing screen updates for
+      App Body block deletions.  There is a remaining problem: the visible
+      whitespace gap sometimes grows with each deletion (this affects only
+      the on screen appearance, so it is completely consmetic).
+    - Added POD to generated model modules.  It should be enough to silence
+      POD tests.
+
 0.12 Tue May 23 10:58:22 CDT 2006
     - Added create_makefile_pl => 'passthrough', to Build.PL so users relying
       on make (aka CPAN shell users) can install without so much hastle.

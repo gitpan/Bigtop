@@ -1,7 +1,16 @@
-If you list multiple compatible backends, they should all do their things.
+Generate some stub pod for models so pod tests don't complain.
+Remember to include method lists and to document both stub and GEN.
+
+The DBIx::Class GEN modules don't use __PACKAGE__ for has_a.  Could they?
+
+Clean up the app pair statement code.  It could probably be integrated
+into the regular app statement change code.
+    While there is some duplication, the call workflow is clearly separated
+    currently.  Integration would require changing the code which updates
+    non-pair statements.
 
 There should be a special top level controller block like
-    root_controller {
+    root_controller [ is type ] {
     }
 which can take all the statements and blocks a regular controller can
 take.  This will put code into the app's base module.  (Syntax is
@@ -9,11 +18,16 @@ subject to discussion, but I object to bare words at the app level like
 controls_table etc.  Although there is already a location directive, but
 since you have to have it (or take the default) and in other controllers
 you must have exactly one of location or rel_location the app level
-can't really function as a controller block wihtout more work.)
-
-When there are multiple authors, there should be multiple email addresses.
-These should be generated correction on separate lines with line breaks
-so Module::Build does not become confused.
+can't really function as a controller block without more work.)
+    These keywords should move from the app level into the root controller:
+        location [ defaults to / ]
+        uses
+    These keywords should be introduced for the root level controller:
+        controls_table
+        text_description
+        autocrud_helper
+    The legal root controller types would be the same as the controller types.
+    The root controller could have method blocks just like other controllers.
 
 Allow for multiple config blocks with user defined types:
     config for default {}
@@ -24,15 +38,11 @@ Allow for multiple config blocks with user defined types:
 and a way to pick one of these during generation:
     bigtop --config=phil --create file.bigtop all
 
-Implement DBIx::Class support.
-
-Why is a missing controlls table only a warning?  Could it refuse
+Why is a missing controls table only a warning?  Could it refuse
 to build the stub iff there is a main_listing, form, or crud_form?
 
 Figure out the literals allowed in Bigtop::Conf::General.  Document
 and test them.
-
-Change docs to reflect the move of all backends to the Backend namespace.
 
 1   Allow cells in main_listings to be hrefs.  (See customer search page
     of Quixote.)
@@ -126,6 +136,35 @@ Not to be Done:
         This is just litter.
 
 Done:
+
+    You should be able to specify the model base class as a keyword in
+    the model backend instead of (or in addition to) at the table level.
+        Now the backend itself has a default which can be overridden by
+        including the model_base_class keyword in that backends block.
+        Then tabel level model_base_class statements override either the
+        backend default or the one from the block.
+
+    Change docs to reflect the move of all backends to the Backend namespace.
+
+    When there are multiple authors, there should be multiple email addresses.
+    These should be generated correctly on separate lines with line breaks
+    so Module::Build does not become confused.
+        Probably the email should just be a value for the name key:
+            authors `Phil Crow` => `philcrow2000@yahoo.com`,
+                    `Tim Keefer` => `tkeefer@gmail.com`;
+        Then the email link would be added below the authors list and could
+        be a block of text inviting mailing list subscriptions or a simple
+        url or mailing list address.
+            This really needs its own section.
+                which it got with the new contact_us keyword and the
+                corresponding CONTACT US pod section in the root module.
+
+    Fully document Bigtop::Keywords syntax (let the keywords speak for
+    themselves).
+
+    If you list multiple compatible backends, they should all do their things.
+
+    Implement DBIx::Class support.
 
     Tests need to be skipped if modules the generators target are absent.
     In particular, if there is no gantry, the t/gantry and t/ganmodel tests

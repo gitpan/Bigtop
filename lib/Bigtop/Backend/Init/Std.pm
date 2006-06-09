@@ -16,6 +16,7 @@ BEGIN {
             qw(
                 authors
                 email
+                contact_us
                 copyright_holder
                 license_text
             ),
@@ -583,8 +584,9 @@ in warning(s) that they are being ignored.
 
 =head1 KEYWORDS
 
-This module registers app level keywords: authors, copyright_holder,
-and license_text.  These are also regiersted by Bigtop::Control and
+This module registers app level keywords: authors, contact_us,
+copyright_holder, license_text, and the now deprecated email (which is a
+synonymn for contact_us).  These are also regiersted by Bigtop::Control and
 they have the same meaning there.
 
 It actually pays no attention to the rest of the app section of the

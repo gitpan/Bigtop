@@ -14,12 +14,18 @@ configuration    : 'config' '{' config_body '}' { $item{config_body} } # '
 
 config_body      : config_statement(s?) {
     my %config;
+    my %backend_lookup;
     my @statements;
     foreach my $statement ( @{ $item{'config_statement(s?)'} } ) {
         $config{ $statement->[0] } = $statement->[1];
         push @statements, [ $statement->[0], $statement->[1] ];
+
+        if ( ref( $statement->[1] ) eq 'HASH' ) {
+            push @{ $backend_lookup{ $statement->[0] } }, $statement->[1];
+        }
     }
     $config{__STATEMENTS__} = \@statements;
+    $config{__BACKENDS__}   = \%backend_lookup;
     $return = \%config;
 }
 

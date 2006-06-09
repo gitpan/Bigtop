@@ -272,8 +272,11 @@ So, the table may be incomplete.
                     authors
                 </td>
                 <td>
-                    A comma separated list of the names of the authors
+                    A comma separated list of the authors
                     for the AUTHORS section in generated POD.
+                    Elements in the list can be strings or pairs.
+                    If they are pairs the name is on the left of the =>
+                    and that author's email address is on the right.
                     The first author is the default copyright holder.
                 </td>
             </tr>
@@ -290,11 +293,12 @@ So, the table may be incomplete.
             </tr>
             <tr>
                 <td valign='top'>
-                    email
+                    contact_us
                 </td>
                 <td>
-                    The contact email address of the developers, used in
-                    generated POD.
+                    The contact information for the project, used in generated
+                    POD.  Say what you like here.  You might include a
+                    mailing list address or project web site.
                 </td>
             </tr>
             <tr>
