@@ -197,7 +197,6 @@ function create_app_block () {
                             redraw_add_div,
                             'tab-app-body'
                         );
-//                            'app_body_table'
 }
 
 /*
@@ -208,6 +207,10 @@ function delete_block ( doomed_element ) {
     var trigger_name = doomed_element.name;
     var doomed_ident = trigger_name.replace( /[^:]*::/, "" );
 
+    if ( ! confirm("Are you sure you want to delete")) {
+        return false; 
+    }
+    
     // Tell the backend
     var update_url   = '/delete_block/' + doomed_ident;
     var loader       = new net.ContentLoader( update_url, redraw );

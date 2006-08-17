@@ -17,16 +17,31 @@ GetOptions(
     'new|n=s'       => \$new,
     'keep_inline|k' => \$keeping_inline,
     'help|h'        => \&full_usage,
+    'pg_help'       => \&help_pg,
+    'mysql_help'    => \&help_mysql,
 );
 
 if ( $new ) {
-    my $bigtop_string = <<"EO_BIGTOP";
+    my @models = @ARGV;
+    my $bigtop_string;
+    my $things_to_build = 'Init';
+    my $made_tables     = 0;
+    if ( @models ) {
+        my $model_code   = _make_model_code( @models );
+        $bigtop_string   = _make_bigtop_string( $new, $model_code );
+
+        $things_to_build = 'all';
+        $made_tables     = 1;
+    }
+    else {
+        $bigtop_string = <<"EO_BIGTOP";
 config {
     Init Std {}
 }
 app $new {
 }
 EO_BIGTOP
+    }
 
     # form names
     my $bigtop_dir  = $new;
@@ -35,7 +50,7 @@ EO_BIGTOP
 
     # do the directory only build
     Bigtop::Parser->gen_from_string(
-        $bigtop_string, $bigtop_name, 'create', 'Init'
+        $bigtop_string, $bigtop_name, 'create', $things_to_build
     );
 
     # make the .bigtop file in docs subdir of build dir
@@ -50,8 +65,22 @@ EO_BIGTOP
     else {
         die "Couldn't write $bigtop_file: $!\n";
     }
+
+    if ( $made_tables ) {
+        my $built_sqlite  = 0;
+        my $sqlite_db     = File::Spec->catfile( $bigtop_dir, 'app.db' );
+        my $sqlite_schema = File::Spec->catfile(
+                $bigtop_dir, 'docs', 'schema.sqlite'
+        );
+
+        my $command   = "sqlite $sqlite_db < $sqlite_schema 2> /dev/null";
+        my $failure   = system $command;
+        $built_sqlite = 1 if ( not $failure );
+
+        print_instructions( $new, $bigtop_dir, $built_sqlite );
+    }
 }
-else {
+else { # not new, use a file
     my $bigtop_file = shift or die $usage;
 
     unless ( @ARGV ) { die $usage; }
@@ -74,20 +103,180 @@ if ( not $keeping_inline and -d '_Inline' ) {
     rmdir '_Inline';
 }
 
+sub _make_model_code {
+    my $retval = '';
+
+    foreach my $model ( @_ ) {
+        my $controller = ucfirst $model;
+        $retval .= << "EO_MODULE";
+    table $model {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field descr {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+    }
+    controller $controller is AutoCRUD {
+        controls_table $model;
+        rel_location   $model;
+        text_description `$model`;
+        page_link_label $controller;
+        method do_main is main_listing {
+            cols ident, descr;
+            header_options Add;
+            row_options Edit, Delete;
+            title $controller;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
+EO_MODULE
+    }
+
+    return $retval;
+}
+
+sub _make_bigtop_string {
+    my $app_name   = shift;
+    my $model_code = shift;
+
+    my $dbname     = lc $app_name;
+
+    $dbname        =~ s/::/_/g;
+
+    return <<"EO_Model_Bigtop";
+config {
+    engine          CGI;
+    template_engine TT;
+
+    Init            Std             {}
+    SQL             SQLite          {}
+    SQL             Postgres        {}
+    SQL             MySQL           {}
+    CGI             Gantry          { with_server 1; gen_root 1; flex_db 1; }
+    Control         Gantry          { dbix 1; }
+    Model           GantryDBIxClass {}
+    SiteLook        GantryDefault   {}
+}
+app $app_name {
+    config {
+        template_wrapper `genwrapper.tt` => no_accessor;
+    }
+$model_code
+}
+EO_Model_Bigtop
+}
+
+sub print_instructions {
+    my $app_name     = shift;
+    my $build_dir    = shift;
+    my $built_sqlite = shift;
+
+    my $heading   = << "EO_SQLite_Basic";
+
+I have generated your '$app_name' application.  To run the application:
+
+    cd $build_dir
+    sqlite app.db < docs/schema.sqlite
+    ./app.server [ port ]
+EO_SQLite_Basic
+
+    if ( $built_sqlite ) {
+        $heading = << "EO_SQLite_Prebuilt";
+
+I have generated your '$app_name' application.  I have also taken the liberty
+of making an sqlite database for it to use.  To run the application:
+
+    cd $build_dir
+    ./app.server [ port ]
+EO_SQLite_Prebuilt
+    }
+
+    print << "EO_Instructions";
+$heading
+The app.server runs on port 8080 by default.
+
+Once the app.server starts, it will print a list of the urls it can serve.
+Point your browser to one of those and enjoy.
+
+If you prefer to run the app with Postgres or MySQL type one of these:
+
+    bigtop --pg_help
+    bigtop --mysql_help
+
+EO_Instructions
+
+}
+
+sub help_pg {
+    print << "EO_pg_help";
+
+    createdb app.db -U postgres
+    psql app.db -U regular_user < docs/schema.postgres
+
+Supply passwords as prompted when creating and building the database.
+
+Then, from your build directory:
+
+    ./app.server --dbd=Pg --dbuser=regular_user --dppass='secret'
+
+You may abbreviate --dbd as -d, --dbuser as -u, and --dbpass as -p.
+
+EO_pg_help
+
+    exit 0;
+}
+
+sub help_mysql {
+    my $build_dir = shift;
+
+    print << "EO_mysql_help";
+For MySQL:
+
+    cd App-Dir
+    msyqladmin create app.db -u root -p
+    mysql -u root -p app.db < docs/schema.mysql
+    ./app.server --dbd=mysql --dbuser=regular_user --dppass='secret'
+
+Supply passwords as prompted when creating and building the database.
+You may abbreviate --dbd as -d, --dbuser as -u, and --dbpass as -p.
+
+EO_mysql_help
+
+    exit 0;
+}
+
 sub full_usage {
     print << 'EO_HELP';
 usage: bigtop [options] file.bigtop something_to_gen [something_to_gen...]
 
     options:
 
-            --help        - this message
-            --create      - initial build, makes directories
-            --new         - initial build, give it an app name (not a
-                            file name), but don't give it a build list
-            --keep_inline - does not remove _Inline
+    -h  --help        - this message
+    -c  --create      - initial build, makes directories
+    -n  --new         - initial build, give it an app name (not a
+                        file name), and a list of tables
+        --pg_help     - steps to starting a brand new app with postgres
+        --mysql_help  - steps to starting a brand new app with mysql
+    -k  --keep_inline - does not remove _Inline
 
-    somethings_to_gen is either 'all' or a
-    backend type (like 'SQL' or 'Control')
+    somethings_to_gen is either 'all' or a list of
+    backend types (like 'SQL' or 'Control')
 
 EO_HELP
     exit 0;
@@ -101,27 +290,38 @@ bigtop - the parser/generater for the bigtop langauge
 
     bigtop [options] file.bigtop all
 
+Or, for brand new apps:
+
+    bigtop --new AppName [ table_name... ]
+
 =head1 DESCRIPTION
 
-To learn more about bigtop, consult its Guide.pod (in the docs directory
-of the distribution) or read the perldoc for the modules beginning with
-Bigtop::Parser.
+To learn more about bigtop, consult Bigtop::Docs::TOC.  It has a list
+of all the documentation along with suggestions of where to start.
 
-This script takes a bigtop input file and a list of things to build.  The
-things you can build have the same names as the blocks in the config
+This script usually takes a bigtop input file and a list of things to build.
+The things you can build have the same names as the blocks in the config
 section of your bigtop file.  You may also choose C<all> which will
 build all of those things in the order they appear in the config section.
 
-=head1 OPTIONS
+If you are starting a new app from scratch, you can get a jump start with
+the --new flag (or -n if you prefer):
 
-There are only two options at present.
+    bigtop --new AppName table1 table2
+
+=head1 NON-HELP OPTIONS
 
 =over 4
 
 =item --create (or -c)
 
+Use this if you already have a bigtop source file.  Perhaps someone gave
+you one, you copied one from the examples directory of the bigtop
+distribution, or you built one with tentmaker.
+
 This will make an h2xs style path under the current directory for the
-bigtop file.  It will even copy that bigtop file into the new path.
+app described in your bigtop file.  It will even copy that bigtop file
+into the docs directory while it builds whatever you ask for.
 
 Without this option, if the current directory looks like a bad place to
 build, a fatal error will result and you will have to use this option.
@@ -150,9 +350,9 @@ location of the initial build:
 When create is not in effect, these config parameters are ignored WITH a
 warning.
 
-=item --new (or -n) App::Name
+=item --new (or -n) App::Name [table_1...]
 
-Use this option to create a trivial application from scratch.  It will
+Use this option to create a working application from scratch.  It will
 use this bigtop specification:
 
     config {
@@ -161,9 +361,72 @@ use this bigtop specification:
     app App::Name {
     }
 
-When it finishes, there will be an App-Name subdirectory of the current
-directory.  In it will be all the usual pieces describing an app.  The
-bigtop file will be in the docs directory.
+If you supply optional table names, additional items will be added to the
+bigtop file, some of which will be repeated for each model you request.
+In particular, more backends will be used and each model will have a
+table, and a controller.  So the bigtop spec will look more like this
+(don't feel like you have to understand this just yet):
+
+    config {
+        engine          CGI;
+        template_engine TT;
+
+        Init            Std             {}
+        SQL             SQLite          {}
+        SQL             Postgres        {}
+        SQL             MySQL           {}
+        CGI             Gantry          { with_server 1; gen_root 1; }
+        Contrl          Gantry          { dbix 1; }
+        Model           GantryDBIxClass {}
+        SiteLook        GantryDefault   {}
+    }
+    app App::Name {
+        config {
+            dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+            dbuser `` => no_accessor;
+            template_wrapper `genwrapper.tt` => no_accessor;
+        }
+        table table_1 {
+            field id { is int4, primary_key, auto; }
+            field ident {
+                is varchar; label Ident; html_form_type text;
+            }
+            field descr {
+                is varchar; label Descripion; html_form_type text;
+            }
+            field created { is date; }
+            field modified { is date; }
+        }
+        controller Table_1 is AutoCRUD {
+            controls_table table_1;
+            rel_location table_1;
+            text_description table_1;
+            page_link_label Table_1;
+            method do_main is main_listing {
+                cols created, modified;
+                header_options Add;
+                row_options Edit, Delete;
+                title Table_1;
+            }
+            method form is AutoCRUD_form {
+                all_fields_but id, created, modified;
+            }
+        }
+    }
+
+In either case, when bigtop finishes, there will be an App-Name subdirectory
+of the current directory.  In it will be all the usual pieces describing an
+app.  The bigtop file will be in the docs directory.
+
+If you have a working sqlite in your path -- and you specified tables --
+-n will also make an sqlite database called app.db in the build directory.
+As it will tell you, you can change to that directory and start the app
+immediately.
+
+If you don't have sqlite, a message will explain what to do to start the
+app.  Mostly this boils down to changing into the new build directory,
+creating a database called app.db, and running app.server with the proper
+flags for your server.
 
 =item --keep_inline (or -k)
 
@@ -175,6 +438,25 @@ incurable curiosity.
 Note that the directory will only be removed if it is really _Inline
 in the current directory.  If you have a .Inline directory under
 home directory etc., the script will not affect it.
+
+=back
+
+=head1 HELP OPTIONS
+
+In addition to the flags that do useful things, there are help flags:
+
+=over 4
+
+=item --help or -h
+
+Prints a multi-line usage message showing all the options.
+
+=item --pg_help and --mysql_help
+
+Prints advice on how to start your app.server with a Postgres or MySQL
+database instead of sqlite.  This includes instructions on creating and
+building the database, as well as flags app.server needs in order to
+reach that database.
 
 =back
 

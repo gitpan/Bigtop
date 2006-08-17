@@ -19,6 +19,7 @@ app Apps::Checkbook {
     table payeepayor {
         field id    { is int4, primary_key, assign_by_sequence; }
         field name  { is `varchar(20)`; }
+        field user  { is varchar; }
         data
             name => `Gas Company`;
         data
@@ -39,7 +40,8 @@ Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'SQL' );
 my $correct_sql = <<'EO_CORRECT_SQL';
 CREATE TABLE payeepayor (
     id MEDIUMINT PRIMARY KEY AUTO_INCREMENT,
-    name varchar(20)
+    name varchar(20),
+    user VARCHAR(100)
 );
 
 INSERT INTO payeepayor ( name )

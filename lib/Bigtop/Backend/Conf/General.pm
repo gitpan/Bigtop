@@ -16,6 +16,11 @@ sub backend_block_keywords {
           label   => 'No Gen',
           descr   => 'Skip everything for this backend',
           type    => 'boolean' },
+
+        { keyword => 'gen_root',
+          label   => 'Generate Root Path',
+          descr   => q!Adds a root => 'html' statement to config!,
+          type    => 'boolean' },
     ];
 }
 
@@ -48,13 +53,19 @@ sub output_conf {
     my $class = shift;
     my $tree  = shift;
 
+    my $gen_root = $tree->get_config->{Conf}{gen_root} || 0;
+
     # first find the base location
     my $location_output = $tree->walk_postorder( 'output_base_location' );
     my $location        = $location_output->[0] || '';
 
     # now build the <GantryLocation> blocks
     my $locations        = $tree->walk_postorder(
-            'output_gantry_locations', $location
+            'output_gantry_locations',
+            {
+                location => $location,
+                gen_root => $gen_root,
+            }
     );
 
     return Bigtop::Backend::Conf::General::conf_file(
@@ -109,17 +120,20 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-package # application
+# application
+package #
     application;
 use strict; use warnings;
 
 sub output_gantry_locations {
     my $self         = shift;
     my $child_output = shift;
-    my $location     = shift || '/';
+    my $data         = shift;
+    my $location     = $data->{ location } || '/';
+    my $gen_root     = $data->{ gen_root };
 
     # handle set vars at root location
-    my $setvars  = $self->walk_postorder( 'output_setvars' );
+    my $setvars  = $self->walk_postorder( 'output_setvars', $gen_root );
     my $literals = $self->walk_postorder( 'output_top_level_literal' );
 
     my $output   = Bigtop::Backend::Conf::General::all_locations(
@@ -134,7 +148,8 @@ sub output_gantry_locations {
     return [ $output ];
 }
 
-package # app_statement
+# app_statement
+package #
     app_statement;
 use strict; use warnings;
 
@@ -148,13 +163,15 @@ sub output_base_location {
     return [ $location ];
 }
 
-package # app_config_block
+# app_config_block
+package #
     app_config_block;
 use strict; use warnings;
 
 sub output_setvars {
     my $self         = shift;
     my $child_output = shift;
+    my $gen_root     = shift;
 
     return unless $child_output;
 
@@ -169,10 +186,20 @@ sub output_setvars {
         );
     }
 
+    if ( $gen_root ) {
+        $output .= Bigtop::Backend::Conf::General::config(
+            {
+                var   => 'root',
+                value => 'html',
+            }
+        );
+    }
+
     return [ $output ];
 }
 
-package # app_config_statement
+# app_config_statement
+package #
     app_config_statement;
 use strict; use warnings;
 
@@ -184,7 +211,8 @@ sub output_setvars {
     return [ { __NAME__ => $self->{__KEY__}, __VALUE__ => $output_vals } ];
 }
 
-package # literal_block
+# literal_block
+package #
     literal_block;
 use strict; use warnings;
 
@@ -200,14 +228,16 @@ sub output_gantry_locations {
     return $self->make_output( 'Conf' );
 }
 
-package # controller_block
+# controller_block
+package #
     controller_block;
 use strict; use warnings;
 
 sub output_gantry_locations {
     my $self         = shift;
     my $child_output = shift;
-    my $location     = shift;
+    my $data         = shift;
+    my $location     = $data->{ location };
 
     my %child_loc    = @{ $child_output };
 
@@ -249,7 +279,8 @@ sub output_gantry_locations {
     return [ $output ];
 }
 
-package # controller_statement
+# controller_statement
+package #
     controller_statement;
 use strict; use warnings;
 
@@ -267,7 +298,8 @@ sub output_gantry_locations {
     }
 }
 
-package # controller_config_block
+# controller_config_block
+package #
     controller_config_block;
 use strict; use warnings;
 
@@ -292,7 +324,8 @@ sub output_gantry_location_configs {
     return [ $output ];
 }
 
-package # controller_config_statement
+# controller_config_statement
+package #
     controller_config_statement;
 use strict; use warnings;
 
@@ -304,7 +337,8 @@ sub output_gantry_location_configs {
     return [ { __NAME__ => $self->{__KEY__}, __VALUE__ => $output_vals } ];
 }
 
-package # controller_literal_block
+# controller_literal_block
+package #
     controller_literal_block;
 use strict; use warnings;
 

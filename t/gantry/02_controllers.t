@@ -1,7 +1,8 @@
 use strict;
 
-use Test::More tests => 3;
+use Test::More tests => 4;
 use Test::Files;
+use Test::Warn;
 use File::Spec;
 use File::Find;
 use Cwd;
@@ -40,6 +41,8 @@ config {
     template_engine TT;
     Control         Gantry   { full_use 1; }
     SQL             Postgres { no_gen 1; }
+    HttpdConf       Gantry   { }
+    SiteLook        GantryDefault   { }
 }
 app Apps::Checkbook {
     authors          `Somebody Somewhere` => `$email`,
@@ -108,8 +111,10 @@ app Apps::Checkbook {
     }
     controller PayeeOr is CRUD {
         uses              SomePackage::SomeModule, ExportingModule;
+        rel_location      payee;
         controls_table    payee;
         text_description `Payee/Payor`;
+        page_link_label  `Payee/Payor`;
         config {
             importance 1;
         }
@@ -143,6 +148,8 @@ app Apps::Checkbook {
                          SomePackage::OtherModule => ``;
         controls_table   trans;
         text_description Transactions;
+        location         `/foreign/location`;
+        page_link_label  Transactions;
         config {
             trivia 1 => no_accessor;
         }
@@ -168,12 +175,13 @@ app Apps::Checkbook {
     }
     controller Trans::Action is AutoCRUD {
         controls_table trans;
+        rel_location   transaction;
         method form is AutoCRUD_form {
             form_name trans;
             fields    status;
         }
     }
-    controller NoOp { }
+    controller NoOp { rel_location none; }
 }
 EO_Bigtop_File
 
@@ -185,7 +193,11 @@ EO_Bigtop_File
 # strip_decimal_point and insert_decimal_point would be functions in the
 # data model class.
 
-Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'all' );
+warning_like {
+    Bigtop::Parser->gen_from_string(
+        $bigtop_string, undef, 'create', 'Control'
+    );
+} qr/^form methods should have/, '_form CRUD form name warning';
 
 compare_dirs_ok( $play_dir, $ship_dir, 'gantry controls' );
 
@@ -425,6 +437,31 @@ use Apps::Checkbook::NoOp;
 #
 #} # END init
 
+
+#-----------------------------------------------------------------
+# $self->do_main( )
+#-----------------------------------------------------------------
+sub do_main {
+    my ( $self ) = shift;
+
+    $self->stash->view->template( 'main.tt' );
+    $self->stash->view->title( 'Checkbook' );
+
+    $self->stash->view->data( {
+        pages => [
+        ],
+    } );
+}
+
+#-----------------------------------------------------------------
+# $self->site_links( )
+#-----------------------------------------------------------------
+sub site_links {
+    my $self = shift;
+
+    return [
+    ];
+}
 
 1;
 

@@ -72,9 +72,9 @@ Firefox does.  If your browser should understand that standard, but can't
 handle tentmaker, please send me a bug report.  IE users need not write.)
 You should see something like this:
 
-=for html <img src='http://www.usegantry.org/tenttut/tentopening.png' alt='tentmaker opening screen />
+=for html <img src='http://www.usegantry.org/images/tenttut/tentopening.png' alt='tentmaker opening screen />
 
-    http://www.usegantry.org/tenttut/tentopening.png
+    http://www.usegantry.org/images/tenttut/tentopening.png
 
 At the bottom of the window is a section called 'Current bigtop file'.
 It shows the text of the bigtop file you are editing.  I include it

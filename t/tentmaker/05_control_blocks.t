@@ -26,27 +26,35 @@ my $tent_maker = Bigtop::TentMaker->new();
 
 $tent_maker->do_create_app_block( 'controller::Address', 'AutoCRUD' );
 
+# this made idents 1-3
+
 my @correct_input = split /\n/, <<'EO_first_table';
 config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
-
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
     }
 }
 EO_first_table
@@ -60,30 +68,39 @@ is_deeply( \@maker_deparse, \@correct_input, 'create empty controller' );
 #--------------------------------------------------------------------
 
 $tent_maker->do_create_subblock(
-    'controller::ident_1::method::do_main', 'main_listing'
+    'controller::ident_1::method::do_alt_main', 'main_listing'
 );
+
+# the new method is ident_4
 
 @correct_input = split /\n/, <<'EO_new_field';
 config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
         method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+        method do_alt_main is main_listing {
 
         }
     }
@@ -107,22 +124,29 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
         method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+        method do_alt_main is main_listing {
 
         }
         uses `Date::Calc`, Carp;
@@ -147,22 +171,29 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
         method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+        method do_alt_main is main_listing {
 
         }
         uses Carp, `Date::Calc`;
@@ -178,7 +209,7 @@ is_deeply( \@maker_deparse, \@correct_input, 'change controller statement' );
 # Add method statement.
 #--------------------------------------------------------------------
 $tent_maker->do_update_method_statement_text(
-    'ident_2::page_link_label', 'A Label'
+    'ident_4::title', 'A Label'
 );
 
 @correct_input = split /\n/, <<'EO_new_method_statement';
@@ -186,23 +217,30 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
         method do_main is main_listing {
-            page_link_label `A Label`;
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+        method do_alt_main is main_listing {
+            title `A Label`;
         }
         uses Carp, `Date::Calc`;
     }
@@ -217,7 +255,7 @@ is_deeply( \@maker_deparse, \@correct_input, 'new method statement' );
 # Change method statement.
 #--------------------------------------------------------------------
 $tent_maker->do_update_method_statement_text(
-    'ident_2::page_link_label', 'Addresses'
+    'ident_4::title', 'Addresses'
 );
 
 @correct_input = split /\n/, <<'EO_change_method_statement';
@@ -225,23 +263,30 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller Address is AutoCRUD {
         method do_main is main_listing {
-            page_link_label Addresses;
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+        method do_alt_main is main_listing {
+            title Addresses;
         }
         uses Carp, `Date::Calc`;
     }
@@ -264,23 +309,30 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller AddressControl is AutoCRUD {
         method do_main is main_listing {
-            page_link_label Addresses;
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+        method do_alt_main is main_listing {
+            title Addresses;
         }
         uses Carp, `Date::Calc`;
     }
@@ -303,23 +355,30 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller AddressControl is AutoCRUD {
         method do_main_listing is main_listing {
-            page_link_label Addresses;
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+        method do_alt_main is main_listing {
+            title Addresses;
         }
         uses Carp, `Date::Calc`;
     }
@@ -343,23 +402,30 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller AddressControl is AutoCRUD {
         method do_main_listing is main_listing {
-            page_link_label Addresses;
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+        method do_alt_main is main_listing {
+            title Addresses;
         }
     }
 }
@@ -373,7 +439,7 @@ is_deeply( \@maker_deparse, \@correct_input, 'remove controller statement' );
 # Remove method statement.
 #--------------------------------------------------------------------
 $tent_maker->do_update_method_statement_text(
-    'ident_2::page_link_label', 'undefined'
+    'ident_4::title', 'undefined'
 );
 
 @correct_input = split /\n/, <<'EO_remove_method_statement';
@@ -381,22 +447,29 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller AddressControl is AutoCRUD {
         method do_main_listing is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+        method do_alt_main is main_listing {
 
         }
     }
@@ -417,22 +490,25 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     controller AddressControl is AutoCRUD {
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+        method do_alt_main is main_listing {
 
+        }
     }
 }
 EO_remove_method_statement

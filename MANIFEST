@@ -177,6 +177,7 @@ tenttemplates/backends.ttc
 tenttemplates/bigtop_config.ttc
 tenttemplates/default.css
 tenttemplates/delete_button.ttc
+tenttemplates/delete_link.ttc
 tenttemplates/field_block.ttc
 tenttemplates/input_boxes.ttc
 tenttemplates/method_block.ttc

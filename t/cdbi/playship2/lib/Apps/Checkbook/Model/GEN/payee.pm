@@ -34,8 +34,8 @@ sub get_foreign_tables {
 sub foreign_display {
     my $self = shift;
 
-    my $last_name = $self->last_name();
-    my $first_name = $self->first_name();
+    my $last_name = $self->last_name() || '';
+    my $first_name = $self->first_name() || '';
 
     return "$last_name, $first_name";
 }

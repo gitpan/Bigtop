@@ -197,7 +197,8 @@ sub gen_Model {
 #   Packages named in the grammar
 #-----------------------------------------------------------------
 
-package # sql_block
+# sql_block
+package #
     sql_block;
 use strict; use warnings;
 
@@ -325,7 +326,8 @@ sub output_model {
     warn $@ if $@;
 }
 
-package # table_element_block
+# table_element_block
+package #
     table_element_block;
 use strict; use warnings;
 

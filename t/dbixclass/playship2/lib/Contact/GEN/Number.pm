@@ -75,7 +75,9 @@ sub do_main {
 sub form {
     my ( $self, $row ) = @_;
 
-    my $selections = $NUMBER->get_form_selections();
+    my $selections = $NUMBER->get_form_selections(
+            { schema => $self->get_schema() }
+    );
 
     return {
         name       => 'contact',

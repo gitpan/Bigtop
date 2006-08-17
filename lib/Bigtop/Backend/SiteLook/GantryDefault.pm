@@ -42,7 +42,7 @@ sub backend_block_keywords {
         { keyword => 'gantry_wrapper',
           label   => 'Gantry Wrapper Path',
           descr   => 'Path to sample_wrapper.tt in the Gantry '
-                        .   'distribution [required]',
+                        .   'distribution [defaults to ./html]',
           type    => 'text' },
     ];
 }
@@ -74,7 +74,8 @@ sub gen_SiteLook {
     CONTROLLER:
     foreach my $controller ( @{ $controllers } ) {
         my $statements    = $control_lookup->{ $controller }{statements};
-        my $location_list = $statements->{rel_location};
+        my $location_list = $statements->{rel_location}
+                         || $statements->{location};
         my $title_list    = $statements->{page_link_label};
 
         next CONTROLLER unless $title_list;
@@ -117,6 +118,11 @@ sub build_wrapper {
     # load the default wrapper
     my $wrapper_file = $config->{SiteLook}{gantry_wrapper};
 
+    unless ( defined $wrapper_file ) {
+        require Gantry::Init;
+        $wrapper_file = Gantry::Init::base_root() . '/sample_wrapper.tt';
+    }
+
     my $default_wrapper;
     my $WRAPPER;
 
@@ -145,7 +151,7 @@ sub build_links {
     $app_location    =~ s{/+$}{} if $app_location;
 
     # make the links
-    my $lead = '            <li><a href=\'[% self.app_rootp %]/';
+    my $lead = '            <li><a href=\'[% self.app_rootp %]';
     my $links;
 
     CONTROLLER:
@@ -155,7 +161,7 @@ sub build_links {
 
         next CONTROLLER unless $location and $text;
         if ( defined $app_location ) {
-            $links .= "$lead$app_location/$location'>$text</a></li>\n";
+            $links .= "$lead/$app_location/$location'>$text</a></li>\n";
         }
         else {
             $links .= "$lead/$location'>$text</a></li>\n";
@@ -165,7 +171,8 @@ sub build_links {
     return $links;
 }
 
-package # controller_block
+# controller_block
+package #
     controller_block;
 use strict; use warnings;
 

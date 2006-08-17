@@ -45,7 +45,12 @@ my $cgi = Gantry::Engine::CGI->new(
 my $server = Gantry::Server->new( $port );
 $server->set_engine_object( $cgi );
 
-Bigtop::TentMaker->take_performance_hit( $file );
+eval {
+    Bigtop::TentMaker->take_performance_hit( $file );
+};
+if ( $@ and $file =~ /^\d+$/ ) {
+    die "usage: tentmaker [--port 8089] [file]\n";
+}
 
 $server->run();
 

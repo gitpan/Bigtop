@@ -29,20 +29,18 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
 }
 EO_sample_input
 
@@ -63,21 +61,19 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
         new_conf_st new_value;
     }
-    authors `A. U. Thor` => `author@example.com`;
 }
 EO_brand_new_config
 

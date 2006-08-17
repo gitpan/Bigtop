@@ -23,7 +23,8 @@ BEGIN {
     );
 }
 
-package # sql_block
+# sql_block
+package #
     sql_block;
 use strict; use warnings;
 
@@ -62,7 +63,7 @@ sub _build_foreign_display_body {
     my $retval;
 
     foreach my $field ( @field_names ) {
-        $retval .= ' ' x 4 . "my \$$field = \$self->$field();\n";
+        $retval .= ' ' x 4 . "my \$$field = \$self->$field() || '';\n";
     }
 
     $retval .= "\n";
@@ -72,7 +73,8 @@ sub _build_foreign_display_body {
     return $retval;
 }
 
-package # table_element_block
+# table_element_block
+package #
     table_element_block;
 use strict; use warnings;
 

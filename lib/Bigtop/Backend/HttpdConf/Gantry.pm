@@ -16,14 +16,33 @@ sub backend_block_keywords {
           descr   => 'Skip everything for this backend',
           type    => 'boolean' },
 
+        { keyword => 'instance',
+          label   => 'Conf Instance',
+          descr   => 'Your Gantry::Conf instance '
+                        .   '[use with skip_config; '
+                        .   'requires Conf General backend]',
+          type    => 'text' },
+
+        { keyword => 'conffile',
+          label   => 'Conf File',
+          descr   => 'Replacement for /etc/gantry.conf '
+                        .   '[use with Conf Instance]',
+          type    => 'text' },
+
         { keyword => 'full_use',
           label   => 'Full Use Statement',
-          descr   => 'use Gantry qw( -engine=... ); [defaults to false]',
-          type    => 'boolean' },
+          descr   => 'use Gantry qw( -Engine=... ); [defaults to true]',
+          type    => 'boolean',
+          default => 'true'},
 
         { keyword => 'skip_config',
           label   => 'Skip Config',
           descr   => 'do not generate PerlSetVar statements',
+          type    => 'boolean' },
+
+        { keyword => 'gen_root',
+          label   => 'Generate Root Path',
+          descr   => q!Adds a root => 'html' statement to config!,
           type    => 'boolean' },
     ];
 }
@@ -56,6 +75,9 @@ sub output_httpd_conf {
     my $tree  = shift;
 
     my $skip_config = $tree->get_config->{HttpdConf}{skip_config} || 0;
+    my $instance    = $tree->get_config->{HttpdConf}{instance   } || 0;
+    my $conffile    = $tree->get_config->{HttpdConf}{conffile   } || 0;
+    my $gen_root    = $tree->get_config->{HttpdConf}{gen_root   } || 0;
 
     # first find the base location
     my $location_output = $tree->walk_postorder( 'output_httpd_conf_loc' );
@@ -72,6 +94,9 @@ sub output_httpd_conf {
             {
                 location    => $location,
                 skip_config => $skip_config,
+                instance    => $instance,
+                conffile    => $conffile,
+                gen_root    => $gen_root,
             }
     );
 
@@ -161,7 +186,8 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-package # application
+# application
+package #
     application;
 use strict; use warnings;
 
@@ -183,10 +209,13 @@ sub output_perl_block {
     }
 
     my $backend_config      = $config->{HttpdConf};
-    my $full_base_use       = 0;
+    my $full_base_use       = 1;
 
-    if ( defined $backend_config->{full_use} and $backend_config->{full_use} ) {
-        $full_base_use      = 1;
+    if ( defined $backend_config->{full_use}
+            and
+         not $backend_config->{full_use} )
+    {
+        $full_base_use      = 0;
     }
 
     my $output = Bigtop::Backend::HttpdConf::Gantry::perl_block(
@@ -208,9 +237,31 @@ sub output_httpd_conf_locations {
     my $data          = shift;
     my $location      = $data->{location};
     my $skip_config   = $data->{skip_config};
+    my $gen_root      = $data->{gen_root};
 
     # handle configs at root location
-    my $configs  = $self->walk_postorder( 'output_configs', $skip_config );
+    my $configs;
+    if ( $skip_config ) {
+        if ( $data->{ instance } ) {
+            $configs .= Bigtop::Backend::HttpdConf::Gantry::config(
+                {
+                    var   => 'GantryConfInstance',
+                    value => $data->{ instance },
+                }
+            );
+            if ( $data->{ conffile } ) {
+                $configs .= Bigtop::Backend::HttpdConf::Gantry::config(
+                    {
+                        var   => 'GantryConfFile',
+                        value => $data->{ conffile },
+                    }
+                );
+            }
+        }
+    }
+    else {
+        $configs  = $self->walk_postorder( 'output_configs', $gen_root );
+    }
     my $literals = $self->walk_postorder( 'output_root_literal' );
 
     my $output   = Bigtop::Backend::HttpdConf::Gantry::all_locations(
@@ -225,7 +276,8 @@ sub output_httpd_conf_locations {
     return [ $output ];
 }
 
-package # app_statement
+# app_statement
+package #
     app_statement;
 use strict; use warnings;
 
@@ -239,17 +291,17 @@ sub output_httpd_conf_loc {
     return [ $location ];
 }
 
-package # app_config_block
+# app_config_block
+package #
     app_config_block;
 use strict; use warnings;
 
 sub output_configs {
     my $self         = shift;
     my $child_output = shift;
-    my $skip_configs = shift;
+    my $gen_root     = shift;
 
     return unless $child_output;
-    return if     $skip_configs;
 
     my $output;
 
@@ -262,10 +314,20 @@ sub output_configs {
         );
     }
 
+    if ( defined $gen_root and $gen_root ) {
+        $output .= Bigtop::Backend::HttpdConf::Gantry::config(
+            {
+                var   => 'root',
+                value => 'html',
+            }
+        );
+    }
+
     return [ $output ];
 }
 
-package # app_config_statement
+# app_config_statement
+package #
     app_config_statement;
 use strict; use warnings;
 
@@ -277,7 +339,8 @@ sub output_configs {
     return [ { __NAME__ => $self->{__KEY__}, __VALUE__ => $output_vals } ];
 }
 
-package # literal_block
+# literal_block
+package #
     literal_block;
 use strict; use warnings;
 
@@ -303,7 +366,8 @@ sub output_httpd_conf_locations {
     return $self->make_output( 'HttpdConf' );
 }
 
-package # controller_block
+# controller_block
+package #
     controller_block;
 use strict; use warnings;
 
@@ -359,7 +423,8 @@ sub output_httpd_conf_locations {
     return [ $output ];
 }
 
-package # controller_statement
+# controller_statement
+package #
     controller_statement;
 use strict; use warnings;
 
@@ -377,7 +442,8 @@ sub output_httpd_conf_locations {
     }
 }
 
-package # controller_config_block
+# controller_config_block
+package #
     controller_config_block;
 use strict; use warnings;
 
@@ -403,7 +469,8 @@ sub output_controller_configs {
     return [ $output ];
 }
 
-package # controller_config_statement
+# controller_config_statement
+package #
     controller_config_statement;
 use strict; use warnings;
 
@@ -415,7 +482,8 @@ sub output_controller_configs {
     return [ { __NAME__ => $self->{__KEY__}, __VALUE__ => $output_vals } ];
 }
 
-package # controller_literal_block
+# controller_literal_block
+package #
     controller_literal_block;
 use strict; use warnings;
 

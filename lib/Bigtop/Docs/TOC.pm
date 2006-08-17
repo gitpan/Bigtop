@@ -8,6 +8,13 @@ Bigtop::Docs::TOC - Table of Contents for Bigtop::Docs::* documentation modules
 
 This document is a brief annotated list of each Bigtop::Docs::* module.
 
+Here are the highlights:
+
+    Lazy people should start with Bigtop::Docs::TentTut
+    Those allergic to web apps should start with Bigtop::Docs::Tutorial
+    Pedants should look in Bigtop::Docs::Syntax instead
+    Developers should carefully read Bigtop::Docs::Modules
+
 =over 4
 
 =item Bigtop::Docs::About
@@ -18,13 +25,15 @@ Describes the features and motivations of Bigtop.
 
 Modeled after the Perl Cookbook, this provides a list of things you might
 want to do, the syntax needed to make Bigtop do them for you, and the
-output produced by them.
+output produced by them.  It focuses on hand written bigtop files, rather
+than on tentmaker.
 
 =item Bigtop::Docs::Keywords
 
 A (fairly) complete list of keywords Bigtop understands in a compact text
 file.  See Bigtop::Docs::QuickRef for most of the same information in
-html tabular formatting.
+html tabular formatting or run tentmaker which shows complete information
+in your browser.
 
 =item Bigtop::Docs::Modules
 
@@ -40,7 +49,8 @@ of the grammar is not the reason.)
 This provides a somewhat complete list of all the keywords Bigtop understands
 along with some examples in html form.  The depth of the tables involved
 makes it somewhat difficult to use.  For a more compact version in plain
-text, see Bigtop::Docs::Keywords.
+text, see Bigtop::Docs::Keywords or run tentmaker for complete information
+in a different web format.
 
 =item Bigtop::Docs::Syntax
 

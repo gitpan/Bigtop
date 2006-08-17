@@ -5,6 +5,7 @@ use base 'Gantry';
 use Bigtop::Parser;
 use Bigtop::Deparser;
 use File::Find;
+use File::Spec;
 
 # Parsing takes time, I'm caching these.  I blow out the cached values
 # when $file changes.
@@ -13,6 +14,8 @@ my $input;
 my $tree;
 my $deparsed;
 my %backends;
+my %engines;
+my %template_engines;
 my $statements;
 
 sub AUTOLOAD {
@@ -46,20 +49,45 @@ sub take_performance_hit {
 
 sub build_backend_list {
 
-    %backends = (); # in testing we call this repeatedly
+    %backends          = (); # in testing we call this repeatedly
+    %engines           = ();
+    %template_engines  = ();
 
     my $filter = sub {
         my $module = $File::Find::name;
+
+        if ( $module =~ /Gantry.Engine.*.pm/ ) {
+            $module =~ s{.*Engine\W}{};
+            $module =~ s{.pm$}{};
+            $engines{ $module }++;
+
+            return;
+        }
+
+        if ( $module =~ /Gantry.Template.*.pm/ ) {
+            $module =~ s{.*Template\W}{};
+            $module =~ s{.pm$}{};
+            $template_engines{ $module }++;
+
+            return;
+        }
+
         return unless $module =~ /Bigtop.*Backend.*\.pm$/;
 
-        $module =~ s{.*Bigtop.Backend}{Bigtop/Backend}; # could use look ahead
+        my $module_prefix = File::Spec->catfile( 'Bigtop', 'Backend' );
+
+        $module =~ s{.*Bigtop.Backend}{$module_prefix}; # could use look ahead
 
         require "$module";
 
         # Load in its what_do_you_make info
-        my $package = $module;
-        $package    =~ s{/}{::}g;
-        $package    =~ s{.pm$}{};
+        my ( undef, $dirs, $pm_name ) = File::Spec->splitpath( $module );
+
+        my @dirs = grep /\w/, File::Spec->splitdir( $dirs );
+
+        $pm_name =~ s{.pm}{};
+
+        my $package = join '::', @dirs, $pm_name;
 
         my ( undef, undef, $type, $name ) = split /::/, $package;
 
@@ -86,6 +114,9 @@ sub build_backend_list {
     }
 
     find( { wanted => $filter, chdir => 0 }, @real_inc );
+
+    my @engines          = sort keys %engines;
+    my @template_engines = sort keys %template_engines;
 }
 
 sub init {
@@ -403,12 +434,46 @@ sub do_create_app_block {
     my $new_block_name = shift;
     my $block_type     = shift || 'stub';
 
-    my $new_block;
+    my @new_blocks;
 
     if ( $new_block_name =~ /(.*?)::(.*)/ ) {
         my ( $type, $name ) = ( $1, $2 );
 
-        $new_block = $tree->create_block( $type, $name, $block_type );
+        # Make the requested block.
+        my $new_block = $tree->create_block(
+                $type, $name, { subtype => $block_type }
+        );
+        push @new_blocks, $new_block;
+
+        # Make extra blocks the user probably wants.
+        if ( $type eq 'table' ) {
+            my $control_block = $tree->create_block(
+                    'controller',
+                    ucfirst $name,
+                    { subtype => 'AutoCRUD',
+                      table   => $name,
+                    }
+            );
+            push @new_blocks, $control_block;
+        }
+        elsif ( $type eq 'sequence' ) {
+            my $table_name  = $name;
+            $table_name     =~ s/_seq//;
+
+            my $table_block = $tree->create_block(
+                    'table', $table_name, { sequence => $name }
+            );
+            push @new_blocks, $table_block;
+
+            my $control_block = $tree->create_block(
+                    'controller',
+                    ucfirst $table_name,
+                    { subtype => 'AutoCRUD',
+                      table   => $table_name,
+                    }
+            );
+            push @new_blocks, $control_block;
+        }
     }
     else {
         warn "error: mal-formed create_app_block request\n";
@@ -416,23 +481,27 @@ sub do_create_app_block {
     }
 
     # now fill in the new app_body element
-    my $block_hashes = $new_block->walk_postorder( 'app_block_hashes' );
+    my $new_divs     = '';
 
     $self->stash->view->template( 'new_app_body_div.tt' );
-    $self->stash->view->data(
-        {
-            block      => $block_hashes->[0],
-            statements => $statements,
-        }
-    );
-
     delete $self->{__TEMPLATE_WRAPPER__}; # just in case
-    my $new_div = '';
-    eval {
-        $new_div = $self->do_process( ) || '';
-    };
-    if ( $@ ) {
-        warn "error: $@\n";
+
+    foreach my $new_block ( @new_blocks ) {
+        my $block_hashes = $new_block->walk_postorder( 'app_block_hashes' );
+
+        $self->stash->view->data(
+            {
+                block      => $block_hashes->[0],
+                statements => $statements,
+            }
+        );
+
+        eval {
+            $new_divs .= $self->do_process( ) || '';
+        };
+        if ( $@ ) {
+            warn "error: $@\n";
+        }
     }
 
     $self->deparsed( Bigtop::Deparser->deparse( $tree ) );
@@ -440,7 +509,7 @@ sub do_create_app_block {
 
     $self->template_disable( 1 );
 
-    $self->stash->controller->data( $new_div . $self->deparsed );
+    $self->stash->controller->data( $new_divs . $self->deparsed );
 }
 
 sub do_delete_block {
@@ -1276,18 +1345,16 @@ config {
     engine          CGI;
     template_engine TT;
     Init Std {}
-    CGI Gantry { with_server 1; }
-    Control Gantry {}
-    SQL Postgres {}
-    Model GantryCDBI {}
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { with_server 1; gen_root 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {}
+    Model GantryDBIxClass {}
+    SiteLook GantryDefault { }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
 }

@@ -7,6 +7,9 @@ Bigtop::Docs::QuickRef - a quick reference guide to bigtop syntax
 =head1 An HTML Table
 
 This file is html only.  If you want a text version see Bigtop::Docs::Keywords.
+Note that this file is note complete.  Running the tentmaker should give
+you complete and accurate information, since its docs come from the code.
+See Bigtop::Docs::TentTut for a tutorial on tentmaker use.
 
 Below you should see a pretty table in your browser.
 
@@ -90,7 +93,8 @@ app Simple::Sample {
 <p>
 The following table tries to cover all the statements and blocks available,
 but keep in mind that backends can add simple statements of their own.
-So, the table may be incomplete.
+So, the table may be incomplete.  Running tentmaker will show all the
+available possibilities.
 </p>
 <table border>
 <tr>
@@ -121,6 +125,7 @@ So, the table may be incomplete.
                 base_dir
             </td>
             <td>
+                [ DEPRECATED ]<br />
                 In create mode, the directory under which the app will be
                 built.  (Defaults to the current directory.)  Ignored,
                 with a warning, outside of create mode.
@@ -131,6 +136,7 @@ So, the table may be incomplete.
                 app_dir
             </td>
             <td>
+                [ DEPRECATED ]<br />
                 In create mode, the sub directory of base_dir where the
                 app will be built.  (Defaults in the manner of h2xs.)
                 Ignored, with a warning, outside of create mode.
@@ -252,8 +258,9 @@ So, the table may be incomplete.
                 </td>
                 <td>
                     Makes the wrapper.tt Gantry uses for default site look.<br/>
-                    Expects a gantry_wrapper statement with a proper path
-                    to the sample_wrapper.tt provided with gantry.
+                    Accepts a gantry_wrapper statement with a proper path
+                    to a sample_wrapper.tt (like the one provided with gantry
+                    which is the default).
                 </td>
             </tr>
         </table></td>
@@ -278,6 +285,8 @@ So, the table may be incomplete.
                     If they are pairs the name is on the left of the =>
                     and that author's email address is on the right.
                     The first author is the default copyright holder.
+                    <br />
+                    Defaults to the gcos name of the current logged in user.
                 </td>
             </tr>
             <tr>

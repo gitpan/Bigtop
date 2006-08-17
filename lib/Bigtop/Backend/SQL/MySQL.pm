@@ -86,7 +86,8 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-package # sql_block
+# sql_block
+package #
     sql_block;
 use strict; use warnings;
 
@@ -100,6 +101,9 @@ sub output_sql_mysql {
     if ( defined $child_output ) {
         $child_out_str = join "\n", @{ $child_output };
     }
+    else {
+        return;
+    }
 
     my $output = Bigtop::Backend::SQL::MySQL::sql_block(
         {
@@ -112,16 +116,18 @@ sub output_sql_mysql {
     return [ $output ];
 }
 
-package # sequence_body
+# sequence_body
+package #
     sequence_body;
 use strict; use warnings;
 
 sub output_sql_mysql {
-    warn "Warning: MySQL does not support user defined sequences.\n";
+#    warn "Warning: MySQL does not support user defined sequences.\n";
     return;
 }
 
-package # table_body
+# table_body
+package #
     table_body;
 use strict; use warnings;
 
@@ -146,7 +152,8 @@ sub output_sql_mysql {
     return [ $output ]
 }
 
-package # table_element_block
+# table_element_block
+package #
     table_element_block;
 use strict; use warnings;
 
@@ -189,7 +196,8 @@ sub output_sql_mysql {
     }
 }
 
-package # field_statement
+# field_statement
+package #
     field_statement;
 use strict; use warnings;
 
@@ -198,6 +206,7 @@ my %expansion_for = (
     primary_key        => 'PRIMARY KEY',
     assign_by_sequence => 'AUTO_INCREMENT',
     auto               => 'AUTO_INCREMENT',
+    varchar            => 'VARCHAR(100)',
 );
 
 sub output_sql_mysql {
@@ -225,7 +234,8 @@ sub output_sql_mysql {
     return [ $output ];
 }
 
-package # literal_block
+# literal_block
+package #
     literal_block;
 use strict; use warnings;
 

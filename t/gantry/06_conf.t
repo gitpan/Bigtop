@@ -22,7 +22,9 @@ my $conf       = File::Spec->catfile( $docs_dir, 'Apps-Checkbook.conf' );
 #---------------------------------------------------------------------------
 
 $bigtop_string = << 'EO_correct_bigtop';
-config {}
+config {
+    Conf General { gen_root 1; }
+}
 app Apps::Checkbook {
     location `/app_base`;
     config {
@@ -49,6 +51,7 @@ Bigtop::Backend::Conf::General->gen_Conf( $base_dir, $tree );
 $correct_conf = <<'EO_CORRECT_CONF';
 DB app_db
 DBName some_user
+root html
 
 <GantryLocation /app_base/payee>
     importance 3

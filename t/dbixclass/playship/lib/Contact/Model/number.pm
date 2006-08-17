@@ -1,7 +1,9 @@
 package Contact::Model::number;
 use strict; use warnings;
 
-use base 'Contact::Model::GEN::number', 'Exporter';
+use base 'Gantry::Utils::DBIxClass', 'Exporter';
+
+use Contact::Model::GEN::number;
 
 our $NUMBER = 'Contact::Model::number';
 

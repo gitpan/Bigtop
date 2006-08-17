@@ -25,7 +25,7 @@ This is the real workhorse of Bigtop.  It is a grammar driven parser for
 Bigtop files.  Interactions with this parser are usually indirect.
 End users use the bigtop script which in turn uses the parser to first build
 an abstract syntax tree (AST) and then to generate output by passing the AST
-the backends.  Developers should write backends which receive the AST
+to the backends.  Developers should write backends which receive the AST
 in methods named for what they should produce.
 
 =head3 Parsing Bigtop specifications
@@ -35,10 +35,10 @@ syntax tree (AST), call Bigtop::Parser->parse_file( $file_name ).
 This returns the AST.
 
 The bigtop script is quite simple (I can almost see it as a bash script).
-It handles command line options, then directly passes the
-rest of its command line arguments directly to gen_from_file
-in Bigtop::Parser.  gen_from_file reads the file into memory and passes
-it and the other command line arguments to gen_from_string.
+It handles command line options, then directly passes the rest of its
+command line arguments to gen_from_file in Bigtop::Parser.  gen_from_file
+reads the file into memory and passes it and the other command line
+arguments to gen_from_string.
 
 gen_from_string first parses the config section of the Bigtop file to
 find the backends.  It requires each of those (using its own import method),
@@ -552,9 +552,9 @@ write your own, keep reading.
 
 Each backend should have a generation method called gen_BackendType
 (where BackendType is part of the package name:
-Bigtop::Backend::BackendType::Backend).
-These are called as class methods with the build directory and the
-AST generated in Bigtop::Parser.
+Bigtop::Backend::BackendType::Backend).  These are called as class methods
+with the build directory, the AST generated in Bigtop::Parser, and the
+source file name (if one is available).
 
 In addition to the generation methods, if your backend wants to work
 with the TentMaker, you must also implement what_do_you_make and
@@ -563,7 +563,8 @@ do.
 
 The gen_* methods produce output on the disk.  For testing, you can
 call the methods that the gen_* methods call.  Usually these are prefixed
-with output_, but that is not enforced.
+with output_, but that is not enforced.  Or you can call the gen_* method
+and test the generated files (say with Test::Files).
 
 To know what a particular backend will do, see Bigtop::Docs::Keywords
 or Bigtop::Docs::Syntax.  That is also where you will see a list of the
@@ -575,7 +576,8 @@ example.  A good example is Bigtop::Backend::SQL::Postgres.  I'll show it
 here so you can see how it goes with commentary interspersed amongst the
 code.  To see the whole of it, look for lib/Bigtop/Backend/SQL/Postgres.pm
 in the Bigtop distribution.  (Note that I have removed some details to make
-this presentation easier, and the real version may have been updated.)
+this presentation easier, and the real version may have been updated
+more recently than this discussion.)
 
 =head3 Preamble
 
@@ -604,17 +606,24 @@ what_do_you_make should return an array reference describing the things
 your backend writes on the disk.  Each array element is also an array
 reference with two entries.  First is the name of something made by
 the module, second is a brief description of what that piece has in it.
-These appear in the tentmaker application as tool tips.
+These appear as documentation in the tentmaker application.
 
     sub backend_block_keywords {
         return [
-            [ 'no_gen'      => 'Skip everything for this backend' ],
+              { keyword => 'no_gen',
+                label   => 'No Gen',
+                descr   => 'Skip everything for this backend',
+                type    => 'boolean' },
         ];
     }
 
 backend_block_keywords is similar to what_do_you_make.  It lists all
 the valid keywords which can go in the backend's block in the config
-section at the top of the bigtop file.
+section at the top of the bigtop file.  These appear in order in the
+far right column of the Backends tab.  The above keys are required,
+if you need a default use the default key.  If the type is boolean,
+spell out true or false as the default value.  If you don't specify
+a default, you get false (unchecked) for booleans and blank for strings.
 
 =head3 The generating sub
 
@@ -638,16 +647,17 @@ The $tree is the full AST (see above for details).
         my $sql          = $tree->walk_postorder( 'output_sql', $lookup );
         my $sql_output   = join '', @{ $sql };
 
-I let Bigtop::Parser's walk_postorder do the visiting of tree nodes
-for me.  It will call 'output_sql' on each of them.  I implement that
-on the packages my SQL generator cares about below.
-
 The lookup subtree of the application subtree provides easier access to
 the data in the tree (though it doesn't have all the connectors the AST
-has for parsing use).  I pass it to walk_postorder so it will come
-to the callback.
+has for parsing use, in particular it uses hashes exclusively, so it never
+intentionally preserves order).
 
-The output of walk_postorder is an array reference.  I join it
+I let Bigtop::Parser's walk_postorder do the visiting of tree nodes
+for me.  It will call 'output_sql' on each of them.  I implement that
+on the packages my SQL generator cares about below.  I pass the lookup
+has to walk_postorder so it will be available to the callbacks.
+
+The output of walk_postorder is always an array reference.  I join it
 together and store it in $sql_output.
 
         # write the schema.postgres
@@ -770,9 +780,12 @@ is passed to setup_template.
 To avoid bad template binding, $template_is_setup keeps track of whether
 we've been here before.
 
-All that remains is to tell Inline to bind the supplied template.
-Note that if $template_text is a file name, that file will be
+Inline's bind method creates subs in the current name space for callbacks
+to use.  Note that if $template_text is a file name, that file will be
 bound correctly.
+
+I've tried to abstract out this code so all backends can share it, but
+the nature of Inline bindings makes that difficult, so I gave up.
 
 =head3 Real work
 

@@ -214,7 +214,7 @@ table_element_block : 'field' <commit> IDENT '{' field_body '}' {
                                __BODY__  => $item[1],
                            }, 'table_element_block'
                        }
-					| <error>
+                    | <error>
 
 field_body : field_statement(s?)
 

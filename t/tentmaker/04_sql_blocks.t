@@ -29,28 +29,62 @@ my $tent_maker = Bigtop::TentMaker->new();
 
 $tent_maker->do_create_app_block( 'table::address' );
 
+# ident counting:
+#   1   table address
+#   2-6 its fields
+#   7   controller Address
+#   8-9 its methods
 my @correct_input = split /\n/, <<'EO_first_table';
 config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     table address {
         field id {
             is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+    }
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -66,31 +100,104 @@ is_deeply( \@maker_deparse, \@correct_input, 'create empty table' );
 
 $tent_maker->do_create_app_block( 'sequence::addresses_seq' );
 
+# ident numbering continues:
+#  10 addresses_seq
+#  11 addresses table
+#  12-16 its fields
+#  17 controller Addresses
+#  18-19 its methods
+
 @correct_input = split /\n/, <<'EO_addresses';
 config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
     table address {
         field id {
             is int4, primary_key, auto;
         }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+    }
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
     }
     sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
 }
 EO_addresses
 
@@ -102,33 +209,97 @@ is_deeply( \@maker_deparse, \@correct_input, 'create sequence in empty app' );
 # Reorder blocks
 #--------------------------------------------------------------------
 
-#use Data::Dumper; warn Dumper( $tent_maker->get_tree );
-
-$tent_maker->do_move_block_after( 'ident_1', 'ident_3' );
+$tent_maker->do_move_block_after( 'ident_1', 'ident_7' );
 
 @correct_input = split /\n/, <<'EO_reorder';
 config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address {
         field id {
             is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -144,32 +315,100 @@ is_deeply( \@maker_deparse, \@correct_input, 'reorder blocks' );
 
 $tent_maker->do_create_subblock( 'table::ident_1::field::name' );
 
+# this field becomes ident_20
+
 @correct_input = split /\n/, <<'EO_new_field';
 config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address {
         field id {
             is int4, primary_key, auto;
         }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
         field name {
 
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -198,27 +437,93 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int4, primary_key, auto;
         }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
         field name {
 
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -241,29 +546,95 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
         }
         field name {
 
         }
         foreign_display `%name`;
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
     }
 }
 EO_add_table_statement
@@ -285,27 +656,93 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int4, primary_key, auto;
         }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
         field name {
 
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -320,7 +757,7 @@ is_deeply( \@maker_deparse, \@correct_input, 'remove table statement' );
 #--------------------------------------------------------------------
 
 $tent_maker->do_update_field_statement_text(
-    'ident_4::is', 'varchar'
+    'ident_20::is', 'varchar'
 );
 
 @correct_input = split /\n/, <<'EO_new_field_statement';
@@ -328,27 +765,93 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int4, primary_key, auto;
         }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
         field name {
             is varchar;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -370,27 +873,93 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int8, primary_key, assign_by_sequence;
         }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
         field name {
             is varchar;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -406,38 +975,106 @@ is_deeply( \@maker_deparse, \@correct_input, 'change is field statement' );
 
 $tent_maker->do_create_subblock( 'table::ident_1::field::street' );
 $tent_maker->do_update_field_statement_text(
-    'ident_5::is', 'varchar'
+    'ident_21::is', 'varchar'
 );
+
+# this field is ident_21
 
 @correct_input = split /\n/, <<'EO_other_field_is_update';
 config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int8, primary_key, assign_by_sequence;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
         }
         field name {
             is varchar;
         }
         field street {
             is varchar;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -453,37 +1090,103 @@ is_deeply(
 # Change field name
 #--------------------------------------------------------------------
 
-$tent_maker->do_update_name( 'field::ident_5', 'street_address' );
+$tent_maker->do_update_name( 'field::ident_21', 'street_address' );
 
 @correct_input = split /\n/, <<'EO_change_field_name';
 config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int8, primary_key, assign_by_sequence;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
         }
         field name {
             is varchar;
         }
         field street_address {
             is varchar;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -497,7 +1200,7 @@ is_deeply( \@maker_deparse, \@correct_input, 'change field name' );
 # Set a multi-word label.
 #--------------------------------------------------------------------
 $tent_maker->do_update_field_statement_text(
-    'ident_5::label', 'Street Address'
+    'ident_21::label', 'Street Address'
 );
 
 @correct_input = split /\n/, <<'EO_other_field_is_update';
@@ -505,24 +1208,52 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int8, primary_key, assign_by_sequence;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
         }
         field name {
             is varchar;
@@ -530,6 +1261,44 @@ app Sample {
         field street_address {
             is varchar;
             label `Street Address`;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -545,7 +1314,7 @@ is_deeply(
 # Remove field statement
 #--------------------------------------------------------------------
 $tent_maker->do_update_field_statement_text(
-    'ident_5::label', 'undefined'
+    'ident_21::label', 'undefined'
 );
 
 @correct_input = split /\n/, <<'EO_remove_field_statement';
@@ -553,30 +1322,96 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int8, primary_key, assign_by_sequence;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
         }
         field name {
             is varchar;
         }
         field street_address {
             is varchar;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -600,7 +1435,7 @@ $tent_maker->params(
 );
 
 $tent_maker->do_update_field_statement_pair(
-    'ident_5::html_form_options'
+    'ident_21::html_form_options'
 );
 
 @correct_input = split /\n/, <<'EO_pair_statement';
@@ -608,24 +1443,52 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int8, primary_key, assign_by_sequence;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
         }
         field name {
             is varchar;
@@ -633,6 +1496,44 @@ app Sample {
         field street_address {
             is varchar;
             html_form_options Happy => 1, Unhappy => 0;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -656,7 +1557,7 @@ $tent_maker->params(
 );
 
 $tent_maker->do_update_field_statement_pair(
-    'ident_5::html_form_options'
+    'ident_21::html_form_options'
 );
 
 @correct_input = split /\n/, <<'EO_update_pair_statement';
@@ -664,24 +1565,52 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int8, primary_key, assign_by_sequence;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
         }
         field name {
             is varchar;
@@ -689,6 +1618,44 @@ app Sample {
         field street_address {
             is varchar;
             html_form_options Happy => 1, Neutral => 2, Unhappy => 0;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -711,7 +1678,7 @@ $tent_maker->params(
 );
 
 $tent_maker->do_update_field_statement_pair(
-    'ident_5::html_form_options'
+    'ident_21::html_form_options'
 );
 
 @correct_input = split /\n/, <<'EO_remove_pair_statement';
@@ -719,30 +1686,96 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int8, primary_key, assign_by_sequence;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
         }
         field name {
             is varchar;
         }
         field street_address {
             is varchar;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -758,34 +1791,100 @@ is_deeply(
 # Delete field.
 #--------------------------------------------------------------------
 
-$tent_maker->do_delete_block( 'ident_5' );
+$tent_maker->do_delete_block( 'ident_21' );
 
 @correct_input = split /\n/, <<'EO_remove_pair_statement';
 config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
-    sequence addresses_seq {}
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     table address_tbl {
         field id {
             is int8, primary_key, assign_by_sequence;
         }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
         field name {
             is varchar;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
         }
     }
 }
@@ -808,21 +1907,71 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { with_server 1; }
-    Control Gantry {  }
-    SQL Postgres {  }
-    Model GantryCDBI {  }
-    SiteLook GantryDefault { gantry_wrapper `/home/athor/srcgantry/root/sample_wrapper.tt`; }
+    CGI Gantry { gen_root 1; with_server 1; }
+    Control Gantry { dbix 1; }
+    SQL SQLite {  }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
 app Sample {
     config {
-        dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        root `/home/athor/bigtop/html:/home/athor/srcgantry/root` => no_accessor;
     }
-    authors `A. U. Thor` => `author@example.com`;
+    controller Address is AutoCRUD {
+        controls_table address;
+        rel_location address;
+        text_description address;
+        page_link_label Address;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Address;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
     sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is date;
+        }
+        field modified {
+            is date;
+        }
+        sequence addresses_seq;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+        }
+    }
 }
 EO_new_table_statement
 
@@ -846,7 +1995,7 @@ Bigtop::TentMaker->take_performance_hit( $sql_config );
 
 warning_like {
     $tent_maker->do_update_table_statement_text(
-        'ident_12::sequence', 'new_seq'
+        'ident_25::sequence', 'new_seq'
     )
 } qr/Couldn't change table statement/,
   'attempt to change statement in missing table';
@@ -856,7 +2005,7 @@ warning_like {
 #--------------------------------------------------------------------
 
 $tent_maker->do_update_table_statement_text(
-    'ident_7::sequence', 'new_seq'
+    'ident_23::sequence', 'new_seq'
 );
 
 @correct_input = split /\n/, <<'EO_updated_table_statement';
@@ -882,7 +2031,7 @@ is_deeply( \@maker_deparse, \@correct_input, 'update table statement' );
 #--------------------------------------------------------------------
 
 $tent_maker->do_update_table_statement_text(
-    'ident_7::foreign_display', '%name'
+    'ident_23::foreign_display', '%name'
 );
 
 @correct_input = split /\n/, <<'EO_new_table_statement';

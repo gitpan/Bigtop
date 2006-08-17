@@ -1,13 +1,56 @@
-Generate some stub pod for models so pod tests don't complain.
-Remember to include method lists and to document both stub and GEN.
+---
+
+There should be a new app level block of sql type called join_table,
+joining_table or something similar.  It should have one statement:
+    joins tshirt => color;
+The order of the tables wouldn't matter.  This would give the standard
+three table setup:
+    +--------+                  +-------+
+    | tshirt |                  | color |
+    +--------+                  +-------+
+              \                /
+               +--------------+
+               | tshirt_color |
+               +--------------+
+Where the tshirt and color tables would have to be defined by regular table
+blocks.  When any table block is processing, it would have to look for
+any joining_tables.  If it saw its own name in one, it would have to make
+a has_many.
+
+The bigtop script in --new mode should allow ascii art table relationships:
+    bigtop -n Contact 'family<-bday'
+    or
+    bigtop -n Contact family bday 'bday->family'
+    different model:
+    bigtop -n Store 'tshirt<->color'
+
+Descide what to do about sequences.  Perhaps we should just stop
+using them everywhere.  I think Gantry can get along without them
+if they are never generated.  The postgres backend needs to distinguish
+between auto when a sequence is defined and when it is not.
+    Just make sure this works as expected.
+
+Table field blocks should allow accessor which tells the ORM to use that
+name for the accessor.
+
+When a field has form_type select -- and it is not a foreign key -- appears
+in the main_listing, its values should be mapped via the options hash so
+they show up on screen as they were selected and not as they are actually
+stored in the database.
+
+Make tentmaker sense all Gantry::Engines on the box.
+
+When values are entered in tentmaker input boxes which are currently
+triggered by buttons, add respect for carriage returns.
+
+When a backend is selected in tentmaker, read in all the text boxes and
+set them as statements in the backend block in the top level config block.
+
+Make a scheme similar to the backend what_do_you_make scheme for Gantry
+Engines and Template Engines, so tentmaker can dynamically provide its
+'Bigtop Config' choices.
 
 The DBIx::Class GEN modules don't use __PACKAGE__ for has_a.  Could they?
-
-Clean up the app pair statement code.  It could probably be integrated
-into the regular app statement change code.
-    While there is some duplication, the call workflow is clearly separated
-    currently.  Integration would require changing the code which updates
-    non-pair statements.
 
 There should be a special top level controller block like
     root_controller [ is type ] {
@@ -39,7 +82,8 @@ and a way to pick one of these during generation:
     bigtop --config=phil --create file.bigtop all
 
 Why is a missing controls table only a warning?  Could it refuse
-to build the stub iff there is a main_listing, form, or crud_form?
+to build the stub iff there is a main_listing, form, or crud_form but no
+controls_table statement?
 
 Figure out the literals allowed in Bigtop::Conf::General.  Document
 and test them.
@@ -74,6 +118,12 @@ and test them.
         Place holder for problems found in the future.
 
 Not to be Done:
+    Clean up the app pair statement code.  It could probably be integrated
+    into the regular app statement change code.
+        While there is some duplication, the call workflow is clearly separated
+        currently.  Integration would require changing the code which updates
+        non-pair statements.
+
     Move keywords registered in Parser.pm to a more logical place.
     Consider Init.pm or Conf.pm.
     Some of these should really be in the Control.pm (think engine
@@ -136,6 +186,104 @@ Not to be Done:
         This is just litter.
 
 Done:
+
+    The bigtop script in --new mode should provide details on how to get
+    the app running something like this:
+        I just made a subdirectory called App-Name for App::Name.
+        Change to that directory now.
+
+        Then create your database using the generated schema.  I know about
+        SQLite, Postgres and MySQL.  Here's how to build your database with
+        each one:
+
+        SQLite:
+        sqlite appname < docs/schema.sqlite
+
+        Postgres (supply passwords as needed):
+        createdb appname -U postgre
+        psql appname -U regular_user < docs/schema.postgres
+
+        MySQL:
+        ...
+
+        Note that postgres needs passwords which are not in place...
+    Bigtop abandoned default sequences.
+
+    The app.server script should allow a command line flag --dbd=Pg along
+    with --dbuser --dbpass, it would just use these in conf if they are passed
+    or continue with dbd=SQLite and no user or pass if not.
+
+    Make sure the generated schema.mysql works.
+
+    The Postgres SQL backend needs to sense whether a sequence is given for
+    an auto primary_key.  I think it currently dies if not.  It needs to change,
+    so it instead changes the field type to serial (even if it is int).
+    In other words, int4 and auto will now be incompatible when there is no
+    sequence defined.
+        Actually, if int4 is used with a sequenceless auto, it is discarded
+        silently by the postgres sql backend.
+
+    When the app has default location, the controller has rel_location, and
+    a page_link_label is used, the resulting link has a doubled slash which
+    interferes with relative dispatching.
+
+    Add site links to do_main.
+
+    Add Available urls loop to generated app.server.
+
+    Correct build_backend_list in TentMaker module, so it isn't unix specific.
+
+    Always name the database app.db.
+
+    Drop blib from the app.server use lib statement.
+
+    CRUD generation is making stubs that work only with CDBI.  They should
+    just put comments in place for the user to fill in.
+
+    Make these proposed changes happen.
+    - Added more default behavior to tentmaker: making a sequence also
+    makes a table and a controller, making a table also makes a controller,
+    new tables have created and modified fields in them, new controllers
+    have are AutoCRUD with form and do_main methods.
+      - when you auto create a table because a sequence was created,
+        make sure that the sequence statement for that table has the
+        name of the sequence.
+            done
+      - when you auto create a table, add created and modified date fields
+        to it (no html_types)
+      - when you auto create a controller from table or sequence creation,
+        make:
+            a controls_table statement x
+            a rel_location statement
+            a page_link_label statement
+            a do_main
+            an AutoCRUD form
+    Make the stub base model have a do_main with links to the other pages
+    (if it is just site nav) do anything to keep the top page from returning
+    an error.
+
+    The author name and email should be deterimined as h2xs does.
+
+    Began taking advantage of Gantry's new Gantry::Init which tells Gantry
+    backends (and Gantry apps) where to look for templates.
+    Three things are changed in the tentmaker default:
+        1. root conf param is gone
+        2. SiteLook GantryDefault no longer has a gen_wrapper path
+        3. CGI Gantry backend has gen_root (which should also be in
+           HttpdConf Gantry and Config General)
+
+    Generated foreign_display routines should provide '' defaults for false
+    return values to eliminate undef warnings.
+
+    When a bigtop file is initially loaded by tentmaker, literal strings
+    are not filling in their input boxes.
+
+    When tentmaker makes a new literal block it has type None.  It should
+    either be a good type or show in the box that a selection is needed,
+    instead of looking like it is already of type Location.
+
+    Generate some stub pod for models so pod tests don't complain.
+    Remember to include method lists and to document both stub and GEN.
 
     You should be able to specify the model base class as a keyword in
     the model backend instead of (or in addition to) at the table level.

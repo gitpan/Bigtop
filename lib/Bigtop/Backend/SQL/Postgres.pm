@@ -86,7 +86,8 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-package # sql_block
+# sql_block
+package #
     sql_block;
 use strict; use warnings;
 
@@ -109,7 +110,8 @@ sub output_sql {
     return [ $output ];
 }
 
-package # sequence_body
+# sequence_body
+package #
     sequence_body;
 use strict; use warnings;
 
@@ -119,7 +121,8 @@ sub output_sql {
     return [ ';' ];
 }
 
-package # table_body
+# table_body
+package #
     table_body;
 use strict; use warnings;
 
@@ -144,7 +147,8 @@ sub output_sql {
     return [ $output ]
 }
 
-package # table_element_block
+# table_element_block
+package #
     table_element_block;
 use strict; use warnings;
 
@@ -187,7 +191,8 @@ sub output_sql {
     }
 }
 
-package # field_statement
+# field_statement
+package #
     field_statement;
 use strict; use warnings;
 
@@ -205,12 +210,20 @@ sub gen_seq_text {
 
     my $sequence   = $lookup->{tables}{$table}{sequence}{__ARGS__}[0];
 
-    unless ( defined $sequence ) {
-        die "I can't assign_by_sequence for table $table.\n"
-             .  "You didn't define a sequence for it.\n";
+    # Make sure a sequence block exists for the given sequence.
+    if ( defined $sequence ) {
+        if ( defined $lookup->{sequences}{ $sequence }) {
+            return "DEFAULT NEXTVAL( '$sequence' )";
+        }
+        else {
+            die "You requested and undefined sequence '$sequence' "
+            .   "for table $table.\n";
+        }
+    }
+    else {
+        return 'SERIAL';
     }
 
-    return "DEFAULT NEXTVAL( '$sequence' )";
 }
 
 sub output_sql {
@@ -225,7 +238,14 @@ sub output_sql {
         my $code = $code_for{$arg};
 
         if ( defined $code ) {
-            push @keywords, $code->( $self, $lookup );
+            my $new_keyword = $code->( $self, $lookup );
+            if ( $new_keyword eq 'SERIAL' ) {
+                shift @keywords if ( $keywords[0] =~ /int4/ );
+                unshift @keywords, $new_keyword;
+            }
+            else {
+                push @keywords, $new_keyword;
+            }
         }
         else {
             push @keywords, $arg;
@@ -238,7 +258,8 @@ sub output_sql {
     return [ $output ];
 }
 
-package # literal_block
+# literal_block
+package #
     literal_block;
 use strict; use warnings;
 

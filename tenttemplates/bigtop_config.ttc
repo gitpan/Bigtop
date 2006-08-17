@@ -10,7 +10,7 @@
 %]
 <table>
   <tr>
-      <td>App Name:</td>
+      <td>Application Name:</td>
       <td> <input onblur='javascript:update_tree(
                       "std", "appname", this.value
                   )'

@@ -15,7 +15,8 @@ BEGIN {
     );
 }
 
-package # sql_block
+# sql_block
+package #
     sql_block;
 use strict; use warnings;
 
@@ -35,19 +36,22 @@ sub _skip_this_block {
     return 0;
 }
 
-package # sequence_body
+# sequence_body
+package #
     sequence_body;
 use strict; use warnings;
 
 sub create_keyword { return 'SEQUENCE' }
 
-package # table_body
+# table_body
+package #
     table_body;
 use strict; use warnings;
 
 sub create_keyword { return 'TABLE' }
 
-package # table_element_block
+# table_element_block
+package #
     table_element_block;
 use strict; use warnings;
 

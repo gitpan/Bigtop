@@ -9,10 +9,11 @@ Bigtop::Docs::About - A document explaining Bigtop's features and history
 Bigtop is a little language for describing the basic structure of web apps
 including their database layouts and the management of them.
 
-By editing in a single description file (with your favorite text editor
+By editing a single description file (with your favorite text editor
 or the browser based 'tentmaker'), you can have a working web app
-by code generation.  If your data model changes, you can regenerate without
-risk of loosing anything you wrote yourself.  The pieces available include:
+by code generation.  There are good defaults to get you started.
+If your data model changes, you can regenerate without risk of
+loosing anything you wrote yourself.  Some of the pieces available include:
 
 =over 4
 
@@ -36,7 +37,7 @@ to build your app's database (including fixed or test data)
 
 =item *
 
-object relational mapping modules for use with Class::DBI or other similar
+object relational mapping modules for use with DBIx::Class or other similar
 tools
 
 =item *
@@ -64,7 +65,7 @@ or add them:
 
 =item *
 
-Altering what an existing backend generates is probably as simple as
+Altering what an existing backend generates is usually as simple as
 copying the template out of the backend, altering it, saving that
 on disk, then supplying that name like so:
 
@@ -114,9 +115,9 @@ for a complete attractive app.
 
 =head1 Further Reading
 
-To start using Bigtop, see Bigtop::Docs::Tutorial.  If that goes too
-fast, try the Bigtop section of Gantry::Docs::Tutorial, which builds
-a smaller app.  After those, try Bigtop::Docs::Cookbook.
+To start using Bigtop, see Bigtop::Docs::TentTut or Bigtop::Docs::Tutorial.
+If those go too fast, try the Bigtop section of Gantry::Docs::Tutorial,
+which builds a smaller app.  After those, try Bigtop::Docs::Cookbook.
 
 =head1 Why the Name
 

@@ -36,6 +36,35 @@ sub DBName {
     return $self->{DBName};
 }
 
+#-----------------------------------------------------------------
+# $self->do_main( )
+#-----------------------------------------------------------------
+sub do_main {
+    my ( $self ) = shift;
+
+    $self->stash->view->template( 'main.tt' );
+    $self->stash->view->title( 'Checkbook' );
+
+    $self->stash->view->data( {
+        pages => [
+            { link => 'payee', label => 'Payee/Payor' },
+            { link => '/foreign/location', label => 'Transactions' },
+        ],
+    } );
+}
+
+#-----------------------------------------------------------------
+# $self->site_links( )
+#-----------------------------------------------------------------
+sub site_links {
+    my $self = shift;
+
+    return [
+        { link => $self->app_rootp() . 'payee', label => 'Payee/Payor' },
+        { link => '/foreign/location', label => 'Transactions' },
+    ];
+}
+
 1;
 
 =head1 NAME

@@ -16,11 +16,9 @@ config {
     SQL        Postgres {}
 }
 app Apps::Checkbook {
-    sequence payeepayor_seq { }
     table payeepayor {
-        field id    { is int4, primary_key, assign_by_sequence; }
+        field id    { is int4, primary_key, auto; }
         field name  { is varchar; }
-        sequence payeepayor_seq;
         data
             name => `Gas Company`;
         data
@@ -39,9 +37,8 @@ EO_Bigtop_STRING
 Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'SQL' );
 
 my $correct_sql = <<'EO_CORRECT_SQL';
-CREATE SEQUENCE payeepayor_seq;
 CREATE TABLE payeepayor (
-    id int4 PRIMARY KEY DEFAULT NEXTVAL( 'payeepayor_seq' ),
+    id SERIAL PRIMARY KEY,
     name varchar
 );
 

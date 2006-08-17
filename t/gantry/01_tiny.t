@@ -22,7 +22,9 @@ my $httpd_conf = File::Spec->catfile( $docs_dir, 'httpd.conf' );
 #---------------------------------------------------------------------------
 
 $bigtop_string = <<'EO_no_location';
-config {}
+config {
+    HttpdConf       Gantry { full_use 0; }
+}
 app Apps::Checkbook {
     config {
         DB     app_db;
@@ -55,7 +57,9 @@ is_deeply( \@split_dollar_at, \@correct_dollar_at, 'no location' );
 #---------------------------------------------------------------------------
 
 $bigtop_string = << 'EO_correct_bigtop';
-config {}
+config {
+    HttpdConf Gantry { gen_root 1; full_use 0; }
+}
 app Apps::Checkbook {
     location `/app_base`;
     literal Location `    PerlSetVar Trivia 0`;
@@ -103,6 +107,7 @@ $correct_conf = <<'EO_CORRECT_CONF';
 <Location /app_base>
     PerlSetVar DB app_db
     PerlSetVar DBName some_user
+    PerlSetVar root html
     PerlSetVar Trivia 0
 </Location>
 
@@ -135,7 +140,12 @@ unlink $httpd_conf;
 
 $bigtop_string = << 'EO_no_set_vars';
 config {
-    HttpdConf Gantry { skip_config 1; }
+    HttpdConf Gantry {
+        skip_config 1;
+        full_use    0;
+        instance    app;
+        conffile    `/path/to/something`;
+    }
 }
 app Apps::Checkbook {
     config {
@@ -178,6 +188,8 @@ $correct_conf = <<'EO_CORRECT_CONF';
 </Perl>
 
 <Location />
+    PerlSetVar GantryConfInstance app
+    PerlSetVar GantryConfFile /path/to/something
 </Location>
 
 <Location /payee>

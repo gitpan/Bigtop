@@ -21,11 +21,16 @@ on them (designed to print on a couple of pages, if you cut everthing above):
     Conf      General
         Makes: docs/AppName.conf a Config::General formatted conf file
                for use with Gantry::Conf
+        gen_root - makes a root config param for you with value `html`
     Control   Gantry        {}
         Makes: modules in lib (including GEN modules, but not models)
-        full_use - defaults to true, make it false to to get just use Gantry;
+        full_use - defaults to false, make it true to to get use with engines
+        dbix     - defaults to false, make it true if you want to use
+                   DBIx::Class
     CGI       Gantry        {}
         Makes: ./app.cgi and possibly ./app.server
+        confile     - replacement for /etc/gantry.conf (used with instance)
+        gen_root    - makes a root config hash key for you with value `html`
         instance    - set this to your Gantry::Conf instance name
                       the CGI script's config will have only GantryConfInstance
                       in its config hash (see Conf General)
@@ -33,8 +38,13 @@ on them (designed to print on a couple of pages, if you cut everthing above):
         server_port - if with_server is set, this controls its binding port
     HttpdConf Gantry        {}
         Makes: docs/httpd.conf
-        full_use - defaults to false, make it true to get a full use Gantry...
-                   with TemplateEngine, Engine, and Conf.
+        confile       - replacement for /etc/gantry.conf (used with instance)
+        full_use      - defaults to true, make it false to get a simple use
+                        Gantry...  with TemplateEngine, Engine, and Conf.
+        gen_root      - makes a root PerlSetVar you with value `html`
+        instance      - set this to your Gantry::Conf instance name the CGI
+                        script's config will have only GantryConfInstance
+                        in its config hash (see Conf General)
         skip_config   - make this true to omit PerlSetVar statments
     Model     GantryCDBI    {}
         Makes: lib/Model modules (including GEN modules)
@@ -45,7 +55,9 @@ on them (designed to print on a couple of pages, if you cut everthing above):
         gantry_wrapper - file name of gantry's sample_wrapper.tt
 
     [Note: All config backend blocks can have a no_gen statement, which if true
-    will cause the parser to skip the whole backend.]
+    will cause the parser to skip the whole backend.  Init Std has statements
+    for each file Build.PL, Changes, README, MANIFEST, use a value of no_gen
+    to skip that file ex: Changes no_gen; ]
 
  app name {}
     authors          - comma separated list of authors

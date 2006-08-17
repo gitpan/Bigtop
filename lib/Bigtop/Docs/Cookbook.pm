@@ -14,6 +14,13 @@ with a simple question about what gets built by the backend in question.
 For quick syntax reference consult Bigtop::Docs::Keywords for more
 complete information consult Bigtop::Docs::Syntax.
 
+This document assumes you will be editing your bigtop file with a text
+editor (it was written before the tentmaker).  You may also choose to
+maintain your bigtop file with tentmaker.  Generally, the advice here
+governs what values you put in the boxes at the far right side of the
+Backends tab in tentmaker.  Some of the other advice must be implemented
+on the App Body tab.
+
 The questions are in sections.  Here is a complete list of sections and
 questions:
 
@@ -59,7 +66,7 @@ L<What do SQL backends make?>
 
 =item *
 
-L<How do I make a sequence (and why should I)?>
+L<How do I make a sequence>
 
 =item *
 
@@ -163,9 +170,13 @@ L<How do I use Gantry's CRUD?>
 
 =item *
 
-Gantry's Class::DBI models
+Using Gantry's ORM Help
 
 =over 4
+
+=item *
+
+L<What does the GantryDBIxClass Model backend make?>
 
 =item *
 
@@ -245,7 +256,7 @@ As with all backends, you can prevent regeneration of all of the above:
 
     Init Std { no_gen 1; }
 
-If you use C<bigtop --new AppName>, it do this for you.
+If you use C<bigtop --new AppName>, it will do this for you.
 
 But this backend has more fine tuned control:
 
@@ -263,7 +274,7 @@ the Changes file safe for hand editing.
 =head1 Stand Alone Server
 
 There is no special backend for making stand alone servers, but there
-is a way to generate them for Gantry (see below).
+is a way to generate them for Gantry:
 
 =head2 How do I make a stand alone server for my app?
 
@@ -314,32 +325,35 @@ directly (it requires HTTP::Server::Simple).
         },
     } );
 
-    my $server = Gantry::Server->new();
+    my $port = shift || 8080;
+
+    my $server = Gantry::Server->new( $port );
     $server->set_engine_object( $cgi );
     $server->run();
 
-This server binds to port 8080.  To change the port, add the server_port
-statement:
+This server binds to port 8080 by default.  To change the port, add the
+server_port statement:
 
     
         CGI       Gantry { with_server 1;
-                           server_port 8090; }
+                           server_port 9999; }
 
 This will change the script in only one place:
 
-    my $server = Gantry::Server->new( 8090 );
+    my $port = shift || 9999;
 
-You could change the port manually after generation as well.
+As you can see, users can supply a port on the command line when they (that
+would usually be you) start it.
 
 =head1 SQL
 
 =head2 What do SQL backends make?
 
-SQL backends make docs/schema.* (where * becomes your database engine,
-like postgres) in the build directory.  It should
-be ready for direct use to create your database.
+SQL backends make docs/schema.* (where * is for your database engine,
+like postgres) in the build directory.  It should be ready for direct use
+to create your database.
 
-=head2 How do I make a sequence (and why should I)?
+=head2 How do I make a sequence?
 
 Use a sequence block:
 
@@ -352,10 +366,6 @@ This will generate:
 in schema.*.  Note that blocks for sequences must currently be empty.
 Eventually they should support min and max values, etc.
 
-You should make a sequence for each table and make it the primary
-key of your table.  This facilitates Class::DBI and other similar
-object relational mappers as they manage the table.
-
 =head2 How do I make a table?
 
 Tables are made with blocks:
@@ -364,7 +374,7 @@ Tables are made with blocks:
         #...
     }
 
-Inside the braces you need to specify the table's sequence and
+Inside the braces you need may specify the table's sequence and
 its fields:
 
     table name {
@@ -436,10 +446,11 @@ field when the user is entering or updating it.
 
 Including the refers_to statement implies that the field is a foreign
 key.  Whether this generates SQL indicating that is up to the backend.
-Bigtop::SQL::Postgres does not generate foreign key SQL.  But,
-using refers_to always affects the model.  For instance,
-Bigtop::Model::CDBI generates a has_a for each field with a refers_to
-statement.
+None of the current backends (Bigtop::SQL::Postgres, Bigtop::SQL::MySQL,
+or Bigtop::SQL::SQLite) generate foreign key SQL.  But, using refers_to
+always affects the model.  For instance, Bigtop::Model::CDBI generates
+a has_a for each field with a refers_to statement.  Other Model backends
+do the analogous things.
 
 The date_select_text is shown by Gantry templates as the text for
 a popup calendar link.  See the discussion of the LineItem controller in
@@ -449,9 +460,10 @@ what bigtop generates.
 
 All of the statements which begin with html_form_ are passed through
 to the template (with html_form_ stripped).  Consult your template
-for details.  The gantry template is form.tt.  Note that html_form_constraint
+for details.  The Gantry template is form.tt.  Note that html_form_constraint
 is actually used by Gantry plugins which rely on Gantry::Utils::CRUDHelp.
 This includes at least Gantry::Plugins::AutoCRUD and Gantry::Plugins::CRUD.
+These constraints are enforced by Data::FormValidator.
 
 =head2 How can I include initial data in a table?
 
@@ -466,8 +478,9 @@ To include such data add data statements to the table block:
         data name => `Paid`,   descr => `payment received`;
     }
 
-Notes: (1) you should not set the id if your table has a sequence (and it
-should). (2) remember to surround the values with backquotes if they
+Notes: (1) you should not set the id if your table has a sequence or is
+auto-incrementing the primary key (and it should one or the other).
+(2) remember to surround the values with backquotes if they
 have any characters Perl wouldn't like in a variable name (it's always
 safe to have backquotes around values, even if they aren't strictly needed,
 think of them like the comma after the last item in a Perl list). (3) you
@@ -475,6 +488,9 @@ can use as many data statments as you like each one makes an SQL statement:
 
     INSERT INTO status_code ( name, descr )
         VALUES ( 'begun', 'work in progress' );
+
+Note that tentmaker cannot insert, update, or delete data statements.  But,
+if you have them in your file, it will not harm them.
 
 =head2 How do I put extra things into schema.*?
 
@@ -505,6 +521,10 @@ The order of SQL generation is the same as the order in your Bigtop file.
 For example, since the index creation above must come after some_table
 is defined, put the literal statement after some_table's block.
 
+You may use literal SQL statements as a way to work around tentmaker's
+inability to handle table level data statements.  Simply put your INSERT
+statements into a literal SQL statement after the table's block.
+
 =head1 CGI
 
 =head2 What do CGI backends make?
@@ -512,6 +532,9 @@ is defined, put the literal statement after some_table's block.
 CGI backends make a single CGI based dispatching script called app.cgi
 directly in the build directory.  You will have to copy it to your
 cgi-bin directory and make sure the copy there is executable.
+If you use the with_server statement in the CGI backend block, they
+will also make app.server.  You may run it as a stand alone web server,
+which is especially useful during testing.
 
 =head2 How do I specify configuration values?
 
@@ -546,8 +569,30 @@ config hash of the Gantry::Engine::CGI object.
 
 =head2 How do I specify Gantry::Conf configuration values?
 
-Bigtop does not currently generate CGI scripts which use Gantry::Conf.
-I hope to change this soon.
+To use Gantry::Conf with CGI scripts, do two things.  First, add an
+instance statement to the CGI backend block:
+
+    config {
+        #...
+        CGI Gantry { instance `your_name`; }
+    }
+
+This instance must be the name of one of the instances in your
+/etc/gantry.conf.  If your master conf lives in a different file, use
+a block like this instead:
+
+    config {
+        #...
+        CGI Gantry {
+            instance `your_name`;
+            conffile `/etc/my_hidden_conf/master.conf`;
+        }
+    }
+
+Second, use the Conf General backend.  If you use a SiteLook backend,
+you probably want to include the gen_root command, so the backend will
+manufacture a path to your wrapper and other templates.  Note that
+this works for either the Conf General or the CGI Gantry backend.
 
 =head2 How do I control CGI locations?
 
@@ -635,10 +680,9 @@ PerlSetVars appearing in the root location block.  Output in docs/httpd.conf:
 
     </Location>
 
-The Control backend is responsible for including these in site object
-initialization (in its init method) and for making accessors for them.
-Marking them no_accessor prevents both of those things
-(see Controllers below).
+The Control backend will include these in site object initialization
+(in the init method) and make accessors for them.  Marking them
+no_accessor prevents both of those things (see Controllers below).
 
 =head2 How do I use Gantry::Conf for mod_perl?
 
@@ -653,7 +697,7 @@ Gantry::Conf for details on its use.
         engine MP13;
         Init      Std     {}
         Conf      General {}
-        HttpdConf Gantry  { skip_config 1; }
+        HttpdConf Gantry  { skip_config 1; instance `your_instance`; }
     }
     app Name {
         literal Location `PerlSetVar GantryConfInstance example`;
@@ -673,10 +717,19 @@ Gantry::Conf for details on its use.
 The process is very similar for Gantry::Conf as for PerlSetVars.  There
 are a couple of key differences.  First, you should add the Conf General
 backend.  Second, you should mark the HttpdConf Gantry backend with
-skip_config, so it won't write PerlSetVars.  Finally, you must still
-supply one PerlSetVar: GantryConfInstance, which Gantry uses to retrieve
-the proper configuration.  Since you are skipping the config block during
-httpd.conf generation, you must include a literal HttpdConf statement for it.
+skip_config, so it won't write PerlSetVars.  Finally, you should include
+the instance statement, whose value is the name of your instance in
+/etc/gantry.conf.  If your master config file lives somewhere else,
+also include conffile in the HttpdConf Gantry backend block:
+
+    config {
+        #...
+        HttpdConf Gantry  {
+            skip_config 1;
+            instance `your_instance`;
+            conffile `/etc/exotic/location/master.conf`;
+        }
+    }
 
 This yields two output files: a shorter httpd.conf and a new Name.conf.
 Here's docs/httpd.conf:
@@ -755,7 +808,7 @@ literal Location statements:
         PerlAuthzHandler  Gantry::Control::C::Authz
         require valid-user`;
 
-These appear literally immediately below the PerlSetVar statements.
+These appear literally immediately below any PerlSetVar statements.
 
 You may include directives in other location blocks by putting literal
 Location statments inside your controller's block:
@@ -887,7 +940,7 @@ Gantry::Plugins::AutoCRUD, you probably want real CRUD (see below).
 
 =head2 How do I use Gantry's CRUD?
 
-Gantry's AutoCRUD has quite a bit of flexibility (it has pre and post
+Gantry's AutoCRUD has quite a bit of flexibility (e.g. it has pre and post
 callbacks for add, edit, and delete), but sometimes it isn't enough.
 Even when it is enough, some people prefer explicit schemes to implicit
 ones.  CRUD is more explicit.  To use it do this:
@@ -948,11 +1001,15 @@ Finally, it provides the callbacks.  For example:
     sub my_crud_add {
         my ( $self, $params, $data ) = @_;
 
-        my $row = $YOUR_MODEL->create( $param );
-        $row->dbi_commit();
+        # make a new row in the $YOUR_TABLE table using data from $params
+        # remember to commit
     }
 
 It also makes my_crud_edit, my_crud_delete, and my_crud_redirect.
+Note that you don't get actual code for updating your database, just
+comments telling you what normal people do.  Of course, abnormality is
+one of the main reasons for using CRUD instead of AutoCRUD, so take
+the comments with a grain of salt.
 
 Note that if you have more than one method of type CRUD_form, the bigtop
 backend will make multiple crud objects (each named for its form)
@@ -962,18 +1019,18 @@ the proper crud object, but their names will be duplicated.  In that
 case, you are on your own to change them to reasonable (i.e. non-clashing)
 names.
 
-=head1 Gantry's Class::DBI models
+=head1 Using Gantry's ORM Help
 
-=head2 What does the GantryCDBI Model backend make?
+=head2 What does the GantryDBIxClass Model backend make?
 
-The Model GantryCDBI backend makes a pair of modules for each table.
+The Model GantryDBIxClass backend makes a pair of modules for each table.
 One is the stub module, the other is the GEN module.  Once made, the
 stub is never regenerated, so put your code in it.  The GEN module
 will be regenerated when you run bigtop.
 
     config {
         #...
-        Model GantryCDBI {}
+        Model GantryDBIxClass {}
     }
     app Apps::Name {
         table some_table {
@@ -981,22 +1038,31 @@ will be regenerated when you run bigtop.
         }
     }
 
-The above makes Apps::Name::Model::some_table (the stub) and
+This makes Apps::Name::Model::some_table (the stub) and
 Apps::Name::Model::GEN::some_table (the GEN module).  Note that the
-.pm files have exactly the same name as the table.  If you want capital
+names are exactly the same as the table name.  If you want capital
 letters, use them to name the table.
 
-Due to the way that Class::DBI binds the methods it makes on the fly, the GEN
+Due to the way that DBIx::Class binds the methods it makes on the fly, the GEN
 module mixes in to the stub by using this to start its file:
 
     package Apps::Name::Model::some_table;
 
 So, the disk file is named Apps/Name/Model/GEN/some_table.pm, but
 the package statement is the same as the one in the stub.  This will cause
-sub redefinition warnings if you put a sub in the stub with the same
+sub redefinition warnings, if you put a sub in the stub with the same
 name as one in the GEN module.  Models generated by Model Gantry inherit
-from Gantry::Utils::Model instead of from Class::DBI.  They use inheritence
-instead of mixing in.
+from Gantry::Utils::Model, which allows inheritence instead of mixing in.
+These are the native models.
+
+=head2 What does the GantryCDBI Model backend make?
+
+The Model GantryCDBI backend makes modules exactly analogous to
+the Model GantryDBIxClass backend, but for use with Class::DBI.
+All of the same caveats apply.
+
+We now prefer DBIx::Class over Class::DBI, since the later has difficultly
+sharing database handles with our older apps, which don't use ORMs.
 
 =head2 How do I specify a primary key for my model?
 
@@ -1010,21 +1076,21 @@ Each table should have a single column primary key:
 This will put PRIMARY KEY in the sql for the column and tell the
 Model backend to make the column primary.  This generates:
 
-    Apps::Name::Model::name->columns( Primary => qw/id/ );
+    Apps::Name::Model::name->set_primary_key( 'id' );
 
-(except that I've removed some whitespace for brevity).
+or the appropriate analog for your ORM.
 
 =head2 How can I make my model inherit from a class of my choice?
 
-Normally Model GantryCDBI modules inherit from Gantry::Utils::CDBI
-(which inherits from Class::DBI).  You can change that with the
-model_base_class statement:
+Normally Model modules inherit from a Gantry::Utils:: module appropriate
+for their ORM.  You can change that with the model_base_class statement:
 
     table name {
         model_base_class Gantry::Utils::AuthCDBI;
     }
 
 The generated output will be the same, except for the base class.
+The model_base_class need not be in the Gantry::Utils:: namespace.
 
 =head2 How can I alter the generated model's behavior?
 
@@ -1035,19 +1101,19 @@ or use model_base_class to change what it inherits from.
 
 =head2 What does the Gantry Model backend make?
 
-The Gantry Model backend is simlar to the GantryCDBI Model backend.
+The Gantry Model backend is simlar to the GantryDBIxClass Model backend.
 It makes two modules for each table.  For example:
 
     table name {
         #...
     }
 
-will yield App::Name::Model::name and App::Name::Model::GEN::name.
-Since these inherit from Gantry::Utils::Model instead of from Class::DBI,
-they don't have problems with binding run time generated methods to the
-proper package.  This leaves them free to use inheritence instead of mixing
-in.  The stub inherits from the GEN module which inherits from
-Gantry::Utils::Model, so the GEN module begins:
+will yield App::Name::Model::name and App::Name::Model::GEN::name.  Since
+these inherit from Gantry::Utils::Model, they don't have problems with
+binding run time generated methods to the proper package.  This leaves
+them free to use inheritence instead of mixing in.  The stub inherits from
+the GEN module which inherits from Gantry::Utils::Model, so the GEN module
+begins:
 
     package Apps::Name::Model::GEN::name;
 

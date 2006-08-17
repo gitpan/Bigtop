@@ -1,7 +1,9 @@
 package Contact::Model::bday;
 use strict; use warnings;
 
-use base 'Contact::Model::GEN::bday', 'Exporter';
+use base 'Exotic::Base::Module', 'Exporter';
+
+use Contact::Model::GEN::bday;
 
 our $BDAY = 'Contact::Model::bday';
 

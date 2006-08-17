@@ -1,4 +1,179 @@
 #tabs {
+    background: #eee;
+}
+
+#tab-backends table {
+background: #d6d6d6;
+}
+
+#tab-app-config table {
+background: #d6d6d6;
+}
+
+#tab-app-statements table {
+background: #d6d6d6;
+}
+
+#tab-bigtop-config {
+background: #d6d6d6;
+border: 1px solid #777;
+}
+div.app_block_table div.app_block_element {
+    background: #d6d6d6;
+}
+
+div.app_block_controller div.app_block_element {
+    background: #d6d6d6;
+}
+
+div.app_block_element fieldset {
+    background: #aa5;
+}
+
+div.app_block_element fieldset table {
+    background: #aa5;
+}
+
+.app_block_controller fieldset {
+    background: #d6d6d6;
+}
+
+.app_block_controller fieldset {
+    background: #d6d6d6;
+}
+
+.app_block_controller fieldset legend {
+    background: #fff;
+    border: 1px solid #777;
+    padding: 2px;
+    font-size: 1.1em;
+
+}
+.app_block_sequence fieldset {
+    background: #d6d6d6;
+}
+.app_block_sequence fieldset legend {
+    background: #fff;
+    border: 1px solid #777;
+    padding: 2px;
+    font-size: 1.1em;
+
+}
+.app_block_table fieldset {
+    background: #d6d6d6;
+}
+.app_block_table fieldset legend {
+    background: #fff;
+    border: 1px solid #777;
+    padding: 2px;
+    font-size: 1.1em;
+
+}
+
+.app_block_new fieldset {
+    background: #ee6;
+}
+
+.app_block_new fieldset legend {
+    background: #fff;
+    border: 1px solid #777;
+    padding: 2px 4px 2px 4px;
+    font-size: 1.1em;
+}
+
+.app_block_new {
+    width: 450px;
+    padding: 0 0 10px 0;
+    border-bottom: 1px solid #777;
+}
+.app_block_table_new fieldset {
+    background: #ee6;
+}
+
+.app_block_table_new fieldset legend {
+    background: #fff;
+    border: 1px solid #777;
+    padding: 2px 4px 2px 4px;
+    font-size: 1.1em;
+}
+
+
+.app_block_table_new {
+    padding: 0 0 10px 0;
+    border-bottom: 1px solid #777;
+    background: #d6d6d6;
+}
+
+.app_block_controller div {
+    background: #b4b1c2;
+}
+.app_block_controller div table {
+    background: #b4b1c2;
+}
+
+.app_block_table div {
+    background: #b4b1c2;
+}
+.app_block_table div table {
+    background: #b4b1c2;
+}
+
+div.app_block_controller_element table {
+    background: #ee6;
+}
+
+div.app_block_controller_element {
+    background: #d6d6d6;
+    padding: 0 0 10px 0;
+    border-bottom: 1px solid;
+}
+
+.app_block_controller_element fieldset {
+    background: #ee6;
+}
+
+
+.app_block_controller_element fieldset legend {
+    background: #fff;
+    border: 1px solid #777;
+    padding: 2px 4px 2px 4px;
+    font-size: 1.1em;
+}
+
+fieldset {
+    background: #b4b1c2;
+}
+    
+
+legend {
+    background: #fff;
+    border: 1px solid #777;
+    padding: 2px 4px 2px 4px;
+    font-size: 1.1em;
+}
+
+#create_field_box {
+    background: #d7d7d7;
+}
+
+#create_field_box table {
+    background: #ee6;
+}
+button {
+    border: 1px solid #777;
+}
+input {
+    border: 1px solid #777;
+}
+
+input {
+    border: 1px solid #777;
+}
+select {
+    border: 1px solid #777;
+}
+
+#tabs {
     width:     95%;
     clear:     both;
     border:    1px solid #99d;
@@ -59,9 +234,10 @@
 }
 
 #tabs_header li a.active {
-    background: #ddf;
+    background: #eee;
     font-weight: normal;
     color: #000;
+border-bottom: 0;
 }
 
 div.tab {

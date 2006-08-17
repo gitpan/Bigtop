@@ -12,14 +12,21 @@
                        Bigtop::Parser::get_keyword_docs
 %]
     <div class='app_block_element'
-         id='div_[% item.ident %]'
-         style='border: 1px solid grey; padding: 4px'>
+         id='div_[% item.ident %]'>
         [% blockname = block.name
            fieldname = item.name
            fullname  = "table_field_${blockname}::$fieldname" %]
+         <fieldset>
+         <legend>Field
+            ( <a href='javascript:show_or_hide( "[%-
+                "hideable_$fullname" %]" );'>edit</a> |
+                [%- INCLUDE delete_link.ttc
+                    name  = "app_body_delete::$item.ident" %]
+            )
+         </legend>
          <table>
             <tr>
-                <td> Field Name: </td>
+                <td> Name: </td>
                 <td>
                   <input type='text'
                          id='field_name::[% item.ident %]'
@@ -37,7 +44,7 @@
                   [% WRAPPER show_or_hide.ttc
                      clickable_id            = "heading_$fullname"
                      element_under_control   = "hideable_$fullname"
-                     label                   = 'Body:'
+                     label                   = ''
                      heading_level           = 'none'
                   %]
                     [% INCLUDE field_statement_table
@@ -45,10 +52,7 @@
                   [% END %] </td>
             </tr>
          </table>
-
-         [% INCLUDE delete_button.ttc
-                    name  = "app_body_delete::$item.ident"
-                    label = "Field" %]
+         </fieldset>
 
          <br style='clear: both' />
 

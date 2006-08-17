@@ -19,10 +19,21 @@ sub backend_block_keywords {
           descr   => 'Skip everything for this backend',
           type    => 'boolean' },
 
+        { keyword => 'fast_cgi',
+          label   => 'FastCGI',
+          descr   => 'Make the script for use with FastCGI',
+          type    => 'boolean' },
+
         { keyword => 'instance',
-          label   => 'Instance',
+          label   => 'Conf Instance',
           descr   => 'Your Gantry::Conf instance '
                         .   '[requires Conf General backend]',
+          type    => 'text' },
+
+        { keyword => 'conffile',
+          label   => 'Conf File',
+          descr   => 'Replacement for /etc/gantry.conf '
+                        .   '[use with Conf Instance]',
           type    => 'text' },
 
         { keyword => 'with_server',
@@ -35,6 +46,18 @@ sub backend_block_keywords {
           descr   => 'Specifies the port for stand alone server '
                         .   '[ignored unless Build Server is checked]',
           type    => 'text' },
+
+        { keyword => 'gen_root',
+          label   => 'Generate Root Path',
+          descr   => q!Adds a root => 'html' statement to config!,
+          type    => 'boolean' },
+
+        { keyword => 'flex_db',
+          label   => 'Database Flexibility',
+          descr   => 'Adds command line args to stand alone server to '
+                        .   'allow easy DBD switching',
+          type    => 'boolean',
+          default => 'false', },
     ];
 }
 
@@ -106,13 +129,32 @@ use strict;
 
 [% literal %]
 
-use lib qw( blib/lib lib );
+use lib qw( lib );
 
 use [% app_name %] qw{ -Engine=[% engine %] -TemplateEngine=[% template_engine %] };
 
+[% IF flex_db %]
+use Getopt::Long;
+[% END %]
 use Gantry::Server;
-
 use Gantry::Engine::CGI;
+
+[% IF flex_db %]
+my $dbd    = 'SQLite';
+my $dbuser = '';
+my $dbpass = '';
+my $dbname = 'app.db';
+
+GetOptions(
+    'dbd|d=s'     => \$dbd,
+    'dbuser|u=s'  => \$dbuser,
+    'dbpass|p=s'  => \$dbpass,
+    'dbname|n=s'  => \$dbname,
+    'help|h'      => \&usage,
+);
+
+my $dsn = "dbi:$dbd:dbname=$dbname";
+[% END %]
 
 my $cgi = Gantry::Engine::CGI->new( {
 [% config %]
@@ -123,7 +165,34 @@ my $port = shift || [% port || 8080 %];
 
 my $server = Gantry::Server->new( $port );
 $server->set_engine_object( $cgi );
+
+print STDERR "Available urls:\n";
+foreach my $url ( sort keys %{ $cgi->{ locations } } ) {
+    print STDERR "  http://localhost:${port}$url\n";
+}
+print STDERR "\n";
+
 $server->run();
+
+[% IF flex_db %]
+sub usage {
+    print << 'EO_HELP';
+usage: app.server [options] [port]
+    port defaults to [% port || 8080 +%]
+
+    options:
+    -h  --help    prints this message and quits
+    -d  --dbd     DBD to use with DBI (like Pg or mysql),
+                  defaults to sqlite
+    -u  --dbuser  database user, defaults to the empty string
+    -p  --dbpass  database user's password defaults to the empty string
+    -n  --dbname  database name defaults to app.db
+
+EO_HELP
+
+    exit 0;
+}
+[% END %][%# end of if flex_db %]
 [% END %][%# end of stand_alone_server %]
 
 [% BLOCK fast_cgi_script %]
@@ -218,6 +287,7 @@ sub output_cgi {
 
     # now build the config and locations hashes
     my $config;
+    my $stand_alone_config;
     my $locations = $tree->walk_postorder( 'output_cgi_locations', $location );
     my $literals  = $tree->walk_postorder( 'output_literal' );
     my $app_name  = $tree->get_appname();
@@ -226,15 +296,29 @@ sub output_cgi {
 
     my $backend_block = $tree->get_config->{CGI};
     if ( defined $backend_block->{instance} ) {
-        $config = [
+        my $conffile_text = '';
+        if ( $backend_block->{conffile} ) {
+            $conffile_text = ' ' x 8
+                . "GantryConfFile => '$backend_block->{ conffile }',";
+        }
+        $config = 
 "    config => {
-        GantryConfInstance => '$backend_block->{ instance }'
+        GantryConfInstance => '$backend_block->{ instance }',
+$conffile_text
     },
-"
-        ];
+";
+        $stand_alone_config = $config;
     }
     else {
-        $config = $tree->walk_postorder( 'output_config' );
+        my $config_output = $tree->walk_postorder(
+            'output_config',
+            $backend_block,
+        );
+
+        my %configs = @{ $config_output };
+
+        $config             = $configs{ cgi_config };
+        $stand_alone_config = $configs{ stand_along_config };
     }
 
     my $port;
@@ -246,7 +330,7 @@ sub output_cgi {
     if ( $fast_cgi ) {
         $cgi_output = Bigtop::Backend::CGI::Gantry::fast_cgi_script(
             {
-                config   => join( '', @{ $config    } ),
+                config   => $config,
                 locs     => join( '', @{ $locations } ),
                 app_name => $app_name,
                 literal  => $literal,
@@ -257,7 +341,7 @@ sub output_cgi {
     else {
         $cgi_output = Bigtop::Backend::CGI::Gantry::cgi_script(
             {
-                config   => join( '', @{ $config    } ),
+                config   => $config,
                 locs     => join( '', @{ $locations } ),
                 app_name => $app_name,
                 literal  => $literal,
@@ -268,11 +352,12 @@ sub output_cgi {
 
     my $server_output = Bigtop::Backend::CGI::Gantry::stand_alone_server(
         {
-            config   => join( '', @{ $config    } ),
+            config   => $stand_alone_config,
             locs     => join( '', @{ $locations } ),
             app_name => $app_name,
             literal  => $literal,
             port     => $port,
+            flex_db  => $backend_block->{ flex_db },
             %{ $tree->get_config() },  # Go Fish! (think template_engine)
         }
     );
@@ -280,20 +365,43 @@ sub output_cgi {
     return { cgi => $cgi_output, server => $server_output };
 }
 
-package # application
+# application
+package #
     application;
 use strict; use warnings;
 
 sub output_config {
-    my $self         = shift;
-    my $child_output = shift;
+    my $self          = shift;
+    my $child_output  = shift;
+    my $backend_block = shift;
+
+    if ( defined $backend_block->{ gen_root }
+            and
+         $backend_block->{ gen_root }
+    ) {
+        push @{ $child_output }, "        root => 'html',\n";
+    }
 
     my $output = Bigtop::Backend::CGI::Gantry::application_config(
         {
             body => join '', @{ $child_output },
         }
     );
-    return [ $output ];
+
+    if ( $backend_block->{ flex_db } ) {
+        unshift @{ $child_output },
+            ' ' x 8 . 'dbconn => $dsn,' . "\n",
+            ' ' x 8 . 'dbuser => $dbuser,' . "\n",
+            ' ' x 8 . 'dbpass => $dbpass,' . "\n";
+    }
+
+    my $extra_output = Bigtop::Backend::CGI::Gantry::application_config(
+        {
+            body => join '', @{ $child_output },
+        }
+    );
+
+    return [ cgi_config => $output, stand_along_config => $extra_output ];
 }
 
 sub output_cgi_locations {
@@ -312,7 +420,8 @@ sub output_cgi_locations {
     return [ $output ];
 }
 
-package # app_statement
+# app_statement
+package #
     app_statement;
 use strict; use warnings;
 
@@ -326,26 +435,29 @@ sub output_location {
     return [ $location ];
 }
 
-package # app_config_block
+# app_config_block
+package #
     app_config_block;
 use strict; use warnings;
 
 sub output_config {
     my $self         = shift;
     my $child_output = shift;
+    my $data         = shift;
 
     return unless $child_output;
 
     my $output = Bigtop::Backend::CGI::Gantry::config_body(
         {
-            configs => $child_output,
+            configs             => $child_output,
         }
     );
 
     return [ $output ];
 }
 
-package # app_config_statement
+# app_config_statement
+package #
     app_config_statement;
 use strict; use warnings;
 
@@ -357,7 +469,8 @@ sub output_config {
     return [ { name => $self->{__KEY__}, value => $output_vals } ];
 }
 
-package # controller_block
+# controller_block
+package #
     controller_block;
 use strict; use warnings;
 
@@ -388,7 +501,8 @@ sub output_cgi_locations {
     return [ $output ];
 }
 
-package # controller_statement
+# controller_statement
+package #
     controller_statement;
 use strict; use warnings;
 
@@ -407,7 +521,8 @@ sub output_cgi_locations {
 
 }
 
-package # literal_block
+# literal_block
+package #
     literal_block;
 use strict; use warnings;
 

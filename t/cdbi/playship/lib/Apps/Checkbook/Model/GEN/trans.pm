@@ -43,7 +43,7 @@ sub get_foreign_tables {
 sub foreign_display {
     my $self = shift;
 
-    my $id = $self->id();
+    my $id = $self->id() || '';
 
     return "$id";
 }

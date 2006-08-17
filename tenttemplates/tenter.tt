@@ -46,6 +46,9 @@
         <li><a id='tab-bigtop-config-link' class='active'
                href='javascript:changetabs( "tab-bigtop-config" );'
             >Bigtop Config</a>
+        <li><a id='tab-app-body-link'
+               href='javascript:changetabs( "tab-app-body" );'
+            >App Body</a>
         <li><a id='tab-backends-link'
                href='javascript:changetabs( "tab-backends");'
             >Backends</a>
@@ -55,9 +58,6 @@
         <li><a id='tab-app-config-link'
                href='javascript:changetabs( "tab-app-config" );'
             >App Config</a>
-        <li><a id='tab-app-body-link'
-               href='javascript:changetabs( "tab-app-body" );'
-            >App Body</a>
     </ul>
 </div>
 
@@ -65,6 +65,38 @@
 
   <div class='active' id='tab-bigtop-config'>
     [% INCLUDE bigtop_config.ttc %]
+
+<div id="save_file">
+  <button type='button'
+          onclick='javascript:saver()'> Save As: </button>
+
+  <input type='text'
+         value="[% view.data.file_name || '' %]"
+         id='save_file_name'
+         size='85' />
+</div>
+
+<br />
+<fieldset>
+<legend>
+Current bigtop file
+</legend>
+
+<div id="chatter"></div>
+<div id="debug_chatter"></div>
+
+
+<div id="raw_output" style="white-space: pre; font-family: monospace">
+
+[% view.data.input %]
+
+</div>
+</fieldset>
+
+  </div>
+
+  <div class='tab' id='tab-app-body'>
+    [% INCLUDE app_body.ttc %]
   </div>
 
   <div class='tab' id='tab-backends'>
@@ -79,34 +111,11 @@
     [% INCLUDE app_config.ttc %]
   </div>
 
-  <div class='tab' id='tab-app-body'>
-    [% INCLUDE app_body.ttc %]
-  </div>
-
 </div>
 
 <br style='clear: both' />
-
-  <button type='button'
-          onclick='javascript:saver()'> Save As: </button>
-
-  <input type='text'
-         value='[% view.data.file_name || '' %]'
-         id='save_file_name'
-         size='85' />
-
 </div>
 </form>
 
-<div id="chatter"></div>
-<div id="debug_chatter"></div>
-
-<h3>Current bigtop file</h3>
-
-<div id="raw_output" style="white-space: pre; font-family: monospace">
-
-[% view.data.input %]
-
-</div>
 </body>
 </html>

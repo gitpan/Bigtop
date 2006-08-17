@@ -22,7 +22,7 @@ $bigtop_string = << 'EO_correct_bigtop';
 config {
     engine          CGI;
     template_engine TT;
-    CGI Gantry { with_server 1; }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
 }
 app Apps::Checkbook {
     location `/app_base`;
@@ -60,6 +60,7 @@ my $cgi = Gantry::Engine::CGI->new( {
     config => {
         DB => 'app_db',
         DBName => 'some_user',
+        root => 'html',
     },
     locations => {
         '/app_base' => 'Apps::Checkbook',
@@ -91,18 +92,37 @@ use strict;
 
 use lib '/path/to/my/lib';
 
-use lib qw( blib/lib lib );
+use lib qw( lib );
 
 use Apps::Checkbook qw{ -Engine=CGI -TemplateEngine=TT };
 
+use Getopt::Long;
 use Gantry::Server;
-
 use Gantry::Engine::CGI;
+
+my $dbd    = 'SQLite';
+my $dbuser = '';
+my $dbpass = '';
+my $dbname = 'app.db';
+
+GetOptions(
+    'dbd|d=s'     => \$dbd,
+    'dbuser|u=s'  => \$dbuser,
+    'dbpass|p=s'  => \$dbpass,
+    'dbname|n=s'  => \$dbname,
+    'help|h'      => \&usage,
+);
+
+my $dsn = "dbi:$dbd:dbname=$dbname";
 
 my $cgi = Gantry::Engine::CGI->new( {
     config => {
+        dbconn => $dsn,
+        dbuser => $dbuser,
+        dbpass => $dbpass,
         DB => 'app_db',
         DBName => 'some_user',
+        root => 'html',
     },
     locations => {
         '/app_base' => 'Apps::Checkbook',
@@ -115,7 +135,32 @@ my $port = shift || 8080;
 
 my $server = Gantry::Server->new( $port );
 $server->set_engine_object( $cgi );
+
+print STDERR "Available urls:\n";
+foreach my $url ( sort keys %{ $cgi->{ locations } } ) {
+    print STDERR "  http://localhost:${port}$url\n";
+}
+print STDERR "\n";
+
 $server->run();
+
+sub usage {
+    print << 'EO_HELP';
+usage: app.server [options] [port]
+    port defaults to 8080
+
+    options:
+    -h  --help    prints this message and quits
+    -d  --dbd     DBD to use with DBI (like Pg or mysql),
+                  defaults to sqlite
+    -u  --dbuser  database user, defaults to the empty string
+    -p  --dbpass  database user's password defaults to the empty string
+    -n  --dbname  database name defaults to app.db
+
+EO_HELP
+
+    exit 0;
+}
 EO_CORRECT_SERVER
 
 file_ok( $server, $correct_server, 'stand alone server' );
@@ -201,6 +246,7 @@ config {
     template_engine TT;
     CGI Gantry {
         instance    tinker;
+        conffile    `/path/to/something`;
         with_server 1;
         server_port 8192;
     }
@@ -239,7 +285,8 @@ use Gantry::Engine::CGI;
 
 my $cgi = Gantry::Engine::CGI->new( {
     config => {
-        GantryConfInstance => 'tinker'
+        GantryConfInstance => 'tinker',
+        GantryConfFile => '/path/to/something',
     },
     locations => {
         '/app_base' => 'Apps::Checkbook',
@@ -271,17 +318,18 @@ use strict;
 
 use lib '/path/to/my/lib';
 
-use lib qw( blib/lib lib );
+use lib qw( lib );
 
 use Apps::Checkbook qw{ -Engine=CGI -TemplateEngine=TT };
 
 use Gantry::Server;
-
 use Gantry::Engine::CGI;
+
 
 my $cgi = Gantry::Engine::CGI->new( {
     config => {
-        GantryConfInstance => 'tinker'
+        GantryConfInstance => 'tinker',
+        GantryConfFile => '/path/to/something',
     },
     locations => {
         '/app_base' => 'Apps::Checkbook',
@@ -294,7 +342,15 @@ my $port = shift || 8192;
 
 my $server = Gantry::Server->new( $port );
 $server->set_engine_object( $cgi );
+
+print STDERR "Available urls:\n";
+foreach my $url ( sort keys %{ $cgi->{ locations } } ) {
+    print STDERR "  http://localhost:${port}$url\n";
+}
+print STDERR "\n";
+
 $server->run();
+
 EO_SERVER_PORT
 
 file_ok( $server, $correct_server, 'stand alone server port' );

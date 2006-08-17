@@ -63,8 +63,8 @@ sub do_add {
 sub my_crud_add {
     my ( $self, $params, $data ) = @_;
 
-    my $row = $PAYEE->create( $params );
-    $row->dbi_commit();
+    # make a new row in the $PAYEE table using data from $params
+    # remember to commit
 }
 
 #-------------------------------------------------
@@ -81,9 +81,9 @@ sub do_delete {
 sub my_crud_delete {
     my ( $self, $data ) = @_;
 
-    my $doomed = $PAYEE->retrieve( $data->{id} );
-    $doomed->delete;
-    $PAYEE->dbi_commit;
+    # fish the id (or the actual row) from the data hash
+    # delete it
+    # remember to commit
 }
 
 #-------------------------------------------------
@@ -103,14 +103,9 @@ sub do_edit {
 sub my_crud_edit {
     my( $self, $params, $data ) = @_;
 
-    my %param = %{ $params };
-
-    my $row = $data->{row};
-
-    # Make update
-    $row->set( %param );
-    $row->update;
-    $row->dbi_commit;
+    # retrieve the row from the data hash
+    # update the row
+    # remember to commit
 }
 
 #-----------------------------------------------------------------
@@ -172,8 +167,8 @@ sub do_add {
 sub crud_add {
     my ( $self, $params, $data ) = @_;
 
-    my $row = $PAYEE->create( $params );
-    $row->dbi_commit();
+    # make a new row in the $PAYEE table using data from $params
+    # remember to commit
 }
 
 #-------------------------------------------------
@@ -190,9 +185,9 @@ sub do_delete {
 sub crud_delete {
     my ( $self, $data ) = @_;
 
-    my $doomed = $PAYEE->retrieve( $data->{id} );
-    $doomed->delete;
-    $PAYEE->dbi_commit;
+    # fish the id (or the actual row) from the data hash
+    # delete it
+    # remember to commit
 }
 
 #-------------------------------------------------
@@ -212,14 +207,9 @@ sub do_edit {
 sub crud_edit {
     my( $self, $params, $data ) = @_;
 
-    my %param = %{ $params };
-
-    my $row = $data->{row};
-
-    # Make update
-    $row->set( %param );
-    $row->update;
-    $row->dbi_commit;
+    # retrieve the row from the data hash
+    # update the row
+    # remember to commit
 }
 
 #-----------------------------------------------------------------

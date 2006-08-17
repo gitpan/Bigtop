@@ -8,7 +8,7 @@ Bigtop::Docs::Tutorial - a simple case study of building a web app with bigtop
 
 This document explains how to build an app of moderate complexity by typing
 in a bigtop file.  Since it was written, tentmaker has come along.  It
-is a browser delivered editor for bigtop files, see Bigtop::Docs::TentMaker
+is a browser delivered editor for bigtop files, see Bigtop::Docs::TentTut
 for details.
 
 If you need a simpler example than the one shown here, consider
@@ -53,7 +53,7 @@ what type of html form element the user uses to enter or update it
 =item *
 
 how the data is validated and filtered on its way into and out of the database
-(filtering yet supported)
+(filtering not yet supported)
 
 =item *
 
@@ -100,7 +100,7 @@ the Postgres database
 
 =item *
 
-the Class::DBI::Sweet data modeler
+the DBIx::Class data modeler
 
 =item *
 
@@ -112,13 +112,11 @@ the Gantry web application framework
 
 =back
 
-Partly, I made these choices because they are the ones we use in my shop.
-But, truth be told, they were all that Bigtop supported when I wrote this.
-It already supports CGI and Gantry's hand written data modeler.
-Eventually, I hope to make the scheme work with other choices like
-DBIx::NameAModule, Catalyst, Mason, etc.  Whether that happens or not
-depends on my spare time or (more likely) on people interested in using
-Bigtop with those modules.
+I made these choices just for concreteness.  Bigtop already supports CGI,
+Gantry's hand written data modeler, and Class::DBI::Sweet.  Eventually, I
+hope to make the scheme work with other choices like Catalyst, Mason, etc.
+Whether that happens or not depends on my spare time or (more likely) on
+people interested in using Bigtop with those modules.
 
 =head2 The Example
 
@@ -132,7 +130,7 @@ with comments interspersed.  The full file is examples/billing.bigtop
 in the Bigtop distribution.  Please consult it when you need to
 see how all the pieces look together.
 
-Warning: I made some of design decisions for this app just to showcase
+Caveat: I made some of design decisions for this app just to showcase
 Bigtop and how it interacts with Gantry.  But, a colleague actually uses
 a very similar app for his side consulting business.  Reality is just
 around the corner.
@@ -166,7 +164,10 @@ a code for whether the invoice is under construction, mailed, or payed
 =back
 
 There is a nice picture of the data model in billing_model.png in the
-distribution's examples directory.
+distribution's examples directory.  If you're viewing with a browser this
+might help:
+
+=for html <img src='http://www.usegantry.org/images/billing_model.png' alt='Billing Data Model' />
 
 We've actually done the hardest part by constructing the data model.  The
 rest is really just typing it in.
@@ -177,27 +178,47 @@ When starting an app from scratch one might use a tool like h2xs to build
 diretory structures and standard files (like Changes).  This is a good
 idea with bigtop too.  Simply type:
 
-    bigtop --new Apps::Billing
+    bigtop --new Apps::Billing customers my_companies \
+            invoices line_items status
 
 This will make the Apps-Billing subdirectory of the current directory.
-In it you will find Build.PL, Changes, MANIFEST, MANIFEST.SKIP, README
-and directories docs, lib, and t.  Only the docs directory will have
-anything in it.  It will contain apps-billing.bigtop.
+In it you will find many files including: Build.PL, Changes, MANIFEST,
+MANIFEST.SKIP, README plus directories: docs, html, lib, and t.  The
+directories will have lots of goodies, including: docs/schema.sqlite for
+building a quick test database with sqlite, html/genwrapper.tt a template
+toolkit wrapper providing a lavendar theme for the app, a set of models for
+the tables, and a set of controllers for those tables.  Finally, the docs
+directory will have apps-billing.bigtop, which will edit until it describes
+our app more correctly.
 
-You can edit that file to match the discussion that follows.  When you
-run bigtop, you should be in the directory where the Changes file lives.
-(If you aren't it will not build for you without strong insistence.)
+All the tables will have the same default columns: id, ident, description,
+created, and modified.
 
-The generated Bigtop file has the structure of all Bigtop files.
+At this point, we could create the database and start the app.  But since
+the tables don't store our actual data, it is better to wait.
+
+We will now begin editing docs/apps-billing.bigtop.  After we edit it,
+we will regenerate the app.  When you run bigtop to do that, you should
+be in the directory where the Changes file lives.  (If you aren't, it will
+not build for you without strong insistence.)
+
+Before looking at the generated bigtop file (which is a little over
+200 lines), let's consider the basic structure of bigtop files.  They all
+look like this:
 
     config {
+        engine CGI;
+        template_engine TT;
         Init Std { no_gen 1; }
+        # ...
     }
     app Apps::Billing {
+        # ...
     }
 
 Note that there are two top level blocks: config and app.  Let's consider
-these in separate sections.
+these in separate sections.  First, note that any line whose first
+non-whitespace character is a pound sign is ignored as a comment.
 
 =head2 Configuration
 
@@ -207,79 +228,65 @@ properties of the app and what pieces bigtop should generate for us.
 The stub made with the --new option to bigtop has one block in it:
 
     config {
-        Init Std { no_gen 1; }
+        engine          CGI;
+        template_engine TT;
+
+        Init            Std             { no_gen 1; }
+        SQL             SQLite          {}
+        SQL             Postgres        {}
+        SQL             MySQL           {}
+        CGI             Gantry          { with_server 1; gen_root 1; }
+        Control         Gantry          { dbix 1; }
+        Model           GantryDBIxClass {}
+        SiteLook        GantryDefault   {}
     }
 
-This specifies that the Bigtop::Init::Std module should be loaded whenever
-bigtop runs.  But, the no_gen statement tells it not to do anything.  Since
-Init builds Changes, README, etc. from useless stubs, you don't want it to
-make them again.  Every backend can be turned off in this way.
+First there are two statements.  They request the engine and template
+engine which will service the app.  This one will run under CGI (for
+the time being) and will rely on template toolkit for output formatting.
+When we are ready to move to mod_perl, we can simply change the engine,
+add a backend (HttpdConf Gantry), regenerate, and be ready to go.
+
+After the statements is a list of the backends which built things for us.
+Take this line for example:
+
+        Init            Std             { no_gen 1; }
+
+This specifies that the Bigtop::Backend::Init::Std module should be loaded
+whenever bigtop runs.  But, the no_gen statement tells it not to do anything.
+Since Init builds Changes, README, etc. from useless stubs, you don't want
+it to make them again, overwriting what you typed into them.  Every backend
+can be turned off in this way.
 
 Init Std is still listed for two reasons.  First, it shows people which
-module did the Init building.  Second, it allows Bigtop::Init::Std to
+module did the Init building.  Second, it allows Bigtop::Backend::Init::Std to
 register any keywords it understands.  This keeps you from having parse
 errors for statements that Init Std would have understood, but the other
 modules don't use.  All of this is more important for the other backends.
 
-In addition to Init, we want a file of sql statements ready for Postgres,
-an httpd.conf suitable for use with Gantry in mod_perl mode, a set
-of gantry controllers, a set of gantry style Class::DBI::Sweet subclasses,
-and a Template Toolkit wrapper for site navigation.  Let's add these:
+In addition to Init, bigtop put seven other backends to work for us.
+Three of these build schema files for databases, making it easier to
+move between them.  For instance, it is often convenient to start work
+on an app with a sqlite database, then migrate to one of the others
+for deployment.
 
- config {
-     Init            Std           { no_gen 1; }
-     SQL             Postgres      {}
-     HttpdConf       Gantry        {}
-     Control         Gantry        {}
-     Model           GantryCDBI    {}
-     SiteLook        GantryDefault {
-         gantry_wrapper `/home/pcrow/srcgantry/root/sample_wrapper.tt`;
-     }
- }
+The other four backends each do a different thing (as indicated by their
+different types).  CGI Gantry makes a cgi script ready for immediate
+deployment to our cgi-bin directory.  Since with_server has a true
+value, it also makes a handy stand alone server we can use during initial
+development.  The gen_root statement adds a config param called root
+pointing to the html subdirectory (more on root and other config params
+later).
 
-The name of the backend has a type and an implementation name.  These
-can be anything, so long as there is a Bigtop::Type::ImplName in the
-C<@INC> path.  So, we have asked for Bigtop::Init::Std, Bigtop::SQL::Postgres,
+Control Gantry makes the controllers in the lib subdirectory.
+Model GantryDBIxClass makes models for use with the DBIx::Class ORM.
+Finally, SiteLook GantryDefault makes a TT wrapper.
+
+So, from these examples, we've learned that the name of the backend has
+a type and an implementation name.  These can be anything, so long as
+there is a Bigtop::Backend::Type::ImplName in the C<@INC> path.  So, we
+have asked for Bigtop::Backend::Init::Std, Bigtop::Backend::SQL::SQLite,
 etc.
-
-The last backend, Bigtop::SiteLook::GantryDefault, needs a statement in
-its block to specify the location of the sample_wrapper.tt that came
-with Gantry.  Some of the other backends have statements they understand.
-If so, their documentation will have details.
-
-Running bigtop at this point would make some additional files, but
-they wouldn't really do anything.  Let's wait.
-
-We should also include statements in the config block.  Statements in
-Bigtop are a keyword and its value, separated by some whitespace.
-The value for any config keyword is either a valid Perl identifier or
-a literal string surrounded by backquotes (the ones usually found on
-the tilde key).  Using backquotes for Bigtop leaves the other quotes
-available for literal use in raw Perl values.
-
-    config {
-        engine          MP13;
-        template_engine TT;
-        #... as before
-    }
-
-In our config block there are two statements.
-
-=over 4
-
-=item engine
-
-Our engine is mod_perl 1.3.x.  I picked this because we had not yet
-upgraded our productions servers at work when I wrote this.
-
-Other reasonable choices include CGI and MP20 for mod_perl 2.0.
-
-=item template_engine
-
-Our template engine is the Template Toolkit.  The only other choice at
-present is Default which sends back content of type text/plain.
-
-=back
 
 =head3 Order is (somewhat) important
 
@@ -307,65 +314,41 @@ The app section has this form:
         #...
     }
 
-Everything shown below goes inside the app block.  The name is
-the package name of the base controller and is also a prefix for all
-other modules.  To keep your sanity, this should be the same name you
-used with the --new flag to bigtop.
-
-Our app section begins with simple statements and a config block (note that
-the order probably doesn't matter).
-
-    location `/billing`;
-    authors `Phil Crow`;
-
-The location is the base Apache Location for the application (or its
-moral equivalent for cgi/fast cgi).
-
-Authors is a comma separated list of people who should be blamed for the
-app in its docs.  Note that Module::Build will not build an app with no
-authors, so include at least one.
-
-By default the first person in the authors list is the copyright holder
-listed in the README and in all the module POD sections which have a
-notice.  If it should be someone else, include a copyright_holder
-statement with the proper name.  Use backquotes around it, if it
-contains spaces or anything else that couldn't be in a Perl variable
-name.
+Everything shown below is inside the app block, but we will update
+things according to our billing app spec.  The name is the package
+name of the base controller and is also a prefix for all other modules.
 
     config {
-        dbconn           `dbi:Pg:dbname=billing`   => no_accessor;
-        dbuser           apache;
-        template_wrapper `wrapper.tt`              => no_accessor;
-
-        root
-          `/home/pcrow/Apps-Billing/html:/path/to/gantry/template/root`
-                                                   => no_accessor;
-        css_root  `/home/pcrow/srcgantry/root/css` => no_accessor;
-        css_rootp `/css`                           => no_accessor;
-        app_rootp `/billing`                       => no_accessor;
+        dbconn `dbi:Pg:dbname=billing` => no_accessor;
+        dbuser `` => no_accessor;
+        template_wrapper `genwrapper.tt` => no_accessor;
     }
 
-You can include any PerlSetVars you like here.  They will be
-copied into the root location for the app in the Apache conf
-(or into the config hash of the cgi dispatch script).
-Normally, an accessor will be generated for each one in the base controller
-module.  But, if you mark them no_accessor, as I have above, that
-accessor will not be generated.  Presumbably your framework will provide
-accessors for them in that case, as gantry does for the ones shown.
+You can include any config parameters you like in the app level config block.
+The backends will move them into the proper place for app configuration.
+For example, the CGI Gantry backend will put them into a hash in the
+cgi script (and stand alone server).  The HttpdConf Gantry backend would
+instead make them PerlSetVars.  Later we will see how to use Gantry::Conf,
+then the Config General backend will put them into a flat file readable
+by Config::General.
 
-My config variables are of two types: database and app navigation.
+Normally, an accessor will be generated for each one in the base controller
+module.  But, if you mark them no_accessor, as bigtop did above,
+that accessor will not be generated.  Presumbably your framework will provide
+accessors for them in that case, as Gantry does for the ones shown.
+
+These config variables are of two types: database and app navigation.
 
 Within Gantry, database connection is handled with dbconn, dbuser, and
-dbpass.  dbconn is a full DBI connection string.  (I omitted dbpass on
-purpose.)  Note that if dbuser or dbpass include any characters Perl
-wouldn't like in a variable name, you must backquote the string, as in:
+dbpass.  dbconn is a full DBI connection string.  (SQLite doesn't use
+dbuser or dbpass, so bigtop doesn't generate them.)  Note that if dbuser
+or dbpass include any characters Perl wouldn't like in a variable name,
+you must backquote the string, as in:
 
     dbpass `s!m0n`;
 
-The other set vars are file system paths or http locations.  Generally,
-we use a suffix of p to indicate a location path and omit p for disk paths.
-Of course, both of them are paths, but our location paths get the p.
-Again, these paths are meaningful to gantry.
+The other parameter is the name of the generated TT wrapper.  It lives
+in the html directory.
 
 =head3 Encoding the data model
 
@@ -382,43 +365,38 @@ bigtop file).
 Currently, sequence blocks must be empty.  Some day you may be
 able to control max and min values, etc. with statements in the blocks.
 
-    sequence mycomp_seq        {}
+    sequence customers_seq {}
+
+If your database does not understand sequences, they are silently ignored
+by the backend for your database.
 
 Table blocks take this form:
 
     table name { ... }
 
-Inside the braces, you can include either statements or field blocks.
+Inside the braces, you can include either statements or field blocks.  There
+are three legal statements.  One of them was supplied for us: sequence.
 
-    table mycompanies {
-        sequence        mycomp_seq;
+    table customers {
+        sequence        customers_seq;
+
+sequence associates a table with a sequence.
+
+We want to add foreign_display:
+
         foreign_display `%name`;
-        ...
 
-There are three legal statements.  We see two of them in the
-my_companies table (we'll see the third in the status table below).
-They are sequence and foreign_display.
+This controls what is displayed when other tables refer to this one.  In
+this case, they will see the name of the company.  If there were people
+in a table, foreign_display might be %last, %first.  So, percent followed
+by a column name will be replaced with the value of that column for each
+row.  Note that the percent sign in the value requires us to surround
+all foreign_display values with backquotes.
 
-sequence associates a table with a sequence.  (We could just make the type
-of the id serial, but using a sequence increases flexibility.  For example,
-you could share a sequence between tables.)
+We'll use the third statement in the status table below.
 
-foreign_display controls how data from rows in the table will be abbreviated
-when they are shown by controllers of other tables.  The syntax is
-simple.  Inside backquotes, put a string of whatever literals you like,
-combined with %column_names of your choice.  For example, if a table
-should show full name based on last_name and first_name columns, you
-could say:
-
-    foreign_display `%last_name, %first_name`;
-
-Which would generate names like
-
-    Wonka, Willy
-
-None of the foreign_display values in this app are that intersting.
-
-Like other blocks, field blocks have this form:
+The rest of the customers table is a set of field blocks.  Like other blocks,
+field blocks have this form:
 
     field name { ... }
 
@@ -426,7 +404,9 @@ Inside, it is a list of statements.  Some of those shown below
 are specific to Gantry, in particular, many depend on its default
 templates.
 
-        field id { is int4, primary_key, assign_by_sequence; }
+        field id {
+            is int4, primary_key, auto;
+        }
 
 All fields must have an C<is> statement.  This fully specifies their
 SQL properties.  Mostly, you want to list a valid SQL type (where valid
@@ -436,11 +416,11 @@ of those.  Back quoted strings are taken literally.
 
 You should use the bare C<primary_key> as one attribute of the id column.
 This not only generates 'PRIMARY KEY' in the SQL output, but
-marks the column as primary for the Class::DBI model, etc.
+marks the column as primary for the ORM.
 
-There is a special keyword you may use to fill in the sequence
-default: assign_by_sequence, which you may abbreviate as auto.  So the
-above is equivalent to:
+There is a special keyword you may use to fill in the primary key by
+default: assign_by_sequence, which you may abbreviate as auto.  In postgres
+the above is equivalent to:
 
     field id { is int4, primary_key, `DEFAULT NEXTVAL( 'mycomp_seq' )`; }
 
@@ -448,24 +428,65 @@ Both of them generate this SQL:
 
     id int4 PRIMARY KEY DEFAULT NEXTVAL( 'mycomp_seq' ),
 
-and they both mark id as the primary key for data modelers like Class::DBI.
+and they both mark id as the primary key for data modelers.  If your
+database doesn't understand sequences, your backend will generate something
+more like:
+
+    id int4 PRIMARY KEY AUTO-INCREMENT
 
 Note that primary_key, assign_by_key, and auto must be bare (not inside
 quotes).  Remember: backquoted strings are taken literally.
 
 Since ids rarely appear on screen, they usually only have an is statement.
 Other fields are shown to the user and thus have other statements.
+When bigtop makes a new app from a list of tables, it puts five columns in
+each table: id, ident, descr, created, and modified.  We talked about
+id above, and we don't need to change it.  The other fields are too
+generic for our billing app,  So we finally have a bit of work to do
+(other than adding the foreign_display).
+
+Here is what the generated ident field block looks like:
+
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+
+The descr field looks just like it with the name changed.  The created
+and modified fields are more like this:
+
+        field created {
+            is date;
+        }
+
+These are meant to be managed internally, not to be shown to the user.
+For now, we'll keep the created and modified fields (even though they
+aren't in the model as we originally drew it).  But, we won't do anything
+with them, so if you don't like them, delete them.
+
+We need to change this to match our ident to name and changes its label
+to Name.  We wanted a descr field, so we'll keep it.  But we don't want
+to require it, so add an html_form_optional statement:
 
         field name {
             is             varchar;
             label          Name;
             html_form_type text;
         }
-        field address {
-            is             varchar;
-            label          Address;
-            html_form_type text;
+        field descr {
+            is                 varchar;
+            label              Description;
+            html_form_type     text;
+            html_form_optional 1;
         }
+
+I've also added some whitespace to make things look a little better.
+
+To finish the customers table, we need to add the rest of the contact
+information to it.  Simply copy the address field, paste it six times
+and change the field names and labels, until your customers table has these:
+
         field city {
             is             varchar;
             label          City;
@@ -480,12 +501,6 @@ Other fields are shown to the user and thus have other statements.
             is             varchar;
             label          Zip;
             html_form_type text;
-        }
-        field descr {
-            is                 varchar;
-            label              Description;
-            html_form_type     text;
-            html_form_optional 1;
         }
         field contact_name  {
             is                 varchar;
@@ -504,10 +519,14 @@ Other fields are shown to the user and thus have other statements.
         }
     }
 
-While there are many other statements you could use, the three shown
+While there are many other statements you could use, the four shown
 here are the most common.
 
 =over 4
+
+=item is
+
+SQL type information
 
 =item label
 

@@ -22,6 +22,31 @@ use Contact::Number;
 #} # END init
 
 
+#-----------------------------------------------------------------
+# $self->do_main( )
+#-----------------------------------------------------------------
+sub do_main {
+    my ( $self ) = shift;
+
+    $self->stash->view->template( 'main.tt' );
+    $self->stash->view->title( 'Contact' );
+
+    $self->stash->view->data( {
+        pages => [
+        ],
+    } );
+}
+
+#-----------------------------------------------------------------
+# $self->site_links( )
+#-----------------------------------------------------------------
+sub site_links {
+    my $self = shift;
+
+    return [
+    ];
+}
+
 1;
 
 =head1 NAME

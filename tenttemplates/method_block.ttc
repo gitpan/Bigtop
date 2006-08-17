@@ -12,14 +12,21 @@
                        Bigtop::Parser::get_keyword_docs
 %]
     <div class='app_block_element'
-         id='div_[% item.ident %]'
-         style='border: 1px solid grey; padding: 4px'>
+         id='div_[% item.ident %]'>
         [% blockname  = block.name
            methodname = item.name
            fullname   = "controller_method_${blockname}::$methodname" %]
+         <fieldset>
+         <legend>Method 
+            ( <a href='javascript:show_or_hide( "[%-
+                "hideable_$fullname" %]" );'>edit</a> |  
+                [%- INCLUDE delete_link.ttc
+                    name  = "app_body_delete::$item.ident" %]
+            )
+         </legend> 
          <table>
             <tr>
-                <td> Method Name: </td>
+                <td>Name: </td>
                 <td>
                   <input type='text'
                          id='method_name::[% item.ident %]'
@@ -33,7 +40,7 @@
                 </td>
             </tr>
             <tr>
-                <td> Method Type: </td>
+                <td> Type: </td>
                 <td>
                     <select
                         id='method_type_[% block.ident %]::[% item.ident %]'
@@ -66,7 +73,7 @@
                   [% WRAPPER show_or_hide.ttc
                      clickable_id            = "heading_$fullname"
                      element_under_control   = "hideable_$fullname"
-                     label                   = 'Body:'
+                     label                   = ''
                      heading_level           = 'none'
                   %]
                     [% INCLUDE method_statement_table
@@ -75,11 +82,7 @@
             </tr>
          </table>
 
-         [% INCLUDE delete_button.ttc
-                    name  = "app_body_delete::$item.ident"
-                    label = "Method" %]
-
-         <br style='clear: both' />
+        <br style='clear: both' />
 
     </div>
 

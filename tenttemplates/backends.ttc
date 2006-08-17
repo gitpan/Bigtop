@@ -40,10 +40,8 @@
 <td valign='top'>
     <table>
     [% FOREACH statement IN type_hash.$backend.keywords %]
-      <tr>
         [% INCLUDE backend_statement
                    statements = type_hash.$backend.statements %]
-      </tr>
     [% END %]
     </table>
 </td>
@@ -60,6 +58,7 @@
 [% END %]
 
 [% BLOCK backend_statement %]
+<tr>
 <td> [% statement.label || statement.keyword %] </td>
 <td>
     [%
@@ -73,4 +72,8 @@
         keyword_prefix = "$type_name::$backend::"
     %]
 </td>
+</tr>
+<tr>
+<td colspan='2'> [% statement.descr %] </td>
+<tr>
 [% END %]

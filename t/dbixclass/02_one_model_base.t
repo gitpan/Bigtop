@@ -20,7 +20,7 @@ config {
     template_engine TT;
     app_dir         ``;
     Model           GantryDBIxClass { model_base_class Exotic::Base::Module; }
-    Control         Gantry { dbix 1; }
+    Control         Gantry { dbix 1; full_use 1; }
     SQL             Postgres { }
     SQL             MySQL    { }
 }

@@ -86,7 +86,8 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-package # sql_block
+# sql_block
+package #
     sql_block;
 use strict; use warnings;
 
@@ -100,6 +101,9 @@ sub output_sql_lite {
     if ( defined $child_output ) {
         $child_out_str = join "\n", @{ $child_output };
     }
+    else {
+        return;
+    }
 
     my $output = Bigtop::Backend::SQL::SQLite::sql_block(
         {
@@ -112,17 +116,19 @@ sub output_sql_lite {
     return [ $output ];
 }
 
-package # sequence_body
+# sequence_body
+package #
     sequence_body;
 use strict; use warnings;
 
 sub output_sql_lite {
-    warn "Warning: SQLite does not support user defined sequences.\n";
+#    warn "Warning: SQLite does not support user defined sequences.\n";
 
     return;
 }
 
-package # table_body
+# table_body
+package #
     table_body;
 use strict; use warnings;
 
@@ -147,7 +153,8 @@ sub output_sql_lite {
     return [ $output ]
 }
 
-package # table_element_block
+# table_element_block
+package #
     table_element_block;
 use strict; use warnings;
 
@@ -190,7 +197,8 @@ sub output_sql_lite {
     }
 }
 
-package # field_statement
+# field_statement
+package #
     field_statement;
 use strict; use warnings;
 
@@ -226,7 +234,8 @@ sub output_sql_lite {
     return [ $output ];
 }
 
-package # literal_block
+# literal_block
+package #
     literal_block;
 use strict; use warnings;
 

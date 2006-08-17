@@ -509,17 +509,18 @@ sub parse_file {
 #   better it looks relative to a regular dump.
 #---------------------------------------------------------------------
 
-package # application_ancestor
+# application_ancestor
+package #
     application_ancestor;
 use strict; use warnings;
 
 sub set_parent {
-	my $self   = shift;
-	my $output = shift;
-	my $data   = shift;
-	my $parent = shift;
+    my $self   = shift;
+    my $output = shift;
+    my $data   = shift;
+    my $parent = shift;
 
-	$self->{__PARENT__} = $parent;
+    $self->{__PARENT__} = $parent;
 
     return;
 }
@@ -534,9 +535,12 @@ sub dumpme {
     $self->{__PARENT__} = $parent;
 }
 
-package  # bigtop_file
+# bigtop_file
+package  #
     bigtop_file;
 use strict; use warnings;
+
+use Config;
 
 sub walk_postorder {
     my $self   = shift;
@@ -565,8 +569,23 @@ sub get_authors {
 
         $retval;
     }
-    else {
-        return [];
+    else { # fall back on password file or local equivalent
+        my $retval = [];
+        # this eval was stolen from h2xs, but has been reformatted
+        eval {
+            my ( $username, $author_gcos ) = ( getpwuid($>) )[0,6];
+
+            if ( defined $username && defined $author_gcos ) {
+
+                $author_gcos =~ s/,.*$//; # in case of sub fields
+
+                my $domain = $Config{ mydomain };
+                $domain =~ s/^\.//;
+
+                push @{ $retval }, [ $author_gcos, "$username\@$domain" ];
+            }
+        };
+        return $retval;
     }
 }
 
@@ -750,10 +769,10 @@ sub create_block {
     my $self     = shift;
     my $type     = shift;
     my $name     = shift;
-    my $subtype  = shift;
+    my $data     = shift;
 
     my $result   = $self->walk_postorder(
-            'add_block', { type => $type, name => $name, subtype => $subtype }
+            'add_block', { type => $type, name => $name, %{ $data } }
     );
 
     return $result->[ 0 ];
@@ -796,7 +815,8 @@ sub type_change {
     $self->walk_postorder( 'change_type', $params );
 }
 
-package  # application
+# application
+package  #
     application;
 use strict; use warnings;
 
@@ -807,9 +827,9 @@ sub get_blocks {
 }
 
 sub get_name {
-	my $self = shift;
+    my $self = shift;
 
-	return $self->{__NAME__};
+    return $self->{__NAME__};
 }
 
 sub set_name {
@@ -909,42 +929,43 @@ sub get_config {
 }
 
 sub walk_postorder {
-	my $self   = shift;
-	my $action = shift;
+    my $self   = shift;
+    my $action = shift;
     my $data   = shift;
 
-	my $output = $self->{app_body}->walk_postorder( $action, $data, $self );
+    my $output = $self->{app_body}->walk_postorder( $action, $data, $self );
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, undef );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, undef );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
 
-package  # app_body
+# app_body
+package  #
     app_body;
 use strict; use warnings;
 
 use base 'application_ancestor';
 
 sub walk_postorder {
-	my $self   = shift;
-	my $action = shift;
-	my $data   = shift;
-	my $parent = shift;
+    my $self   = shift;
+    my $action = shift;
+    my $data   = shift;
+    my $parent = shift;
 
-	my $output = [];
+    my $output = [];
 
-	foreach my $block ( @{ $self->{'block(s?)'} } ) {
+    foreach my $block ( @{ $self->{'block(s?)'} } ) {
         my $child_output = $block->walk_postorder( $action, $data, $self );
 
         push @{ $output }, @{ $child_output } if $child_output;
-	}
+    }
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -1145,7 +1166,12 @@ sub last_statement_index {
     my $index = -1;
     my $count = 0;
     foreach my $block ( @{ $self->{ 'block(s?)' } } ) {
-        $index = $count if defined $block->{app_statement};
+        if ( defined $block->{app_statement}
+                or
+             defined $block->{app_config_block}
+        ) {
+            $index = $count;
+        }
         $count++;
     }
 
@@ -1170,7 +1196,8 @@ sub build_lookup_hash {
     return [ %output ];
 }
 
-package  # block
+# block
+package  #
     block;
 use strict; use warnings;
 
@@ -1263,15 +1290,15 @@ sub old_matches {
 }
 
 sub walk_postorder {
-	my $self   = shift;
-	my $action = shift;
+    my $self   = shift;
+    my $action = shift;
     my $data   = shift;
-	my $parent = shift;
+    my $parent = shift;
 
-	my $output = [];
+    my $output = [];
 
-	foreach my $block_type ( keys %$self ) {
-		next unless (
+    foreach my $block_type ( keys %$self ) {
+        next unless (
             $block_type =~ /_block$/
                 or
             $block_type =~ /_statement$/
@@ -1282,11 +1309,11 @@ sub walk_postorder {
         );
 
         push @{ $output }, @{ $child_output } if $child_output;
-	}
+    }
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -1299,7 +1326,8 @@ sub build_lookup_hash {
     return $child_output;
 }
 
-package  # app_statement
+# app_statement
+package  #
     app_statement;
 use strict; use warnings;
 
@@ -1382,17 +1410,17 @@ sub get_statement {
 }
 
 sub walk_postorder {
-	my $self   = shift;
-	my $action = shift;
+    my $self   = shift;
+    my $action = shift;
     my $data   = shift;
-	my $parent = shift;
+    my $parent = shift;
 
-	if ( $self->can( $action ) ) {
-		return $self->$action( undef, $data, $parent );
-	}
-	else {
-		return;
-	}
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
 }
 
 sub build_lookup_hash {
@@ -1410,7 +1438,8 @@ sub build_lookup_hash {
     ];
 }
 
-package  # literal_block
+# literal_block
+package  #
     literal_block;
 use strict; use warnings;
 
@@ -1497,12 +1526,12 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	if ( $self->can( $action ) ) {
-		return $self->$action( undef, $data, $parent );
-	}
-	else {
-		return;
-	}
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
 }
 
 sub make_output {
@@ -1522,7 +1551,8 @@ sub make_output {
     }
 }
 
-package  # sql_block
+# sql_block
+package  #
     sql_block;
 use strict; use warnings;
 
@@ -1554,7 +1584,7 @@ sub new_block {
         $sequence_body->{__PARENT__} = $self;
     }
     elsif ( $data->{type} eq 'table' ) {
-        my $table_body = table_body->new();
+        my $table_body = table_body->new( $data );
 
         $self = {
             __IDENT__ => Bigtop::Parser->get_ident(),
@@ -1569,8 +1599,7 @@ sub new_block {
             $self->{__BODY__}, 'id'
         );
 
-        $id_field->change_field_statement(
-            undef,
+        $id_field->add_field_statement(
             {
                 ident     => $id_field->get_ident,
                 keyword   => 'is',
@@ -1579,6 +1608,55 @@ sub new_block {
         );
 
         push @{ $self->{__BODY__}{'table_element_block(s?)'} }, $id_field;
+
+        my %values = (
+            is             => 'varchar',
+            html_form_type => 'text'
+        );
+
+        foreach my $field_name qw( ident description ) {
+
+            $values{ label } = ucfirst $field_name;
+
+            my $field = table_element_block->new_field(
+                $self->{__BODY__}, $field_name
+            );
+
+            foreach my $statement qw( is label html_form_type ) {
+                $field->add_field_statement(
+                    {
+                        ident     => $field->get_ident,
+                        keyword   => $statement,
+                        new_value => $values{ $statement },
+                    },
+                );
+            }
+            push @{ $self->{__BODY__}{'table_element_block(s?)'} }, $field;
+        }
+
+        foreach my $date_field qw( created modified ) {
+            my $field = table_element_block->new_field(
+                    $self->{__BODY__}, $date_field
+            );
+            $field->add_field_statement(
+                {
+                    ident     => $field->get_ident,
+                    keyword   => 'is',
+                    new_value => 'date',
+                },
+            );
+            push @{ $self->{__BODY__}{'table_element_block(s?)'} }, $field;
+        }
+
+        if ( defined $data->{sequence} ) {
+            my $seq_stmnt = table_element_block->new_statement(
+                $self,
+                'sequence',
+                $data->{sequence},
+            );
+            push @{ $self->{__BODY__}{'table_element_block(s?)'} }, $seq_stmnt;
+        }
+
     }
     else {
         die "sql_block does not know how to make a $data->{type}\n";
@@ -1724,16 +1802,16 @@ sub set_name {
 }
 
 sub walk_postorder {
-	my $self   = shift;
-	my $action = shift;
+    my $self   = shift;
+    my $action = shift;
     my $data   = shift;
-	my $parent = shift;
+    my $parent = shift;
 
-	my $output = $self->{__BODY__}->walk_postorder( $action, $data, $self );
+    my $output = $self->{__BODY__}->walk_postorder( $action, $data, $self );
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -1762,7 +1840,12 @@ sub build_lookup_hash {
         ];
     }
     else {
-        return;
+        return [
+            {
+                __TYPE__ => $self->{__TYPE__},
+                __DATA__ => [ $self->get_name() => 1 ],
+            }
+        ];
     }
 }
 
@@ -1825,7 +1908,8 @@ sub remove_table_statement {
     return [ 1 ];
 }
 
-package  # sequence_body
+# sequence_body
+package  #
     sequence_body;
 use strict; use warnings;
 
@@ -1833,23 +1917,23 @@ use base 'application_ancestor';
 
 sub walk_postorder {
     my $self   = shift;
-	my $action = shift;
+    my $action = shift;
     my $data   = shift;
     my $parent = shift;
 
-	my $output = [];
-	foreach my $seq_statement ( @{ $self->{'sequence_statement(s)'} } ) {
+    my $output = [];
+    foreach my $seq_statement ( @{ $self->{'sequence_statement(s)'} } ) {
         my $child_output = $seq_statement->walk_postorder(
             $action, $data, $self
         );
 
         push @{ $output }, @{ $child_output } if $child_output;
-	}
+    }
 
-	if ( $self->can( $action ) ) {
+    if ( $self->can( $action ) ) {
         my $real_output = ( @{ $output } ) ? $output : undef;
-		$output = $self->$action( $real_output, $data, $parent );
-	}
+        $output = $self->$action( $real_output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -1877,7 +1961,8 @@ sub build_lookup_hash {
 
 }
 
-package  # sequence_statement
+# sequence_statement
+package  #
     sequence_statement;
 use strict; use warnings;
 
@@ -1889,12 +1974,12 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	if ( $self->can( $action ) ) {
-		return $self->$action( undef, $data, $parent );
-	}
-	else {
-		return;
-	}
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
 }
 
 sub build_lookup_hash {
@@ -1912,7 +1997,8 @@ sub build_lookup_hash {
     ];
 }
 
-package  # table_body
+# table_body
+package  #
     table_body;
 use strict; use warnings;
 
@@ -1920,6 +2006,7 @@ use base 'application_ancestor';
 
 sub new {
     my $class  = shift;
+    my $data   = shift;
 
     my $self = {
         __RULE__                  => 'table_body',
@@ -1935,23 +2022,24 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	my $output = [];
+    my $output = [];
 
-	foreach my $tbl_element_block ( @{ $self->{'table_element_block(s?)'} } ) {
-		my $child_output = $tbl_element_block->walk_postorder(
+    foreach my $tbl_element_block ( @{ $self->{'table_element_block(s?)'} } ) {
+        my $child_output = $tbl_element_block->walk_postorder(
             $action, $data, $self
         );
-		push @{ $output }, @{ $child_output } if $child_output;
-	}
+        push @{ $output }, @{ $child_output } if $child_output;
+    }
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
 
-package  # table_element_block
+# table_element_block
+package  #
     table_element_block;
 use strict; use warnings;
 
@@ -2050,15 +2138,15 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	my $output;
+    my $output;
 
-	if ( $self->{__BODY__}->can( 'walk_postorder' ) ) {
-		$output = $self->{__BODY__}->walk_postorder( $action, $data, $self );
-	}
+    if ( $self->{__BODY__}->can( 'walk_postorder' ) ) {
+        $output = $self->{__BODY__}->walk_postorder( $action, $data, $self );
+    }
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -2130,20 +2218,38 @@ sub change_field_statement {
 
     unless ( defined $success->[0] ) { # make new statement
 
-        my $new_statement = field_statement->new_statement(
-            {
-                parent        => $self->{__BODY__},
-                keyword       => $data->{keyword},
-                new_value     => $data->{new_value},
-                pair_required => $data->{pair_required} || 0,
-            }
-        );
-
-        my $blocks = $self->{ __BODY__ }{ 'field_statement(s?)' };
-        push @{ $blocks }, $new_statement;
+        $self->add_field_statement( $data );
+#        my $new_statement = field_statement->new_statement(
+#            {
+#                parent        => $self->{__BODY__},
+#                keyword       => $data->{keyword},
+#                new_value     => $data->{new_value},
+#                pair_required => $data->{pair_required} || 0,
+#            }
+#        );
+#
+#        my $blocks = $self->{ __BODY__ }{ 'field_statement(s?)' };
+#        push @{ $blocks }, $new_statement;
     }
 
     return [ 1 ];
+}
+
+sub add_field_statement {
+    my $self = shift;
+    my $data = shift;
+
+    my $new_statement = field_statement->new_statement(
+        {
+            parent        => $self->{__BODY__},
+            keyword       => $data->{keyword},
+            new_value     => $data->{new_value},
+            pair_required => $data->{pair_required} || 0,
+        }
+    );
+
+    my $blocks = $self->{ __BODY__ }{ 'field_statement(s?)' };
+    push @{ $blocks }, $new_statement;
 }
 
 sub remove_field_statement {
@@ -2201,7 +2307,8 @@ sub change_name_field {
     return [ 1 ];
 }
 
-package  # field_body
+# field_body
+package  #
     field_body;
 use strict; use warnings;
 
@@ -2232,24 +2339,25 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	my $output = [];
+    my $output = [];
 
-	foreach my $field_stmnt ( @{ $self->{'field_statement(s?)'} } ) {
+    foreach my $field_stmnt ( @{ $self->{'field_statement(s?)'} } ) {
         my $child_output = $field_stmnt->walk_postorder(
             $action, $data, $self
         );
 
-		push @{ $output }, @{ $child_output } if $child_output;
-	}
+        push @{ $output }, @{ $child_output } if $child_output;
+    }
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
 
-package  # field_statement
+# field_statement
+package  #
     field_statement;
 use strict; use warnings;
 
@@ -2332,15 +2440,15 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	my $output;
+    my $output;
     
     if ( $self->{__DEF__}->can( 'walk_postorder' ) ) {
         $output = $self->{__DEF__}->walk_postorder( $action, $data, $self );
     }
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -2358,7 +2466,8 @@ sub build_lookup_hash {
     ];
 }
 
-package  # field_statement_def
+# field_statement_def
+package  #
     field_statement_def;
 use strict; use warnings;
 
@@ -2382,12 +2491,12 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	if ( $self->can( $action ) ) {
-		return $self->$action( undef, $data, $parent );
-	}
-	else {
-		return;
-	}
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
 }
 
 sub build_lookup_hash {
@@ -2398,7 +2507,8 @@ sub build_lookup_hash {
     return [ 'args' => $self->{__ARGS__} ];
 }
 
-package  # controller_block
+# controller_block
+package  #
     controller_block;
 use strict; use warnings;
 
@@ -2429,7 +2539,97 @@ sub new_block {
 
     $self->{__PARENT__} = $parent;
 
-    return bless $self, $class;
+    bless $self, $class;
+
+    # if we were given a table name, use it and do other nice things
+    if ( $data->{ table } ) {
+        $self->add_controller_statement(
+            { keyword   => 'controls_table',
+              new_value => $data->{ table }
+            }
+        );
+        $self->add_controller_statement(
+            { keyword   => 'rel_location',
+              new_value => $data->{ table }
+            }
+        );
+        $self->add_controller_statement(
+            { keyword   => 'text_description',
+              new_value => $data->{ table }
+            }
+        );
+        $self->add_controller_statement(
+            { keyword   => 'page_link_label',
+              new_value => $data->{ name }
+            }
+        );
+    }
+
+    # now add some clever defaults if we're a CRUD or AutoCRUD
+    unless ( $data->{ subtype } eq 'stub' ) {
+        my $table_name = $data->{ table } || lc $data->{name};
+
+        # make the do_main method
+        my $main_arr = $self->add_subblock(
+            undef,
+            {
+                parent => {
+                    type => 'controller',
+                    ident => $self->get_ident,
+                },
+                new_child => {
+                    type     => 'method',
+                    sub_type => 'main_listing',
+                    name     => 'do_main',
+                },
+            }
+        );
+        my $do_main = $main_arr->[0];
+        my %values  = (
+            cols           => 'ident][description',
+            header_options => 'Add',
+            row_options    => 'Edit][Delete',
+            title          => $self->{__NAME__},
+        );
+
+        foreach my $statement qw( cols header_options row_options title ) {
+            $do_main->add_method_statement( {
+                keyword   => $statement,
+                new_value => $values{ $statement },
+            } );
+        }
+
+        # make the form method
+        my $form_method_name;
+        if ( $data->{ subtype } eq 'AutoCRUD' ) {
+            $form_method_name = 'form';
+        }
+        else {
+            $form_method_name = 'my_crud_form';
+        }
+        my $form_arr = $self->add_subblock(
+            undef,
+            {
+                parent => {
+                    type => 'controller',
+                    ident => $self->get_ident,
+                },
+                new_child => {
+                    type     => 'method',
+                    sub_type => $data->{ subtype } . '_form',
+                    name     => $form_method_name,
+                },
+            }
+        );
+        my $form_method = $form_arr->[0];
+
+        $form_method->add_method_statement( {
+            keyword   => 'all_fields_but',
+            new_value => 'id][created][modified',
+        } );
+    }
+
+    return $self;
 }
 
 sub add_subblock {
@@ -2567,18 +2767,22 @@ sub change_controller_statement {
     );
 
     unless ( defined $success->[0] ) { # make new statement
-
-        my $new_statement = controller_statement->new(
-            $self,
-            $data->{keyword},
-            $data->{new_value},
-        );
-
-        my $blocks = $self->{ controller_body }{ 'controller_statement(s?)' };
-        push @{ $blocks }, $new_statement;
+        $self->add_controller_statement( $data );
     }
 
     return [ 1 ];
+}
+
+sub add_controller_statement {
+    my $self = shift;
+    my $data = shift;
+
+    my $new_statement = controller_statement->new(
+        $self, $data->{ keyword }, $data->{ new_value },
+    );
+
+    my $blocks = $self->{ controller_body }{ 'controller_statement(s?)' };
+    push @{ $blocks }, $new_statement;
 }
 
 sub remove_controller_statement {
@@ -2621,13 +2825,13 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	my $output = $self->{controller_body}->walk_postorder(
+    my $output = $self->{controller_body}->walk_postorder(
         $action, $data, $self
     );
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -2647,7 +2851,8 @@ sub build_lookup_hash {
     ];
 }
 
-package  # controller_body
+# controller_body
+package  #
     controller_body;
 use strict; use warnings;
 
@@ -2659,18 +2864,18 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	my $output = [];
+    my $output = [];
 
-	foreach my $controller_stmnt ( @{ $self->{'controller_statement(s?)'} } ) {
-		my $child_output = $controller_stmnt->walk_postorder(
+    foreach my $controller_stmnt ( @{ $self->{'controller_statement(s?)'} } ) {
+        my $child_output = $controller_stmnt->walk_postorder(
             $action, $data, $self
         );
-		push @{ $output }, @{ $child_output } if $child_output;
-	}
+        push @{ $output }, @{ $child_output } if $child_output;
+    }
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -2695,7 +2900,8 @@ sub build_lookup_hash {
     return [ %output ];
 }
 
-package  # controller_method
+# controller_method
+package  #
     controller_method;
 use strict; use warnings;
 
@@ -2797,19 +3003,25 @@ sub change_method_statement {
     );
 
     unless ( defined $success->[0] ) { # make new statement
-
-        my $new_statement = method_statement->new(
-            $self->{__BODY__},
-            $data->{keyword},
-            $data->{new_value},
-            $data->{pair_required},
-        );
-
-        my $blocks = $self->{ __BODY__ }{ 'method_statement(s?)' };
-        push @{ $blocks }, $new_statement;
+        $self->add_method_statement( $data );
     }
 
     return [ 1 ];
+}
+
+sub add_method_statement {
+    my $self = shift;
+    my $data = shift;
+
+    my $new_statement = method_statement->new(
+        $self->{__BODY__},
+        $data->{keyword},
+        $data->{new_value},
+        $data->{pair_required},
+    );
+
+    my $blocks = $self->{ __BODY__ }{ 'method_statement(s?)' };
+    push @{ $blocks }, $new_statement;
 }
 
 sub remove_method_statement {
@@ -2865,9 +3077,9 @@ sub walk_postorder {
 
     my $output = $self->{__BODY__}->walk_postorder( $action, $data, $self );
 
-	if ( $self->can( $action ) ) {
-		return $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        return $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -2896,7 +3108,8 @@ sub build_lookup_hash {
     ];
 }
 
-package  # method_body
+# method_body
+package  #
     method_body;
 use strict; use warnings;
 
@@ -2946,14 +3159,15 @@ sub walk_postorder {
         push @{ $output }, @{ $child_output } if $child_output;
     }
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
 
-package  # method_statement
+# method_statement
+package  #
     method_statement;
 use strict; use warnings;
 
@@ -3004,12 +3218,12 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	if ( $self->can( $action ) ) {
-		return $self->$action( undef, $data, $parent );
-	}
-	else {
-		return;
-	}
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
 }
 
 sub build_lookup_hash {
@@ -3020,7 +3234,8 @@ sub build_lookup_hash {
     return [ $self->{__KEY__} => $self->{__ARGS__} ];
 }
 
-package  # controller_literal_block
+# controller_literal_block
+package  #
     controller_literal_block;
 use strict; use warnings;
 
@@ -3038,12 +3253,12 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	if ( $self->can( $action ) ) {
-		return $self->$action( undef, $data, $parent );
-	}
-	else {
-		return;
-	}
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
 }
 
 sub make_output {
@@ -3062,7 +3277,8 @@ sub make_output {
     }
 }
 
-package  # controller_statement
+# controller_statement
+package  #
     controller_statement;
 use strict; use warnings;
 
@@ -3115,12 +3331,12 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	if ( $self->can( $action ) ) {
-		return $self->$action( undef, $data, $parent );
-	}
-	else {
-		return;
-	}
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
 }
 
 sub build_lookup_hash {
@@ -3138,7 +3354,8 @@ sub build_lookup_hash {
     ];
 }
 
-package  # app_config_block
+# app_config_block
+package  #
     app_config_block;
 use strict; use warnings;
 
@@ -3208,9 +3425,9 @@ sub walk_postorder {
         push @{ $output }, @{ $child_output } if $child_output;
     }
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -3223,7 +3440,8 @@ sub build_lookup_hash {
     return $child_output;
 }
 
-package  # controller_config_block
+# controller_config_block
+package  #
     controller_config_block;
 use strict; use warnings;
 
@@ -3242,9 +3460,9 @@ sub walk_postorder {
         push @{ $output }, @{ $child_output } if $child_output;
     }
 
-	if ( $self->can( $action ) ) {
-		$output = $self->$action( $output, $data, $parent );
-	}
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
@@ -3257,7 +3475,8 @@ sub build_lookup_hash {
     return $child_output;
 }
 
-package  # app_config_statement
+# app_config_statement
+package  #
     app_config_statement;
 use strict; use warnings;
 
@@ -3353,12 +3572,12 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	if ( $self->can( $action ) ) {
-		return $self->$action( undef, $data, $parent );
-	}
-	else {
-		return;
-	}
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
 }
 
 sub build_lookup_hash {
@@ -3376,7 +3595,8 @@ sub build_lookup_hash {
     ];
 }
 
-package  # controller_config_statement
+# controller_config_statement
+package  #
     controller_config_statement;
 use strict; use warnings;
 
@@ -3388,12 +3608,12 @@ sub walk_postorder {
     my $data   = shift;
     my $parent = shift;
 
-	if ( $self->can( $action ) ) {
-		return $self->$action( undef, $data, $parent );
-	}
-	else {
-		return;
-	}
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
 }
 
 sub build_lookup_hash {
@@ -3411,7 +3631,8 @@ sub build_lookup_hash {
     ];
 }
 
-package  # arg_list
+# arg_list
+package  #
     arg_list;
 use strict; use warnings;
 

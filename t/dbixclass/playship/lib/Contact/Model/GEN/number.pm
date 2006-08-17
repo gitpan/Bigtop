@@ -1,11 +1,9 @@
 # NEVER EDIT this file.  It was generated and will be overwritten without
 # notice upon regeneration of this application.  You have been warned.
-package Contact::Model::GEN::number;
+package Contact::Model::number;
 use strict; use warnings;
 
-use base 'Gantry::Utils::DBIxClass';
-
-__PACKAGE__->load_components( qw/ Core / );
+__PACKAGE__->load_components( qw/ PK::Auto Core / );
 __PACKAGE__->table( 'number' );
 __PACKAGE__->add_columns( qw/
     id
@@ -13,6 +11,7 @@ __PACKAGE__->add_columns( qw/
     number
 / );
 __PACKAGE__->set_primary_key( 'id' );
+__PACKAGE__->base_model( 'Contact::Model' );
 
 sub get_foreign_display_fields {
     return [ qw( name ) ];
@@ -26,7 +25,7 @@ sub get_foreign_tables {
 sub foreign_display {
     my $self = shift;
 
-    my $name = $self->name();
+    my $name = $self->name() || '';
 
     return "$name";
 }

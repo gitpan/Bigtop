@@ -484,6 +484,41 @@ use [% module %];
 [% init_sub %]
 
 [% config_accessors %]
+#-----------------------------------------------------------------
+# $self->do_main( )
+#-----------------------------------------------------------------
+sub do_main {
+    my ( $self ) = shift;
+
+    $self->stash->view->template( 'main.tt' );
+    $self->stash->view->title( '[% dist_name %]' );
+
+    $self->stash->view->data( {
+        pages => [
+[% FOREACH page IN pages %]
+            { link => '[% page.link %]', label => '[% page.label %]' },
+[% END %]
+        ],
+    } );
+}
+
+#-----------------------------------------------------------------
+# $self->site_links( )
+#-----------------------------------------------------------------
+sub site_links {
+    my $self = shift;
+
+    return [
+[% FOREACH page IN pages %]
+[% IF page.link.match( '^/' ) %]
+        { link => '[% page.link %]', label => '[% page.label %]' },
+[% ELSE %]
+        { link => $self->app_rootp() . '[% page.link %]', label => '[% page.label %]' },
+[% END %]
+[% END %]
+    ];
+}
+
 1;
 
 [% pod %]
@@ -807,7 +842,15 @@ sub [% config %] {
 
 [% BLOCK form_body %]
 [% arg_capture %]
+[%- IF dbix -%]
+    my $selections = $[% model %]->get_form_selections(
+            { schema => $self->get_schema() }
+    );
+
+[%- ELSE -%]
     my $selections = $[% model %]->get_form_selections();
+
+[%- END -%]
 
     return {
         name       => '[% form_name %]',
@@ -882,8 +925,8 @@ sub do_add {
 sub [% crud_name %]_add {
     my ( $self, $params, $data ) = @_;
 
-    my $row = $[% model_alias %]->create( $params );
-    $row->dbi_commit();
+    # make a new row in the $[% model_alias %] table using data from $params
+    # remember to commit
 }
 
 #-------------------------------------------------
@@ -900,9 +943,9 @@ sub do_delete {
 sub [% crud_name %]_delete {
     my ( $self, $data ) = @_;
 
-    my $doomed = $[% model_alias %]->retrieve( $data->{id} );
-    $doomed->delete;
-    $[% model_alias %]->dbi_commit;
+    # fish the id (or the actual row) from the data hash
+    # delete it
+    # remember to commit
 }
 
 #-------------------------------------------------
@@ -922,14 +965,9 @@ sub do_edit {
 sub [% crud_name %]_edit {
     my( $self, $params, $data ) = @_;
 
-    my %param = %{ $params };
-
-    my $row = $data->{row};
-
-    # Make update
-    $row->set( %param );
-    $row->update;
-    $row->dbi_commit;
+    # retrieve the row from the data hash
+    # update the row
+    # remember to commit
 }
 [% END %]
 EO_TT_blocks
@@ -955,9 +993,9 @@ sub backend_block_keywords {
 
         { keyword => 'full_use',
           label   => 'Full Use Statement',
-          descr   => 'use Gantry qw( -engine=... ); [defaults to true]',
+          descr   => 'use Gantry qw( -Engine=... ); [defaults to false]',
           type    => 'boolean',
-          default => 'true' },
+          default => 'false' },
 
         { keyword => 'dbix',
           label   => 'For use with DBIx::Class',
@@ -1057,14 +1095,23 @@ sub gen_Control {
         }
     );
 
-    my $full_use_statement = 1;
+    my $full_use_statement = 0;
     my $config_block = $config->{Control};
-    if ( defined $config_block->{full_use} and not $config_block->{full_use} ) {
-        $full_use_statement = 0;
+    if ( defined $config_block->{full_use} and $config_block->{full_use} ) {
+        $full_use_statement = 1;
+    }
+
+    my $nav_links = $bigtop_tree->walk_postorder( 'output_nav_links' );
+
+    my @pages;
+    foreach my $nav_link ( @{ $nav_links } ) {
+        my %nav_pair = @{ $nav_link };
+        push @pages, \%nav_pair;
     }
 
     my $base_module_content = Bigtop::Backend::Control::Gantry::base_module(
         {
+            dist_name          => $base_module_name,
             app_name           => $app_name,
             external_modules   => \@external_modules,
             sub_modules        => $sub_modules,
@@ -1072,6 +1119,7 @@ sub gen_Control {
             config_accessors   => $config_accessors,
             pod                => $pod,
             full_use_statement => $full_use_statement,
+            pages              => \@pages,
             %{ $config },                # Go fish!
         }
     );
@@ -1166,7 +1214,8 @@ sub build_config_lists {
 #   Packages named in the grammar
 #-----------------------------------------------------------------
 
-package # sql_block
+# sql_block
+package #
     sql_block;
 use strict; use warnings;
 
@@ -1182,7 +1231,8 @@ sub output_field_names {
     return $child_output;
 }
 
-package # table_element_block
+# table_element_block
+package #
     table_element_block;
 use strict; use warnings;
 
@@ -1194,7 +1244,8 @@ sub output_field_names {
     return [ $self->{__NAME__} ];
 }
 
-package # controller_block
+# controller_block
+package #
     controller_block;
 use strict; use warnings;
 
@@ -1458,7 +1509,23 @@ sub _extract_output_from {
     );
 }
 
-package # controller_statement
+sub output_nav_links {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    my %retval       = @{ $child_output };
+
+    if ( defined $retval{ label } and $retval{ label } ) {
+        return [ $child_output ];
+    }
+    else {
+        return [];
+    }
+}
+
+# controller_statement
+package #
     controller_statement;
 use strict; use warnings;
 
@@ -1628,7 +1695,25 @@ sub text_description {
     }
 }
 
-package # controller_method
+sub output_nav_links {
+    my $self = shift;
+
+    if ( $self->{__KEYWORD__} eq 'rel_location' ) {
+        return [ link => $self->{__ARGS__}->get_first_arg() ]
+    }
+    elsif ( $self->{__KEYWORD__} eq 'location' ) {
+        return [ link => $self->{__ARGS__}->get_first_arg() ]
+    }
+
+    if ( $self->{__KEYWORD__} eq 'page_link_label' ) {
+        return [ label => $self->{__ARGS__}->get_first_arg() ]
+    }
+
+    return [];
+}
+
+# controller_method
+package #
     controller_method;
 use strict; use warnings;
 
@@ -1762,7 +1847,8 @@ sub output_controller {
     ];
 }
 
-package # method_body
+# method_body
+package #
     method_body;
 use strict; use warnings;
 
@@ -2029,6 +2115,16 @@ sub _crud_form_outputer {
     $name_of{method}     = $self->get_method_name();
     $name_of{controller} = $self->get_controller_name();
 
+    if ( $name_of{method} eq '_form' ) {
+        if ( $auto_crud ) {
+            warn "form methods should be called form (not _form)\n";
+        }
+        else {
+            warn "form methods should have a name like my_form, "
+                .   "not just _form\n";
+        }
+    }
+
     $self->get_table_name_for( $data->{lookup}, \%name_of );
 
     my $fields = $self->get_fields_from( $data->{lookup}, \%name_of );
@@ -2108,6 +2204,7 @@ sub _crud_form_outputer {
             fields     => \@field_lookups,
             extra_keys => \%extra_keys,
             raw_row    => $auto_crud,
+            dbix       => $self->is_dbix_class( $data ),
         }
     );
 
@@ -2159,7 +2256,8 @@ sub _find_all_fields_but {
     return \@retval;
 }
 
-package # method_statement
+# method_statement
+package #
     method_statement;
 use strict; use warnings;
 

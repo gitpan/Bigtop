@@ -17,21 +17,6 @@
                                 If you don't want your label in a heading,
                                 make this 'none'
 %]
-<div id='[% clickable_id %]'
-     onclick='javascript:show_or_hide(
-         "[% element_under_control %]"
-      )';
-     style='color: blue; cursor: pointer'
->
-    [% IF heading_level == 'none' %]
-        [% label %]
-    [% ELSE %]
-        <[% heading_level || 'h2' %]>
-            [% label %]
-        </[% heading_level || 'h2' %]>
-    [% END %]
-
-</div>
 <div id='[% element_under_control %]' style='display: none'>
   [% content %]
 </div>
