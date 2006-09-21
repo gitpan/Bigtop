@@ -33,16 +33,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller Address is AutoCRUD {
@@ -78,16 +79,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller Address is AutoCRUD {
@@ -101,7 +103,6 @@ app Sample {
             all_fields_but id, created, modified;
         }
         method do_alt_main is main_listing {
-
         }
     }
 }
@@ -124,16 +125,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller Address is AutoCRUD {
@@ -147,9 +149,8 @@ app Sample {
             all_fields_but id, created, modified;
         }
         method do_alt_main is main_listing {
-
         }
-        uses `Date::Calc`, Carp;
+        uses Date::Calc, Carp;
     }
 }
 EO_controller_statement
@@ -171,16 +172,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller Address is AutoCRUD {
@@ -194,9 +196,8 @@ app Sample {
             all_fields_but id, created, modified;
         }
         method do_alt_main is main_listing {
-
         }
-        uses Carp, `Date::Calc`;
+        uses Carp, Date::Calc;
     }
 }
 EO_change_controller_statement
@@ -217,16 +218,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller Address is AutoCRUD {
@@ -242,7 +244,7 @@ app Sample {
         method do_alt_main is main_listing {
             title `A Label`;
         }
-        uses Carp, `Date::Calc`;
+        uses Carp, Date::Calc;
     }
 }
 EO_new_method_statement
@@ -263,16 +265,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller Address is AutoCRUD {
@@ -288,7 +291,7 @@ app Sample {
         method do_alt_main is main_listing {
             title Addresses;
         }
-        uses Carp, `Date::Calc`;
+        uses Carp, Date::Calc;
     }
 }
 EO_change_method_statement
@@ -309,16 +312,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller AddressControl is AutoCRUD {
@@ -334,7 +338,7 @@ app Sample {
         method do_alt_main is main_listing {
             title Addresses;
         }
-        uses Carp, `Date::Calc`;
+        uses Carp, Date::Calc;
     }
 }
 EO_change_controller_name
@@ -355,16 +359,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller AddressControl is AutoCRUD {
@@ -380,7 +385,7 @@ app Sample {
         method do_alt_main is main_listing {
             title Addresses;
         }
-        uses Carp, `Date::Calc`;
+        uses Carp, Date::Calc;
     }
 }
 EO_change_method_name
@@ -402,16 +407,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller AddressControl is AutoCRUD {
@@ -447,16 +453,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller AddressControl is AutoCRUD {
@@ -470,7 +477,6 @@ app Sample {
             all_fields_but id, created, modified;
         }
         method do_alt_main is main_listing {
-
         }
     }
 }
@@ -490,16 +496,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     controller AddressControl is AutoCRUD {
@@ -507,7 +514,6 @@ app Sample {
             all_fields_but id, created, modified;
         }
         method do_alt_main is main_listing {
-
         }
     }
 }

@@ -7,7 +7,7 @@ Bigtop::Docs::Keywords - a bigtop keyword quick reference in monospace font
 =head1 The Keywords in Bigtop
 
 For those who like compact quick references with too much information crammed
-on them (designed to print on a couple of pages, if you cut everthing above):
+on them (designed to print on a few of pages, if you cut everthing above):
 
  config {}
     base_dir        - in create mode, the directory under which all things live
@@ -46,8 +46,12 @@ on them (designed to print on a couple of pages, if you cut everthing above):
                         script's config will have only GantryConfInstance
                         in its config hash (see Conf General)
         skip_config   - make this true to omit PerlSetVar statments
-    Model     GantryCDBI    {}
-        Makes: lib/Model modules (including GEN modules)
+    Model     GantryDBIxClass {}
+    Model     Gantry          {}
+    Model     GantryCDBI      {}
+        Make: lib/Model modules (including GEN modules)
+        model_base_class - changes the default base class for models can still
+                           be overridden by model_base_class on a table
     SQL       Postgres      {}
         Makes: docs/schema.postgres
     SiteLook  GantryDefault {}
@@ -58,10 +62,12 @@ on them (designed to print on a couple of pages, if you cut everthing above):
     will cause the parser to skip the whole backend.  Init Std has statements
     for each file Build.PL, Changes, README, MANIFEST, use a value of no_gen
     to skip that file ex: Changes no_gen; ]
+    [Note: Most config backend blocks can have a template statement to
+    change their generation TT template to one of your choice.]
 
  app name {}
-    authors          - comma separated list of authors
-    email            - one author's address
+    authors          - comma separated list of authors or author => email pairs
+    contact_us       - blurb about how to contact project members
     copyright_holder - defaults to first author
     license_text     - defaults to text from h2xs for Perl 5.8.0
     location         - root Apache Location for the app
@@ -94,6 +100,12 @@ on them (designed to print on a couple of pages, if you cut everthing above):
     literal HttpdConf `...`;- a literal string to include between location
                               directives in httpd.conf.
 
+    literal Conf `...`;     - a literal string to include at the top
+                              level of Config::General conf file
+
+    literal GantryLocation `...`; - a literal string to include at a controller
+                                    level of Config::General conf file
+
     sequence name {}
         (none of these work yet:)
         starting_value
@@ -102,7 +114,7 @@ on them (designed to print on a couple of pages, if you cut everthing above):
 
     table name {}
         field name {}
-            is        - valid sql modifiers like int4, primary key, etc.
+            is        - valid sql modifiers like int4, primary_key, etc.
             label     - what the user will see when this field appears on
                         screen or in reports
             refers_to - table to which this field points as a foreign key
@@ -134,6 +146,12 @@ on them (designed to print on a couple of pages, if you cut everthing above):
 
         foreign_display  - how other table see rows from this one.  Example:
                            foreign_display `%last, $first`;
+
+    join_table name {}
+        joins - a pair of tables this table joins in many-to-many bliss.
+                You must have exactly one joins statement in the block.
+                Ex: joins a => b;
+        names - pair of names of the many-to-many relationship in each table
 
     controller name is type {}
         [ is type is optional an defaults to is stub,

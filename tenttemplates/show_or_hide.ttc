@@ -11,12 +11,14 @@
     Expects these parameters:
 
         label                 - The link text shown to the user
-        clickable_id          - div id of the label
         element_under_control - div id of the content to reveal or hide
-        heading_level         - h1, h2, h3, ...
-                                If you don't want your label in a heading,
-                                make this 'none'
 %]
-<div id='[% element_under_control %]' style='display: none'>
+<div id='[% element_under_control %]'
+  [% IF expanded %]
+    style='display: inline'
+  [% ELSE %]
+    style='display: none'
+  [% END %]
+>
   [% content %]
 </div>

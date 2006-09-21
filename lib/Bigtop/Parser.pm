@@ -8,6 +8,7 @@ use Carp;
 
 use Bigtop::Grammar;
 use Bigtop::Keywords;
+use Bigtop::ScriptHelp;
 
 # $::RD_TRACE = 1;
 # $::RD_HINT = 1;
@@ -93,7 +94,7 @@ sub get_valid_keywords {
     my %trailer_for = (
         config     => 'or a valid backend block',
         app        => 'or a valid block (controller, sequence, ' .
-                                        'config, or table)',
+                                        'config, table, or join_table)',
         controller => 'or a valid method block',
         table      => 'or a valid field block',
     );
@@ -174,13 +175,35 @@ sub set_gen_mode {
 #---------------------------------------------------------------------
 
 sub fatal_keyword_error {
-    my $class                = shift;
-    my $bad_keyword          = shift;
-    my $diag_text            = shift;
-    my $bigtop_input_linenum = shift;
-    my @expected             = @_;
+    my $class = shift;
+    my $args  = shift;
+
+    my $bad_keyword          = $args->{ bad_keyword   };
+    my $diag_text            = $args->{ diag_text     };
+    my $bigtop_input_linenum = $args->{ input_linenum };
+    my $keyword_type         = $args->{ type          };
+    my @expected             = @{ $args->{ expected } };
 
     $diag_text               =~ s/\n.*//sg;  # trim to one line
+
+    # see if they forget a block name
+    my %block_types = (
+        config     => {},
+        app        => { controller => 1,
+                        sequence   => 1,
+                        config     => 1,
+                        table      => 1,
+                        join_table => 1,
+                      },
+        controller => { method     => 1, },
+        table      => { field      => 1, },
+    );
+
+    if ( $block_types{ $keyword_type }{ $bad_keyword } ) {
+        die "Error: missing name for $bad_keyword block (line "
+            .   "$bigtop_input_linenum) near:\n"
+            .   "$diag_text\n";
+    }
 
     my $expected             = join ', ', @expected;
 
@@ -209,10 +232,29 @@ sub fatal_error_two_lines {
 #   The preprocessor (comment stripper)
 #---------------------------------------------------------------------
 #
-# A comment is a line where the first non-whitespace char is #
+# The single parameter should be a bigtop string.  It will be modified
+# in place, by having all comments removed.  A comment is a line where
+# the first non-whitespace char is #
+#
+# Returns: a hash each key is a line numbers whose value is the comment
+# which was on that line of the source.
 #
 sub preprocess {
+
+    # first capture all the comments
+    my %retval;
+    my $line_count = 0;
+    foreach my $line ( split /\n/, $_[0] ) {
+        if ( $line =~ /^\s*#.*/ ) {
+            $retval{ $line_count } = $line;
+        }
+        $line_count++;
+    }
+
+    # then expunge all comments
     $_[0] =~ s/^\s*#.*//mg;
+
+    return \%retval;
 }
 
 #---------------------------------------------------------------------
@@ -252,9 +294,6 @@ sub gen_from_string {
     my $bigtop_file   = shift;
     my $create        = shift;
     my @args          = @_;
-
-    # strip comments
-    preprocess( $bigtop_string );
 
     my $config        = $class->parse_config_string( $bigtop_string );
 
@@ -357,9 +396,14 @@ sub _build_app_home_dir {
     my $build_dir = _form_build_dir( $base_dir, $tree, $config, $create );
 
     if ( $create ) {
+        if ( -d $build_dir ) {
+            die "cowardly refusing to create,\n"
+                .   "...build dir $build_dir already exists\n";
+        }
+
         mkdir $build_dir;
 
-        die "couldn't make directory $build_dir\n" unless ( -d $base_dir );
+        die "couldn't make directory $build_dir\n" unless ( -d $build_dir );
     }
     else {
         die "$build_dir is not a directory, perhaps you need to use --create\n"
@@ -379,7 +423,7 @@ sub _form_build_dir {
 
     my $app_dir  = '';
     if ( $create ) {
-        if ( defined $config->{app_dir} ) {
+        if ( defined $config->{app_dir} and $config->{app_dir} ) {
             $app_dir = $config->{app_dir};
         }
         else {
@@ -469,7 +513,8 @@ sub parse_string {
     my $string = shift
         or croak "usage: Bigtop::Parser->parse_string(bigtop_string)";
 
-    preprocess( $string );
+    # strip comments
+    my $comments      = preprocess( $string );
 
     my $build_types   = $class->load_backends(
             $string,
@@ -477,6 +522,8 @@ sub parse_string {
     );
 
     my $retval = $class->get_parser->bigtop_file( $string );
+
+    $retval->set_comments( $comments );
 
     unless ( $retval ) {
         die "Couldn't parse your bigtop input.\n";
@@ -509,8 +556,7 @@ sub parse_file {
 #   better it looks relative to a regular dump.
 #---------------------------------------------------------------------
 
-# application_ancestor
-package #
+package # application_ancestor
     application_ancestor;
 use strict; use warnings;
 
@@ -535,8 +581,7 @@ sub dumpme {
     $self->{__PARENT__} = $parent;
 }
 
-# bigtop_file
-package  #
+package # bigtop_file
     bigtop_file;
 use strict; use warnings;
 
@@ -548,6 +593,19 @@ sub walk_postorder {
     my $data   = shift;
 
     return $self->{application}->walk_postorder( $action, $data );
+}
+
+sub get_comments {
+    my $self     = shift;
+
+    return $self->{comments};
+}
+
+sub set_comments {
+    my $self     = shift;
+    my $comments = shift;
+
+    $self->{comments} = $comments;
 }
 
 sub get_authors {
@@ -739,6 +797,19 @@ sub change_statement {
         die "Couldn't change $params->{type} statement "
             .   "'$params->{keyword}' for '$params->{ident}'\n";
     }
+
+    return $result->[0];
+}
+
+sub get_statement {
+    my $self   = shift;
+    my $params = shift;
+
+    my $walk_action = "get_$params->{ type }_statement";
+
+    my $result = $self->walk_postorder( $walk_action, $params );
+
+    return $result->[0];
 }
 
 sub remove_statement {
@@ -749,7 +820,7 @@ sub remove_statement {
     my $result      = $self->walk_postorder( $walk_action, $params );
 
     if ( @{ $result } == 0 ) {
-        warn "Couldn't remove statement: couldn't find it\n";
+        warn "Couldn't remove statement: couldn't find it with $walk_action\n";
         require Data::Dumper;
         Data::Dumper->import( 'Dumper' );
         warn Dumper( $params );
@@ -762,7 +833,15 @@ sub change_name {
 
     my $method            = "change_name_$params->{type}";
 
-    $self->walk_postorder( $method, $params );
+    $params->{__THE_TREE__} = $self;
+    my $instructions = $self->walk_postorder( $method, $params );
+
+    if ( $instructions->[1] ) {
+        return $instructions;
+    }
+    else {
+        return [];
+    }
 }
 
 sub create_block {
@@ -815,8 +894,77 @@ sub type_change {
     $self->walk_postorder( 'change_type', $params );
 }
 
-# application
-package  #
+sub field_became_date {
+    my $self   = shift;
+    my $params = shift;
+
+    my @retvals;
+
+    my $table_name = $self->walk_postorder(
+        'get_table_name_from_field_ident',
+        $params
+    )->[0];
+
+    my $result = $self->walk_postorder(
+            'use_date_plugin', { table => $table_name, }
+    );
+
+    push @retvals, @{ $result };
+
+    # make sure field's type is text
+    $self->walk_postorder(
+            'change_field_statement',
+            {
+                type      => 'field',
+                ident     => $params->{ ident },
+                keyword   => 'html_form_type',
+                new_value => 'text',
+            },
+    );
+
+    push @retvals, $params->{ ident } . '::html_form_type', 'text';
+
+    # based on the triggering event, update the other possible cause
+    # ... if is became date, set date select text
+    if ( $params->{ trigger } eq 'date' ) {
+        $self->walk_postorder(
+                'change_field_statement',
+                {
+                    type      => 'field',
+                    ident     => $params->{ ident },
+                    keyword   => 'date_select_text',
+                    new_value => 'Select Date',
+                },
+        );
+        push @retvals,
+             $params->{ ident } . '::date_select_text',
+             'Select Date';
+    }
+    # ... if date select text got a value, make the field type date
+    else {
+        $self->walk_postorder(
+                'change_field_statement',
+                {
+                    type      => 'field',
+                    ident     => $params->{ ident },
+                    keyword   => 'is',
+                    new_value => 'date',
+                },
+        );
+        push @retvals, $params->{ ident } . '::is', 'date';
+    }
+
+    return \@retvals;
+}
+
+sub table_reset_bool {
+    my $self   = shift;
+    my $params = shift;
+
+    return $self->walk_postorder( 'table_reset_bool', $params );
+}
+
+package # application
     application;
 use strict; use warnings;
 
@@ -858,7 +1006,7 @@ sub set_app_statement {
     );
 
     unless ( defined $success->[0] ) { # no existing statement, make one
-        $self->{app_body}->add_last_statement( $keyword, $value );
+        $self->{__BODY__}->add_last_statement( $keyword, $value );
     }
 }
 
@@ -875,7 +1023,7 @@ sub set_app_statement_pairs {
     my $success = $self->walk_postorder( 'set_statement_pairs', $params );
 
     unless ( defined $success->[0] ) { # make a new statement
-        $self->{app_body}->add_last_statement_pair( $params );
+        $self->{__BODY__}->add_last_statement_pair( $params );
     }
 }
 
@@ -897,7 +1045,7 @@ sub set_config_statement {
     );
 
     unless ( defined $success->[0] ) { # no such statement
-        $self->{app_body}->add_last_config_statement(
+        $self->{__BODY__}->add_last_config_statement(
                 $keyword, $value, $accessor
         );
     }
@@ -928,12 +1076,22 @@ sub get_config {
     return $statements;
 }
 
+sub show_idents {
+    my $self         = shift;
+    my $child_output = shift;
+
+    require Data::Dumper;
+    warn Data::Dumper::Dumper( $child_output );
+
+    return;
+}
+
 sub walk_postorder {
     my $self   = shift;
     my $action = shift;
     my $data   = shift;
 
-    my $output = $self->{app_body}->walk_postorder( $action, $data, $self );
+    my $output = $self->{__BODY__}->walk_postorder( $action, $data, $self );
 
     if ( $self->can( $action ) ) {
         $output = $self->$action( $output, $data, undef );
@@ -942,8 +1100,7 @@ sub walk_postorder {
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
 
-# app_body
-package  #
+package # app_body
     app_body;
 use strict; use warnings;
 
@@ -1186,18 +1343,28 @@ sub build_lookup_hash {
     my %output;
 
     foreach my $element ( @{ $child_output } ) {
-        my $output_type                  = $element->{__TYPE__};
+        if ( $element->{__TYPE__} eq 'join_tables' ) {
+            my $output_type                  = $element->{__TYPE__};
+            my $name                         = $element->{__DATA__}[0];
+            push @{ $output{ $output_type }{ $name } },
+                 $element->{__DATA__}[1];
 
-        my $name                         = $element->{__DATA__}[0];
+            $name                            = $element->{__DATA__}[2];
+            push @{ $output{ $output_type }{ $name } },
+                 $element->{__DATA__}[3];
+        }
+        else {
+            my $output_type                  = $element->{__TYPE__};
+            my $name                         = $element->{__DATA__}[0];
+            $output{ $output_type }{ $name } = $element->{__DATA__}[1];
+        }
 
-        $output{ $output_type }{ $name } = $element->{__DATA__}[1];
     }
 
     return [ %output ];
 }
 
-# block
-package  #
+package # block
     block;
 use strict; use warnings;
 
@@ -1235,10 +1402,11 @@ sub new_statement_pair {
 }
 
 my %block_name_for = (
-    table      => 'sql_block',
-    sequence   => 'sql_block',
+    table      => 'table_block',
+    sequence   => 'seq_block',
     controller => 'controller_block',
     literal    => 'literal_block',
+    join_table => 'join_table',
 );
 
 sub new_block {
@@ -1266,10 +1434,15 @@ sub matches {
     my $self  = shift;
     my $ident = shift;
 
-    my @block_types = qw( controller_block sql_block literal_block );
+    my @ident_block_types = qw(
+            controller_block
+            seq_block
+            table_block
+            literal_block
+    );
 
     TYPE:
-    foreach my $block_type_name ( @block_types ) {
+    foreach my $block_type_name ( @ident_block_types ) {
         next TYPE unless defined $self->{ $block_type_name };
         return 1 if ( $self->{ $block_type_name }{__IDENT__} eq $ident );
     }
@@ -1289,6 +1462,15 @@ sub old_matches {
     return 1;
 }
 
+sub get_ident {
+    my $self = shift;
+
+    foreach my $child_block ( keys %{ $self } ) {
+        next unless ref $self->{ $child_block };
+        return $self->{ $child_block }->get_ident();
+    }
+}
+
 sub walk_postorder {
     my $self   = shift;
     my $action = shift;
@@ -1302,6 +1484,8 @@ sub walk_postorder {
             $block_type =~ /_block$/
                 or
             $block_type =~ /_statement$/
+                or
+            $block_type eq 'join_table'
         );
 
         my $child_output = $self->{$block_type}->walk_postorder(
@@ -1326,8 +1510,7 @@ sub build_lookup_hash {
     return $child_output;
 }
 
-# app_statement
-package  #
+package # app_statment
     app_statement;
 use strict; use warnings;
 
@@ -1438,9 +1621,8 @@ sub build_lookup_hash {
     ];
 }
 
-# literal_block
-package  #
-    literal_block;
+package # literal_block
+     literal_block;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1520,6 +1702,16 @@ sub get_backend {
     return $self->{__BACKEND__};
 }
 
+sub show_idents {
+    my $self         = shift;
+    my $child_output = shift;
+
+    push @{ $child_output },
+            [ 'literal', $self->{ __NAME__ }, $self->{ __IDENT__ } ];
+
+    return $child_output;
+}
+
 sub walk_postorder {
     my $self   = shift;
     my $action = shift;
@@ -1551,9 +1743,8 @@ sub make_output {
     }
 }
 
-# sql_block
-package  #
-    sql_block;
+package # table_block
+    table_block;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -1565,101 +1756,73 @@ sub new_block {
 
     my $self;
 
-    if ( $data->{type} eq 'sequence' ) {
-        my $sequence_body = {
-            'sequence_statement(s?)' => [],
-            '__RULE__'               => 'sequence_body',
-            'sequence_statement(s)'  => [],
-        };
+    $self = {
+        __IDENT__ => Bigtop::Parser->get_ident(),
+        __NAME__  => $data->{name},
+        __TYPE__  => 'tables',
+        __BODY__  => [],
+    };
 
-        bless $sequence_body, 'sequence_body';
+    my $id_field = table_element_block->new_field(
+        $self, 'id'
+    );
 
-        $self = {
-            __IDENT__ => Bigtop::Parser->get_ident(),
-            __NAME__  => $data->{name},
-            __TYPE__  => 'sequences',
-            __BODY__  => $sequence_body,
-        };
+    $id_field->add_field_statement(
+        {
+            ident     => $id_field->get_ident,
+            keyword   => 'is',
+            new_value => 'int4][primary_key][auto',
+        },
+    );
 
-        $sequence_body->{__PARENT__} = $self;
-    }
-    elsif ( $data->{type} eq 'table' ) {
-        my $table_body = table_body->new( $data );
+    push @{ $self->{__BODY__} }, $id_field;
 
-        $self = {
-            __IDENT__ => Bigtop::Parser->get_ident(),
-            __NAME__  => $data->{name},
-            __TYPE__  => 'tables',
-            __BODY__  => $table_body,
-        };
+    my %values = (
+        is             => 'varchar',
+        html_form_type => 'text'
+    );
 
-        $table_body->{__PARENT__} = $self;
+    foreach my $field_name qw( ident description ) {
 
-        my $id_field = table_element_block->new_field(
-            $self->{__BODY__}, 'id'
+        $values{ label } = ucfirst $field_name;
+
+        my $field = table_element_block->new_field(
+            $self, $field_name
         );
 
-        $id_field->add_field_statement(
-            {
-                ident     => $id_field->get_ident,
-                keyword   => 'is',
-                new_value => 'int4][primary_key][auto',
-            },
-        );
-
-        push @{ $self->{__BODY__}{'table_element_block(s?)'} }, $id_field;
-
-        my %values = (
-            is             => 'varchar',
-            html_form_type => 'text'
-        );
-
-        foreach my $field_name qw( ident description ) {
-
-            $values{ label } = ucfirst $field_name;
-
-            my $field = table_element_block->new_field(
-                $self->{__BODY__}, $field_name
-            );
-
-            foreach my $statement qw( is label html_form_type ) {
-                $field->add_field_statement(
-                    {
-                        ident     => $field->get_ident,
-                        keyword   => $statement,
-                        new_value => $values{ $statement },
-                    },
-                );
-            }
-            push @{ $self->{__BODY__}{'table_element_block(s?)'} }, $field;
-        }
-
-        foreach my $date_field qw( created modified ) {
-            my $field = table_element_block->new_field(
-                    $self->{__BODY__}, $date_field
-            );
+        foreach my $statement qw( is label html_form_type ) {
             $field->add_field_statement(
                 {
                     ident     => $field->get_ident,
-                    keyword   => 'is',
-                    new_value => 'date',
+                    keyword   => $statement,
+                    new_value => $values{ $statement },
                 },
             );
-            push @{ $self->{__BODY__}{'table_element_block(s?)'} }, $field;
         }
-
-        if ( defined $data->{sequence} ) {
-            my $seq_stmnt = table_element_block->new_statement(
-                $self,
-                'sequence',
-                $data->{sequence},
-            );
-            push @{ $self->{__BODY__}{'table_element_block(s?)'} }, $seq_stmnt;
-        }
-
+        push @{ $self->{__BODY__} }, $field;
     }
-    else {
-        die "sql_block does not know how to make a $data->{type}\n";
+
+    foreach my $date_field qw( created modified ) {
+        my $field = table_element_block->new_field(
+                $self, $date_field
+        );
+        $field->add_field_statement(
+            {
+                ident     => $field->get_ident,
+                keyword   => 'is',
+                new_value => 'datetime',
+            },
+        );
+        push @{ $self->{__BODY__} }, $field;
+    }
+
+    if ( defined $data->{sequence} ) {
+        my $seq_stmnt = table_element_block->new_statement(
+            $self,
+            'sequence',
+            $data->{sequence},
+        );
+        push @{ $self->{__BODY__} }, $seq_stmnt;
     }
 
     $self->{__PARENT__} = $parent;
@@ -1672,16 +1835,15 @@ sub add_subblock {
     shift;
     my $data = shift;
 
-    return unless ( $self->{__TYPE__}        eq 'tables'         );
     return unless ( $data->{parent}{type}    eq 'table'          );
     return unless ( $data->{parent}{ident}   eq $self->get_ident );
     return unless ( $data->{new_child}{type} eq 'field'          );
 
     my $new_field = table_element_block->new_field(
-            $self->{__BODY__}, $data->{new_child}{name}
+            $self, $data->{new_child}{name}
     );
 
-    push @{ $self->{__BODY__}{'table_element_block(s?)'} }, $new_field;
+    push @{ $self->{__BODY__} }, $new_field;
 
     return [ $new_field ];
 }
@@ -1694,7 +1856,7 @@ sub remove_block {
     my $doomed_index = -1;
     my $count        = 0;
 
-    my $children     = $self->{__BODY__}{'table_element_block(s?)'};
+    my $children     = $self->{__BODY__};
 
     CHILD:
     foreach my $child ( @{ $children } ) {
@@ -1721,37 +1883,27 @@ sub app_block_hashes {
     my $self         = shift;
     my $child_output = shift;
 
-    if ( $self->{__TYPE__} eq 'sequences' ) {
-        return [ {
-            type  => 'sequence',
-            body  => undef,
-            name  => $self->get_name,
-            ident => $self->get_ident,
-        } ];
-    }
-    else {
-        my $body = {
-            statements => {},
-            fields     => [],
-        };
+    my $body = {
+        statements => {},
+        fields     => [],
+    };
 
-        foreach my $child_item ( @{ $child_output } ) {
-            if ( $child_item->{ type } eq 'statement' ) {
-                $body->{ statements }{ $child_item->{ keyword } } =
-                        $child_item->{ value };
-            }
-            else {
-                push @{ $body->{ fields } }, $child_item;
-            }
+    foreach my $child_item ( @{ $child_output } ) {
+        if ( $child_item->{ type } eq 'statement' ) {
+            $body->{ statements }{ $child_item->{ keyword } } =
+                    $child_item->{ value };
         }
-
-        return [ {
-            type  => 'table',
-            body  => $body,
-            name  => $self->get_name,
-            ident => $self->get_ident,
-        } ];
+        else {
+            push @{ $body->{ fields } }, $child_item;
+        }
     }
+
+    return [ {
+        type  => 'table',
+        body  => $body,
+        name  => $self->get_name,
+        ident => $self->get_ident,
+    } ];
 }
 
 sub change_name_table {
@@ -1759,25 +1911,17 @@ sub change_name_table {
     shift;
     my $data = shift;
 
-    return unless $self->{__TYPE__} eq 'tables';
     return unless $self->get_ident  eq $data->{ident};
 
+    my $old_name = $self->get_name();
     $self->set_name( $data->{new_value} );
 
-    return [ 1 ];
-}
-
-sub change_name_sequence {
-    my $self   = shift;
-    shift;
-    my $params = shift;
-
-    return unless $self->{__TYPE__} eq 'sequences';
-    return unless $self->get_ident  eq $params->{ident};
-
-    $self->set_name( $params->{new_value} );
-
-    return [ 1 ];
+    return $data->{__THE_TREE__}->walk_postorder( 'table_name_changed',
+        {
+            old_name => $old_name,
+            new_name => $data->{ new_value }
+        }
+    );
 }
 
 sub get_ident {
@@ -1801,13 +1945,31 @@ sub set_name {
     # update lookup hash?
 }
 
+sub show_idents {
+    my $self = shift;
+    my $child_output = shift;
+
+    push @{ $child_output },
+            [ $self->{ __TYPE__ }, $self->{ __NAME__ }, $self->{ __IDENT__ } ];
+
+    return $child_output;
+}
+
 sub walk_postorder {
     my $self   = shift;
     my $action = shift;
     my $data   = shift;
     my $parent = shift;
 
-    my $output = $self->{__BODY__}->walk_postorder( $action, $data, $self );
+    my $output = [];
+
+    foreach my $body_element ( @{ $self->{__BODY__} } ) {
+        my $child_output = $body_element->walk_postorder(
+            $action, $data, $self
+        );
+
+        push @{ $output }, @{ $child_output } if $child_output;
+    }
 
     if ( $self->can( $action ) ) {
         $output = $self->$action( $output, $data, $parent );
@@ -1831,22 +1993,14 @@ sub build_lookup_hash {
         $output{ $output_type }{ $name } = $element->{__DATA__}[1];
     }
 
-    if ( %output ) {
-        return [ 
-            {
-                __TYPE__ => $self->{__TYPE__},
-                __DATA__ => [ $self->get_name() => \%output ],
-            }
-        ];
-    }
-    else {
-        return [
-            {
-                __TYPE__ => $self->{__TYPE__},
-                __DATA__ => [ $self->get_name() => 1 ],
-            }
-        ];
-    }
+    $output{ __IDENT__ } = $self->{ __IDENT__ };
+
+    return [ 
+        {
+            __TYPE__ => $self->{__TYPE__},
+            __DATA__ => [ $self->get_name() => \%output ],
+        }
+    ];
 }
 
 sub change_table_statement {
@@ -1867,7 +2021,7 @@ sub change_table_statement {
             $data->{new_value},
         );
 
-        my $blocks = $self->{ __BODY__ }{ 'table_element_block(s?)' };
+        my $blocks = $self->{ __BODY__ };
         push @{ $blocks }, $new_statement;
     }
 
@@ -1886,7 +2040,7 @@ sub remove_table_statement {
     my $count        = 0;
 
     BLOCK:
-    foreach my $block ( @{ $self->{__BODY__}{'table_element_block(s?)'} } ) {
+    foreach my $block ( @{ $self->{__BODY__} } ) {
         next BLOCK unless $block->{__TYPE__} eq $data->{keyword};
 
         $doomed_child = $count;
@@ -1899,7 +2053,7 @@ sub remove_table_statement {
     if ( $doomed_child >= 0 ) {
         # This probably leaks memory because children have parent pointers.
         # But the parent is me and I'm the app_body, so maybe not.
-        splice @{ $self->{__BODY__}{'table_element_block(s?)'} },
+        splice @{ $self->{__BODY__} },
                 $doomed_child,
                 1;
     }
@@ -1908,12 +2062,82 @@ sub remove_table_statement {
     return [ 1 ];
 }
 
-# sequence_body
-package  #
-    sequence_body;
+sub table_reset_bool {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless $self->{ __IDENT__} eq $data->{ ident };
+
+    return $self->walk_postorder( 'field_reset_bool', $data );
+}
+
+package # seq_block
+    seq_block;
 use strict; use warnings;
 
 use base 'application_ancestor';
+
+sub new_block {
+    my $class  = shift;
+    my $parent = shift;
+    my $data   = shift;
+
+    my $self = {
+        __IDENT__  => Bigtop::Parser->get_ident(),
+        __NAME__   => $data->{name},
+        __TYPE__   => 'sequences',
+        __BODY__   => [],
+        __PARENT__ => $parent,
+    };
+
+    return bless $self, $class;
+}
+
+sub app_block_hashes {
+    my $self         = shift;
+    my $child_output = shift;
+
+    return [ {
+        type  => 'sequence',
+        body  => undef,
+        name  => $self->get_name,
+        ident => $self->get_ident,
+    } ];
+}
+
+sub get_ident {
+    my $self = shift;
+
+    return $self->{__IDENT__};
+}
+
+sub get_name {
+    my $self = shift;
+
+    return $self->{__NAME__};
+}
+
+sub set_name {
+    my $self     = shift;
+    my $new_name = shift;
+
+    $self->{__NAME__} = $new_name;
+
+    # update lookup hash?
+}
+
+sub change_name_sequence {
+    my $self   = shift;
+    shift;
+    my $params = shift;
+
+    return unless $self->get_ident  eq $params->{ident};
+
+    $self->set_name( $params->{new_value} );
+
+    return [ 1 ];
+}
 
 sub walk_postorder {
     my $self   = shift;
@@ -1922,17 +2146,19 @@ sub walk_postorder {
     my $parent = shift;
 
     my $output = [];
-    foreach my $seq_statement ( @{ $self->{'sequence_statement(s)'} } ) {
-        my $child_output = $seq_statement->walk_postorder(
-            $action, $data, $self
-        );
 
-        push @{ $output }, @{ $child_output } if $child_output;
-    }
+# This might be needed if sequence blocks ever have statements.
+#
+#    foreach my $seq_statement ( @{ $self->{__BODY__} } ) {
+#        my $child_output = $seq_statement->walk_postorder(
+#            $action, $data, $self
+#        );
+#
+#        push @{ $output }, @{ $child_output } if $child_output;
+#    }
 
     if ( $self->can( $action ) ) {
-        my $real_output = ( @{ $output } ) ? $output : undef;
-        $output = $self->$action( $real_output, $data, $parent );
+        $output = $self->$action( $output, $data, $parent );
     }
 
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
@@ -1943,26 +2169,21 @@ sub build_lookup_hash {
     my $child_output = shift;
     my $data         = shift;
 
-    my %output;
-
-    if ( $child_output ) {
-        foreach my $element ( @{ $child_output } ) {
-            my $output_type                  = $element->{__TYPE__};
-
-            my $name                         = $element->{__DATA__}[0];
-
-            $output{ $output_type }{ $name } = $element->{__DATA__}[1];
+    return [
+        {
+            __TYPE__ => $self->{__TYPE__},
+            __DATA__ => [ $self->{__NAME__} => $self->{__IDENT__} ],
         }
-        return [ \%output ];
-    }
-    else {
-        return;
-    }
-
+    ];
 }
 
-# sequence_statement
-package  #
+sub show_idents {
+    my $self = shift;
+
+    return [ $self->{ __TYPE__ }, $self->{ __NAME__ }, $self->{ __IDENT__ } ];
+}
+
+package # sequence_statement
     sequence_statement;
 use strict; use warnings;
 
@@ -1997,49 +2218,7 @@ sub build_lookup_hash {
     ];
 }
 
-# table_body
-package  #
-    table_body;
-use strict; use warnings;
-
-use base 'application_ancestor';
-
-sub new {
-    my $class  = shift;
-    my $data   = shift;
-
-    my $self = {
-        __RULE__                  => 'table_body',
-        'table_element_block(s?)' => [],
-    };
-
-    return bless $self, $class;
-}
-
-sub walk_postorder {
-    my $self   = shift;
-    my $action = shift;
-    my $data   = shift;
-    my $parent = shift;
-
-    my $output = [];
-
-    foreach my $tbl_element_block ( @{ $self->{'table_element_block(s?)'} } ) {
-        my $child_output = $tbl_element_block->walk_postorder(
-            $action, $data, $self
-        );
-        push @{ $output }, @{ $child_output } if $child_output;
-    }
-
-    if ( $self->can( $action ) ) {
-        $output = $self->$action( $output, $data, $parent );
-    }
-
-    ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
-}
-
-# table_element_block
-package  #
+package # table_element_block
     table_element_block;
 use strict; use warnings;
 
@@ -2055,7 +2234,7 @@ sub new_statement {
         __PARENT__ => $parent,
         __BODY__   => $keyword,
         __TYPE__   => $keyword,
-        __VALUE__  => arg_list->new( $values ),
+        __ARGS__   => arg_list->new( $values ),
     };
 
     return bless $self, $class;
@@ -2071,10 +2250,8 @@ sub new_field {
         __TYPE__   => 'field',
         __IDENT__  => Bigtop::Parser->get_ident(),
         __NAME__   => $name,
-        __BODY__   => field_body->new(),
+        __BODY__   => [],
     };
-
-    $self->{__BODY__}{__PARENT__} = $self;
 
     return bless $self, $class;
 }
@@ -2102,7 +2279,7 @@ sub app_block_hashes {
             ident     => $self->get_ident,
             type      => 'statement',
             keyword   => $self->{__BODY__},
-            value     => $self->{__VALUE__},
+            value     => $self->{__ARGS__},
         } ];
     }
 }
@@ -2129,7 +2306,25 @@ sub get_ident {
 sub get_table_name {
     my $self = shift;
 
-    return $self->{__PARENT__}{__PARENT__}{__NAME__};
+    return $self->{__PARENT__}{__NAME__};
+}
+
+sub get_table_ident {
+    my $self = shift;
+
+    return $self->{__PARENT__}{__IDENT__};
+}
+
+sub show_idents {
+    my $self = shift;
+    my $child_output = shift;
+
+    return unless $self->{ __TYPE__ } eq 'field';
+
+    push @{ $child_output },
+            [ 'field', $self->{ __NAME__ }, $self->{ __IDENT__ } ];
+
+    return $child_output;
 }
 
 sub walk_postorder {
@@ -2140,8 +2335,14 @@ sub walk_postorder {
 
     my $output;
 
-    if ( $self->{__BODY__}->can( 'walk_postorder' ) ) {
-        $output = $self->{__BODY__}->walk_postorder( $action, $data, $self );
+    if ( $self->{__TYPE__} eq 'field' ) {
+        foreach my $field_stmnt ( @{ $self->{__BODY__} } ) {
+            my $child_output = $field_stmnt->walk_postorder(
+                $action, $data, $self
+            );
+ 
+            push @{ $output }, @{ $child_output } if $child_output;
+        }
     }
 
     if ( $self->can( $action ) ) {
@@ -2169,6 +2370,8 @@ sub build_lookup_hash {
             $sub_output{ $output_type }{ $name } = $element->{__DATA__}[1];
         }
 
+        $sub_output{ __IDENT__ } = $self->{ __IDENT__ };
+
         %output = (
             '__TYPE__' => 'fields',
             '__DATA__' => [
@@ -2181,7 +2384,7 @@ sub build_lookup_hash {
         %output = (
             '__TYPE__' => $self->{__BODY__},
             '__DATA__' => [
-                __ARGS__ => $self->{__VALUE__},
+                __ARGS__ => $self->{__ARGS__},
             ],
         );
     }
@@ -2198,7 +2401,7 @@ sub change_table_keyword_value {
 
     return unless ( $self->{__BODY__} eq $data->{keyword} );
 
-    $self->{__VALUE__}->set_args_from(
+    $self->{__ARGS__}->set_args_from(
             $data->{new_value},
             $data->{pair_required},
     );
@@ -2218,21 +2421,22 @@ sub change_field_statement {
 
     unless ( defined $success->[0] ) { # make new statement
 
-        $self->add_field_statement( $data );
-#        my $new_statement = field_statement->new_statement(
-#            {
-#                parent        => $self->{__BODY__},
-#                keyword       => $data->{keyword},
-#                new_value     => $data->{new_value},
-#                pair_required => $data->{pair_required} || 0,
-#            }
-#        );
-#
-#        my $blocks = $self->{ __BODY__ }{ 'field_statement(s?)' };
-#        push @{ $blocks }, $new_statement;
+        $success = [ $self->add_field_statement( $data ) ];
     }
 
-    return [ 1 ];
+    # This array needs to be two levels deep.
+    return [ $success ];
+}
+
+sub get_field_statement {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    return unless ( $self->{__TYPE__}     eq 'field'        );
+    return unless ( $self->get_ident      eq $data->{ident} );
+
+    return $child_output;
 }
 
 sub add_field_statement {
@@ -2241,15 +2445,25 @@ sub add_field_statement {
 
     my $new_statement = field_statement->new_statement(
         {
-            parent        => $self->{__BODY__},
+            parent        => $self,
             keyword       => $data->{keyword},
             new_value     => $data->{new_value},
             pair_required => $data->{pair_required} || 0,
         }
     );
 
-    my $blocks = $self->{ __BODY__ }{ 'field_statement(s?)' };
+    my $blocks = $self->{ __BODY__ };
     push @{ $blocks }, $new_statement;
+
+    if ( $data->{ keyword } eq 'is' ) {
+        my %values = map { $_ => 1 } split /\]\[/, $data->{ new_value };
+        return 'date' if ( $values{ date } );
+    }
+    elsif ( $data->{ keyword } eq 'date_select_text' ) {
+        return 'date_select_text';
+    }
+
+    return 1;
 }
 
 sub remove_field_statement {
@@ -2260,7 +2474,7 @@ sub remove_field_statement {
     return unless ( $self->{__TYPE__}     eq 'field'        );
     return unless ( $self->get_ident      eq $data->{ident} );
 
-    my $statements   = $self->{ __BODY__ }{ 'field_statement(s?)' };
+    my $statements   = $self->{ __BODY__ };
     my $doomed_index = get_statement_index( $statements, $data->{keyword} );
 
     if ( $doomed_index >= 0 ) {
@@ -2302,62 +2516,94 @@ sub change_name_field {
 
     return unless $self->get_ident eq $data->{ident};
 
+    my @retval;
+
+    my $old_name = $self->get_name(); # who were we fka
     $self->set_name( $data->{ new_value } );
 
-    return [ 1 ];
+    # update our label, if the old one was the default label
+    my $result = $self->walk_postorder( 'update_label',
+            { old_name => $old_name, new_name => $data->{ new_value } }
+    );
+
+    push @retval, @{ $result };
+
+    $data->{ old_value } = $old_name;
+    $result = $self->{ __PARENT__ }->walk_postorder(
+            'update_foreign_display', $data
+    );
+
+    push @retval, @{ $result };
+
+    my $tree = $data->{ __THE_TREE__ };
+
+    $result = $tree->walk_postorder( 'field_name_changed', 
+        {
+            table_name     => $self->get_table_name(),
+            old_field_name => $old_name,
+            new_field_name => $data->{ new_value },
+        }
+    );
+
+    push @retval, @{ $result };
+
+    return \@retval;
 }
 
-# field_body
-package  #
-    field_body;
-use strict; use warnings;
-
-use base 'application_ancestor';
-
-sub new {
-    my $class  = shift;
-    my $parent = shift;
-
-    my $self  = {
-        __RULE__              => 'field_body',
-        __PARENT__            => $parent,
-        'field_statement(s?)' => [],
-    };
-
-    return bless $self, $class;
-}
-
-sub get_name {
+# if a renamed field is in foreign_display, update it
+sub update_foreign_display {
     my $self = shift;
+    shift;
+    my $data = shift;
 
-    return $self->{__NAME__};
+    return unless $self->{ __TYPE__ } eq 'foreign_display';
+
+    my $display     = $self->{ __ARGS__ }->get_first_arg;
+    my $old_display = $display;
+    $display        =~ s/%$data->{ old_value }/%$data->{ new_value }/g;
+
+    $self->{ __ARGS__ }->set_args_from( $display );
+
+    if ( $display eq $old_display ) {
+        return;
+    }
+    else {
+        return [ $self->get_table_ident() . '::foreign_display' => $display ];
+    }
 }
 
-sub walk_postorder {
-    my $self   = shift;
-    my $action = shift;
-    my $data   = shift;
-    my $parent = shift;
+sub get_table_name_from_field_ident {
+    my $self = shift;
+    shift;
+    my $data = shift;
 
-    my $output = [];
+    return unless $self->{ __TYPE__  } eq 'field';
+    return unless $self->{ __IDENT__ } eq $data->{ ident };
 
-    foreach my $field_stmnt ( @{ $self->{'field_statement(s?)'} } ) {
-        my $child_output = $field_stmnt->walk_postorder(
-            $action, $data, $self
+    return [ $self->get_table_name ];
+}
+
+sub field_reset_bool {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    return unless $self->{ __TYPE__ } eq 'field';
+    return if $self->{ __NAME__ } eq 'id';
+
+    unless ( $child_output->[0] ) {
+        $self->add_field_statement(
+            {
+                keyword       => $data->{keyword},
+                new_value     => $data->{new_value},
+            }
         );
-
-        push @{ $output }, @{ $child_output } if $child_output;
     }
 
-    if ( $self->can( $action ) ) {
-        $output = $self->$action( $output, $data, $parent );
-    }
-
-    ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
+    return [ $self->{ __IDENT__ } ];
 }
 
-# field_statement
-package  #
+package # field_statement
     field_statement;
 use strict; use warnings;
 
@@ -2366,25 +2612,16 @@ use base 'application_ancestor';
 sub new_statement {
     my $class   = shift;
     my $params  = shift;
-#    my $parent  = shift;
-#    my $keyword = shift;
-#    my $values  = shift;
 
     my $self = {
-        __PARENT__ => $params->{ parent },
-        __NAME__   => $params->{ keyword },
-        __DEF__    => field_statement_def->new(
+        __PARENT__  => $params->{ parent },
+        __KEYWORD__ => $params->{ keyword },
+        __DEF__     => field_statement_def->new(
             $params->{ new_value },
             $params->{ pair_required },
         ),
     };
 
-#    my $self    = {
-#        __PARENT__ => $parent,
-#        __NAME__   => $keyword,
-#        __DEF__    => field_statement_def->new( $values ),
-#    };
-#
     $self->{__DEF__}{__PARENT__} = $self;
 
     return bless $self, $class;
@@ -2403,13 +2640,20 @@ sub app_block_hashes {
 sub get_table_name {
     my $self = shift;
 
-    return $self->{__PARENT__}{__PARENT__}{__PARENT__}{__PARENT__}{__NAME__};
+    #       table_elemnt_block table_block
+    return $self->{__PARENT__}{__PARENT__}{__NAME__};
+}
+
+sub get_field_ident {
+    my $self = shift;
+
+    return $self->{__PARENT__}{__IDENT__};
 }
 
 sub get_name {
     my $self = shift;
 
-    return $self->{__NAME__};
+    return $self->{__KEYWORD__};
 }
 
 sub get_values {
@@ -2424,12 +2668,92 @@ sub change_field_keyword_value {
     my $data = shift;
 
     return unless ( $data->{type}         eq 'field'          );
-    return unless ( $self->{__NAME__}     eq $data->{keyword} );
+    return unless ( $self->{__KEYWORD__}  eq $data->{keyword} );
 
     $self->{__DEF__}{__ARGS__}->set_args_from(
             $data->{new_value},
             $data->{pair_required},
     );
+
+    # see if we changed the SQL type to date
+    my %values = map { $_ => 1 } split /\]\[/, $data->{ new_value };
+    if ( $data->{ keyword } eq 'is' and $values{ date } ) {
+        return [ 'date' ];
+    }
+    elsif ( $data->{ keyword } eq 'date_select_text'
+                and
+            $data->{ new_value } )
+    {
+        return [ 'date_select_text' ];
+    }
+
+    return [ 1 ];
+}
+
+sub get_field_statement {
+    my $self         = shift;
+    shift;
+    my $data         = shift;
+
+    return unless ( $data->{ keyword } eq $self->{ __KEYWORD__ } );
+
+    return [ $self->{ __DEF__ }{ __ARGS__ } ];
+}
+
+# If the old label was the default, the label will be changed to default
+# for new name.
+sub update_label {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    return unless $self->{ __KEYWORD__ } eq 'label';
+
+    my $field_ident = $self->get_field_ident();
+
+    my $old_label         = $child_output->[0];
+    my $old_default_label = Bigtop::ScriptHelp->default_label(
+            $data->{ old_name }
+    );
+
+    if ( $old_label eq $old_default_label ) {
+        my $new_label = Bigtop::ScriptHelp->default_label(
+                $data->{ new_name }
+        );
+        $self->{__DEF__}{__ARGS__}->set_args_from( $new_label );
+
+        return [ $field_ident . '::label' => $new_label ];
+    }
+
+    return;
+}
+
+sub table_name_changed {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless $self->{ __KEYWORD__ } eq 'refers_to';
+
+    my $current_foreigner = $self->{ __DEF__ }{ __ARGS__ }->get_first_arg;
+
+    if ( $current_foreigner eq $data->{ old_name } ) {
+        $self->{ __DEF__}{ __ARGS__ }->set_args_from( $data->{ new_name } );
+
+        return [ $self->get_field_ident . '::refers_to', $data->{ new_name } ];
+    }
+
+    return;
+}
+
+sub field_reset_bool {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless $self->{ __KEYWORD__ } eq $data->{ keyword };
+
+    $self->{ __DEF__ }{ __ARGS__ }[0] = $data->{ new_value };
 
     return [ 1 ];
 }
@@ -2460,14 +2784,13 @@ sub build_lookup_hash {
 
     return [ 
         {
-            '__TYPE__' => $self->{__NAME__},
+            '__TYPE__' => $self->{__KEYWORD__},
             '__DATA__' => [ @{ $child_output } ],
         }
     ];
 }
 
-# field_statement_def
-package  #
+package # field_statement_def
     field_statement_def;
 use strict; use warnings;
 
@@ -2483,6 +2806,12 @@ sub new {
     };
 
     return bless $self, $class;
+}
+
+sub update_label {
+    my $self = shift;
+
+    return [ $self->{ __ARGS__ }->get_first_arg ];
 }
 
 sub walk_postorder {
@@ -2507,9 +2836,8 @@ sub build_lookup_hash {
     return [ 'args' => $self->{__ARGS__} ];
 }
 
-# controller_block
-package  #
-    controller_block;
+package # join_table
+    join_table;
 use strict; use warnings;
 
 use base 'application_ancestor';
@@ -2521,21 +2849,275 @@ sub new_block {
 
     my $self;
 
-    my $controller_body = {
-        'controller_statement(s?)' => [],
-        '__RULE__'                 => 'controller_body',
-    };
-
-    bless $controller_body, 'controller_body';
-
     $self = {
         __IDENT__       => Bigtop::Parser->get_ident(),
         __NAME__        => $data->{name},
-        __TYPE__        => [ $data->{subtype} ],
-        controller_body => $controller_body,
+        __BODY__        => [],
     };
 
-    $self->{controller_body}{__PARENT__} = $self;
+    $self->{__PARENT__} = $parent;
+
+    return bless $self, $class;
+}
+
+sub change_join_table_statement {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless ( $self->get_ident      eq $data->{ident} );
+
+    my $success = $self->walk_postorder(
+            'change_join_table_statement_value', $data
+    );
+
+    unless ( defined $success->[0] ) { # make new statement
+
+        $self->add_join_table_statement( $data );
+    }
+
+    return [ 1 ];
+}
+
+sub add_join_table_statement {
+    my $self = shift;
+    my $data = shift;
+
+    my $new_statement = join_table_statement->new(
+        $self, $data->{ keyword }, $data->{ new_value },
+    );
+
+    my $blocks = $self->{ __BODY__ };
+    push @{ $blocks }, $new_statement;
+}
+
+sub remove_join_table_statement {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless ( $self->get_ident   eq $data->{ident} );
+
+    my $doomed_child = -1;
+    my $count        = 0;
+
+    my $blocks = $self->{__BODY__};
+
+    BLOCK:
+    foreach my $block ( @{ $blocks } ) {
+        next BLOCK unless $block->{__KEYWORD__} eq $data->{keyword};
+
+        $doomed_child = $count;
+        last BLOCK;
+    }
+    continue {
+        $count++;
+    }
+
+    if ( $doomed_child >= 0 ) {
+        splice @{ $blocks }, $doomed_child, 1;
+    }
+    # else, nothing to see here, move along quietly
+
+    return [ 1 ];
+}
+
+sub walk_postorder {
+    my $self   = shift;
+    my $action = shift;
+    my $data   = shift;
+    my $parent = shift;
+
+    my $output = [];
+
+    foreach my $field_stmnt ( @{ $self->{__BODY__} } ) {
+        my $child_output = $field_stmnt->walk_postorder(
+            $action, $data, $self
+        );
+
+        push @{ $output }, @{ $child_output } if $child_output;
+    }
+
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
+
+    ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
+}
+
+sub build_lookup_hash {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    my %child_hash;
+
+    while ( my $output_type = shift @{ $child_output } ) {
+        my $hash = shift @{ $child_output };
+
+        if ( defined $child_hash{ $output_type } ) {
+            die "join_table $self->{__NAME__} has multiple "
+                .   "$output_type statement.\n";
+        }
+        $child_hash{ $output_type } = $hash;
+    }
+
+    if ( not defined $child_hash{ joins } ) {
+        die "join_table $self->{__NAME__} has no joins statement.\n";
+    }
+
+    my ( $table1, $table2 ) = %{ $child_hash{ joins } };
+
+    my ( $name1,  $name2  );
+    if ( defined $child_hash{ names } ) {
+        ( $name1, $name2 ) = %{ $child_hash{ names } };
+    }
+    else {
+        ( $name1, $name2 ) = ( "${table1}s", "${table2}s" );
+    }
+
+    return [
+        {
+            '__TYPE__' => 'join_tables',
+            '__DATA__' => [
+                $table1 => {
+                    joins => { $table2 => $self->{__NAME__} },
+                    name  => $name2,
+                },
+                $table2 => {
+                    joins => { $table1 => $self->{__NAME__} },
+                    name  => $name1,
+                },
+                __IDENT__ => $self->{ __IDENT__ },
+            ],
+        }
+    ];
+}
+
+sub get_ident {
+    my $self = shift;
+    return $self->{__IDENT__};
+}
+
+sub show_idents {
+    my $self = shift;
+    my $child_output = shift;
+
+    push @{ $child_output },
+            [ 'join_table', $self->{ __NAME__ }, $self->{ __IDENT__ } ];
+
+    return $child_output;
+}
+
+sub app_block_hashes {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my $body = {
+        statements => {},
+    };
+
+    foreach my $child_item ( @{ $child_output } ) {
+        $body->{ statements }{ $child_item->{ keyword } } =
+            $child_item->{ value };
+    }
+
+    return [ {
+        ident           => $self->get_ident,
+        type            => 'join_table',
+        body            => $body,
+        name            => $self->{__NAME__},
+    } ];
+}
+
+package # join_table_statement
+    join_table_statement;
+use strict; use warnings;
+
+use base 'application_ancestor';
+
+sub new {
+    my $class   = shift;
+    my $parent  = shift;
+    my $keyword = shift;
+    my $values  = shift;
+
+    my $self    = {
+        __PARENT__  => $parent,
+        __KEYWORD__ => $keyword,
+        __DEF__     => arg_list->new( $values ),
+    };
+
+    return bless $self, $class;
+}
+
+sub change_join_table_statement_value {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless ( $self->{__KEYWORD__} eq $data->{keyword} );
+
+    $self->{__DEF__}->set_args_from(
+            $data->{new_value},
+            $data->{pair_required},
+    );
+
+    return [ 1 ];
+}
+
+sub get_join_table_name {
+    my $self = shift;
+
+    return $self->{ __PARENT__ }{ __NAME__ };
+}
+
+sub walk_postorder {
+    my $self   = shift;
+    my $action = shift;
+    my $data   = shift;
+    my $parent = shift;
+
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
+}
+
+sub build_lookup_hash {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    return [ $self->{__KEYWORD__} => $self->{__DEF__}->get_first_arg() ];
+}
+
+sub app_block_hashes {
+    my $self         = shift;
+    my $child_output = shift;
+
+    return [ { keyword => $self->{__KEYWORD__}, value => $self->{__DEF__} } ];
+}
+
+package # controller_block
+    controller_block;
+use strict; use warnings;
+
+use base 'application_ancestor';
+
+sub new_block {
+    my $class  = shift;
+    my $parent = shift;
+    my $data   = shift;
+
+    my $self = {
+        __IDENT__  => Bigtop::Parser->get_ident(),
+        __NAME__   => $data->{name},
+        __TYPE__   => $data->{subtype},
+        __BODY__   => []
+    };
 
     $self->{__PARENT__} = $parent;
 
@@ -2555,12 +3137,12 @@ sub new_block {
         );
         $self->add_controller_statement(
             { keyword   => 'text_description',
-              new_value => $data->{ table }
+              new_value => $data->{ text_description } || $data->{ table },
             }
         );
         $self->add_controller_statement(
             { keyword   => 'page_link_label',
-              new_value => $data->{ name }
+              new_value => $data->{ page_link_label } || $data->{ name },
             }
         );
     }
@@ -2589,7 +3171,7 @@ sub new_block {
             cols           => 'ident][description',
             header_options => 'Add',
             row_options    => 'Edit][Delete',
-            title          => $self->{__NAME__},
+            title          => $data->{ page_link_label } || $self->{__NAME__},
         );
 
         foreach my $statement qw( cols header_options row_options title ) {
@@ -2642,11 +3224,10 @@ sub add_subblock {
     return unless ( $params->{new_child}{type} eq 'method'         );
 
     my $new_method = controller_method->new(
-            $self->{controller_body}, $params
+            $self, $params
     );
 
-    push @{ $self->{controller_body}{'controller_statement(s?)'} },
-         $new_method;
+    push @{ $self->{__BODY__} }, $new_method;
 
     return [ $new_method ];
 }
@@ -2659,8 +3240,7 @@ sub remove_block {
     my $doomed_index = -1;
     my $count        = 0;
 
-    my $children     = $self->{controller_body}
-                              {'controller_statement(s?)'};
+    my $children     = $self->{__BODY__};
 
     CHILD:
     foreach my $child ( @{ $children } ) {
@@ -2696,9 +3276,19 @@ sub set_name {
     $self->{__NAME__} = shift;
 }
 
+sub get_controller_type {
+    my $self = shift;
+
+    return $self->{__TYPE__} || 'stub';
+}
+
 sub set_type {
     my $self          = shift;
-    $self->{__TYPE__} = [ shift ];
+    $self->{__TYPE__} = shift;
+}
+
+sub get_controlled_table {
+    my $self = shift;
 }
 
 sub change_name_controller {
@@ -2744,7 +3334,7 @@ sub app_block_hashes {
         }
     }
 
-    my $controller_type = $self->{__TYPE__}[0] || 'stub';
+    my $controller_type = $self->get_controller_type || 'stub';
 
     return [ {
         ident           => $self->get_ident,
@@ -2781,7 +3371,7 @@ sub add_controller_statement {
         $self, $data->{ keyword }, $data->{ new_value },
     );
 
-    my $blocks = $self->{ controller_body }{ 'controller_statement(s?)' };
+    my $blocks = $self->{ __BODY__ };
     push @{ $blocks }, $new_statement;
 }
 
@@ -2795,7 +3385,7 @@ sub remove_controller_statement {
     my $doomed_child = -1;
     my $count        = 0;
 
-    my $blocks = $self->{controller_body}{'controller_statement(s?)'};
+    my $blocks = $self->{__BODY__};
 
     BLOCK:
     foreach my $block ( @{ $blocks } ) {
@@ -2819,44 +3409,42 @@ sub remove_controller_statement {
     return [ 1 ];
 }
 
-sub walk_postorder {
-    my $self   = shift;
-    my $action = shift;
-    my $data   = shift;
-    my $parent = shift;
+sub get_controller_statement {
+    my $self    = shift;
+    my $keyword = shift;
 
-    my $output = $self->{controller_body}->walk_postorder(
-        $action, $data, $self
-    );
+    my $blocks  = $self->{__BODY__};
 
-    if ( $self->can( $action ) ) {
-        $output = $self->$action( $output, $data, $parent );
+    BLOCK:
+    foreach my $block ( @{ $blocks } ) {
+        next BLOCK unless defined $block->{ __KEYWORD__ }; # no methods
+        next BLOCK unless $block->{ __KEYWORD__ } eq $keyword;
+
+        return $block;
     }
 
-    ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
+    return;
 }
 
-sub build_lookup_hash {
+sub field_name_changed {
     my $self         = shift;
     my $child_output = shift;
     my $data         = shift;
 
-    return [
-        {
-            '__TYPE__' => 'controllers',
-            '__DATA__' => [
-                $self->{__NAME__} => { @{ $child_output } }
-            ],
-        }
-    ];
+    return unless defined $child_output->[0];
+
+    return $self->walk_postorder( 'update_field_name', $data );
 }
 
-# controller_body
-package  #
-    controller_body;
-use strict; use warnings;
+sub show_idents {
+    my $self = shift;
+    my $child_output = shift;
 
-use base 'application_ancestor';
+    push @{ $child_output },
+            [ 'controller', $self->{ __NAME__ }, $self->{ __IDENT__ } ];
+
+    return $child_output;
+}
 
 sub walk_postorder {
     my $self   = shift;
@@ -2866,7 +3454,7 @@ sub walk_postorder {
 
     my $output = [];
 
-    foreach my $controller_stmnt ( @{ $self->{'controller_statement(s?)'} } ) {
+    foreach my $controller_stmnt ( @{ $self->{__BODY__} } ) {
         my $child_output = $controller_stmnt->walk_postorder(
             $action, $data, $self
         );
@@ -2885,9 +3473,7 @@ sub build_lookup_hash {
     my $child_output = shift;
     my $data         = shift;
 
-    my $type         = $self->{__PARENT__}{__TYPE__}[0];
-
-    my %output       = ( type => $type );
+    my %output       = ( type => $self->get_controller_type );
 
     foreach my $element ( @{ $child_output } ) {
         my $output_type                  = $element->{__TYPE__};
@@ -2897,11 +3483,72 @@ sub build_lookup_hash {
         $output{ $output_type }{ $name } = $element->{__DATA__}[1];
     }
 
-    return [ %output ];
+    return [
+        {
+            '__TYPE__' => 'controllers',
+            '__DATA__' => [
+                $self->{__NAME__} => {
+                        __IDENT__ => $self->{ __IDENT__ },
+                        %output
+                }
+            ],
+        }
+    ];
 }
 
-# controller_method
-package  #
+sub use_date_plugin {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    my $it_is_I = $self->walk_postorder(
+            'do_I_control', $data->{ table }
+    )->[0];
+
+    my @retval;
+
+    if ( $it_is_I ) {
+        # first, update my uses
+        my $current_uses = $self->get_controller_statement( 'uses' );
+
+        if ( not defined $current_uses ) {
+            $self->add_controller_statement(
+                {
+                    keyword   => 'uses',
+                    new_value => 'Gantry::Plugins::Calendar',
+                }
+            );
+            push @retval, $self->get_ident . '::uses',
+                 $self->get_controller_statement( 'uses' )->{ __ARGS__ };
+        }
+        else { # see if its already there
+            my %current_modules = map { $_ => 1 }
+                                  @{ $current_uses->{ __ARGS__ } };
+
+            unless ( defined $current_modules{ 'Gantry::Plugins::Calendar' } )
+            {
+                push @{ $current_uses->{ __ARGS__ } },
+                     'Gantry::Plugins::Calendar';
+            }
+            push @retval,
+                 $self->get_ident . '::uses',
+                 $current_uses->{ __ARGS__ };
+        }
+
+        # then, tell update my form
+        my $result = $self->walk_postorder(
+                'add_date_popups', $data->{ table }
+        );
+
+        push @retval, @{ $result };
+
+        return \@retval;
+    }
+
+    return;
+}
+
+package # controller_method
     controller_method;
 use strict; use warnings;
 
@@ -2969,7 +3616,7 @@ sub change_name_method {
 
     $self->set_name( $data->{ new_value } );
 
-    return [ 1 ];
+    return;
 }
 
 sub app_block_hashes {
@@ -3038,7 +3685,7 @@ sub remove_method_statement {
 
     STATEMENT:
     foreach my $statement ( @{ $statements } ) {
-        next STATEMENT unless $statement->{__KEY__} eq $data->{keyword};
+        next STATEMENT unless $statement->{__KEYWORD__} eq $data->{keyword};
 
         $doomed_child = $count;
         last STATEMENT;
@@ -3057,6 +3704,20 @@ sub remove_method_statement {
     return [ 1 ];
 }
 
+sub get_method_statement {
+    my $self    = shift;
+    my $keyword = shift;
+
+    my $statements = $self->{ __BODY__ }{'method_statement(s?)'};
+
+    STATEMENT:
+    foreach my $statement ( @{ $statements} ) {
+        next STATEMENT unless $statement->{__KEYWORD__} eq $keyword;
+        return $statement;
+    }
+    return;
+}
+
 sub change_type {
     my $self = shift;
     shift;
@@ -3067,6 +3728,87 @@ sub change_type {
     $self->set_type( $data->{new_type} );
 
     return [ 1 ];
+}
+
+sub add_date_popups {
+    my $self  = shift;
+    shift;
+    my $table = shift;
+
+    return unless $self->{ __TYPE__ } =~ /form/;
+
+    # First, make sure the form is named for the table (or has a name)
+    my $form_statement = $self->get_method_statement( 'form_name' );
+    my $form_name      = $table;
+
+    if ( defined $form_statement ) {
+        $form_name     = $form_statement->{ __ARGS__ }->get_first_arg();
+    }
+    else { # create a form_name statement
+        $self->add_method_statement(
+            {
+                keyword   => 'form_name',
+                new_value => $table,
+            }
+        );
+    }
+
+    # Second, make sure that name is in javascript code for calendars.
+    my $javascript_code = qq{\$self->calendar_month_js( '$table' )},
+    my $keys_statement  = $self->get_method_statement( 'extra_keys' );
+    my $extra_keys;
+
+    if ( defined $keys_statement ) {
+        push @{ $keys_statement->{ __ARGS__ } },
+             { javascript => $javascript_code };
+
+        $extra_keys = $keys_statement->{ __ARGS__ };
+    }
+    else {
+        $self->add_method_statement(
+            {
+                keyword   => 'extra_keys',
+                new_value => {
+                    'keys'   => 'javascript',
+                    'values' => $javascript_code,
+                },
+            }
+        );
+
+        $extra_keys = $self->get_method_statement( 'extra_keys' )->{__ARGS__};
+    }
+
+    my $ident = $self->get_ident;
+    return [
+        $ident . '::form_name'  => $table,
+        $ident . '::extra_keys' => $extra_keys,
+    ];
+}
+
+sub update_field_name {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    my $count = 0;
+    foreach my $key_or_val ( @{ $child_output } ) {
+        if ( $count % 2 == 0 ) {
+            $key_or_val = $self->{__IDENT__} . '::' . $key_or_val;
+        }
+        $count++;
+    }
+
+    return $child_output;
+}
+
+sub show_idents {
+    my $self = shift;
+    my $child_output = shift;
+
+    push @{ $child_output },
+            [ 'method', $self->{ __NAME__ }, $self->{ __IDENT__ } ];
+
+    return $child_output;
 }
 
 sub walk_postorder {
@@ -3102,14 +3844,14 @@ sub build_lookup_hash {
                 $self->{__NAME__} => {
                     type       => $self->{__TYPE__},
                     statements => $statements,
+                    __IDENT__  => $self->{__IDENT__},
                 },
             ],
         }
     ];
 }
 
-# method_body
-package  #
+package # method_body
     method_body;
 use strict; use warnings;
 
@@ -3135,7 +3877,7 @@ sub get_method_name {
 sub get_controller_name {
     my $self = shift;
 
-    return $self->{__PARENT__}{__PARENT__}{__PARENT__}->get_name();
+    return $self->{__PARENT__}{__PARENT__}->get_name();
 }
 
 sub get_table_name {
@@ -3166,8 +3908,7 @@ sub walk_postorder {
     ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
 }
 
-# method_statement
-package  #
+package # method_statement
     method_statement;
 use strict; use warnings;
 
@@ -3180,9 +3921,9 @@ sub new {
     my $new_value = shift;
 
     my $self      = {
-        __PARENT__ => $parent,
-        __KEY__    => $keyword,
-        __ARGS__   => arg_list->new( $new_value ),
+        __PARENT__  => $parent,
+        __KEYWORD__ => $keyword,
+        __ARGS__    => arg_list->new( $new_value ),
     };
 
     return bless $self, $class;
@@ -3193,7 +3934,7 @@ sub change_method_keyword_value {
     shift;
     my $data = shift;
 
-    return unless ( $self->{__KEY__}     eq $data->{keyword} );
+    return unless ( $self->{__KEYWORD__}     eq $data->{keyword} );
 
     $self->{__ARGS__}->set_args_from(
             $data->{new_value},
@@ -3207,9 +3948,39 @@ sub app_block_hashes {
     my $self         = shift;
 
     return [ {
-        keyword     => $self->{__KEY__},
+        keyword     => $self->{__KEYWORD__},
         values      => $self->{__ARGS__},
     } ];
+}
+
+sub update_field_name {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    unless ( $self->{ __KEYWORD__ } eq 'cols'
+                or
+             $self->{ __KEYWORD__ } eq 'all_fields_but'
+                or
+             $self->{ __KEYWORD__ } eq 'fields' )
+    {
+        return;
+    }
+
+    my $we_did_something = 0;
+    foreach my $arg ( @{ $self->{ __ARGS__ } } ) {
+        if ( $arg eq $data->{ old_field_name } ) {
+            $arg = $data->{ new_field_name };
+            $we_did_something++;
+        }
+    }
+
+    if ( $we_did_something ) {
+        return [ $self->{ __KEYWORD__ }, $self->{ __ARGS__ } ];
+    }
+    else {
+        return;
+    }
 }
 
 sub walk_postorder {
@@ -3231,11 +4002,10 @@ sub build_lookup_hash {
     my $child_output = shift;
     my $data         = shift;
 
-    return [ $self->{__KEY__} => $self->{__ARGS__} ];
+    return [ $self->{__KEYWORD__} => $self->{__ARGS__} ];
 }
 
-# controller_literal_block
-package  #
+package # controller_literal_block
     controller_literal_block;
 use strict; use warnings;
 
@@ -3277,8 +4047,7 @@ sub make_output {
     }
 }
 
-# controller_statement
-package  #
+package # controller_statement
     controller_statement;
 use strict; use warnings;
 
@@ -3297,6 +4066,18 @@ sub new {
     };
 
     return bless $self, $class;
+}
+
+sub get_controller_ident {
+    my $self = shift;
+
+    return $self->{__PARENT__}{__IDENT__};
+}
+
+sub get_controller_name {
+    my $self = shift;
+
+    return $self->{__PARENT__}{__NAME__};
 }
 
 sub change_controller_keyword_value {
@@ -3323,6 +4104,58 @@ sub app_block_hashes {
         keyword => $self->{__KEYWORD__},
         value   => $self->{__ARGS__},
     } ];
+}
+
+sub table_name_changed {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless $self->{ __KEYWORD__ } eq 'controls_table';
+
+    my $controlled_table = $self->{ __ARGS__ }->get_first_arg();
+
+    if ( $controlled_table eq $data->{ old_name } ) {
+        $self->{ __ARGS__ }->set_args_from( $data->{ new_name } );
+
+        return [
+            $self->get_controller_ident . '::controls_table',
+            $data->{ new_name }
+        ];
+    }
+
+    return;
+}
+
+sub field_name_changed {
+    my $self         = shift;
+    shift;
+    my $data         = shift;
+
+    return unless $self->{ __KEYWORD__ } eq 'controls_table';
+    return unless $self->{ __ARGS__ }->get_first_arg()
+                        eq
+                  $data->{ table_name };
+
+    # Leave this return value alone, an ancestor checks it to see if the
+    # name change is for this controller or not.
+    return [ 1 ];
+}
+
+sub do_I_control {
+    my $self  = shift;
+    shift;
+    my $table = shift;
+
+    return unless $self->{ __KEYWORD__ } eq 'controls_table';
+    my $controlled_table = $self->{ __ARGS__ }->get_first_arg();
+
+    if ( $controlled_table eq $table ) {
+        return [ 1 ];
+    }
+    else {
+        return;
+    }
 }
 
 sub walk_postorder {
@@ -3354,8 +4187,7 @@ sub build_lookup_hash {
     ];
 }
 
-# app_config_block
-package  #
+package # app_config_block
     app_config_block;
 use strict; use warnings;
 
@@ -3366,8 +4198,8 @@ sub new {
     my $params = shift;
 
     return bless {
-        __PARENT__            => $params->{parent},
-        app_config_statements => $params->{statements},
+        __PARENT__ => $params->{parent},
+        __BODY__   => $params->{statements},
     }, $class;
 }
 
@@ -3382,7 +4214,7 @@ sub add_config_statement {
         $data->{ accessor },
     );
 
-    push @{ $self->{ app_config_statements } }, $new_statement;
+    push @{ $self->{ __BODY__ } }, $new_statement;
 
     return [ 1 ];
 }
@@ -3396,7 +4228,7 @@ sub remove_config_statement {
     my $count        = 0;
 
     STATEMENT:
-    foreach my $child ( @{ $self->{ app_config_statements } } ) {
+    foreach my $child ( @{ $self->{ __BODY__ } } ) {
         my $child_keyword = $child->get_keyword();
         if ( $keyword eq $child_keyword ) {
             $doomed_child = $count;
@@ -3406,7 +4238,7 @@ sub remove_config_statement {
     }
 
     if ( $doomed_child >= 0 ) {
-        splice @{ $self->{ app_config_statements } }, $doomed_child, 1;
+        splice @{ $self->{ __BODY__ } }, $doomed_child, 1;
     }
 
     return [ 1 ];
@@ -3420,7 +4252,7 @@ sub walk_postorder {
 
     my $output = [];
 
-    foreach my $child ( @{ $self->{'app_config_statements'} } ) {
+    foreach my $child ( @{ $self->{ __BODY__ } } ) {
         my $child_output = $child->walk_postorder( $action, $data, $self );
         push @{ $output }, @{ $child_output } if $child_output;
     }
@@ -3440,8 +4272,7 @@ sub build_lookup_hash {
     return $child_output;
 }
 
-# controller_config_block
-package  #
+package # controller_config_block
     controller_config_block;
 use strict; use warnings;
 
@@ -3455,7 +4286,7 @@ sub walk_postorder {
 
     my $output = [];
 
-    foreach my $child ( @{ $self->{'controller_config_statements'} } ) {
+    foreach my $child ( @{ $self->{__BODY__} } ) {
         my $child_output = $child->walk_postorder( $action, $data, $self );
         push @{ $output }, @{ $child_output } if $child_output;
     }
@@ -3475,8 +4306,7 @@ sub build_lookup_hash {
     return $child_output;
 }
 
-# app_config_statement
-package  #
+package # app_config_statemen
     app_config_statement;
 use strict; use warnings;
 
@@ -3498,8 +4328,8 @@ sub new {
     }
     else {
         $self = {
-            __KEY__  => $keyword,
-            __ARGS__ => arg_list->new( [ $value ] )
+            __KEYWORD__ => $keyword,
+            __ARGS__    => arg_list->new( [ $value ] )
         };
     }
 
@@ -3509,13 +4339,13 @@ sub new {
 sub get_keyword {
     my $self = shift;
 
-    return $self->{__KEY__};
+    return $self->{__KEYWORD__};
 }
 
 sub get_config_statements {
     my $self = shift;
 
-    return [ $self->{__KEY__} => $self->{__ARGS__} ];
+    return [ $self->{__KEYWORD__} => $self->{__ARGS__} ];
 }
 
 sub update_config_statement {
@@ -3523,7 +4353,7 @@ sub update_config_statement {
     shift;
     my $data   = shift;
 
-    return [] unless ( $data->{ keyword } eq $self->{ __KEY__ } );
+    return [] unless ( $data->{ keyword } eq $self->{ __KEYWORD__ } );
 
     my $arg = $self->{__ARGS__}->get_first_arg();
 
@@ -3548,7 +4378,7 @@ sub config_statement_status {
     shift;
     my $data   = shift;
 
-    return [] unless ( $data->{ keyword } eq $self->{ __KEY__ } );
+    return [] unless ( $data->{ keyword } eq $self->{ __KEYWORD__ } );
 
     my $arg = $self->{__ARGS__}->get_args();
 
@@ -3589,14 +4419,13 @@ sub build_lookup_hash {
         {
             '__TYPE__' => 'configs',
             '__DATA__' => [
-                $self->{__KEY__} => $self->{__ARGS__}
+                $self->{__KEYWORD__} => $self->{__ARGS__}
             ]
         }
     ];
 }
 
-# controller_config_statement
-package  #
+package # controller_config_statement
     controller_config_statement;
 use strict; use warnings;
 
@@ -3625,14 +4454,13 @@ sub build_lookup_hash {
         {
             '__TYPE__' => 'configs',
             '__DATA__' => [
-                $self->{__KEY__} => $self->{__ARGS__}
+                $self->{__KEYWORD__} => $self->{__ARGS__}
             ]
         }
     ];
 }
 
-# arg_list
-package  #
+package # arg_list
     arg_list;
 use strict; use warnings;
 
@@ -3742,7 +4570,7 @@ sub get_quoted_args {
         }
         else {
             my $value = $arg;
-            unless ( $value =~ /^\w[\w\d_]*$/ ) {
+            unless ( $value =~ /^\w[\w\d_:]*$/ ) {
                 $value = "`$value`";
             }
 
@@ -3823,9 +4651,9 @@ and not just in using it to serve your needs.
 
 In this section, the methods are grouped, so that similar ones appear together.
 
-=over 4
-
 =head2 METHODS which drive generation for scripts
+
+=over 4
 
 =item gen_from_file
 
@@ -3872,7 +4700,7 @@ the Control backend needs, but the generated output from Control should
 influence the contents of file which Init finally builds.  Check your backends
 for details.
 
-=head3 gen_from_string internals
+gen_from_string internals
 
 gen_from_string works like this.  First, it attempts to parse the config
 section of the bigtop string.  If that works, it iterates through each
@@ -3911,7 +4739,11 @@ files onto the disk.  Those files might be web server conf files,
 sql to build the database, control modules, templates for viewing, models,
 etc.
 
+=back
+
 =head2 METHODS which invoke the grammar
+
+=over 4
 
 =item parse_config_string
 
@@ -3931,7 +4763,11 @@ returns.
 Call this as a class method, passing it the bigtop string to parse.
 It calls the grammar to turn the input into an AST, which it returns.
 
+=back
+
 =head2 METHODS which control which simple statement keywords are legal
+
+=over 4
 
 =item add_valid_keywords
 
@@ -4002,7 +4838,11 @@ string sorted order.
 
 The two preceding methogs are really for internal use in the grammar.
 
+=back
+
 =head2 METHODS which work on the AST
+
+=over 4
 
 =item walk_postorder
 
@@ -4041,11 +4881,8 @@ callbacks.  Put one at each level of the tree that interests you.
 For example, if you are generating SQL, you need to put callbacks in
 the following packages:
 
-    sql_block
-    sequence_body
-    table_body
+    table_block
     table_element_block
-    field_body
     field_statement
 
 This does require some knowledge of the tree.  Please consult the grammar
@@ -4117,7 +4954,11 @@ for the app level block types: tables, sequences, controllers.  The next
 level is the name of a block.  Under that, there is a fixed keyword for
 each subblock type, etc.
 
+=back
+
 =head2 METHODS for use in walk_postorder callbacks
+
+=over 4
 
 =item dumpme
 
@@ -4159,7 +5000,11 @@ Call this, from the method_body package, on the AST node ($self in the
 callback).  Returns the name of the table this controller controls.
 Useful for error reporting.
 
+=back
+
 =head2 METHODS used internally
+
+=over 4
 
 =item import
 
@@ -4197,7 +5042,7 @@ not necessarily ideal and is subject to change.
 
 =over 4
 
-=head1 base_dir
+=item base_dir
 
 Used only if you supply the --create flag to bigtop (or set create to true
 when calling gen_from_file or gen_from_string as class methods of this
@@ -4216,7 +5061,7 @@ particular, this would work on the appropriate platform:
 
 The default base_dir is the current directory from which bigtop is run.
 
-=head1 app_dir
+=item app_dir
 
 Used only if you supply the --create flag to bigtop (or set create to true
 when calling gen_from_file or gen_from_string as class methods of this
@@ -4254,7 +5099,7 @@ directory.  If that directory doesn't look like an app build directory,
 a fatal error will result.  Either move to the proper directory, or
 use create mode to avoid the error.
 
-=head1 engine
+=item engine
 
 This is passed directly to the C<use Framework;> statement of the top level
 controller.
@@ -4273,7 +5118,7 @@ syntax.
 The available engines depend on what the framework supports.  The one
 in the example is mod_perl 1.3 in the syntax of Catalyst and Gantry.
 
-=head1 template_engine
+=item template_engine
 
 Similar to engine, this specifies the template engine.  Choices almost always
 include TT, but might also include Mason or other templaters depending on
@@ -4335,6 +5180,59 @@ should generate as normal in SQL backends, but should be completely
 ignored for Models.  The same should hold for fields marked not_for.
 But my SQL backends didn't do that when I wrote this, only the Models
 worked.
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item get_keyword_docs
+
+Called by TentMaker, so it can display the backend comments to the user
+through their brawer.
+
+Returns: a hash reference of keyword docs understood by tentmaker's
+templates.
+
+=item gen_mode
+
+Used internally.
+
+Get accessor for whether we are really generating, or just serving tentmaker.
+If we are not generating, there is no need to set up the templates for
+all the backends.
+
+=item set_gen_mode
+
+Used internally.
+
+Set accessor for whether we are really generating.
+
+=item get_ident
+
+Returns: the next available ident (as ident_n).
+
+=item get_parser
+
+Used internally.
+
+Accessor to ensure that only one parser is ever instantiated.
+
+=item load_backends
+
+Used internally.
+
+Responsible for loading all needed backends.
+
+=item preprocess
+
+Used internally.
+
+Strips comment lines.
+
+Returns: a hash keyed by line number, storing the comment on that line
+before it was stripped..
 
 =back
 

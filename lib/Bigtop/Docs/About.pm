@@ -78,7 +78,9 @@ on disk, then supplying that name like so:
 Making new backends, while not trivial, is not particularly hard (if
 you understand parse trees and recursion).
 The grammar even supports registration of new keywords (so long as
-you don't need new blocks or literals).
+you don't need new blocks or literals).  When you register them, you
+provide enough information for them to appear in tentmaker as if they
+were native.
 
 =back
 
@@ -118,6 +120,7 @@ for a complete attractive app.
 To start using Bigtop, see Bigtop::Docs::TentTut or Bigtop::Docs::Tutorial.
 If those go too fast, try the Bigtop section of Gantry::Docs::Tutorial,
 which builds a smaller app.  After those, try Bigtop::Docs::Cookbook.
+For a complete doc list, see Bigtop::Docs::TOC.
 
 =head1 Why the Name
 

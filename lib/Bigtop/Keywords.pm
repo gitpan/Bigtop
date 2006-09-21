@@ -164,7 +164,7 @@ my %doc_for = (
             descr     => 'Which sequence to take default keys from',
             type      => 'text',
             multiple  => 0,
-            urgency   => 5,
+            urgency   => 1,
         },
         data => {
             keyword    => 'data',
@@ -217,6 +217,7 @@ my %doc_for = (
             type      => 'text',
             multiple  => 1,
             urgency   => 10,
+            quick_label => 'SQL Type',
         },
         refers_to => {
             keyword   => 'refers_to',
@@ -233,6 +234,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 0,
             urgency   => 5,
+            quick_label => 'Label',
         },
         non_essential => {
              keyword  => 'non_essential',
@@ -253,6 +255,13 @@ my %doc_for = (
             ],
             urgency   => 5,
         },
+        html_form_optional => {
+            keyword  => 'html_form_optional',
+            label    => 'Optional',
+            descr    => 'May user skip this field?',
+            type     => 'boolean',
+            quick_label => 'Optional',
+        },
         html_form_constraint => {
             keyword  => 'html_form_constraint',
             label    => 'Constraint',
@@ -260,12 +269,7 @@ my %doc_for = (
                         .   '<pre>qr{^\d$}</pre>',
             type     => 'text',
             multiple => 0,
-        },
-        html_form_optional => {
-            keyword  => 'html_form_optional',
-            label    => 'Optional',
-            descr    => 'May user skip this field?',
-            type     => 'boolean',
+            quick_label => 'Constraint',
         },
         html_form_cols => {
             keyword    => 'html_form_cols',
@@ -310,6 +314,30 @@ my %doc_for = (
             type       => 'text',
             field_type => 'text',
             multiple   => 0,
+            refresh    => 1,
+        },
+    },
+
+    join_table => {
+        joins => {
+            keyword       => 'joins',
+            label         => 'Joins These',
+            descr         => 'Which tables does this one join?',
+            type          => 'pair',
+            pair_labels   => [ 'Table', 'Table' ],
+            pair_required => 1,
+            multiple      => 0,
+            urgency       => 10,
+        },
+        names => {
+            keyword       => 'names',
+            label         => 'Name the Joins',
+            descr         => 'What should I call the has many?',
+            type          => 'pair',
+            pair_labels   => [ 'Has Many Name', 'Has Many Name' ],
+            pair_required => 1,
+            multiple      => 0,
+            urgency       => 0,
         },
     },
 
@@ -641,6 +669,26 @@ If you don't want a default, you should include a hash like this:
 
 The value 'undefined' is special to JavaScript.  So, tentmaker will unset
 the value if you the user selects '-- Choose One --'.
+
+=item quick_label
+
+Only applies to field keywords.  Indicates that this keyword should appear
+in the Field Quick Edit box in tentmaker.  Fields appear there in
+the same order they appear in the full edit expanding box.  The order
+here does not matter.  To change the order, look for add_valid_keywords
+in the backends.
+
+Quick editing does not allow pairs or multiples.  You can set a quick_label
+for a multiple entry keyword, but the quick edit will only update the first
+one.  If the user changes the one in the quick edit, only that one will be
+preserved.  Pairs will not work in the quick edit box.
+
+=item refresh
+
+Only applies to field keywords.  Indicates that a change in the keyword's
+value should trigger a page reload in tentmaker.  This implied by
+quick_label, so you only need it for keywords that should trigger
+a refresh, but should not appear in the Field Quick Edit box.
 
 =item urgency
 

@@ -82,6 +82,11 @@ sub backend_block_keywords {
           default => undef,
           false   => undef,
           true    => 'no_gen' },
+
+        { keyword => 'template',
+          label   => 'Alternate Template',
+          descr   => 'A custom TT template.',
+          type    => 'text' },
     ];
 }
 
@@ -585,6 +590,45 @@ they have the same meaning there.
 
 It actually pays no attention to the rest of the app section of the
 bigtop input, except to build the default app_dir from the app_name.
+
+=head1 METHODS
+
+=over 4
+
+=item backend_block_keywords
+
+Tells tentmaker that I understand these config section backend block keywords:
+
+    no_gen
+    Build.PL
+    Changes
+    README
+    MANIFEST
+    MANIFEST.SKIP
+    template
+
+=item what_do_you_make
+
+Tells tentmaker what this module makes.  Summary: roughly what h2xs makes.
+
+=item gen_Init
+
+Called by Bigtop::Parser to get me to do my thing.
+
+=item output_cgi
+
+What I call on the various AST packages to do my thing.
+
+=item init_simple_file
+
+What I call to build each regular file (like Changes, Build.PL, etc.).
+
+=item setup_template
+
+Called by Bigtop::Parser so the user can substitute an alternate template
+for the hard coded one here.
+
+=back
 
 =head1 AUTHOR
 

@@ -6,6 +6,9 @@
     method_group         - the star in update_*_bool
     name_prefix          - beginning of input element name, this must
                            correspond to the TentMaker.pm update_* method.
+                           Used only for multiples and pairs.
+    id_prefix            - beginning of the input element id the AST ident
+                           should be part of this
     keyword_prefix       - Used in front of the keyword when forming names
                            and the callback parameter.  Include your own
                            trailing double colon.
@@ -23,9 +26,10 @@
     default              - what to use if boolean (or controlled_boolean)
                            value is undefined
 
-    multiple             - indicates that more than one value can be given for
-                           the keyword (think comma separated list).  Only
-                           applies to types text and select.
+    multiple             - indicates that more than one value or pair
+                           can be given for the keyword (think comma
+                           separated list).  Only applies to types text,
+                           select, and pair.
 
     pair_labels          - Headings to put over pair entry text boxes.
                            Only applies to type pair.
@@ -43,11 +47,15 @@
                            white, lt. blue, green, orange, or red
 
 %]
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
 [%   full_key     = "$keyword_prefix$key";
-     full_name    = "$name_prefix$key"; %]
+     full_name    = "$name_prefix$key";
+     full_id      = "$id_prefix$key";       %]
 
 [% IF    statement.type == 'textarea'           %]
-<textarea name='[% full_name %]'
+<textarea id='[% full_id %]'
           cols='50' rows='6'
           class='urgency_[% statement.urgency || 0 %]'
     onblur='javascript:update_tree(
@@ -61,7 +69,7 @@
 [% ELSIF statement.type == 'boolean'            %]
 <input type='checkbox'
        value='[% full_name %]'
-       name='[% full_name %]'
+       id='[% full_id %]'
        class='urgency_[% statement.urgency || 0 %]'
        [%- IF single_value || statement.default == 'true' -%]
        checked='checked'
@@ -69,13 +77,15 @@
        onchange='javascript:update_tree(
            "[% method_group %]_bool",
            "[% full_key %]",
-           this.checked
+           this.checked[% IF statement.quick_label || statement.refresh %],
+           "",
+           "full_edit"[% END %]
        )'
 />
 [% ELSIF statement.type == 'controlled_boolean' %]
 <input type='checkbox'
        value='[% full_name %]'
-       name='[% full_name %]'
+       id='[% full_id %]'
        class='urgency_[% statement.urgency || 0 %]'
        [%- IF single_value.defined -%]
            [%- IF single_value == statement.true -%]
@@ -96,12 +106,13 @@
         [% FOREACH element IN values %]
             <input type='text'
                 name='[% full_name %]'
-                value='[% element %]'
+                value="[% element %]"
                 class='urgency_[% statement.urgency || 0 %]'
                 onblur='javascript:update_multivalue(
                     "[% method_group %]_text",
                     "[% full_key %]",
-                    this
+                    this[% IF statement.quick_label || statement.refresh %],
+                    "full_edit"[% END %]
                 )'
             />
             <br />
@@ -114,26 +125,32 @@
             onblur='javascript:update_multivalue(
                 "[% method_group %]_text",
                 "[% full_key %]",
-                this
+                this[% IF statement.quick_label || statement.refresh %],
+                "full_edit"[% END %]
             )'
         />
         [% UNLESS loop.last %]<br />[% END %]
         [% END %]
     [% ELSE %]
         <input type='text'
-            name='[% full_name %]'
-            value='[% single_value %]'
+            id='[% full_id %]'
+            value="[% single_value %]"
             class='urgency_[% statement.urgency || 0 %]'
             onblur='javascript:update_tree(
                 "[% method_group %]_text",
                 "[% full_key %]",
-                this.value
+                this.value[% IF statement.quick_label || statement.refresh %],
+                "",
+                "full_edit"[% END %]
             )'
         />
     [% END %]
 [% ELSIF statement.type == 'select'             %]
-    <select [%- IF statement.multiple -%]multiple[%- END -%]
+    <select [%- IF statement.multiple -%]multiple
             name='[% full_name %]'
+            [%- ELSE -%]
+            id='[% full_id %]'
+            [%- END -%]
             class='urgency_[% statement.urgency || 0 %]'
             onchange='javascript:
               myvalue = walk_selections( this );
@@ -169,11 +186,12 @@
                 <input
                     type='text'
                     name='[% full_name %]_key'
-                    value='[% choice_parts.0 %]'
+                    value="[% choice_parts.0 %]"
                     class='urgency_[% statement.urgency || 0 %]'
                     onblur='javascript:update_pairs(
                         "[% method_group %]_pair",
                         "[% full_key %]",
+                        [% statement.multiple %],
                         this
                     )'
                 />
@@ -182,17 +200,19 @@
                 <input
                     type='text'
                     name='[% full_name %]_value'
-                    value='[% choice_parts.1 %]'
+                    value="[% choice_parts.1 %]"
                     class='urgency_[% pair_urgency %]'
                     onblur='javascript:update_pairs(
                         "[% method_group %]_pair",
                         "[% full_key %]",
+                        [% statement.multiple %],
                         this
                     )'
                 />
             </td>
         </tr>
     [% END %]
+    [% IF statement.multiple OR values.length == 0 %]
         <tr><td>
                 <input
                     type='text'
@@ -201,6 +221,7 @@
                     onblur='javascript:update_pairs(
                         "[% method_group %]_pair",
                         "[% full_key %]",
+                        [% statement.multiple %],
                         this
                     )'
                 />
@@ -213,11 +234,13 @@
                     onblur='javascript:update_pairs(
                         "[% method_group %]_pair",
                         "[% full_key %]",
+                        [% statement.multiple %],
                         this
                     )'
                 />
             </td>
         </tr>
+      [% END %]
       </table>
 [% ELSE %]
 I don't know what to do with:

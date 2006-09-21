@@ -1,29 +1,23 @@
 config {
-    engine          MP20;
+    engine          CGI;
     template_engine TT;
-    Init            Std           {}
-    SQL             Postgres      {}
-    HttpdConf       Gantry        {}
-    Control         Gantry        {}
-    Model           GantryCDBI    {}
-    SiteLook        GantryDefault {
-        gantry_wrapper `/home/pcrow/srcgantry/root/sample_wrapper.tt`;
-    }
+    Init            Std             {}
+    SQL             SQLite          {}
+    CGI             Gantry          { with_server 1; flex_db 1; gen_root 1; }
+    Control         Gantry          { dbix 1; }
+    Model           GantryDBIxClass {}
+    SiteLook        GantryDefault   {}
 }
 app Apps::AddressBook {
     authors `Phil Crow` => `philcrow2000@yahoo.com`,
             `Joe Smith`;
     config {
-        dbconn    `dbi:Pg:dbname=address`          => no_accessor;
+        dbconn    `dbi:SQLite:dbname=app.db`       => no_accessor;
         dbuser    apache                           => no_accessor;
-        template_wrapper `wrapper.tt`              => no_accessor;
-        root      `/home/pcrow/Bigtop/examples/Apps-AddressBook/html:/home/pcrow/srcgantry/root`
-                                                   => no_accessor;
+        template_wrapper `genwrapper.tt`           => no_accessor;
     }
-    sequence address_seq        {}
     table    address {
-        sequence address_seq;
-        field id { is int4, primary_key, assign_by_sequence; }
+        field id { is int4, primary_key, auto; }
         field name {
             is             varchar;
             label          Name;
@@ -70,18 +64,18 @@ app Apps::AddressBook {
                     `Colleague`  => `stuck_working_with`;
         }
     }
-    controller Address {
+    controller Address is AutoCRUD {
         controls_table   address;
         rel_location     address;
-        uses             Gantry::Plugins::AutoCRUD;
         text_description `address`;
+        page_link_label  Address;
         method do_main is main_listing {
             title            `Address`;
             cols             name, phone;
             header_options   Add;
             row_options      Edit, Delete;
         }
-        method _form is AutoCRUD_form {
+        method form is AutoCRUD_form {
             form_name        address;
             all_fields_but   id;
             extra_keys

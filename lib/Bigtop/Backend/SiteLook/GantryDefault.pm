@@ -27,7 +27,7 @@ BEGIN {
 
 sub what_do_you_make {
     return [
-        [ 'html/wrapper.html' =>
+        [ 'html/genwrapper.html' =>
                 'A sample template toolkit wrapper [please change it]' ],
     ];
 }
@@ -224,6 +224,37 @@ This modules registers the location keyword at the app and controller level.
 It also registers page_link_label and rel_location at the controller level.
 Note that all of these except page_link_label are also registered by
 Control modules.
+
+=head1 METHODS
+
+To keep podcoverage tests happy.
+
+=over 4
+
+=item backend_block_keywords
+
+Tells tentmaker that I understand these config section backend block keywords:
+
+    no_gen
+    gantry_wrapper
+
+=item what_do_you_make
+
+Tells tentmaker what this module makes.  Summary: genwrapper.tt a TT WRAPPER.
+
+=item gen_SiteLook
+
+Called by Bigtop::Parser to get me to do my thing.
+
+=item build_links
+
+What I call on the various AST packages to do my thing.
+
+=item build_wrapper
+
+What I call on the various AST packages to do my thing.
+
+=back
 
 =head1 AUTHOR
 

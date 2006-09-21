@@ -16,6 +16,11 @@ sub backend_block_keywords {
           label   => 'No Gen',
           descr   => 'Skip everything for this backend',
           type    => 'boolean' },
+
+        { keyword => 'template',
+          label   => 'Alternate Template',
+          descr   => 'A custom TT template.',
+          type    => 'text' },
     ];
 }
 
@@ -68,6 +73,15 @@ CREATE [% keyword %] [% name %][% child_output %]
 INSERT INTO [% table %] ( [% columns.join( ', ' ) %] )
     VALUES ( [% values.join( ', ' ) %] );
 [% END %]
+
+[% BLOCK three_way %]
+CREATE TABLE [% table_name %] (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+[% FOREACH foreign_key IN foreign_keys %]
+    [% foreign_key %] INTEGER[% UNLESS loop.last %],[% END +%]
+[% END %]
+);
+[% END %]
 EO_TT_blocks
 
 sub setup_template {
@@ -86,9 +100,8 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-# sql_block
-package #
-    sql_block;
+package # table_block
+    table_block;
 use strict; use warnings;
 
 sub output_sql_lite {
@@ -97,12 +110,18 @@ sub output_sql_lite {
 
     return if ( $self->_skip_this_block );
 
-    my $child_out_str = '';
-    if ( defined $child_output ) {
-        $child_out_str = join "\n", @{ $child_output };
+    my %output;
+    foreach my $statement ( @{ $child_output } ) {
+        my ( $type, $output ) = @{ $statement };
+        push @{ $output{ $type } }, $output;
     }
-    else {
-        return;
+
+    my $child_out_str = Bigtop::Backend::SQL::SQLite::table_body(
+        { child_output => $output{table_body} }
+    );
+
+    if ( defined $output{insert_statements} ) {
+        $child_out_str .= "\n" . join "\n", @{ $output{insert_statements} };
     }
 
     my $output = Bigtop::Backend::SQL::SQLite::sql_block(
@@ -116,45 +135,7 @@ sub output_sql_lite {
     return [ $output ];
 }
 
-# sequence_body
-package #
-    sequence_body;
-use strict; use warnings;
-
-sub output_sql_lite {
-#    warn "Warning: SQLite does not support user defined sequences.\n";
-
-    return;
-}
-
-# table_body
-package #
-    table_body;
-use strict; use warnings;
-
-sub output_sql_lite {
-    my $self         = shift;
-    my $child_output = shift;
-
-    my %output;
-    foreach my $statement ( @{ $child_output } ) {
-        my ( $type, $output ) = @{ $statement };
-        push @{ $output{ $type } }, $output;
-    }
-
-    my $output = Bigtop::Backend::SQL::SQLite::table_body(
-        { child_output => $output{table_body} }
-    );
-
-    if ( defined $output{insert_statements} ) {
-        $output .= "\n" . join "\n", @{ $output{insert_statements} };
-    }
-
-    return [ $output ]
-}
-
-# table_element_block
-package #
+package # table_element_block
     table_element_block;
 use strict; use warnings;
 
@@ -177,7 +158,7 @@ sub output_sql_lite {
 
         my @columns;
         my @values;
-        foreach my $insertion ( @{ $self->{__VALUE__} } ) {
+        foreach my $insertion ( @{ $self->{__ARGS__} } ) {
             my ( $column, $value ) = %{ $insertion };
 
             $value = "'$value'" unless $value =~ /^\d+$/;
@@ -197,8 +178,7 @@ sub output_sql_lite {
     }
 }
 
-# field_statement
-package #
+package # field_statement
     field_statement;
 use strict; use warnings;
 
@@ -234,8 +214,7 @@ sub output_sql_lite {
     return [ $output ];
 }
 
-# literal_block
-package #
+package # literal_block
     literal_block;
 use strict; use warnings;
 
@@ -243,6 +222,39 @@ sub output_sql_lite {
     my $self = shift;
 
     return $self->make_output( 'SQL' );
+}
+
+package # join_table
+    join_table;
+use strict; use warnings;
+
+sub output_sql_lite {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my $three_way    = Bigtop::Backend::SQL::SQLite::three_way(
+        {
+            table_name   => $self->{__NAME__},
+            foreign_keys => $child_output,
+        }
+    );
+
+    return [ $three_way ];
+}
+
+package # join_table_statement
+    join_table_statement;
+use strict; use warnings;
+
+sub output_sql_lite {
+    my $self         = shift;
+    my $child_output = shift;
+
+    return unless $self->{__KEYWORD__} eq 'joins';
+
+    my @tables = %{ $self->{__DEF__}->get_first_arg() };
+
+    return \@tables;
 }
 
 1;
@@ -309,6 +321,34 @@ aid understanding, if you can type it correctly.
 Note that using 'primary_key' instead of the literal 'PRIMARY KEY' is
 important.  It tells the SQL and the Model back ends that this is the
 primary key.
+
+=head1 METHODS
+
+To keep podcoverage tests happy.
+
+=over 4
+
+=item backend_block_keywords
+
+Tells tentmaker that I understand these config section backend block keywords:
+
+    no_gen
+    template
+
+=item what_do_you_make
+
+Tells tentmaker what this module makes.  Summary: docs/schema.sqlite.
+
+=item gen_SQL
+
+Called by Bigtop::Parser to get me to do my thing.
+
+=item setup_template
+
+Called by Bigtop::Parser so the user can substitute an alternate template
+for the hard coded one here.
+
+=back
 
 =head1 AUTHOR
 

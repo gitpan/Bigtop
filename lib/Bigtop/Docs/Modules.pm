@@ -11,7 +11,8 @@ Some of the details are left for the POD of the pieces themselves.
 
 If you want to know exactly what's legal in a bigtop file, look in
 Bigtop::Docs::Syntax or the more concise (and less complete)
-Bigtop::Docs::Keywords.
+Bigtop::Docs::Keywords.  Or, you could look where tentmaker looks:
+Bigtop::Keywords.
 
 =head2 Bigtop.pm
 
@@ -23,10 +24,10 @@ the other makes directory paths.  See its docs for details.
 
 This is the real workhorse of Bigtop.  It is a grammar driven parser for
 Bigtop files.  Interactions with this parser are usually indirect.
-End users use the bigtop script which in turn uses the parser to first build
+End users use the bigtop script, which in turn uses the parser to first build
 an abstract syntax tree (AST) and then to generate output by passing the AST
 to the backends.  Developers should write backends which receive the AST
-in methods named for what they should produce.
+in methods named for what they should produce (see L<Backends> below).
 
 =head3 Parsing Bigtop specifications
 
@@ -34,19 +35,20 @@ If you have a file on the disk and want to parse it into an abstract
 syntax tree (AST), call Bigtop::Parser->parse_file( $file_name ).
 This returns the AST.
 
-The bigtop script is quite simple (I can almost see it as a bash script).
-It handles command line options, then directly passes the rest of its
+The bigtop script is quite simple, but it relies on Bigtop::ScriptHelp
+when it needs to manufacture or modify bigtop source files.  Mostly,
+it handles command line options, then directly passes the rest of its
 command line arguments to gen_from_file in Bigtop::Parser.  gen_from_file
 reads the file into memory and passes it and the other command line
 arguments to gen_from_string.
 
 gen_from_string first parses the config section of the Bigtop file to
-find the backends.  It requires each of those (using its own import method),
+find the backends.  It requires each of those (using Bigtop::Parser->import),
 then calls gen_YourType on each one that is not marked no_gen.
 
 The backend's gen_YourType is called as a class method.  It receives the 
-base directory of the build (where the user wants files to end up)
-and the AST.
+base directory of the build (where the user wants files to end up),
+the AST, and the input file name (if one is available).
 
 Once you have an AST, you can call methods on it.  Most of these
 will return lists (whose element are most often strings).
@@ -59,20 +61,22 @@ first traversal.  (If there is no action for the current class, walk_postorder
 returns the collection of child output unmodified; except that if the
 array of such output is empty, it returns undef and not an empty array.)
 
-You can pass a single item of data to walk_postorder.  That item (which
-is usually a hash or object) is in turn passed to all walk_postorder
-methods in the descendents as they are called.  All of the walk_postorder
-methods pass this item on to the action methods when they call them.
+You can pass a single item of data (one scalar) to walk_postorder.  That
+item (which is usually a hash reference or object) is in turn passed to all
+walk_postorder methods in the descendents as they are called.  All of the
+walk_postorder methods pass this item on to the action methods when they
+call them.
 
-To make this concrete, consider what the Bigtop::Control::Gantry does in
-its gen_Control method:
+To make this concrete, consider what the Bigtop::Backend::Control::Gantry
+does in its gen_Control method:
 
-    my $sub_modules = $wadl_tree->walk_postorder(
+    my $sub_modules = $bigtop_tree->walk_postorder(
         'output_controller',
         {
             module_dir => $module_dir,
             app_name   => $app_name,
-            lookup     => $wadl_tree->{application}{lookup}
+            lookup     => $wadl_tree->{application}{lookup},
+            #... more hash keys
         }
     );
 
@@ -90,9 +94,24 @@ output_controller has a definition like this:
 Where $self is the current tree element, $child_output is the result
 returned from all of this element's children (as an array reference),
 and the data hash originally passed to walk_postorder (the one that
-contains module_dir, app_name, and lookup).
+contains module_dir, app_name, lookup, etc.).  Keep in mind that this
+is a post order (depth first) traversal, so children finish making
+their output before parents are called on to make output.  In particular,
+this means you can't feed your children, or prune off their behavior
+(though you could discard their output).  The initial caller must pre-feed
+all the children.  Children must prune for themselves.
 
-These output_controller methods live in packages named for rules in
+[footnote: If you do want to avoid child behavior in a parent, you can
+change the name of the action method in the child classes.  This makes
+the parent the end of the first recursion, allowing it to decide whether
+or not to start a new recursion on its subtree.  Upon deciding to initiate
+a new recursion, it can feed the children whatever they need.  This technique
+is less useful in generators, where the child output is usually
+straightforward (like a set of column definitions for the body of a CREATE
+TABLE statement in SQL).  Where it shines is in the methods of Bigtop::Parser
+which manipulate already parsed trees on behalf of tentmaker.]
+
+The output_controller action methods live in packages named for rules in
 the grammar.  See directly below for the package names and how to
 implement them.
 
@@ -103,20 +122,103 @@ It is presented as a nested list so you can see the tree structure by
 indentation.  The top level element is blessed into the bigtop_file package.
 
 It responds to these methods: get_config (returns the config subtree) and
-get_appname.
+get_appname (among others).
 
 It has two children.  The first is configuration (available through
 get_config) which is a hash reference representing the config section of
 the Bigtop file.  The configuration child is not part of the AST you
 walk when generating output, but its info can be essential to your backend.
 
-The tree continues with the other child:
+Since this description was written, the tree has grown.  I decided to
+leave this section as is, rather than increase its already somewhat
+daunting complexity.  Mainly this reflects my laziness, but I think
+it will aid your laziness as well.  You can gain an initial understanding
+without as much detail.  Further, most of the new things the tree node classes
+do support the tentmaker, which I hope you don't need to work on.
+
+The tree continues with the other child.  First I will show a simple outline
+of the whole tree as generated by outliner a script in the lib/Bigtop/Docs
+directory of the distribution.  Then I will show it again with discussion.
+
+In summary:
+
+    application
+        __NAME__
+        __BODY__
+            block(s?)
+                literal_block
+                    __IDENT__
+                    __BACKEND__
+                    __BODY__
+                controller_block
+                    __IDENT__
+                    __NAME__
+                    __TYPE__
+                    __BODY__
+                        controller_method
+                            __IDENT__
+                            __NAME__
+                            __TYPE__
+                            __BODY__
+                                method_body
+                                    __KEYWORD__
+                                    __ARGS__
+                        controller_config_block
+                            __BODY__
+                                __KEYWORD__
+                                __ARGS__
+                        controller_literal_block
+                            __IDENT__
+                            __BACKEND__
+                            __BODY__
+                        controller_statement
+                            __KEYWORD__
+                            __ARGS__
+                table_block
+                    __IDENT__
+                    __NAME__
+                    __TYPE__
+                    __BODY__
+                        __IDENT__
+                        __NAME__
+                        __ARGS__
+                        __TYPE__
+                        __BODY__
+                            __KEYWORD__
+                            __DEF__
+                                __ARGS__
+                seq_block
+                    __IDENT__
+                    __NAME__
+                    __TYPE__
+                    __BODY__
+                join_table
+                    __IDENT__
+                    __NAME__
+                    __BODY__
+                        __KEYWORD__
+                        __DEF__
+                app_config_block
+                    __BODY__
+                        app_config_statement
+                            __KEY__
+                            __ARGS__
+                app_statement
+                    __KEYWORD__
+                    __ARGS__
 
 =over 4
 
 =item application
 
-Responds to this method: get_name.
+Responds to thes method:
+
+get_name returns the app name.
+
+show_idents dumps out the name, type, and ident of every ident bearing node.
+Useful when building tests of tree manipulations.
+
+There are many other methods, most support tentmaker.
 
 Has these children:
 
@@ -125,9 +227,9 @@ Has these children:
 =item __NAME__
 
 A string with the app name in it.  This is available through get_appname
-on the whole tree or through get_name on the app subtree.
+on the whole tree or through get_name on the application subtree.
 
-=item app_body
+=item __BODY__
 
 Created by Parse::RecDescent's autotree scheme.  Has one child:
 
@@ -135,7 +237,7 @@ Created by Parse::RecDescent's autotree scheme.  Has one child:
 
 =item block(s?)
 
-This child is list of objects, each blessed into the block class.
+This child is an array (ref) of objects, each blessed into the block class.
 Since autotree builds this for us, there is some litter.  We are
 only concerned with children whose package names end with _block or
 _statement.  These children are:
@@ -145,7 +247,7 @@ _statement.  These children are:
 =item literal_block
 
 This is a leaf node.  It responds to one highly useful method: make_output.
-Backends call it on the current subtree (which is a leaf) passing in
+Backends call it on the current subtree (remember it's a leaf) passing in
 their backend type.  If the current literal block has the same type, the
 text of the backquoted string in the Bigtop file is returned.  (A trailing
 new line is added to the user's input unless that input already had
@@ -163,12 +265,16 @@ instead of the default:
 
 This is useful if your backend handles multiple literal blocks in
 different ways.  For example, PerlTop and PerlBlock literals are
-both handled by Bigtop::Gantry::HttpdConf.  It needs the hash form
+both handled by Bigtop::Backend::Gantry::HttpdConf.  It needs the hash form
 to know where to put the literal output.
 
-literal_blocks have two attributes:
+literal_blocks have three attributes:
 
 =over 4
+
+=item __IDENT__
+
+Internal unchanging name.
 
 =item __BACKEND__
 
@@ -190,6 +296,10 @@ Has these children:
 
 =over 4
 
+=item __IDENT__
+
+The internal and unchanging name of the node.
+
 =item __NAME__
 
 The name of the controller relative to the app name, available through
@@ -203,16 +313,21 @@ Controllers are specified as:
 
 This attribute is the controller's type.
 
-=item controller_body
+=item __BODY__
 
-An autotree supplied package with one useful child:
+This is an array (ref) of nodes blessed into one of these classes:
+controller_method, controller_statement, controller_config_block,
+controller_literal_block.  The first two are the most common.
 
-=over 4
+Controller config blocks are quite rare.  They specify controller level
+adjustments to the apps top level config block.  These are either new
+variables only this controller wants, or replacement values this controller
+needs in place of global values.
 
-=item controller_statement(s?)
+Controller literal blocks allow placement of literal text into the httpd.conf
+Location for this controller.
 
-This is an array of nodes blessed into the controller_statement class.
-Controller statements come in several types (some of which are really blocks):
+All of these types are described further below:
 
 =over 4
 
@@ -222,6 +337,10 @@ Represents a method.  Responds to get_name which returns the method's name.
 Has these children:
 
 =over 4
+
+=item __IDENT__
+
+Unique and unchanging internal name.
 
 =item __NAME__
 
@@ -235,24 +354,24 @@ A string attribute.  As with controllers, methods have types:
 
 This is the type name.  There should probably be an accessor for this.
 
-=item __BODY__ (blessed into method_body)
+=item __BODY__
 
 The body of the method, including all of its statements.  Responds to
 these methods: get_method_name, get_controller_name, and get_table_name
 (which works if the controller has a controls_table statement).
 
-Has only one child:
+Blessed into:
 
 =over 4
 
-=item method_statement(s?)
+=item method_body
 
-An array of objects blessed into the method_statement class.  Each
-method_statement has two attributes:
+An array (ref) of nodes blessed into the method_statement class, whose
+keys are:
 
 =over 4
 
-=item __KEY__
+=item __KEYWORD__
 
 The statement's keyword.
 
@@ -268,17 +387,26 @@ An arg_list (see below).
 
 =item controller_config_block
 
-A leaf with two attributes:
+Has a single key:
 
 =over 4
 
-=item __KEY__
+=item __BODY__
+
+An array (ref) of nodes blessed into the controller_config_statement class,
+each of which is a leaf with two attributes:
+
+=over 4
+
+=item __KEYWORD__
 
 The config variable's name.
 
 =item __ARGS__
 
 An arg_list (see below).
+
+=back
 
 =back
 
@@ -297,6 +425,10 @@ in the literal_block package.)
 A leaf with two attributes:
 
 =over 4
+
+=item __IDENT__
+
+Internal and unchanging name.
 
 =item __BACKEND__
 
@@ -331,15 +463,16 @@ An arg list (see below).  This is optional and may therefore be undef.
 
 =back
 
-=back
+=item table_block
 
-=item sql_block
-
-Responds to get_name which returns the name of whatever the block makes
-(a table or a sequence).  These can be of two varieties.  They have
-the same attributes:
+Responds to get_name which returns the name of the block's table.
+The attributes of a table node are:
 
 =over 4
+
+=item __IDENT__
+
+The internal and unchanging name of the node.
 
 =item __NAME__
 
@@ -351,90 +484,52 @@ As string, either sequences or tables.
 
 =item __BODY__
 
-The body of the block.  These come in two types:
+The body of the block.  This is an array (ref) of table_element_block
+nodes.  There are two types of these: statements and field blocks.
+Both are blessed into the table_element_block class.  They have the following
+keys:
 
 =over 4
 
-=item sequence_body
+=item __IDENT__
 
-Has one child:
-
-=over 4
-
-=item sequence_statement(s?)
-
-Unused by any current backend, so generally undef.
-
-An array of objects blessed into the sequence_statement class.  Each of
-these has two attributes:
-
-=over 4
+For field blocks only.  The internal and unchanging name of the node.
 
 =item __NAME__
 
-The statement's keyword.
+For field blocks only.  The name of the field (and its SQL column).
 
 =item __ARGS__
 
-An arg list (see below).
+For statements only, the arguments of the statement.  This is an arg_list,
+see below.
 
-=back
+=item __TYPE__
 
-=back
-
-=item table_body
-
-Has one useful child:
-
-=over 4
-
-=item table_element_blocks(s)
-
-An array of objects blessed into the table_element_block class.  These
-come in two types, governed by their __TYPE__ attribute:
-
-=over 4
-
-=item __TYPE__ eq 'field'
-
-=over 4
-
-=item __NAME__
-
-The name of the field.
+Either 'field' for field blocks or the statement keyword for statements.
 
 =item __BODY__
 
-The field_body child object, which has one child:
+Either the statement keyword for statements, or an array (ref) of nodes
+blessed into the field_statement class for field blocks.  These nodes
+have the following keys:
 
 =over 4
 
-=item field_statement(s)
+=item __KEYWORD__
 
-An array of objects blessed into the field_statement class.  Each of these
-has children:
-
-=over 4
-
-=item __NAME__
-
-The keyword of the field statement.
+The keyword of the statement.
 
 =item __DEF__
 
-An object of type:
-
-=over 4
-
-=item field_statement_def
-
-This is the value for the field statement.  It has one optional child:
+A node blessed into the field_statement_def package, which has a single
+key:
 
 =over 4
 
 =item __ARGS__
 
-An arg_list (see below).
+An arg list, see below.
 
 =back
 
@@ -444,25 +539,70 @@ An arg_list (see below).
 
 =back
 
-=back
+=item seq_block
 
-=item __TYPE__ some statement keyword
+Responds to get_name.  Represents a sequence block.  Only the Postgres SQL
+backend understands sequence blocks.  All other backends ignore them
+completely, even if a table includes a sequence statement.
+Has the following keys:
 
 =over 4
 
-=item __VALUE__
+=item __IDENT__
 
-The arg_list (see below) of the statement.
+The internal and unchanging name of the node.
+
+=item __NAME__
+
+The name of the sequence.
+
+=item __TYPE__
+
+Hold over from when sequences were blessed into the same package as tables.
+Deprecated and may be removed.
 
 =item __BODY__
 
-The keyword of the statement (same as the __TYPE__).
+If there were any legal sequence statements (which there aren't), this
+would be an array ref holding the statements in the sequence block.
+As it is, you can't use this.
 
 =back
 
-=back
+=item join_table
 
-=back
+Represents a many-to-many relationship between two tables and the implicit
+table which goes between them.  Has three keys:
+
+=over 4
+
+=item __IDENT__
+
+The internal invariant name of the block.  These are used by tentmaker
+to make updates to the existing tree and may vary from parse to parse.
+
+=item __NAME__
+
+The name of the implicit table.  The SQL backend will make SQL statements
+to generate this table in the schema.
+
+=item __BODY__
+
+An array (ref) of statements in the block.  There must be a joins statement.
+There may be an optional names statement.  Each array element blessed
+into the join_table_statement class which has these keys:
+
+=over 4
+
+=item __KEYWORD__
+
+The statement keyword, must be either joins or names.  Exactly one joins
+statement must be present (if the parse is valid).  At most one names statement
+may be present.  These rules are enforced by the backend.
+
+=item __DEF__
+
+An arg_list containing a single pair.
 
 =back
 
@@ -474,7 +614,7 @@ Represents an app level config block.  Has one child:
 
 =over 4
 
-=item app_config_statements
+=item __BODY__
 
 An array (possibly undef) of objects blessed into:
 
@@ -540,8 +680,45 @@ this:
         'value3',
     ]
 
-None of the items in arg_lists are blessed, hence the absence of help
-from above.
+While the items in an arg_list are not blessed, the whole list is.
+The arg_list pacakge in Bigtop::Parser provides many convenience methods
+for getting and setting data in the list.  Here are some highlights:
+
+=over 4
+
+=item get_first_arg
+
+When you know that your statement only uses one arg, call this to get
+it.  It saves you having to fish in the array for the first arg.  If
+the first arg is a pair, you will receive a hash with one key.
+
+=item get_args
+
+Returns all of the args as valid Bigtop input.  The above example would
+come back as:
+
+    value1, key, value2, value3
+
+This is useful when you don't want quoted values and you don't expect
+pairs.
+
+=item get_quoted_args
+
+Primarily useful when deparsing.  Returns the arg list as a string which
+is valid bigtop input.  This adds all needed backquotes (but none
+that aren't required).
+
+=item get_unquoted_args
+
+Returns an array of the args, but with pairs converted to strings like so:
+
+    key => value2
+
+Only occasionally useful by backends.
+
+=back
+
+Most backend either use get_first_arg, or walk the list themselves.
 
 =back
 
@@ -564,7 +741,8 @@ do.
 The gen_* methods produce output on the disk.  For testing, you can
 call the methods that the gen_* methods call.  Usually these are prefixed
 with output_, but that is not enforced.  Or you can call the gen_* method
-and test the generated files (say with Test::Files).
+and test the generated files (say with Test::Files) as the Bigtop test
+suite tends to do.
 
 To know what a particular backend will do, see Bigtop::Docs::Keywords
 or Bigtop::Docs::Syntax.  That is also where you will see a list of the
@@ -572,9 +750,9 @@ keywords they understand and what values those keywords take.
 
 To write a backend, you need to write the gen_* method and have one package
 for each AST element type you care about.  It is easiset to see this by
-example.  A good example is Bigtop::Backend::SQL::Postgres.  I'll show it
+example.  A good example is Bigtop::Backend::SQL::SQLite.  I'll show it
 here so you can see how it goes with commentary interspersed amongst the
-code.  To see the whole of it, look for lib/Bigtop/Backend/SQL/Postgres.pm
+code.  To see the whole of it, look for lib/Bigtop/Backend/SQL/SQLite.pm
 in the Bigtop distribution.  (Note that I have removed some details to make
 this presentation easier, and the real version may have been updated
 more recently than this discussion.)
@@ -583,24 +761,33 @@ more recently than this discussion.)
 
 There is nothing really fancy about the start of a backend:
 
-    package Bigtop::Backend::SQL::Postgres;
-    use strict; use warnings;
+ package Bigtop::Backend::SQL::SQLite;
+ use strict; use warnings;
 
-    use Bigtop::Backend::SQL;
-    use Inline;
+ use Bigtop::Backend::SQL;
+ use Inline;
+
+Note that the package name must begin with Bigtop::Backend:: in order
+for the bigtop and tentmaker scripts to find it.
 
 I use Bigtop::Backend::SQL, which registers the SQL keywords with the
-Bigtop parser.  In all of my backends I use Inline::TT to aid in generating
-the output.  It needs Inline loaded.  (See setup_template to see how
+Bigtop parser.  Actually, Bigtop::Backend::SQL uses Bigtop::Keywords
+which is a central repository of all keywords any backend could want.
+It is really best to add the keywords there.  Among other things it
+makes maintenance easier.  But this is not a requirement (even for
+proper tentmaker functioning).
+
+In all of my backends I use Inline::TT to aid in generating
+the output.  It needs Inline loaded.  (See setup_template below for how
 templates are installed for use.)
 
 =head3 TentMaker requirements
 
-    sub what_do_you_make {
-        return [
-            [ 'docs/schema.postgres' => 'Postgres database schema' ],
-        ];
-    }
+ sub what_do_you_make {
+     return [
+         [ 'docs/schema.sqlite' => 'SQLite database schema' ],
+     ];
+ }
 
 what_do_you_make should return an array reference describing the things
 your backend writes on the disk.  Each array element is also an array
@@ -608,31 +795,37 @@ reference with two entries.  First is the name of something made by
 the module, second is a brief description of what that piece has in it.
 These appear as documentation in the tentmaker application.
 
-    sub backend_block_keywords {
-        return [
-              { keyword => 'no_gen',
-                label   => 'No Gen',
-                descr   => 'Skip everything for this backend',
-                type    => 'boolean' },
-        ];
-    }
+ sub backend_block_keywords {
+     return [
+           { keyword => 'no_gen',
+             label   => 'No Gen',
+             descr   => 'Skip everything for this backend',
+             type    => 'boolean' },
+
+           { keyword => 'template',
+             label   => 'Alternate Template',
+             descr   => 'A custom TT template.',
+             type    => 'text' },
+           ];
+ }
 
 backend_block_keywords is similar to what_do_you_make.  It lists all
 the valid keywords which can go in the backend's block in the config
-section at the top of the bigtop file.  These appear in order in the
-far right column of the Backends tab.  The above keys are required,
-if you need a default use the default key.  If the type is boolean,
-spell out true or false as the default value.  If you don't specify
-a default, you get false (unchecked) for booleans and blank for strings.
+section at the top of the Bigtop file.  These appear in order in the
+far right column of the Backends tab of tentmaker.  The above keys are
+required, if you need a default use the C<default> key.  If the type is
+boolean, spell out C<true> or C<false> as the default value (these
+are going to HTML and/or Javascript as strings).  If you don't specify a
+default, you get false (unchecked) for booleans and blank for strings.
 
 =head3 The generating sub
 
-    sub gen_SQL {
-        shift;
-        my $base_dir = shift;
-        my $tree     = shift;
+ sub gen_SQL {
+     shift;
+     my $base_dir = shift;
+     my $tree     = shift;
 
-The bigtop script will call gen_SQL (via gen_from_file) when the
+The bigtop script will call gen_SQL (via gen_from_sting) when the
 user has this backend in their config section and invokes bigtop with
 SQL or all in the list of build items.
 
@@ -642,10 +835,10 @@ The $base_dir is where the output goes.
 
 The $tree is the full AST (see above for details).
 
-        # walk tree generating sql
-        my $lookup       = $tree->{application}{lookup};
-        my $sql          = $tree->walk_postorder( 'output_sql', $lookup );
-        my $sql_output   = join '', @{ $sql };
+     # walk tree generating sql
+     my $lookup       = $tree->{application}{lookup};
+     my $sql          = $tree->walk_postorder( 'output_sql_lite', $lookup );
+     my $sql_output   = join '', @{ $sql };
 
 The lookup subtree of the application subtree provides easier access to
 the data in the tree (though it doesn't have all the connectors the AST
@@ -653,34 +846,41 @@ has for parsing use, in particular it uses hashes exclusively, so it never
 intentionally preserves order).
 
 I let Bigtop::Parser's walk_postorder do the visiting of tree nodes
-for me.  It will call 'output_sql' on each of them.  I implement that
+for me.  It will call 'output_sql_lite' on each of them.  I implement that
 on the packages my SQL generator cares about below.  I pass the lookup
-has to walk_postorder so it will be available to the callbacks.
+hash to walk_postorder so it will be available to the callbacks.
+
+Note that the name of the walk_postorder action needs to be unique among
+all Bigtop::Backend::* modules.  This prevents subroutine redefinitions
+(and their warnings) when multiple SQL backends are in use.  It also
+makes tentmaker run more quietly in all cases.  Choose names with some
+tag relating to your backend to avoid namespace collisions.
 
 The output of walk_postorder is always an array reference.  I join it
 together and store it in $sql_output.
 
-        # write the schema.postgres
-        my $docs_dir     = File::Spec->catdir( $base_dir, 'docs' );
-        mkdir $docs_dir;
+     # write the schema.postgres
+     my $docs_dir     = File::Spec->catdir( $base_dir, 'docs' );
+     mkdir $docs_dir;
 
-By the convention of our shop, the schema.postgres file lives in the docs
+By the convention of our shop, the schema.sqlite file lives in the docs
 directory of the generated distribution.  Here, I make that directory
 (if that fails we'll hear loud screaming shortly).
 
 All that remains is to put the output into the file:
 
-        my $sql_file     = File::Spec->catfile( $docs_dir, 'schema.postgres' );
+     my $sql_file     = File::Spec->catfile( $docs_dir, 'schema.sqlite' );
 
-        open my $SQL, '>', $sql_file or die "Couldn't write $sql_file: $!\n";
+     open my $SQL, '>', $sql_file or die "Couldn't write $sql_file: $!\n";
 
-        print $SQL $sql_output;
+     print $SQL $sql_output;
 
-        close $SQL or die "Couldn't close $sql_file: $!\n";
-    }
+     close $SQL or die "Couldn't close $sql_file: $!\n";
+ }
 
-So, the whole generation method is only 22 lines.  Of course, there
-is still a lot left for me to do.
+So, the whole generation method is only 22 lines.  Except for the specific
+use of 'sqlite' or 'lite', this method is the same for the other SQL backends.
+Of course, there is still a lot left for me to do.
 
 =head3 Output appearance control
 
@@ -697,36 +897,45 @@ the backend:
 
 Here is my default template:
 
-    our $template_is_setup = 0;
-    our $default_template_text = <<'EO_TT_blocks';
-    [% BLOCK sql_block %]
-    CREATE [% keyword %] [% name %][% child_output %]
+   our $template_is_setup = 0;
+   our $default_template_text = <<'EO_TT_blocks';
+   [% BLOCK sql_block %]
+   CREATE [% keyword %] [% name %][% child_output %]
+   
+   [% END %]
+   
+   [% BLOCK table_body %]
+    (
+   [% FOREACH child_element IN child_output %]
+   [% child_element +%][% UNLESS loop.last %],[% END %]
+   
+   [% END %]
+   );
+   [% END %]
+   
+   [% BLOCK table_element_block %]    [% name %] [% child_output %][% END %]
+   
+   [% BLOCK field_statement %]
+   [% keywords.join( ' ' ) %]
+   [% END %]
+   
+   [% BLOCK insert_statement %]
+   INSERT INTO [% table %] ( [% columns.join( ', ' ) %] )
+       VALUES ( [% values.join( ', ' ) %] );
+   [% END %]
+   
+   [% BLOCK three_way %]
+   CREATE TABLE [% table_name %] (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+   [% FOREACH foreign_key IN foreign_keys %]
+       [% foreign_key %] INTEGER[% UNLESS loop.last %],[% END +%]
+   [% END %]
+   );
+   [% END %]
+   EO_TT_blocks
 
-    [% END %]
-
-    [% BLOCK table_body %]
-     (
-    [% FOREACH child_element IN child_output %]
-    [% child_element +%][% UNLESS loop.last %],[% END %]
-
-    [% END %]
-    );
-    [% END %]
-
-    [% BLOCK table_element_block %]    [% name %] [% child_output %][% END %]
-
-    [% BLOCK field_statement %]
-    [% keywords.join( ' ' ) %]
-    [% END %]
-
-    [% BLOCK insert_statement %]
-    INSERT INTO [% table %] ( [% columns.join( ', ' ) %] )
-        VALUES ( [% values.join( ', ' ) %] );
-    [% END %]
-    EO_TT_blocks
-
-There are five blocks, each of which may be used repeatedly while
-generating output:
+There are six blocks -- whose names usually correspond to grammar rules --
+each of which may be used repeatedly while generating output:
 
 =over 4
 
@@ -752,6 +961,12 @@ statement.
 
 Makes the INSERT statements which correspond to data statements in the
 Bigtop file.
+
+=item three_way
+
+Makes the CREATE TABLE block for implicit tables which join other tables.
+These come from join_table blocks in the Bigtop file which in turn
+come from a<->b in ASCII art passed to bigtop or tentmaker at the command line.
 
 =back
 
@@ -792,130 +1007,93 @@ the nature of Inline bindings makes that difficult, so I gave up.
 All that remains is the real work.  We need to implement output_sql in
 about half a dozen packages.
 
-=head4 sql_block
+=head4 table_block
 
-    sub output_sql {
-        my $self         = shift;
-        my $child_output = shift;
+ package # table_block
+     table_block;
+ use strict; use warnings;
 
-        my $child_out_str = join "\n", @{ $child_output };
+ sub output_sql_lite {
+     my $self         = shift;
+     my $child_output = shift;
+  
+     return if ( $self->_skip_this_block );
+  
+     my %output;
+     foreach my $statement ( @{ $child_output } ) {
+         my ( $type, $output ) = @{ $statement };
+         push @{ $output{ $type } }, $output;
+     }
+  
+     my $child_out_str = Bigtop::Backend::SQL::SQLite::table_body(
+         { child_output => $output{table_body} }
+     );
+  
+     if ( defined $output{insert_statements} ) {
+         $child_out_str .= "\n" . join "\n", @{ $output{insert_statements} };
+     }
+  
+     my $output = Bigtop::Backend::SQL::SQLite::sql_block(
+         {
+             keyword      => $self->get_create_keyword(),
+             child_output => $child_out_str,
+             name         => $self->get_name(),
+         }
+     );
+  
+     return [ $output ];
+ }
 
-        my $output = Bigtop::SQL::Postgres::sql_block(
-            {
-                keyword      => $self->get_create_keyword(),
-                child_output => $child_out_str,
-                name         => $self->get_name(),
-            }
-        );
-
-        return [ $output ];
-    }
 
 As all callbacks do, this one receives the current tree node as its
 invocant and the output of its children as parameters.  (It also
 receives the data passed to walk_postorder, but this method doesn't need it.)
 
-The child output is an array reference of strings which I join with
-newlines.  Then I call the sql_block template BLOCK.  I've used
+The child output comes from the walk_postorder method of this package.
+It is always an array reference.  In this case, that array has one or more
+subarrays.  Each of those has two elements: type and text.  The types
+are: table_body and insert_statements.  The table_body elements must
+go inside the body of the CREATE TABLE statement.  The insert_statements
+must be placed after the CREATE TABLE statement.  There is one of those
+for each data statement in the table block of the Bigtop file.
+
+While the child output is always an array reference, its contents are up
+to you.  We'll see how I formed the child output for this package below,
+when we walk into the child packages.  Usually I only put arrays in it,
+to avoid confusion.
+
+Once the child output is divided into two pieces, I first call the
+table_body template BLOCK.  Then I join the insert statements together
+as strings.  Finally, I call the sql_block template BLOCK.  I've used
 the get_name provided by the sql_block package in Bigtop::Parser.
-The get_create_keyword sub is below.
+The get_create_keyword sub is defined in Bigtop::Backend::SQL.  The same
+method (with different output) is defined there for the seq_block package
+used by Bigtop::Backend::SQL::Postgres to build sequence statements.
 
 Note that I am careful to give my output back in an array, even though
 I have only one item.  This is required by all walk_postorder
-visitors.
-
-    sub get_create_keyword {
-        my $self = shift;
-
-        return $self->{__BODY__}->create_keyword();
-    }
-
-As you can see in the Bigtop::Parser section above, sql_block objects
-have a __BODY__ key.  In this module, their packages implement create_keyword
-(see below).  It returns 'SEQUENCE' or 'TABLE' as appropriate.
-
-=head4 sequence_body
-
-Here is the whole sequence_body pacakge:
-
-    package sequence_body;
-    use strict; use warnings;
-
-    sub create_keyword { return 'SEQUENCE' }
-
-    sub output_sql {
-        # XXX for now, just end the line.
-        # Watch this space for something more interesting.
-        return [ ';' ];
-    }
-
-It implements create_keyword as required by sql_block's get_create_keyword
-shown above.
-
-It also implements output_sql, which returns a mere semi-colon.  I have
-yet to implement min, max, or any of the other sequence control SQL statements.
-So that is all I can do.
-
-=head4 table_body
-
-The table_body package is only slightly more interesting:
-
-    package table_body;
-    use strict; use warnings;
-
-    sub create_keyword { return 'TABLE' }
-
-    sub output_sql {
-        my $self         = shift;
-        my $child_output = shift;
-
-        my %output;
-        foreach my $statement ( @{ $child_output } ) {
-            my ( $type, $output ) = @{ $statement };
-            push @{ $output{ $type } }, $output;
-        }
-
-        my $output = Bigtop::SQL::Postgres::table_body(
-                { child_output => $output{table_body} }
-        );
-
-        if ( defined $output{insert_statements} ) {
-            $output .= "\n" . join "\n", @{ $output{insert_statements} };
-        }
-
-        return [ $output ]
-    }
-
-Here we see one example of why children report arrays for output instead
-of simple strings.  The children of table_body return hashes keyed
-by type.  There are two types: table_body (for column definitions)
-and insert_statements (which must come after the table's CREATE
-statement).
-
-So, the loop at the top walks through the child output separating
-the different types into two arrays.  The body statements are sent
-to the table_body TT block.  The insert statements are ready for
-immediate use, after the table_body.
+actions.
 
 =head4 table_element_block
 
-    package table_element_block;
-    use strict; use warnings;
+ package # table_element_block
+     table_element_block;
+ use strict; use warnings;
 
-    sub output_sql {
-        my $self         = shift;
-        my $child_output = shift;
+ sub output_sql_lite {
+     my $self         = shift;
+     my $child_output = shift;
+ 
+     if ( defined $child_output) {
 
-        if ( defined $child_output) {
+         my $child_out_str = join "\n", @{ $child_output };
 
-            my $child_out_str = join "\n", @{ $child_output };
+         my $output = Bigtop::Backend::SQL::SQLite::table_element_block(
+             { name => $self->get_name(), child_output => $child_out_str }
+         );
 
-            my $output = Bigtop::SQL::Postgres::table_element_block(
-                { name => $self->get_name(), child_output => $child_out_str }
-            );
-
-            return [ [ table_body => $output ] ];
-        }
+         return [ [ table_body => $output ] ];
+     }
 
 There are two kinds of children for the table_element_block: fields
 (which are themselves blocks) and statements (where are leaves in the AST).
@@ -924,35 +1102,34 @@ block.  In which case, we join the child output, send it to the
 table_element_block TT BLOCK and return the output, being careful
 to note that it belongs in the table_body.
 
-Note that even if we want to return a hash, we must return an array of
-strings.  All the walk_postorder methods must return only arrays or arrays
-of arrays.  This is because the walk_postorder method is neutral (or
-ignorant if you prefer) regarding what will happen to the output.
+Note that I always return arrays, even if I want to return a hash.  This
+avoids rare but nasty bugs when the returned values pass through packages
+which aren't responding to the current action.
 
-        else {
-            return unless ( $self->{__TYPE__} eq 'data' );
-
-            my @columns;
-            my @values;
-            foreach my $insertion ( @{ $self->{__VALUE__} } ) {
-                my ( $column, $value ) = %{ $insertion };
-
-                $value = "'$value'" unless $value =~ /^\d+$/;
-
-                push @columns, $column;
-                push @values,  $value;
-            }
-
-            my $output = Bigtop::SQL::Postgres::insert_statement(
-                {
-                    table   => $self->get_table_name,
-                    columns => \@columns,
-                    values  => \@values,
-                }
-            );
-            return [ [ insert_statements => $output ] ];
-        }
-    }
+     else {
+         return unless ( $self->{__TYPE__} eq 'data' );
+  
+         my @columns;
+         my @values;
+         foreach my $insertion ( @{ $self->{__ARGS__} } ) {
+             my ( $column, $value ) = %{ $insertion };
+  
+             $value = "'$value'" unless $value =~ /^\d+$/;
+  
+             push @columns, $column;
+             push @values,  $value;
+         }
+  
+         my $output = Bigtop::Backend::SQL::SQLite::insert_statement(
+             {
+                 table   => $self->get_table_name,
+                 columns => \@columns,
+                 values  => \@values,
+             }
+         );
+         return [ [ insert_statements => $output ] ];
+     }
+ }
 
 If there is no child output, we must be working on a statement.  But,
 in this backend, the only statements I care about are data statements.
@@ -963,7 +1140,7 @@ Recall that data statements look like this:
 
     data f_name => Phil, l_name => Crow;
 
-The __VALUE__ of the node is an arg_list (which is a blessed array).  The
+The __ARGS__ for the node is an arg_list (which is a blessed array).  The
 foreach walks that array hashifying each entry, since the user provided
 these as pairs.  The value is quoted to keep SQL happy, unless it is an
 integer.  Both key and value are pushed into arrays for easy use by the
@@ -975,39 +1152,41 @@ output is for the insert_statements list.
 Now we are arriving at the most intricate piece.  It handles the only
 statement in the field block we care about: is.
 
-    package field_statement;
-    use strict; use warnings;
-
-    my %code_for = (
-        primary_key        => sub { 'PRIMARY KEY' },
-        assign_by_sequence => \&gen_seq_text,
-        auto               => \&gen_seq_text,
-    );
-
-    sub output_sql {
-        my $self   = shift;
-        shift; # discard child output (there isn't any)
-        my $lookup = shift;
-
-        return unless $self->get_name() eq 'is';
-
-        my @keywords;
-        foreach my $arg ( @{ $self->{__DEF__}{__ARGS__} } ) {
-            my $code = $code_for{$arg};
-
-            if ( defined $code ) {
-                push @keywords, $code->( $self, $lookup );
-            }
-            else {
-                push @keywords, $arg;
-            }
-        }
-        my $output = Bigtop::SQL::Postgres::field_statement(
-                { keywords => \@keywords }
-        );
-
-        return [ $output ];
-    }
+ package # field_statement
+     field_statement;
+ use strict; use warnings;
+ 
+ my %expansion_for = (
+     int4               => 'INTEGER',
+     primary_key        => 'PRIMARY KEY',
+     assign_by_sequence => 'AUTOINCREMENT',
+     auto               => 'AUTOINCREMENT',
+ );
+ 
+ sub output_sql_lite {
+     my $self   = shift;
+     shift;  # there is no child output
+     my $lookup = shift;
+ 
+     return unless $self->get_name() eq 'is';
+ 
+     my @keywords;
+     foreach my $arg ( @{ $self->{__DEF__}{__ARGS__} } ) {
+         my $expanded_form = $expansion_for{$arg};
+ 
+         if ( defined $expanded_form ) {
+             push @keywords, $expanded_form;
+         }
+         else {
+             push @keywords, $arg;
+         }
+     }
+     my $output = Bigtop::Backend::SQL::SQLite::field_statement(
+         { keywords => \@keywords }
+     );
+ 
+     return [ $output ];
+ }
 
 Now we see $lookup coming into the sub.  I gave it to the original
 call to walk_postorder, which has been dutifully passing it to all
@@ -1024,75 +1203,81 @@ is one of the comma separated clauses or clause abbreviations in the
 
 has three items in its list: int4, primary_key, and auto.
 
-For each of those, output_sql looks in the code_for hash to see if
-there is a sub it should call to convert the text into something else.
-If it finds a sub, it calls it and uses the result.  Otherwise, it
-merely uses the arg directly.  The input order is preserved in the output.
-When calling the converter, it passes the current AST node and $lookup.
+For each of those, output_sql looks in the expansion_for hash to see if
+there is alternate text for the input word.  If it finds alternate text,
+it uses it.  Otherwise, it merely uses the arg directly.  The input order
+is preserved in the output.  This is the mechanism that allows all
+Bigtop input files to use int4, primary_key, and auto.  Each backend
+uses a scheme like this one (though Postgres' is more complex) to generate
+the SQL for its database engine.
 
 Once the proper clauses have all been pushed into the keywords array,
 it is passed to the field_statement TT BLOCK.
-
-Note that assign_by_sequence can be abbreviated as auto.  Both of these
-point to the gen_seq_text sub:
-
-    sub gen_seq_text {
-        my $self       = shift;
-        my $lookup     = shift;
-
-        my $table      = $self->get_table_name();
-
-        my $sequence   = $lookup->{tables}{$table}{sequence}{__ARGS__}[0];
-
-        unless ( defined $sequence ) {
-            die "I can't assign_by_sequence for table $table.\n"
-                .  "You didn't define a sequence for it.\n";
-        }
-
-        return "DEFAULT NEXTVAL( '$sequence' )";
-    }
-
-The field_statement package in Bigtop::Parser supplied get_table_name
-which (not surprisingly) returns the name of the table in which this
-field will have its column.  I use that name to fish the table's sequence
-name from the lookup hash.  There is a section below, L<The lookup hash>
-which has details on what goes into this hash.
-
-One of the top level keys in the lookup hash is 'tables'.  The value
-there is a hash keyed by table name.  The values are hashes.  If the
-table has a sequence defined, that hash will include a sequence key.
-The __ARGS__ of that key is really a single element array holding the
-sequence name.
-
-Using the lookup hash is much easier than walking the AST to find things.
-But it doesn't have everything.  In particular, it is all hashes, so it
-never preserves order.
-
-If there is no sequence, the user receives an error message.  Note that
-die is used with trailing newlines, since the bigtop invoker never
-wants to hear about line numbers in the bigtop script or in any of the
-Bigtop modules.
 
 =head4 literal_block
 
 To allow you to put additional SQL statements into the schema.* file,
 Bigtop provides the literal SQL statement.  This package handles it:
 
-    package literal_block;
-    use strict; use warnings;
+ package literal_block;
+ use strict; use warnings;
 
-    sub output_sql {
-        my $self = shift;
+ sub output_sql {
+     my $self = shift;
 
-        return $self->make_output( 'SQL' );
-    }
+     return $self->make_output( 'SQL' );
+ }
 
 Bigtop::Parser provides make_output in its literal_block package to facilitate
-literal statements of all sorts.  Simply tell it what sort you are
+literal statements of all sorts.  Simply tell it what backend type you are
 interested in.  If the node you're working on is of that type, it makes
 meaningful output (giving back an array reference with one element containing
 the full literal string from the user's statement).  Otherwise, it returns
 undef which is discarded by the proper walk_postorder method.
+
+=head4 join_table
+
+Join tables are manufactured tables whose only purpose is to embody a
+many-to-many relationship between other tables.
+
+ sub output_sql {
+     my $self         = shift;
+     my $child_output = shift;
+
+     my $three_way    = Bigtop::Backend::SQL::SQLite::three_way(
+         {
+             table_name   => $self->{__NAME__},
+             foreign_keys => $child_output,
+         }
+     );
+
+     return [ $three_way ];
+ }
+
+This method just passes the buck to the three_way TT block.
+
+=head4 join_table_statement
+
+ sub output_sql {
+     my $self         = shift;
+     my $child_output = shift;
+
+     return unless $self->{__KEYWORD__} eq 'joins';
+
+     my @tables = %{ $self->{__DEF__}->get_first_arg() };
+
+     return \@tables;
+ }
+
+ 1;
+
+The __DEF__ key stores the joins or names statement pair, it is an
+arg_list object.  These respond to get_first_arg and other methods.
+Since there is only ever one pair allowed for either of these statements,
+we just want that one pair.  It comes back as a hash, but we must once
+again make it an array to comply with walk_postorder's return value API.
+
+The rest of the module is all POD.
 
 =head3 The lookup hash
 
@@ -1100,7 +1285,7 @@ The lookup hash is stored inside the AST.  You can get it out like so:
 
     my $lookup = $tree->{application}{lookup};
 
-as shown in the gen_SQL method of Bigtop::SQL::Postgres shown above.
+as shown in the gen_SQL method shown above.
 
 The keys in the lookup hash are (these are optional, so only some of them
 might appear in your hash):
@@ -1197,11 +1382,51 @@ is the sequence name for this table.
 
 =back
 
+=item join_tables
+
+This subhash represents all join_tables in the Bigtop file, but each one
+appears twice -- once for each table involved in the many-to-many
+relationship.  The keys of the hash are the names of the tables on either
+side of the many-to-many.  The values are hashes, which are slightly
+complex.  Here is an example:
+
+    join_tables => {
+        skill => { joins => { job   => 'job_skill' } },
+        job   => { joins => { skill => 'job_skill' } },
+        fox   => { joins => { sock  => 'fox_sock'  },
+                   name  => 'socks' },
+        sock  => { joins => { fox   => 'fox_sock'  },
+                   name  => 'foxes' },
+    }
+
+which corresponds to these join_table blocks:
+
+    join_table job_skill { joins job => skill; }
+    join_table fox_sock  { joins fox => sock; names foxes => socks; }
+
 =back
 
 Note that I said that the lookup hash is easier to use than direct
 AST walking.  But I never said it was trivial or even well designed.
 It was easy to build.
+
+Here is the gist of the lookup hash in summary (as generated by outliner):
+
+    app_statements
+    controllers
+        methods
+            statements
+            type
+        configs
+        statements
+        type
+    configs
+    tables
+        data
+        fields
+        foreign_display
+        sequence
+    join_tables
 
 =head1 AUTHOR
 

@@ -1,34 +1,24 @@
 config {
-    engine          MP13;
+    engine          CGI;
     template_engine TT;
-    Init            Std           {}
-    SQL             Postgres      {}
-    Conf            General       {}
-    HttpdConf       Gantry        { skip_config 1;
-                                    full_use 1;      }
-    Control         Gantry        { full_use 0;      }
-    Model           GantryCDBI    {}
-    SiteLook        GantryDefault {
-        gantry_wrapper `/home/pcrow/srcgantry/root/sample_wrapper.tt`;
-    }
+    Init            Std             {}
+    CGI             Gantry          { with_server 1; flex_db 1; gen_root 1; }
+    SQL             SQLite          {}
+    Conf            General         {}
+    Control         Gantry          { dbix 1; }
+    Model           GantryDBIxClass {}
+    SiteLook        GantryDefault   {}
 }
 app Apps::AddressBook {
-    location `/apps`;
     authors `Phil Crow` => `philcrow2000@yahoo.com`;
     config {
-        auth_dbconn    `dbi:Pg:dbname=malcolm`          => no_accessor;
-        auth_dbuser    apache                           => no_accessor;
-        dbconn    `dbi:Pg:dbname=address`          => no_accessor;
-        dbuser    apache                           => no_accessor;
-        template_wrapper `wrapper.tt`              => no_accessor;
-        root      `/home/pcrow/Bigtop/examples/Apps-AddressBook/html:/home/pcrow/srcgantry/root`
-                                                   => no_accessor;
+        dbconn           `dbi:SQLite:dbname=address` => no_accessor;
+        dbuser           apache                      => no_accessor;
+        template_wrapper `genwrapper.tt`             => no_accessor;
     }
-    sequence address_seq        {}
     table    address {
-        sequence address_seq;
         foreign_display `%name`;
-        field id { is int4, primary_key, assign_by_sequence; }
+        field id { is int4, primary_key, auto; }
         field name {
             is             varchar;
             label          Name;
@@ -71,10 +61,8 @@ app Apps::AddressBook {
             html_form_optional 1;
         }
     }
-    sequence birth_seq {}
     table birth {
-        sequence birth_seq;
-        field id { is int4, primary_key, assign_by_sequence; }
+        field id { is int4, primary_key, auto; }
         field name {
             is             varchar;
             label          Name;
@@ -93,11 +81,11 @@ app Apps::AddressBook {
             date_select_text `Popup Calendar`;
         }
     }
-    controller Address {
+    controller Address is AutoCRUD {
         controls_table   address;
         rel_location     address;
-        uses             Gantry::Plugins::AutoCRUD;
         text_description `address`;
+        page_link_label Address;
         method do_main is main_listing {
             title            `Address`;
             cols             name, phone;
@@ -111,11 +99,10 @@ app Apps::AddressBook {
                 legend     => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
-    controller Birth {
+    controller Birth is AutoCRUD {
         controls_table   birth;
         rel_location     birthday;
-        uses             Gantry::Plugins::AutoCRUD,
-                         Gantry::Plugins::Calendar;
+        uses             Gantry::Plugins::Calendar;
         text_description `birthday`;
         page_link_label  Birthdays;
         method do_main is main_listing {
@@ -124,7 +111,7 @@ app Apps::AddressBook {
             header_options   Add;
             row_options      Edit, Delete;
         }
-        method _form is AutoCRUD_form {
+        method form is AutoCRUD_form {
             form_name        birthday_form;
             all_fields_but   id;
             extra_keys

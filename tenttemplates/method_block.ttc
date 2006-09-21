@@ -13,13 +13,13 @@
 %]
     <div class='app_block_element'
          id='div_[% item.ident %]'>
-        [% blockname  = block.name
-           methodname = item.name
+        [% blockname  = block.ident
+           methodname = item.ident
            fullname   = "controller_method_${blockname}::$methodname" %]
          <fieldset>
          <legend>Method 
             ( <a href='javascript:show_or_hide( "[%-
-                "hideable_$fullname" %]" );'>edit</a> |  
+                "hideable_$item.ident" %]" );'>edit</a> |  
                 [%- INCLUDE delete_link.ttc
                     name  = "app_body_delete::$item.ident" %]
             )
@@ -72,9 +72,10 @@
                 <td colspan='2'>
                   [% WRAPPER show_or_hide.ttc
                      clickable_id            = "heading_$fullname"
-                     element_under_control   = "hideable_$fullname"
+                     element_under_control   = "hideable_$item.ident"
                      label                   = ''
                      heading_level           = 'none'
+                     expanded = view.data.expanded_divs.${ item.ident } || 0
                   %]
                     [% INCLUDE method_statement_table
                                method = item %]
@@ -105,7 +106,8 @@
             [% INCLUDE input_boxes.ttc
                        statement      = method_statement
                        keyword_prefix = "$method.ident::"
-                       name_prefix    = "$block.name::$method.name::"
+                       name_prefix    = "$method.ident::"
+                       id_prefix      = "$method.ident::"
                        method_group   = 'method_statement'
                        key            = keyword
             %]

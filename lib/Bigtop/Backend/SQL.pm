@@ -13,17 +13,20 @@ BEGIN {
     Bigtop::Parser->add_valid_keywords(
         Bigtop::Keywords->get_docs_for( 'app_literal', 'SQL' )
     );
+
+    Bigtop::Parser->add_valid_keywords(
+        Bigtop::Keywords->get_docs_for( 'join_table', 'joins', 'names' )
+    );
 }
 
-# sql_block
-package #
-    sql_block;
+package # table_block
+    table_block;
 use strict; use warnings;
 
 sub get_create_keyword {
     my $self = shift;
 
-    return $self->{__BODY__}->create_keyword();
+    return 'TABLE';
 }
 
 sub _skip_this_block {
@@ -36,22 +39,27 @@ sub _skip_this_block {
     return 0;
 }
 
-# sequence_body
-package #
-    sequence_body;
+package # seq_block
+    seq_block;
 use strict; use warnings;
 
-sub create_keyword { return 'SEQUENCE' }
+sub get_create_keyword {
+    my $self = shift;
 
-# table_body
-package #
-    table_body;
-use strict; use warnings;
+    return 'SEQUENCE';
+}
 
-sub create_keyword { return 'TABLE' }
+sub _skip_this_block {
+    my $self = shift;
 
-# table_element_block
-package #
+    my $skip = $self->walk_postorder( 'skip_this' );
+
+    return pop @{ $skip };
+
+    return 0;
+}
+
+package # table_element_block
     table_element_block;
 use strict; use warnings;
 
@@ -59,7 +67,7 @@ sub skip_this {
     my $self         = shift;
 
     if ( $self->{__BODY__} eq 'not_for' ) {
-        foreach my $skipped_backend ( @{ $self->{__VALUE__} } ) {
+        foreach my $skipped_backend ( @{ $self->{__ARGS__} } ) {
             if ( $skipped_backend eq 'SQL' ) {
                 return [ 1 ];
             }

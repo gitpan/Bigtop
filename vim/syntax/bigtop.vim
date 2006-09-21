@@ -22,8 +22,8 @@ syn keyword bigtopBlocks block config app table field controller method sequence
 
 syn keyword bigtopEngines        MP13 MP20 TT
 syn keyword bigtopBackendTypes   Init SQL Conf CGI HttpdConf Control Model SiteLook
-syn keyword bigtopBackends       Std Postgres General Gantry GantryCDBI GantryDefault
-syn keyword bigtopValues         no_gen no_accessor
+syn keyword bigtopBackends       Std SQLite MySQL Postgres General Gantry GantryDBIxClass GantryCDBI GantryDefault
+syn keyword bigtopValues         no_gen no_accessor fast_cgi instance conffile with_server server_port gen_root flex_db full_use dbix model_base_class gantry_wrapper
 
 syn keyword bigtopConfigKeywords base_dir app_dir conf_instance engine template_engine
 syn keyword bigtopAppKeywords    location authors email copyright_holder license_text
@@ -42,8 +42,8 @@ hi def link bigtopString         String
 hi def link bigtopBlocks         Keyword
 hi def link bigtopBackendTypes   Keyword
 hi def link bigtopBackends       Identifier
+hi def link bigtopValues         Identifier
 hi def link bigtopEngines        Constant
-hi def link bigtopValues         Constant
 hi def link bigtopConfigKeywords Identifier
 hi def link bigtopAppKeywords    Identifier
 hi def link bigtopTableKeywords  Identifier

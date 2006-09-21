@@ -30,6 +30,7 @@ app Apps::Checkbook {
     config {
         DB     app_db => no_accessor;
         DBName some_user;
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
     }
     controller PayeeOr {
         rel_location   payee;
@@ -60,6 +61,7 @@ my $cgi = Gantry::Engine::CGI->new( {
     config => {
         DB => 'app_db',
         DBName => 'some_user',
+        dbconn => 'dbi:SQLite:dbname=app.db',
         root => 'html',
     },
     locations => {
@@ -161,6 +163,46 @@ EO_HELP
 
     exit 0;
 }
+
+=head1 NAME
+
+app.server - A generated server for the Apps::Checkbook app
+
+=head1 SYNOPSIS
+
+    usage: app.server [options] [port]
+
+port defaults to 8080
+
+=head1 DESCRIPTION
+
+This is a Gantry::Server based stand alone server for the Apps::Checkbook
+app.  It was built to use an SQLite database called app.db.  Use the following
+command line flags to change database connection information (all of
+them require a value):
+
+=over 4
+
+=item --dbd (or -d)
+
+The DBD for your database, try SQLite, Pg, or mysql.  Defaults to SQLite.
+
+=item --dbuser (or -u)
+
+The database user name, defaults to the empty string.
+
+=item --dbpass (or -p)
+
+The database user's password, defaults to the empty string.
+
+=item --dbname (or -n)
+
+The name of the database, defaults to app.db.
+
+=back
+
+=cut
+
 EO_CORRECT_SERVER
 
 file_ok( $server, $correct_server, 'stand alone server' );

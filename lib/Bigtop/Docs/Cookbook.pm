@@ -11,20 +11,38 @@ you might long for, together with syntax to type in your bigtop file
 and what that produces.  In addition, many sections start
 with a simple question about what gets built by the backend in question.
 
-For quick syntax reference consult Bigtop::Docs::Keywords for more
-complete information consult Bigtop::Docs::Syntax.
-
 This document assumes you will be editing your bigtop file with a text
-editor (it was written before the tentmaker).  You may also choose to
+editor (it was written before tentmaker).  You may also choose to
 maintain your bigtop file with tentmaker.  Generally, the advice here
 governs what values you put in the boxes at the far right side of the
-Backends tab in tentmaker.  Some of the other advice must be implemented
-on the App Body tab.
+Backends tab in tentmaker.  Some of the other advice must be applied
+on the App Body tab.  See Bigtop::Docs::TentTut to get started with
+tentmaker or Bigtop::Docs::TentRef for full details on using it.
+
+For quick syntax reference consult Bigtop::Docs::Keywords for more
+complete information consult Bigtop::Docs::Syntax or Bigtop::Keywords
+from which tentmaker draws its on-screen information.
 
 The questions are in sections.  Here is a complete list of sections and
 questions:
 
 =over 4
+
+=item *
+
+Quick Starts for the Lazy
+
+=over 4
+
+=item *
+
+L<I'm lazy, what's the quickest way to get started?>
+
+=item *
+
+L<How can I just as easily add to an existing bigtop file?>
+
+=back
 
 =item *
 
@@ -39,6 +57,10 @@ L<What does Init::Std build?>
 =item *
 
 L<How can I regenerate some of those files but not others?>
+
+=item *
+
+L<I don't like the bigtop defaults how can I change them before building?>
 
 =back
 
@@ -66,10 +88,6 @@ L<What do SQL backends make?>
 
 =item *
 
-L<How do I make a sequence>
-
-=item *
-
 L<How do I make a table?>
 
 =item *
@@ -87,6 +105,10 @@ L<How can I include data for initial population into a table?>
 =item *
 
 L<How do I put extra things into schema.*?>
+
+=item *
+
+L<How do I make a sequence>
 
 =back
 
@@ -220,7 +242,89 @@ L<How can I alter the generated models behavior?>
 
 =back
 
+=item *
+
+Other
+
+=over 4
+
+=item *
+
+L<How can I change what a backend generates?>
+
+=item *
+
+L<What if the backend isn't giving enough data to the template?>
+
 =back
+
+=back
+
+=head1 Quick Starts for the Lazy
+
+=head2 I'm lazy, what's the quickest way to get started?
+
+The two main paths to laziness are tentmaker (see Bigtop::Docs::TentTut)
+and the bigtop script itself -- with the proper command line parameters.
+
+Suppose you have a little data model:
+
+    +--------+      +--------+      +------------+
+    | dancer |----->| resume |<-----| perfomance |
+    +--------+      +--------+      +------------+
+
+You could start your app like this:
+
+    bigtop --new Dancers 'dancer->resume resume->performance'
+
+While the fields in the generated tables won't be of much use (unless
+you want to refer to your dance cast members by their idents), the tables
+and their relationships will be there.  Follow the instructions bigtop
+prints (which mainly give advice about building your database for
+SQLite, Postgres, and MySQL).
+
+=head2 How can I just as easily add to an existing bigtop file?
+
+Suppose that you want to add some tables to the app from the previous
+question, here's all you need to do (from the Dancers directory):
+
+    bigtop --add docs/dancers.bigtop 'boss<->dancer'
+
+This will add a new table for supervisors and a many-to-many relationship
+between it and the existing dancer table.  It will also rebuild the
+app.
+
+=head2 I don't like the bigtop defaults how can I change them before building?
+
+Using the command line bigtop approach of the previous two questions
+leaves you with tables full of columns which don't usually make much
+sense.  If you want to change them before even building the app, try
+using tentmaker:
+
+    tentmaker --new Dancers 'dancer->resume resume->performance'
+
+This will start a little web server.  When that server starts, it will
+print a URL you can use to contact it.  Point your browser to that
+URL and edit the bigtop file to your heart's content.  See
+Bigtop::Docs::TentTut for advice on what to do while you're there.
+
+Once you save the file, do this:
+
+    bigtop --create dancer.bigtop
+
+Then change the Dancers directory and proceed as before.
+
+To update the data model with the boss table (and its many-to-many
+relationship to the dancer table), do this:
+
+    tentmaker --add docs/dancers.bigtop 'boss<->dancer'
+
+Again, point your browser to the provided URL and edit away.  After
+saving, this time type:
+
+    bigtop docs/dancers.bigtop all
+
+to regenerate the app.
 
 =head1 Init
 
@@ -299,7 +403,8 @@ section:
     }
 
 This yields a CGI script as normal and app.server which can be executed
-directly (it requires HTTP::Server::Simple).
+directly (it requires HTTP::Server::Simple).  Here is a simplified version
+of what you get:
 
     #!/usr/bin/perl
     use strict;
@@ -331,9 +436,11 @@ directly (it requires HTTP::Server::Simple).
     $server->set_engine_object( $cgi );
     $server->run();
 
+The actual version includes option handling to allow command line control
+of which DBD, database user, and database password.
+
 This server binds to port 8080 by default.  To change the port, add the
 server_port statement:
-
     
         CGI       Gantry { with_server 1;
                            server_port 9999; }
@@ -342,8 +449,8 @@ This will change the script in only one place:
 
     my $port = shift || 9999;
 
-As you can see, users can supply a port on the command line when they (that
-would usually be you) start it.
+As you can see, users can supply a port on the command line when they start
+it.
 
 =head1 SQL
 
@@ -353,18 +460,9 @@ SQL backends make docs/schema.* (where * is for your database engine,
 like postgres) in the build directory.  It should be ready for direct use
 to create your database.
 
-=head2 How do I make a sequence?
-
-Use a sequence block:
-
-    sequence name_seq {}
-
-This will generate:
-
-    CREATE SEQUENCE name_seq;
-
-in schema.*.  Note that blocks for sequences must currently be empty.
-Eventually they should support min and max values, etc.
+Note that unlike other backend types, you can build with all of the SQL
+backends concurrently.  They write different files.  They also do a
+bit of interpretation to handle differences in their SQL syntax.
 
 =head2 How do I make a table?
 
@@ -432,6 +530,9 @@ Here is a table with several types of fields:
             html_form_cols     50;
         }
     }
+
+Note that int4 will be converted into a reasonable integer type for
+your database, even if it doesn't use that as a keyword.
     
 The foreign_display statement controls how rows from this table
 appear when other tables refer to them.  This is available through
@@ -448,9 +549,9 @@ Including the refers_to statement implies that the field is a foreign
 key.  Whether this generates SQL indicating that is up to the backend.
 None of the current backends (Bigtop::SQL::Postgres, Bigtop::SQL::MySQL,
 or Bigtop::SQL::SQLite) generate foreign key SQL.  But, using refers_to
-always affects the model.  For instance, Bigtop::Model::CDBI generates
-a has_a for each field with a refers_to statement.  Other Model backends
-do the analogous things.
+always affects the model.  For instance, Bigtop::Model::DBIxClass generates
+a belongs_to call for each field with a refers_to statement.  Other Model
+backends do the analogous things.
 
 The date_select_text is shown by Gantry templates as the text for
 a popup calendar link.  See the discussion of the LineItem controller in
@@ -479,18 +580,21 @@ To include such data add data statements to the table block:
     }
 
 Notes: (1) you should not set the id if your table has a sequence or is
-auto-incrementing the primary key (and it should one or the other).
+auto-incrementing the primary key (and it should one do or the other).
 (2) remember to surround the values with backquotes if they
 have any characters Perl wouldn't like in a variable name (it's always
 safe to have backquotes around values, even if they aren't strictly needed,
 think of them like the comma after the last item in a Perl list). (3) you
-can use as many data statments as you like each one makes an SQL statement:
+can use as many data statments as you like, each one makes an SQL statement:
 
     INSERT INTO status_code ( name, descr )
         VALUES ( 'begun', 'work in progress' );
 
 Note that tentmaker cannot insert, update, or delete data statements.  But,
-if you have them in your file, it will not harm them.
+if you have them in your file, it will not harm them.  To get around this
+tentmaker limitation, you need to create literal SQL blocks with INSERT
+statements in them.  See the next question, for a discussion of literal
+SQL blocks.
 
 =head2 How do I put extra things into schema.*?
 
@@ -524,6 +628,23 @@ is defined, put the literal statement after some_table's block.
 You may use literal SQL statements as a way to work around tentmaker's
 inability to handle table level data statements.  Simply put your INSERT
 statements into a literal SQL statement after the table's block.
+
+=head2 How do I make a sequence?
+
+Use a sequence block:
+
+    sequence name_seq {}
+
+This will generate:
+
+    CREATE SEQUENCE name_seq;
+
+in schema.*.  Note that blocks for sequences must currently be empty.
+Eventually they should support min and max values, etc.
+
+Most databases don't use sequences.  Of the databases supported by
+bigtop, only Postgres has them.  Even for Postgres, we don't typically
+use them any more.
 
 =head1 CGI
 
@@ -632,6 +753,8 @@ HttpdConf backends make docs/httpd.conf suitable for use in a mod_perl
 apache conf file or as the value of an Include statement there.
 
 =head2 How do I specify PerlSetVar values for mod_perl?
+
+See the next question if you want to use Gantry::Conf with mod_perl.
 
 Use config blocks to specify PerlSetVars:
 
@@ -770,7 +893,7 @@ immediately after the #!/usr/bin/perl line (like a use lib), do this:
 
 As with all literals, you must enclose your content in backquotes and mind
 your own syntax inside those quotes.  You are responsible for whitespace
-management, except that one new line will be added at the end if your literal
+management, except that one new line will be added at the end, if your literal
 text does NOT have trailing whitespace.  So the above will get one new
 line added to it.
 
@@ -861,7 +984,8 @@ So, the generated statement (repeated in the stub and GEN modules) is:
 
 In addition to the basic effect of controls_table, it is also used
 by methods of type AutoCRUD_form and CRUD_form to make sure the
-requested fields are available in the controlled table.
+requested fields are available in the controlled table and to find their
+labels, etc.
 
 Note, that a controller will only control one table as generated.
 If you need to work with other tables, you'll have to write some code.
@@ -1055,6 +1179,31 @@ name as one in the GEN module.  Models generated by Model Gantry inherit
 from Gantry::Utils::Model, which allows inheritence instead of mixing in.
 These are the native models.
 
+In addition to regular tables, the Model GantryDBIxClass backend understands
+the join_table block (which became available in version 0.15).  Join tables
+are needed to support many-to-many relationships like this:
+
+    +-----+           +-------+
+    | job |<-+     +->| skill |
+    +-----+  |     |  +-------+
+             |     |
+          +-----------+
+          | job_skill |
+          +-----------+
+
+To express this, add:
+
+    join_table job_skill {
+        joins job => skill;
+    }
+
+This will have serveral effects.  First, all SQL backends will make the
+job_skill table with three fiels: id and columns to hold ids for the job
+and skill tables.  Second, the Model GantryDBIxClass backend will make
+has_many relationships in both the job and skill model modules and put
+belongs_to relationships for the job and skill tables into the model
+module for the job_skill table.
+
 =head2 What does the GantryCDBI Model backend make?
 
 The Model GantryCDBI backend makes modules exactly analogous to
@@ -1091,6 +1240,17 @@ for their ORM.  You can change that with the model_base_class statement:
 
 The generated output will be the same, except for the base class.
 The model_base_class need not be in the Gantry::Utils:: namespace.
+
+If most or all your tables need to inherit from a single base class,
+put it in the backend block:
+
+    config {
+        #...
+        Model GantryDBIxClass { model_base_class Exotic::Base; }
+    }
+
+Individual tables can still use the model_base_class statement to override
+this replacement global default.
 
 =head2 How can I alter the generated model's behavior?
 
@@ -1142,12 +1302,20 @@ As for the other Model backends, include primary_key in the is statement
 for the primary column:
 
     table name {
+        field id { is int4, primary_key, auto; }
+    }
+
+This will make an implicit sequence for the id field.
+
+You could use a sequence with the table:
+
+    table name {
         sequence name_seq;
         field id { is int4, primary_key, auto; }
     }
 
-You should use a sequence with the table, because Gantry::Utils::Model
-relies on it.
+Then the auto-increment values will be drawn from the explicit sequence
+C<name_seq>.
 
 =head2 How can I make my model inherit from a class of my choice?
 
@@ -1161,9 +1329,42 @@ To change what the GEN model inherits from use the model_base_class statement:
 The base class you specify should respond to the same api as
 Gantry::Utils::Model (which is a subset of Class::DBI).
 
+You can put this in the backend block if you want to make it the
+default:
+
+    config {
+        #...
+        Model Gantry { model_base_class Exotic::Base; }
+    }
+
+Even if you do that, individual tables can still requset a special
+base class by supplying the model_base_class statement.
+
 =head2 How can I alter the generated models behavior?
 
 To alter the generated behavior, override the offending method in your
 stub.
+
+=head1 Other
+
+=head2 How can I change what a backend generates?
+
+Most backends use TT to generate their output.  Those that do default to
+Inline::TT.  That means there is a hard coded template inside their module.
+To change what these generate, copy the template out of the module.
+Change whatever you want, except the names of the blocks.  Save the result.
+Then add a template statement to the backend's config block, with its value
+set to a path to your newly saved template.
+
+=head2 What if the backend isn't giving enough data to the template?
+
+If you code your own template and it needs addtional information from the
+backend, you'll have to modify the backend or write your own.  It is not
+easy to inherit from backends.  Rather, you need to copy the backend and
+rename it.  Keep in mind that all backends are sharing the syntax
+tree package namespaces.  This means that your methods need to be uniquely
+named to avoid redefining methods supplied by other backends.
+
+See Bigtop::Docs::Modules for advice on writing your own backends.
 
 =cut

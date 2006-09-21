@@ -5,10 +5,10 @@ sub deparse {
     my $class = shift;
     my $ast   = shift;
 
-    my $source;
+    my @source;
 
     # Do the config section.
-    $source  = "config {\n";
+    push @source, 'config {';
 
     my $config = $ast->get_config;
 
@@ -21,24 +21,39 @@ sub deparse {
 
             my $content = _get_backend_block_content( $value );
 
-            $source .= "    $type $backend { $content }\n";
+            push @source, "    $type $backend { $content }";
         }
         else {
-            $source .= "    $keyword $value;\n";
+            push @source, "    $keyword $value;";
         }
     }
 
-    $source .= "}\n";
+    push @source, '}';
 
     # Use walk_postorder to do the app section.
     my $app_elements = $ast->walk_postorder( 'output_app_body' );
-    my $app_body     = join "\n", @{ $app_elements };
 
-    $source .= 'app ' . $ast->get_appname() . " {\n";
-    $source .= "$app_body\n";
-    $source .= "}\n";
+    push @source, 'app ' . $ast->get_appname() . ' {';
+    push @source, @{ $app_elements };
+    push @source, '}';
 
-    return $source;
+    # Now restore comments as best we can.
+    my $last_line = @source - 1;
+    my $comments = $ast->get_comments;
+
+    foreach my $comment_line_no ( sort { $a <=> $b } keys %{ $comments } ) {
+        if ( $comment_line_no <= $last_line ) {
+            splice @source,
+                   $comment_line_no,
+                   0,
+                   $comments->{ $comment_line_no };
+        }
+        else {
+            push @source, $comments->{ $comment_line_no };
+        }
+    }
+
+    return join "\n", @source;
 }
 
 sub _get_backend_block_content {
@@ -52,7 +67,7 @@ sub _get_backend_block_content {
 
         my $value = $backend_hash->{ $statement };
 
-        unless ( $value =~ /^\w[\w\d_]*$/ ) {
+        unless ( $value =~ /^\w[\w\d_:]*$/ ) {
             $value = "`$value`";
         }
 
@@ -62,7 +77,8 @@ sub _get_backend_block_content {
     return join ' ', @statements;
 }
 
-package app_statement;
+package # app_statement
+    app_statement;
 use strict; use warnings;
 
 sub output_app_body {
@@ -76,120 +92,23 @@ sub output_app_body {
 
 }
 
-package app_config_block;
+package # app_config_block;
+    app_config_block;
 use strict; use warnings;
 
 sub output_app_body {
     my $self          = shift;
     my $child_output  = shift;
 
-    my $block_content = join "\n", @{ $child_output };
+    my $indent        = ' ' x 4;
 
-    my $retval = qq(    config {
-$block_content
-    });
+    my @retval = ( "${indent}config {", @{ $child_output }, "${indent}}" );
 
-    return [ $retval ];
+    return \@retval;
 }
 
-package app_config_statement;
-use strict; use warnings;
-
-sub output_app_body {
-    my $self    = shift;
-
-    my $retval  = "        $self->{__KEY__} ";
-    $retval    .= $self->{__ARGS__}->get_quoted_args . ';';
-
-    return [ $retval ];
-}
-
-package sql_block;
-use strict; use warnings;
-
-sub output_app_body {
-    my $self         = shift;
-    my $child_output = shift;
-
-    my $retval;
-
-    if ( $self->{__TYPE__} eq 'sequences' ) {
-        $retval = "    sequence $self->{__NAME__} {}";
-    }
-    else {
-        $retval  = "    table $self->{__NAME__} {\n";
-        $retval .= join "\n", @{ $child_output };
-        $retval .= "\n    }";
-    }
-
-    return [ $retval ];
-
-}
-
-package table_element_block;
-use strict; use warnings;
-
-sub output_app_body {
-    my $self         = shift;
-    my $child_output = shift;
-
-    my $retval;
-
-    if ( $self->{__TYPE__} eq 'field' ) {
-        $retval  = "        field $self->{__NAME__} {\n";
-        $retval .= join "\n", @{ $child_output };
-        $retval .= "\n        }";
-    }
-    else {
-        my $args = $self->{__VALUE__}->get_quoted_args;
-        $retval  = "        $self->{__TYPE__} $args;";
-    }
-
-    return [ $retval ];
-}
-
-package field_statement;
-use strict; use warnings;
-
-sub output_app_body {
-    my $self         = shift;
-    my $child_output = shift;
-
-    my $retval = ' ' x 12 . "$self->{__NAME__} ";
-    $retval   .= join( '', @{ $child_output } ) . ';';
-
-    return [ $retval ];
-}
-
-package field_statement_def;
-use strict; use warnings;
-
-sub output_app_body {
-    my $self         = shift;
-
-    return [ $self->{__ARGS__}->get_quoted_args ];
-}
-
-package controller_block;
-use strict; use warnings;
-
-sub output_app_body {
-    my $self         = shift;
-    my $child_output = shift;
-
-    my $retval;
-
-    my $is_type = $self->{__TYPE__}[0] || '';
-    $is_type    = ( $is_type ) ? " is $is_type " : ' ';
-
-    $retval  = "    controller $self->{__NAME__}$is_type\{\n";
-    $retval .= join "\n", @{ $child_output };
-    $retval .= "\n    }";
-
-    return [ $retval ];
-}
-
-package controller_statement;
+package # app_config_statement;
+    app_config_statement;
 use strict; use warnings;
 
 sub output_app_body {
@@ -201,44 +120,228 @@ sub output_app_body {
     return [ $retval ];
 }
 
-package controller_method;
+package # table_block
+    table_block;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my @retval;
+
+    push @retval, "    table $self->{__NAME__} {";
+    push @retval, @{ $child_output };
+    push @retval, '    }';
+
+    return \@retval;
+}
+
+package # seq_block
+    seq_block;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self         = shift;
+    my $child_output = shift;
+
+    return [ "    sequence $self->{__NAME__} {}" ];
+}
+
+package # table_element_block
+    table_element_block;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my @retval;
+
+    if ( $self->{__TYPE__} eq 'field' ) {
+        push @retval, "        field $self->{__NAME__} {";
+        push @retval, @{ $child_output };
+        push @retval, '        }';
+    }
+    else {
+        my $args = $self->{__ARGS__}->get_quoted_args;
+        push @retval, "        $self->{__TYPE__} $args;";
+    }
+
+    return \@retval;
+}
+
+package # field_statement
+    field_statement;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my $retval = ' ' x 12 . "$self->{__KEYWORD__} ";
+    $retval   .= join( '', @{ $child_output } ) . ';';
+
+    return [ $retval ];
+}
+
+package # field_statement_def
+    field_statement_def;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self         = shift;
+
+    return [ $self->{__ARGS__}->get_quoted_args ];
+}
+
+package # join_table
+    join_table;
 use strict; use warnings;
 
 sub output_app_body {
     my $self          = shift;
     my $child_output  = shift;
 
-    my $block_content = join "\n", @{ $child_output };
-
     my $type = '';
 
-    my $retval = qq(        method $self->{__NAME__} is $self->{__TYPE__} {
-$block_content
-        });
-
-    return [ $retval ];
+    return [
+        "    join_table $self->{__NAME__} {",
+        @{ $child_output },
+        '    }'
+    ];
 }
 
-package method_statement;
+package # join_table_statement
+    join_table_statement;
 use strict; use warnings;
 
 sub output_app_body {
     my $self          = shift;
 
-    my $retval  = "            $self->{__KEY__} ";
+    my $retval  = "        $self->{__KEYWORD__} ";
+    $retval    .= $self->{__DEF__}->get_quoted_args . ';';
+
+    return [ $retval ];
+}
+
+package # controller_block;
+    controller_block;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my @retval;
+
+    my $is_type = $self->get_controller_type;
+    $is_type    = ( $is_type eq 'stub' ) ? ' ' : " is $is_type ";
+
+    push @retval, "    controller $self->{__NAME__}$is_type\{";
+    push @retval, @{ $child_output };
+    push @retval, '    }';
+
+    return \@retval;
+}
+
+package # controller_statement;
+    controller_statement;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self    = shift;
+
+    my $retval  = "        $self->{__KEYWORD__} ";
     $retval    .= $self->{__ARGS__}->get_quoted_args . ';';
 
     return [ $retval ];
 }
 
-package literal_block;
+package # controller_method;
+    controller_method;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self          = shift;
+    my $child_output  = shift;
+
+    return [
+        "        method $self->{__NAME__} is $self->{__TYPE__} {",
+        @{ $child_output },
+        '        }',
+    ];
+}
+
+package # method_statement;
+    method_statement;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self          = shift;
+
+    my $retval  = "            $self->{__KEYWORD__} ";
+    $retval    .= $self->{__ARGS__}->get_quoted_args . ';';
+
+    return [ $retval ];
+}
+
+package # literal_block
+    literal_block;
 use strict; use warnings;
 
 sub output_app_body {
     my $self = shift;
 
-    my $retval = "    literal $self->{__BACKEND__}\n";
-    $retval   .= "      `$self->{__BODY__}`;\n";
+    my @retval = ( "    literal $self->{__BACKEND__}" );
+    push @retval, "      `$self->{__BODY__}`;";
+
+    return \@retval;
+}
+
+package # controller_literal_block
+    controller_literal_block;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self = shift;
+
+    my $space  = ' ';
+    my @retval = ( $space x 8 . "literal $self->{__BACKEND__}" );
+    push @retval, $space x 12 . "`$self->{__BODY__}`;";
+
+    return \@retval;
+}
+
+package # controller_config_block
+    controller_config_block;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my $space = ' ';
+    my @retval = ( $space x 8 . 'config {' );
+
+    push @retval, @{ $child_output };
+
+    push @retval, $space x 8 . '}';
+
+    return \@retval;
+}
+
+package # controller_config_statement
+    controller_config_statement;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self         = shift;
+
+    my $space = ' ';
+
+    my $retval  = $space x 12 . "$self->{__KEYWORD__} ";
+    $retval    .= $self->{__ARGS__}->get_quoted_args . ';';
 
     return [ $retval ];
 }
@@ -258,6 +361,22 @@ Bigtop::Deparse - given an AST, makes a corresponding bigtop source file
 =head1 DESCRIPTION
 
 This module support TentMaker.  It takes an ast as built by Bigtop::Parser.
+
+=head1 METHODS
+
+=over 4
+
+=item deparse
+
+Params: a bigtop abstract syntax tree
+
+Returns: source code which exactly corresponds to the tree
+
+Note that whitespace is not preserved, but deparse tries hard to use
+pleasant indenting.  If you have comments, they may have shifted
+due to deletions from the tree or whitespace changes.
+
+=back
 
 =head1 AUTHOR
 

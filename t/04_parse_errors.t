@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 9;
+use Test::More tests => 10;
 
 use Bigtop::Parser;
 
@@ -184,7 +184,6 @@ Error: invalid keyword 'SQL' (line 3) near:
 I was expecting one of these: app_dir, base_dir, engine, template_engine, or a valid backend block.
 EO_bad_backed
 
-#Bigtop::Parser->add_valid_keywords( 'field', qw( is update_with label ) );
 eval {
     my $conf         = Bigtop::Parser->parse_string($bigtop_string);
 };
@@ -226,7 +225,7 @@ EO_Bigtop_bad_lit
 @correct_error_output = split /\n/, <<"EO_bad_lit";
 Error: invalid keyword 'lateral' (line 7) near:
  NotSupported ``;
-I was expecting one of these: literal, location, no_gen, or a valid block (controller, sequence, config, or table).
+I was expecting one of these: literal, location, no_gen, or a valid block (controller, sequence, config, table, or join_table).
 EO_bad_lit
 
 eval {
@@ -273,7 +272,7 @@ Bigtop::Parser->add_valid_keywords(
 @correct_error_output = split /\n/, <<"EO_mispelt_block";
 Error: invalid keyword 'tbale' (line 7) near:
  payeepayor {
-I was expecting one of these: authors, label, literal, location, no_gen, or a valid block (controller, sequence, config, or table).
+I was expecting one of these: authors, label, literal, location, no_gen, or a valid block (controller, sequence, config, table, or join_table).
 EO_mispelt_block
 
 eval {
@@ -441,5 +440,55 @@ is_deeply(
      \@error_output,
      \@correct_error_output,
      'extra semicolon in controller config'
+);
+
+#---------------------------------------------------------------------------
+# Missing block name
+#---------------------------------------------------------------------------
+
+$bigtop_string = <<"EO_Missing_Block_Name";
+config {
+    base_dir  `.`;
+    SQL       Postgres {}
+    HttpdConf Gantry   {}
+}
+app Apps::Checkbook {
+    table {
+        field id    { is int, primary_key, auto; }
+        field name  {
+            is varchar;
+            label `Payee or Payor`;
+        }
+        field category {
+            is int;
+            label `Expense Category`;
+        }
+    }
+    controller Name {
+        config {
+            var value;
+            bad_var `value`;
+                    => no_accessor;
+            var2 value;
+        }
+    }
+}
+EO_Missing_Block_Name
+
+@correct_error_output = split /\n/, <<"EO_extra_semi";
+Error: missing name for table block (line 7) near:
+ {
+EO_extra_semi
+
+eval {
+    my $conf         = Bigtop::Parser->parse_string($bigtop_string);
+};
+
+@error_output = split /\n/, $@;
+
+is_deeply(
+     \@error_output,
+     \@correct_error_output,
+     'missing app block name',
 );
 

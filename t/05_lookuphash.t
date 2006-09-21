@@ -12,6 +12,7 @@ config {
 }
 app Apps::Checkbook {
     author `Phil Crow`;
+    sequence payeepayor_seq {}
     table payeepayor {
         field id    { is int, primary_key, auto; }
     }
@@ -35,15 +36,18 @@ my $correct_lookup = {
                         args => bless(
                             [ 'int', 'primary_key', 'auto' ],
                         'arg_list' )
-                    }
-                }
-            }
-        }
+                    },
+                    __IDENT__ => 'ident_2',
+                },
+            },
+            __IDENT__ => 'ident_3',
+        },
     },
     app_statements => {
-        author => bless(
-                [ 'Phil Crow' ], 'arg_lst'
-            )
+        author => bless( [ 'Phil Crow' ], 'arg_lst' ),
+    },
+    sequences => {
+        payeepayor_seq => 'ident_1'
     }
 };
 

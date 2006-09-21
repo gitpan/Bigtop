@@ -63,6 +63,11 @@ Bigtop::Docs::Keywords.
 The tentmaker tutorial.  Explains in detail how to use tentmaker to edit
 Bigtop files.  Filled with beautiful screen shots.
 
+=item Bigtop::Docs::TentRef
+
+A comprehensive tour of tentmaker which assumes you understand the material
+from Bigtop::Docs::TentTut.
+
 =item Bigtop::Docs::Tutorial
 
 If you don't like tentmaker, this is where you should start.  It walks

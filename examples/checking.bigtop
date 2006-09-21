@@ -1,31 +1,21 @@
 config {
-    base_dir        `/home/pcrow`;
-    engine          MP13;
+    engine          CGI;
     template_engine TT;
-    Init            Std           {}
-    SQL             Postgres      {}
-    HttpdConf       Gantry        {}
-    Control         Gantry        {}
-    Model           GantryCDBI    {}
-    SiteLook        GantryDefault {}
+    Init            Std             {}
+    CGI             Gantry          { gen_root 1; with_server 1; flex_db 1; }
+    SQL             SQLite          {}
+    Control         Gantry          { dbix 1; }
+    Model           GantryDBIxClass {}
+    SiteLook        GantryDefault   {}
 }
 app Checkbook {
-    location `/checking`;
     config {
-        dbconn           `dbi:Pg:dbname=checking`        => no_accessor;
-        dbuser           apache                          => no_accessor;
-        template_wrapper `checking_wrapper.tt`           => no_accessor;
-        root
-            `/home/pcrow/Checkbook/html;/home/httpd/html/bailey`
-                                                         => no_accessor;
-        css_root         `/home/pcrow/Checking/html/css` => no_accessor;
-        app_rootp        `/canopy`                       => no_accessor;
+        dbconn           `dbi:Pg:dbname=checking`  => no_accessor;
+        template_wrapper `genwrapper.tt`           => no_accessor;
     }
-    sequence payeepayor_seq { }
     table payeepayor {
-		sequence payeepayor_seq;
         foreign_display `%name`;
-        field id    { is `int4 PRIMARY KEY`, assign_by_sequence; }
+        field id    { is int4, primary_key, auto; }
         field name  {
             is             varchar;
             label          Name;
@@ -39,29 +29,25 @@ app Checkbook {
             html_form_cols 45;
         }
     }
-    sequence category_seq {}
     table category {
-        sequence category_seq;
         foreign_display `%type: %subtype`;
-        field id    { is `int4 PRIMARY KEY`, assign_by_sequence; }
+        field id    { is int4, primary_key, auto; }
         field type  {
             is                     varchar;
             label                  Name;
             html_form_type         text;
         }
-        field sub_type  {
+        field subtype  {
             is                     varchar;
             label                  Name;
             html_form_type         text;
             html_form_optional     1;
         }
     }
-    sequence status_seq { }
     table status {
-        sequence status_seq;
         foreign_display `%descr`;
 
-        field id { is `int4 PRIMARY KEY`, auto; }
+        field id { is int4, primary_key, auto; }
         field descr {
             is             varchar;
             label          Description;
@@ -71,10 +57,8 @@ app Checkbook {
         data descr => Cleared;
         data descr => Reconciled;
     }
-    sequence trans_seq { }
     table trans {
-        sequence trans_seq;
-        field id { is `int4 PRIMARY KEY`, auto; }
+        field id { is int4, primary_key, auto; }
         field status {
             is                     varchar;
             label                  Status;
@@ -96,8 +80,8 @@ app Checkbook {
         }
         field payee_payor {
             is                     int4;
-            refers_to              payee;
-            label                  `Paid To/Rec\\'v\\'d From`;
+            refers_to              payeepayor;
+            label                  `Paid To/Rec\'v\'d From`;
             html_form_type         select;
         }
         field category {
@@ -115,11 +99,11 @@ app Checkbook {
             html_form_optional     1;
         }
     }
-    controller PayeePayor {
-        uses              Gantry::Plugins::AutoCRUD;
+    controller PayeePayor is AutoCRUD {
         controls_table    payeepayor;
         text_description `Payee/Payor`;
         rel_location      payeeor;
+        page_link_label  `Payee/Payor`;
 
         method do_main is main_listing {
             title          `Payees/Payors`;
@@ -128,38 +112,38 @@ app Checkbook {
             row_options    Edit, Delete;
         }
 
-        method _form is AutoCRUD_form {
+        method form is AutoCRUD_form {
             form_name      payeeor;
             all_fields_but id;
             extra_keys
                 legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
-    controller Category {
-        uses              Gantry::Plugins::AutoCRUD;
+    controller Category is AutoCRUD {
         controls_table    category;
         text_description `Category`;
         rel_location      category;
+        page_link_label   Category;
 
         method do_main is main_listing {
             title          Category;
-            cols           type, sub_type;
+            cols           type, subtype;
             header_options Add;
             row_options    Edit, Delete;
         }
 
-        method _form is AutoCRUD_form {
+        method form is AutoCRUD_form {
             form_name      category;
             all_fields_but id;
             extra_keys
                 legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
-    controller Status {
-        uses              Gantry::Plugins::AutoCRUD;
+    controller Status is AutoCRUD {
         controls_table    status;
         text_description `Status`;
         rel_location      status;
+        page_link_label   Status;
 
         method do_main is main_listing {
             title          Status;
@@ -168,18 +152,19 @@ app Checkbook {
             row_options    Edit, Delete;
         }
 
-        method _form is AutoCRUD_form {
+        method form is AutoCRUD_form {
             form_name      category;
             all_fields_but id;
             extra_keys
                 legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
-    controller Trans {
-        uses              Gantry::Plugins::AutoCRUD, Gantry::Plugins::Calendar;
+    controller Trans is AutoCRUD {
+        uses              Gantry::Plugins::Calendar;
         controls_table    trans;
         text_description  Transaction;
         rel_location      trans;
+        page_link_label   Trans;
 
         method do_main is main_listing {
             title          `Transaction`;
@@ -188,7 +173,7 @@ app Checkbook {
             row_options    Edit, Delete;
         }
 
-        method _form is AutoCRUD_form {
+        method form is AutoCRUD_form {
             form_name      trans;
             all_fields_but id;
             extra_keys

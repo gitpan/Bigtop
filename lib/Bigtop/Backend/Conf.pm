@@ -13,7 +13,7 @@ BEGIN {
     );
     Bigtop::Parser->add_valid_keywords(
         Bigtop::Keywords->get_docs_for(
-                'app_literal', 'Conf', 'GantryLocation'
+                'app_literal', 'Conf'
         )
     );
     Bigtop::Parser->add_valid_keywords(
@@ -70,6 +70,10 @@ be the base Apache Location for the application.  Location defaults to '/'.
 Inside the controller braces, you may include a location or a
 rel_location keyword.  Use location to specify the absolute Apache Location
 or rel_location to specify the path relative to the app level location.
+
+You can also add literal output in the generated conf file at either the
+top level or at locations.  Use literal Conf at the app level and/or literal
+GantryLocation at the controller level to generate it.
 
 =head1 AUTHOR
 

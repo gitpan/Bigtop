@@ -2,10 +2,7 @@ package Apps::Checkbook::Trans::Action;
 
 use strict;
 
-use base 'Apps::Checkbook';
-use Apps::Checkbook::GEN::Trans::Action qw(
-    form
-);
+use base 'Apps::Checkbook::GEN::Trans::Action';
 
 use Gantry::Plugins::AutoCRUD qw(
     do_add
@@ -40,7 +37,24 @@ Apps::Checkbook::Trans::Action - A controller in the Apps::Checkbook application
 
 =head1 SYNOPSIS
 
-This package is meant to be used in the Perl block of an httpd.conf file.
+This package is meant to be used in a stand alone server/CGI script or the
+Perl block of an httpd.conf file.
+
+Stand Alone Server or CGI script:
+
+    use Apps::Checkbook::Trans::Action;
+
+    my $cgi = Gantry::Engine::CGI->new( {
+        config => {
+            #...
+        },
+        locations => {
+            '/someurl' => 'Apps::Checkbook::Trans::Action',
+            #...
+        },
+    } );
+
+httpd.conf:
 
     <Perl>
         # ...
@@ -52,8 +66,7 @@ This package is meant to be used in the Perl block of an httpd.conf file.
         PerlHandler Apps::Checkbook::Trans::Action
     </Location>
 
-If all went well, the httpd.conf file was correctly written during app
-generation.
+If all went well, one of these was correctly written during app generation.
 
 =head1 DESCRIPTION
 
@@ -68,7 +81,9 @@ You might even want to describe the table this module controls here.
 
 =item text_descr
 
+
 =back
+
 
 =head1 METHODS MIXED IN FROM Apps::Checkbook::GEN::Trans::Action
 
@@ -76,7 +91,9 @@ You might even want to describe the table this module controls here.
 
 =item form
 
+
 =back
+
 
 =head1 DEPENDENCIES
 

@@ -31,21 +31,21 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     literal None
       ``;
-
 }
 EO_first_literal
 
@@ -64,21 +64,21 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     literal Location
       ``;
-
 }
 EO_change_literal_type
 
@@ -97,21 +97,21 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
     literal Location
       `    require valid-user`;
-
 }
 EO_change_literal_value
 
@@ -130,16 +130,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
 }

@@ -6,6 +6,9 @@ use Test::Files;
 use File::Spec;
 use File::Find;
 
+use lib 't';
+use Purge;
+
 #---------------------------------------------------------------------
 # Similar to t/gantry/02_controllers, but with no_gen on the PayeeOr
 #---------------------------------------------------------------------
@@ -18,6 +21,7 @@ my $add_loc  = '$self->exoticlocation() . "/strangely_named_add"';
 my $edit_loc = '$$self{exlocation}/editor';
 my $email    = 'somebody@example.com';
 
+Purge::real_purge_dir( $play_dir );
 mkdir $play_dir;
 
 my $bigtop_string = <<"EO_Bigtop_File";
@@ -146,11 +150,16 @@ dir_only_contains_ok(
             Apps-Checkbook/lib
             Apps-Checkbook/lib/Apps
             Apps-Checkbook/lib/Apps/Checkbook.pm
+            Apps-Checkbook/lib/Apps/GENCheckbook.pm
             Apps-Checkbook/lib/Apps/Checkbook
             Apps-Checkbook/lib/Apps/Checkbook/Trans.pm
             Apps-Checkbook/lib/Apps/Checkbook/GEN
             Apps-Checkbook/lib/Apps/Checkbook/GEN/Trans.pm
-            Apps-Checkbook/t Apps-Checkbook/t/01_use.t
+            Apps-Checkbook/t
+            Apps-Checkbook/t/01_use.t
+            Apps-Checkbook/t/02_pod.t
+            Apps-Checkbook/t/03_podcover.t
+            Apps-Checkbook/t/10_run.t
         )
     ],
     'controller level no_gen honored'

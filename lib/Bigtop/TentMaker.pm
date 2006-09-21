@@ -2,8 +2,11 @@ package Bigtop::TentMaker;
 use strict; use warnings;
 
 use base 'Gantry';
+
 use Bigtop::Parser;
 use Bigtop::Deparser;
+use Bigtop::ScriptHelp;
+
 use File::Find;
 use File::Spec;
 
@@ -13,6 +16,7 @@ my $file;
 my $input;
 my $tree;
 my $deparsed;
+my $dirty;
 my %backends;
 my %engines;
 my %template_engines;
@@ -30,21 +34,30 @@ sub AUTOLOAD {
 # preambles
 
 sub take_performance_hit {
-    my $class = shift;
-    $file     = shift;   # this one is global, sorry Damian
+    my $class        = shift;
+    $file            = shift;   # this one is global, sorry Damian
+    my $art          = shift;
+    my $new_app_name = shift;
 
     build_backend_list();
 
-    $class->read_file();
+    $class->read_file( $new_app_name );
 
-    # deparse the tree
+    # build and deparse the tree
     Bigtop::Parser->set_gen_mode( 0 );
     $tree      = Bigtop::Parser->parse_string( $class->input );
+
+    # now that we have the initial tree, add the art
+    Bigtop::ScriptHelp->augment_tree( $tree, $art );
+
     $class->deparsed( Bigtop::Deparser->deparse( $tree ) );
 
     $class->update_backends( $tree );
 
     $statements = Bigtop::Parser->get_keyword_docs();
+
+    # No changes yet, but we called deparsed.
+    $dirty = 0;
 }
 
 sub build_backend_list {
@@ -135,10 +148,18 @@ sub new {
     return bless {}, $class;
 }
 
+# for testing
+sub show_idents {
+    $tree->walk_postorder( 'show_idents' );
+}
+
 # initial end user page handler
 
 sub do_main {
-    my $self   = shift;
+    my $self        = shift;
+    my $tab         = shift || 'tab-bigtop-config';
+    my $tab_scroll  = shift || 0;
+    my $body_scroll = shift || 0;
 
     if ( not defined $tree ) {
         $self->read_file();
@@ -164,8 +185,12 @@ sub do_main {
             statements            => $statements,
             app_config_statements => compile_app_configs(),
             file_name             => $file,
+            tab                   => $tab,
+            tab_scroll            => $tab_scroll,
+            body_scroll           => $body_scroll,
         }
     );
+    # warn $self->stash->view->data()->{ input } . "\n";
 }
 
 sub compile_app_configs {
@@ -203,18 +228,25 @@ sub do_save {
     my $new_file_name = unescape( shift );
 
     if ( open my $BIGTOP_UPDATE, '>', $new_file_name ) {
+
+        $file = $new_file_name;
+
         # XXX Assume it will work if we opened it (not always good, I know).
         print $BIGTOP_UPDATE $self->deparsed;
         close $BIGTOP_UPDATE;
 
+        $dirty = 0;
+
         $self->template_disable( 1 );
-        $self->stash->controller->data( "Saved $new_file_name" );
+        return $self->stash->controller->data( "Saved $new_file_name" );
     }
     else {
         warn "Couldn't open file $new_file_name: $!\n";
 
         $self->template_disable( 1 );
-        $self->stash->controller->data( "Couldn't write $new_file_name: $!" );
+        return $self->stash->controller->data(
+                "Couldn't write $new_file_name: $!"
+        );
     }
 }
 
@@ -226,7 +258,7 @@ sub complete_update {
     $self->update_backends( $tree );
 
     $self->template_disable( 1 );
-    $self->stash->controller->data( $self->deparsed );
+    return $self->stash->controller->data( $self->deparsed );
 }
 
 sub unescape {
@@ -447,11 +479,30 @@ sub do_create_app_block {
 
         # Make extra blocks the user probably wants.
         if ( $type eq 'table' ) {
+            # add other fields?
+
+            $tree->change_statement(
+                {
+                    type      => 'table',
+                    ident     => $new_block->get_ident(),
+                    keyword   => 'foreign_display',
+                    new_value => '%ident',
+                }
+            );
+
+            # add a controller for it
+            my $descr         = $name;
+            $descr            =~ s/_/ /g; # underscores to spaces
+
+            my $model_label   = Bigtop::ScriptHelp->default_label( $name );
+
             my $control_block = $tree->create_block(
                     'controller',
-                    ucfirst $name,
-                    { subtype => 'AutoCRUD',
-                      table   => $name,
+                    Bigtop::ScriptHelp->default_controller( $name ),
+                    { subtype          => 'AutoCRUD',
+                      table            => $name,
+                      text_description => $descr,
+                      page_link_label  => $model_label,
                     }
             );
             push @new_blocks, $control_block;
@@ -464,6 +515,15 @@ sub do_create_app_block {
                     'table', $table_name, { sequence => $name }
             );
             push @new_blocks, $table_block;
+
+            $tree->change_statement(
+                {
+                    type      => 'table',
+                    ident     => $table_block->get_ident(),
+                    keyword   => 'foreign_display',
+                    new_value => '%ident',
+                }
+            );
 
             my $control_block = $tree->create_block(
                     'controller',
@@ -509,7 +569,7 @@ sub do_create_app_block {
 
     $self->template_disable( 1 );
 
-    $self->stash->controller->data( $new_divs . $self->deparsed );
+    return $self->stash->controller->data( $new_divs . $self->deparsed );
 }
 
 sub do_delete_block {
@@ -551,25 +611,56 @@ sub do_create_subblock {
     my $new_block_name = shift;
     my $block_type     = shift || 'stub';
 
-    my $new_block;
+    my @new_blocks;
 
     my ( $parent_type, $parent_ident, $type, $name );
     if ( $new_block_name =~ /(.*)::(.*)::(.*)::(.*)/ ) {
         ( $parent_type, $parent_ident, $type, $name ) = ( $1, $2, $3, $4 );
 
         eval {
-            $new_block = $tree->create_subblock(
-                {
-                    parent    => {
-                        type => $parent_type, ident => $parent_ident
-                    },
-                    new_child => {
-                        type     => $type,
-                        name     => $name,
-                        sub_type => $block_type,
-                    },
+            my @names = split /\s+/, unescape( $name );
+
+            foreach my $name ( @names ) {
+                my $new_block = $tree->create_subblock(
+                    {
+                        parent    => {
+                            type => $parent_type, ident => $parent_ident
+                        },
+                        new_child => {
+                            type     => $type,
+                            name     => $name,
+                            sub_type => $block_type,
+                        },
+                    }
+                );
+ 
+                if ( $type eq 'field' ) {
+                    my $ident = $new_block->get_ident;
+                    $new_block->add_field_statement(
+                        {
+                            ident     => $ident,
+                            keyword   => 'is',
+                            new_value => 'varchar',
+                        }
+                    );
+                    $new_block->add_field_statement(
+                        {
+                            ident     => $ident,
+                            keyword   => 'label',
+                            new_value =>
+                                    Bigtop::ScriptHelp->default_label( $name ),
+                        }
+                    );
+                    $new_block->add_field_statement(
+                        {
+                            ident     => $ident,
+                            keyword   => 'html_form_type',
+                            new_value => 'text',
+                        }
+                    );
                 }
-            );
+                push @new_blocks, $new_block;
+            }
         };
         if ( $@ ) {
             warn "Error creating subblock: $@\n";
@@ -581,37 +672,83 @@ sub do_create_subblock {
         return;
     }
 
-    my $field_hashes = $new_block->walk_postorder( 'app_block_hashes' );
+    delete $self->{__TEMPLATE_WRAPPER__}; # just in case
 
     my $template     = ( $type eq 'field' )
                      ? 'new_field_div.tt'
                      : 'new_method_div.tt';
+    my @new_divs;
+    my $new_block_hashes;
 
-    $self->stash->view->template( $template );
-    $self->stash->view->data(
-        {
-            item       => $field_hashes->[0],
-            block      => { ident => $parent_ident },
-            statements => $statements,
+    if ( defined $new_blocks[0] and defined $new_blocks[0]{__PARENT__} ) {
+        $new_block_hashes = $new_blocks[0]{__PARENT__}->walk_postorder(
+                'app_block_hashes'
+        );
+    }
+
+    foreach my $new_block ( @new_blocks ) {
+        my $field_hashes = $new_block->walk_postorder( 'app_block_hashes' );
+
+        $self->stash->view->template( $template );
+        $self->stash->view->data(
+            {
+                item       => $field_hashes->[0],
+                block      => { ident => $parent_ident },
+                statements => $statements,
+            }
+        );
+
+        eval {
+            my $tmp_div .= $self->do_process( );
+
+            $tmp_div =~ s/^\s+//;
+            $tmp_div =~ s/\s+\Z//m;
+
+            push @new_divs, $tmp_div;
+        };
+        if ( $@ ) {
+            warn "error: $@\n";
+            return;
         }
-    );
-
-    delete $self->{__TEMPLATE_WRAPPER__}; # just in case
-    my $new_div;
-    eval {
-        $new_div = $self->do_process( );
-    };
-    if ( $@ ) {
-        warn "error: $@\n";
-        return;
     }
 
     $self->deparsed( Bigtop::Deparser->deparse( $tree ) );
     $self->update_backends( $tree );
 
+    my $new_divs = join '<!-- BEGIN DIV -->', @new_divs;
+
+    # make quick table if needed
+    my $quick_table = '';
+    if ( $type eq 'field' ) {
+        $self->stash->view->template( 'new_quick_edit.ttc' );
+        $self->stash->view->data(
+            {
+                table_ident => $parent_ident,
+                fields      => $new_block_hashes,
+                statements  => $statements,
+            }
+        );
+
+        eval {
+            $quick_table = $self->do_process( );
+
+            $quick_table =~ s/^\s+//;
+            $quick_table =~ s/\s+\Z//m;
+        };
+        if ( $@ ) {
+            warn "error: $@\n";
+            return;
+        }
+    }
+
     $self->template_disable( 1 );
 
-    $self->stash->controller->data( $new_div . $self->deparsed );
+    return $self->stash->controller->data(
+        $quick_table
+        . '<!-- END QUICK TABLE -->'
+        . $new_divs 
+        . $self->deparsed 
+    );
 }
 
 sub do_update_statement {
@@ -620,6 +757,8 @@ sub do_update_statement {
     my $ancestors = shift;
     my $keyword   = shift;
     my $new_value = unescape( shift );
+
+    my $already_completed;
 
     eval {
         if ( not defined $new_value
@@ -637,7 +776,7 @@ sub do_update_statement {
             );
         }
         else {
-            $tree->change_statement(
+            my $success = $tree->change_statement(
                 {
                     type      => $type,
                     ident     => $ancestors,
@@ -645,13 +784,52 @@ sub do_update_statement {
                     new_value => $new_value,
                 }
             );
+
+            if ( $type eq 'field'
+                    and
+                 ref $success eq 'ARRAY'
+                    and
+                 $success->[0] =~ /^date/
+               )
+            {
+                # tell the tree so it can update these:
+                #   controller uses calendar plugin
+                #   form has a name (the table's name)
+                #   form has extra_keys key javascript
+                #   field's html_form_type is text
+                #   and either date_select_text or is
+
+                my $result = $tree->field_became_date(
+                    {
+                        ident   => $ancestors,
+                        trigger => $success->[0],
+                    }
+                );
+
+                # make jason here
+                my ( $jsons, $keywords_used ) = _make_json_center( $result );
+                my $json = "[\n" . join( ",\n", @{ $jsons } ) . "\n]\n";
+
+                $already_completed = 1;
+
+                $self->deparsed( Bigtop::Deparser->deparse( $tree ) );
+                $self->update_backends( $tree );
+
+                $self->template_disable( 1 );
+                $self->stash->controller->data( $json . $self->deparsed );
+            }
         }
     };
     if ( $@ ) {
         warn "Error changing statement: $@\n";
     }
 
-    $self->complete_update();
+    if ( $already_completed ) {
+        return $self->stash->controller->data();
+    }
+    else {
+        return $self->complete_update();
+    }
 }
 
 sub do_update_block_statement_text {
@@ -690,8 +868,6 @@ sub do_update_subblock_statement_text {
         warn "error: mal-formed update_subblock_statement_text request\n";
         return;
     }
-
-    $self->complete_update();
 }
 
     # This one takes its args from the query string.
@@ -736,6 +912,7 @@ sub do_update_subblock_statement_pair {
 
     $self->complete_update();
 }
+
 # AJAX handlers for table blocks (inside the app block)
 
 sub do_update_table_statement_text {
@@ -749,7 +926,10 @@ sub do_update_name {
     my $parameter = shift;
     my $new_value = unescape( shift );
 
-    if ( my ( $type, $ident ) = split /::/, $parameter ) {
+    my ( $type, $ident );
+    my $instructions;
+
+    if ( ( $type, $ident ) = split /::/, $parameter ) {
 
         eval {
             if ( $new_value eq 'undef' or $new_value eq 'undefined' ) {
@@ -757,7 +937,7 @@ sub do_update_name {
                         .   "don't blank the name.\n";
             }
             else {
-                $tree->change_name(
+                $instructions = $tree->change_name(
                     {
                         ident        => $ident,
                         type         => $type,
@@ -775,7 +955,73 @@ sub do_update_name {
         return;
     }
 
-    $self->complete_update();
+    my ( $jsons, $keywords_used ) = _make_json_center( $instructions );
+
+    if ( $type eq 'field' ) {
+        push @{ $jsons },
+             qq/  { "keyword" : "field_edit_option\::$ident", /
+                .   qq/"text" : "$new_value" }/;
+
+        if ( $keywords_used->{ $ident . '::label' } ) { # quick edit too
+            push @{ $jsons },
+                 qq/  { "keyword" : "quick_label_$ident", /
+                    .   q/"value" : /
+                    .   qq/"$keywords_used->{ $ident . '::label' }" }/;
+        }
+    }
+
+    my $json = "[\n" . join( ",\n", @{ $jsons } ) . "\n]\n";
+
+    $self->deparsed( Bigtop::Deparser->deparse( $tree ) );
+    $self->update_backends( $tree );
+
+    $self->template_disable( 1 );
+    return $self->stash->controller->data( $json . $self->deparsed );
+}
+
+sub _make_json_center {
+    my $instructions = shift;
+    my @jsons;
+    my %keywords_used;
+
+    while ( @{ $instructions } ) {
+        my $keyword = shift @{ $instructions };
+        my $values  = shift @{ $instructions };
+
+        $keywords_used{ $keyword } = $values;
+
+        if ( ref( $values ) eq 'arg_list' ) {
+            my @result_values;
+            my $result_type;
+            foreach my $val ( @{ $values } ) {
+                if ( ref( $val ) eq 'HASH' ) {
+                    my @hashes;
+                    foreach my $key ( keys %{ $val } ) {
+                        push @hashes,
+                             qq/      { "keyword" : "$key",\n        /
+                             .  qq/"value" : "$val->{ $key }" }/;
+                    }
+                    push @result_values, join( ",\n", @hashes );
+                    $result_type = 'hashes';
+                }
+                else {
+                    $result_type = 'values';
+                    push @result_values, qq{      "$val"};
+                }
+            }
+            my $result_values =
+                    qq"[\n" . join( ",\n", @result_values ). qq"\n    ]";
+            push @jsons,
+                qq/  { "keyword" : "$keyword", /
+                .   qq/"$result_type" : $result_values\n  }/;
+        }
+        else {
+            push @jsons,
+                qq/  { "keyword" : "$keyword", "value" : "$values" }/;
+        }
+    }
+
+    return \@jsons, \%keywords_used;
 }
 
 sub do_update_field_statement_bool {
@@ -804,6 +1050,40 @@ sub do_update_field_statement_text {
 sub do_update_field_statement_pair {
     my $self = shift;
     return $self->do_update_subblock_statement_pair( 'field', @_ )
+}
+
+sub do_table_reset_bool {
+    my $self        = shift;
+    my $table_ident = shift;
+    my $keyword     = shift;
+    my $raw_value   = shift;
+
+    my $new_value   = ( $raw_value eq 'true' ) ? 1 : 0;
+
+    my $field_idents = join ',', @{ $tree->table_reset_bool(
+        {
+            ident     => $table_ident,
+            keyword   => $keyword,
+            new_value => $new_value,
+        }
+    ) };
+
+    $self->deparsed( Bigtop::Deparser->deparse( $tree ) );
+    $self->update_backends( $tree );
+
+    $self->template_disable( 1 );
+
+    return $self->stash->controller->data(
+        "$new_value;$table_ident;$field_idents"
+        . $self->deparsed
+    );
+}
+
+# AJAX handlers for join_table blocks (inside the app block)
+
+sub do_update_join_table_statement_pair {
+    my $self = shift;
+    return $self->do_update_subblock_statement_pair( 'join_table', @_ );
 }
 
 # AJAX handlers for controller blocks (inside the app block)
@@ -1067,7 +1347,8 @@ sub _get_backend_block_statements {
 # Accessors and global helpers
 
 sub read_file {
-    my $self = shift;
+    my $self         = shift;
+    my $new_app_name = shift || 'Sample';
 
     my $BIGTOP_FILE;
     my $file_name = $self->get_file;
@@ -1086,7 +1367,7 @@ sub read_file {
         close $BIGTOP_FILE;
     }
     else {
-        $retval = join '', <DATA>;
+        $retval = Bigtop::ScriptHelp->get_minimal_default( $new_app_name );
     }
 
     $self->input( $retval );
@@ -1132,9 +1413,14 @@ sub deparsed {
 
     if ( defined $deparsed ) {
         $input = $deparsed;
+        $dirty = 1;
     }
 
     return $input
+}
+
+sub dirty {
+    return $dirty;
 }
 
 1;
@@ -1149,15 +1435,21 @@ Start the tentmaker:
 
     tentmaker [ --port=8192 ] [ file ]
 
-Point your browser to the address it prints.
+Point your browser to the address it prints.  Consult the POD for the
+tentmaker script for other command line options.
 
 =head1 DESCRIPTION
 
 Bigtop is a language for describing web applications.  The Bigtop language
 is fairly complete, in that it lets you describe complex apps,
 but that means it is not so small.  This module (and the tentmaker
-script which drives it) helps you get the syntax right through your
+script which drives it) helps you get the syntax right using your
 browser.
+
+Unless you need to work on tentmaker internals, you probably want to read
+the POD for the tentmaker script instead of the rest of this documentation.
+You might also want to look at Bigtop::Docs::TentTut and/or
+Bigtop::Docs::TentRef.
 
 =head1 HANDLERS
 
@@ -1170,76 +1462,439 @@ for details on the other types.
 
 This is the main handler users hit to initially load the page.  It sends
 them the tenter.tt template populated with data from the file given on
-the command line.  If no file is given, it gives them an empty stub [not
-yet implemented].
+the command line.  If no file is given, it gives them a small default
+bigtop as a starting point.
 
 Expects: nothing
 
+=head2 do_save
+
+Writes current abstract syntax tree back to the disk.
+
+Params:
+
+    full_path
+
+Returns:
+
+stash controller data saying either "Saved..." or "Couldn't write...'
+
 The remaining handlers are all AJAX handlers.  They are triggered by GUI
-user events and send back a plain text representation of the updated
-abstract syntax tree being edited.  Eventually a method will allow the
-user to save that output back to the disk, but it's not here yet.
+events and return the plain text representation of the updated
+abstract syntax tree being edited.
 
 Each routine is given a parameter (think keyword) and a new value.
-Some of them also receive additional data, see below.
+Some of them also receive additional data, see below.  Errors are
+trapped and reported as warnings on the server side.
 
 =head2 do_update_std
 
-The parameter is the suffix of the name of a method the tree responds to.
+This method is a facade for top level setters in Bigtop::Parser.
+
+Parameters:
+
+    the set action to call
+    the new value to give it
+
+The set action becomes the suffix of the name of a method the tree responds to.
 The full name is "set_$parameter" (see Bigtop::Parser for details of
-these methods, if I ever get around to writing about them).  
+these methods).
 
 The new_value is merely passed to the set_ method, which is responsible
-for updating the tree properly.  Errors are trapped.
+for updating the tree properly.
 
 =head2 do_update_backend
 
-While this is probably not wise, the parameter has the form 'type::backend'
-referring to a module in the Bigtop::Backend:: namespace.  The
-new value is a string (repeat: it is a string).  If the string eq 'false',
+This method handles backend selection/deselection.
+
+Params:
+
+    backend_type::backend
+    new_value
+
+The backend_type::backend must be a module in the Bigtop::Backend::
+namespace.
+
+The new value is a string (repeat: it is a string).  If the string eq 'false',
 the backend is dropped from the config block of the file.  Otherwise,
 it is added to the list.
 
-When a config is dropped, all of the statements in its config block are
-LOST.  This creates a disappointing end user reality.  If you uncheck
+Note well: When a config is dropped, all of the statements in its config block
+are LOST.  This creates a disappointing end user reality.  If you uncheck
 a backend box by mistake, after you recheck it, you must go focus and
 defocus on all text backend statements and check and uncheck all checkboxes.
 This is bad.
 
 =head2 do_update_conf_bool
 
-Again, the parameter form is bad: 'type::backend::keyword'.  If needed,
-this creates the keyword as a statement in the backend's config block.
-In any case, it sets the value to the new value passed in (except that
-it converts 'false' to 0 and anything else to 1).
+Allows toggling for boolean backend block keywords.
+
+Parameters:
+
+    type::backend::keyword
+    new_value
+
+As in do_update_backend, the new value is a string 'false' means the
+user unchecked the box, anything else means she checked it.
 
 It uses change_conf to do the actual work.
 
 =head2 do_update_conf_bool_controlled
 
-This is just like do_update_conf_bool, but accepts two additional url
-parameters.  These are the values for false and true, in that order.
+Like do_update_conf_bool, but allows control over what true and false mean.
+
+Parameters:
+
+    type::backend::keyword
+    new_value
+    false_value
+    true_value
 
 If the new value eq 'false', the false value is assigned, otherwise
 the true value is used.  This facilitates statements like the Init::Std
-'Changes no_gen'.
+'Changes no_gen', where the value of the statement is not zero or one.
+In that case, the value should be undef or the string no_gen.
 
-If one of the values is the string 'undefined' the statement will be
-deleted from the backend.
+If one of the values is the string 'undef' or 'undefined' the statement
+will be deleted from the backend.
+
+It uses change_conf to do the actual work.
 
 =head2 do_update_conf_text
+
+Updates backend block statements which have string values.
+
+Parameters:
+
+    type::backend::keyword
+    new_value
 
 This is like do_update_conf_bool, except that the new value is used
 as the statement value.  If the value is false, the statement is
 removed from the backend's config block.
 
-=head2 do_update_app_statement
+It uses change_conf to do the actual work.
 
-If the new value eq 'undefined' the statement is removed from the app
-block.  Otherwise the statement has its value changed to the new value
-(the statement is created if needed).  Mulitple values should be
-separated by a comma and a space (yes this prevents Kip Worthington, III.
-from couting as an author name).
+=head2 do_update_app_statement_text
+
+Creates/updates the value of app level statements, when the value is text.
+
+Parameters:
+
+    statement_keyword
+    new_value
+
+It uses set_app_statement on the application subtree in Bigtop::Parser.
+
+=head2 do_update_app_statement_bool
+
+Like do_update_app_statement_text, but for when the value is boolean.
+
+Parameters:
+
+    statement_keyword
+    new_value
+
+Use the word 'false' to delete the statement.
+
+It uses set_app_statement on the application subtree in Bigtop::Parser.
+
+=head2 do_update_app_statement_pair
+
+Somewhat like do_update_app_statement_text, but for when the value takes
+one or more pairs.
+
+Parameters:
+
+    keyword
+
+Query string params:
+
+    keys=key1][key2][key3&values=value1][value2][value3
+
+Note that the key/value pairs are passed in the query string.
+
+If there are no keys, the statement is removed.
+
+It uses set_app_statement_pairs on the application subtree in Bigtop::Parser.
+
+=head2 do_delete_app_config
+
+Removes a statement from the app level config block.
+
+Params:
+
+    keyword
+
+=head2 do_update_app_conf_statement
+
+Creates/updates an app level config statement.
+
+Params:
+
+    keyword
+    value
+    accessor
+
+keyword is the name of the config statement (which is entirely up to the
+user, except that it must be a valid ident).
+
+value is the completely arbitrary value of the statement (except that it
+can't have embedded backticks).
+
+accessor is only used if the statement is new.  In that case, this is
+the value for the accessor check box.  If it is set, an accessor will
+be made for the statement, otherwise we assume the framework is handling
+it.
+
+=head2 do_update_app_conf_accessor
+
+For exisiting app level config statements, changes the accessor flag.
+
+Params:
+
+    keyword
+    value
+
+keyword is the name of that config statement.
+
+value is either the string 'false' or anything else.  If the value eq 'false',
+the accessor flag is removed.  Otherwise, it is set.
+
+=head2 do_update_name
+
+Changes the name of a named block.
+
+Params:
+
+    type::ident
+    new_value
+
+Each nameable block in the Bigtop AST has a unique ident.  Calling this with
+the type of the block, that ident, and a new value changes its name.
+
+=head2 do_create_app_block
+
+Makes a new app level block.
+
+Params:
+
+    type::name
+    subtype
+
+The type can be sequence, table, join_table, or controller.  The name
+must be a valid ident.  If they block's type understands a subtype,
+include it as a second, separate, parameter.  Only controllers
+have types and they are: AutoCRUD, CRUD, or stub.
+
+It uses create_block on the AST.
+
+=head2 do_create_subblock
+
+Makes a new block inside a table or controller.
+
+Params:
+
+    parent_type::parent_ident::type::name
+    subtype
+
+The parent type can be table or controller.  The type can be field (for
+tables) or method (for controllers).  The name must be a valid ident.
+Methods must have subtypes.  Choose from: AutoCRUD_form, CRUD_form,
+or main_listing.
+
+It uses create_subblock on the AST.
+
+=head2 do_delete_block
+
+Removes a block from the AST.
+
+Params:
+
+    ident
+
+The front end is responsible for any user confirmation popups.
+
+It uses delete_block on the AST.
+
+=head2 do_type_change
+
+Changes the is type for blocks which acept those.
+
+Params:
+
+    ident
+    new_type
+
+new_type must be a string naming the new type.
+
+Applies to controllers and methods.
+
+It uses type_change on the AST.
+
+=head2 do_update_block_statement_text
+
+Creates/updates a statement in a block.
+
+Params:
+
+    block_type
+    ident::keyword
+    new_value
+
+block_type is table, join_table, or controller.
+
+If new_value is false, the statement will be removed.
+
+It uses do_update_statement (see below).
+
+=head2 do_update_controller_statement_bool
+
+Directly calls do_update_block_statement_text, specifying type controller.
+
+If value eq 'true', the statement is made true, otherwise it will be
+removed.
+
+=head2 do_update_controller_statement_text
+
+Directly calls do_update_block_statement_text, specifying type controller.
+
+=head2 do_update_statement
+
+Updates statements at many levels of the tree, including table, join_table,
+controller, field, and method blocks.
+
+Params:
+
+    block_type
+    block_ident
+    keyword
+    new_value
+
+It uses either change_statement or remove_statement.
+
+I don't think this is called by the templates or their javascript.
+
+=head2 do_update_table_statement_text
+
+Directly calls do_update_block_statement_text specifying type table.
+
+=head2 do_table_reset_bool
+
+Tells the tree to set one keyword to true or false for all of its fields.
+
+Params:
+    table_ident
+    keyword
+    raw_value
+
+The raw_value is a string, either 'true' or 'false.'
+
+=head2 do_update_field_statement_bool
+
+Creates/updates boolean statements in field blocks.
+
+Params:
+
+    keyword
+    new_value
+
+If new_value eq 'true' the statement will be made true, otherwise it
+will be removed.
+
+It uses do_update_subblock_statement_text.
+
+=head2 do_update_field_statement_pair
+
+Immediately calls do_update_subblock_statement_pair, specifying type field.
+
+=head2 do_update_field_statement_text
+
+Immediately calls do_update_subblock_statement_text, specifying type field.
+
+=head2 do_update_join_table_statement_pair
+
+Immediately calls do_update_subblock_statement_pair, specifying type
+join_table.  (Astute readers will note that join_table is a block
+not a subblock, the the necessary code is the same for both.  Some
+refactoring is probably in order.)
+
+=head2 do_update_literal
+
+Updates the text of a literal.
+
+Params:
+
+    ident
+    new_value
+
+new_value can have any charactes except backquotes.
+
+You must create and delete blocks with direct calls to do_create_app_block
+and do_delete_block.
+
+It directly calls walk_postorder with 'change_literal' as the action.
+
+=head2 do_update_method_statement_bool
+
+Params:
+
+    keyword
+    new_value
+
+If new_value eq 'true' boolean is made true, otherwise the statement
+will be removed.
+
+It calls do_update_subblock_statement_text, specifying type method.
+
+=head2 do_update_method_statement_pair
+
+Directly calls do_update_subblock_statement_pair, specifying type method.
+
+=head2 do_update_method_statement_text
+
+Directly calls do_update_subblock_statement_text, specifying type method.
+
+=head2 do_update_subblock_statement_pair
+
+Supports all pair updates in subblocks.
+
+Params:
+
+    type
+    ident::keyword
+
+The values are received from the query string:
+
+    keys=key1][key2&values=val1][val2
+
+It uses change_statement on the AST.
+
+=head2 do_update_subblock_statement_text
+
+Supports all single value updates on subblock statements (and some block
+statements too).
+
+Params:
+
+    block_type
+    block_ident::keyword
+    new_value
+
+It uses do_update_statement.
+
+=head2 do_move_block_after
+
+Not yet called by the front end.
+
+Exchanges the position of two app level blocks.
+
+Params:
+
+    ident_to_move
+    ident_to_put_it_after
+
+It uses move_block on the AST.
 
 =head1 LAUNCH METHODS
 
@@ -1269,10 +1924,23 @@ whether they are in use, and what statements they support.
 
 =head2 read_file
 
-Guess what this does.  Eventually there will be a way to avoid this step,
-but for now only file input is acceptable.
+Reads the input file.  If the user didn't supply a file, asks
+Bigtop::ScriptHelp to generate a minimal starting point.
 
 =head1 HELPER METHODS
+
+=head2 new
+
+Used by tests to gain a pseudo-instance through which to call helper methods.
+They could call them through the class, but naming an instance saves typing.
+
+=head2 show_idents
+
+Used by tests to get a dump of all the idents in the current tree.  You get
+Data::Dumper output of an array of the idents.  Each element is an array
+listing the type, name, and ident for one tree node.  All nodes with idents
+appear in the output, but the order is a bit odd (it is depth first traversal
+order).
 
 =head2 init
 
@@ -1318,6 +1986,19 @@ Helps update_backends.
 Accessor to get/set the name of the input file.  Setting it blows the
 cache of other accessible values.
 
+=head2 get_file
+
+Returns the name of the input file given on the command line.
+
+=head2 set_file
+
+Stores the input file name during startup.  Calling this blows the cashed
+deparsed bigtop source code and abstarct syntax tree.
+
+=head2 get_tree
+
+Returns the Bigtop abstract syntax tree.
+
 =head2 input
 
 Accessor to get/set the input file text in memory.
@@ -1325,6 +2006,10 @@ Accessor to get/set the input file text in memory.
 =head2 deparsed
 
 Accessor to get/set the deparsed (canonicalized) text of the file.
+
+=head2 dirty
+
+Returns 1 if there have been changes since the last save, 0 otherwise.
 
 =head1 AUTHOR
 
@@ -1340,21 +2025,3 @@ at your option, any later version of Perl 5 you may have available.
 
 =cut
 
-__DATA__
-config {
-    engine          CGI;
-    template_engine TT;
-    Init Std {}
-    CGI Gantry { with_server 1; gen_root 1; }
-    Control Gantry { dbix 1; }
-    SQL SQLite {}
-    Model GantryDBIxClass {}
-    SiteLook GantryDefault { }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-}

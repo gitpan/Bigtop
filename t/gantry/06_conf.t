@@ -31,12 +31,14 @@ app Apps::Checkbook {
         DB     app_db => no_accessor;
         DBName some_user;
     }
+    literal Conf `hello shane`;
     controller PayeeOr {
         rel_location   payee;
         config {
             importance     3 => no_accessor;
             lines_per_page 3;
         }
+        literal GantryLocation `    hello savine`;
     }
     controller Trans {
         location   `/foreign_loc/trans`;
@@ -52,10 +54,12 @@ $correct_conf = <<'EO_CORRECT_CONF';
 DB app_db
 DBName some_user
 root html
+hello shane
 
 <GantryLocation /app_base/payee>
     importance 3
     lines_per_page 3
+    hello savine
 </GantryLocation>
 
 EO_CORRECT_CONF

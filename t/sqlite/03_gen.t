@@ -6,10 +6,18 @@ use Test::Files;
 
 use Bigtop::Parser;
 
+use lib 't';
+use Purge;
+
 my $dir         = File::Spec->catdir( qw( t sqlite ) );
 my $sql_file    = File::Spec->catfile(
     $dir, 'Apps-Checkbook', 'docs', 'schema.sqlite'
 );
+
+my $actual_dir         = File::Spec->catdir( $dir, 'Apps-Checkbook' );
+
+Purge::real_purge_dir( $actual_dir );
+
 my $bigtop_string = << "EO_Bigtop_STRING";
 config {
     base_dir   `$dir`;
@@ -31,6 +39,12 @@ app Apps::Checkbook {
         field id       { is int4, primary_key; }
         field not_much { is varchar; }
     }
+    table other {
+        field id       { is int4, primary_key; }
+    }
+    join_table payeeor_other {
+        joins payeepayor => other;
+    }
 }
 EO_Bigtop_STRING
 
@@ -49,13 +63,17 @@ INSERT INTO payeepayor ( id, name )
     VALUES ( 2, 'Crow Business Center' );
 
 CREATE INDEX payor_name_ind ON payeepayor ( name );
+CREATE TABLE other (
+    id INTEGER PRIMARY KEY
+);
+
+CREATE TABLE payeeor_other (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    payeepayor INTEGER,
+    other INTEGER
+);
 EO_CORRECT_SQL
 
 file_ok( $sql_file, $correct_sql, 'tiny gened sql file' );
-
-my $actual_dir         = File::Spec->catdir( $dir, 'Apps-Checkbook' );
-
-use lib 't';
-use Purge;
 
 Purge::real_purge_dir( $actual_dir );

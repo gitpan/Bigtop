@@ -14,7 +14,24 @@ Apps::Checkbook::NoOp - A controller in the Apps::Checkbook application
 
 =head1 SYNOPSIS
 
-This package is meant to be used in the Perl block of an httpd.conf file.
+This package is meant to be used in a stand alone server/CGI script or the
+Perl block of an httpd.conf file.
+
+Stand Alone Server or CGI script:
+
+    use Apps::Checkbook::NoOp;
+
+    my $cgi = Gantry::Engine::CGI->new( {
+        config => {
+            #...
+        },
+        locations => {
+            '/someurl' => 'Apps::Checkbook::NoOp',
+            #...
+        },
+    } );
+
+httpd.conf:
 
     <Perl>
         # ...
@@ -26,8 +43,7 @@ This package is meant to be used in the Perl block of an httpd.conf file.
         PerlHandler Apps::Checkbook::NoOp
     </Location>
 
-If all went well, the httpd.conf file was correctly written during app
-generation.
+If all went well, one of these was correctly written during app generation.
 
 =head1 DESCRIPTION
 
@@ -38,7 +54,9 @@ You might even want to describe the table this module controls here.
 
 =over 4
 
+
 =back
+
 
 =head1 DEPENDENCIES
 

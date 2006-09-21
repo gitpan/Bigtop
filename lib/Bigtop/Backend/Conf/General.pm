@@ -21,6 +21,11 @@ sub backend_block_keywords {
           label   => 'Generate Root Path',
           descr   => q!Adds a root => 'html' statement to config!,
           type    => 'boolean' },
+
+        { keyword => 'template',
+          label   => 'Alternate Template',
+          descr   => 'A custom TT template.',
+          type    => 'text' },
     ];
 }
 
@@ -99,6 +104,7 @@ our $default_template_text = <<'EO_TT_BLOCKS';
 <GantryLocation [% loc %]>
 [% FOREACH config IN loc_configs %]
 [% config %][% END %]
+[% IF literal %][% literal %][% END %]
 </GantryLocation>
 
 [% END %]
@@ -121,7 +127,7 @@ sub setup_template {
 }
 
 # application
-package #
+package # application
     application;
 use strict; use warnings;
 
@@ -149,7 +155,7 @@ sub output_gantry_locations {
 }
 
 # app_statement
-package #
+package # app_statement
     app_statement;
 use strict; use warnings;
 
@@ -164,7 +170,7 @@ sub output_base_location {
 }
 
 # app_config_block
-package #
+package # app_config_block
     app_config_block;
 use strict; use warnings;
 
@@ -180,8 +186,8 @@ sub output_setvars {
     foreach my $config ( @{ $child_output } ) {
         $output .= Bigtop::Backend::Conf::General::config(
             {
-                var   => $config->{__NAME__},
-                value => $config->{__VALUE__},
+                var   => $config->{__KEYWORD__},
+                value => $config->{__ARGS__},
             }
         );
     }
@@ -199,7 +205,7 @@ sub output_setvars {
 }
 
 # app_config_statement
-package #
+package # app_config_statement
     app_config_statement;
 use strict; use warnings;
 
@@ -208,28 +214,25 @@ sub output_setvars {
 
     my $output_vals = $self->{__ARGS__}->get_args();
 
-    return [ { __NAME__ => $self->{__KEY__}, __VALUE__ => $output_vals } ];
+    return [ {
+            __KEYWORD__ => $self->{__KEYWORD__},
+            __ARGS__    => $output_vals
+    } ];
 }
 
 # literal_block
-package #
+package # literal_block
     literal_block;
 use strict; use warnings;
 
 sub output_top_level_literal {
     my $self = shift;
 
-    return $self->make_output( 'GantryLocation' );
-}
-
-sub output_gantry_locations {
-    my $self = shift;
-
     return $self->make_output( 'Conf' );
 }
 
 # controller_block
-package #
+package # controller_block
     controller_block;
 use strict; use warnings;
 
@@ -280,7 +283,7 @@ sub output_gantry_locations {
 }
 
 # controller_statement
-package #
+package # controller_statement
     controller_statement;
 use strict; use warnings;
 
@@ -299,7 +302,7 @@ sub output_gantry_locations {
 }
 
 # controller_config_block
-package #
+package # controller_config_block
     controller_config_block;
 use strict; use warnings;
 
@@ -314,8 +317,8 @@ sub output_gantry_location_configs {
     foreach my $config ( @{ $child_output } ) {
         $output .= Bigtop::Backend::Conf::General::config(
             {
-                var    => $config->{__NAME__},
-                value  => $config->{__VALUE__},
+                var    => $config->{__KEYWORD__},
+                value  => $config->{__ARGS__},
                 indent => 1,
             }
         );
@@ -325,7 +328,7 @@ sub output_gantry_location_configs {
 }
 
 # controller_config_statement
-package #
+package # controller_config_statement
     controller_config_statement;
 use strict; use warnings;
 
@@ -334,18 +337,19 @@ sub output_gantry_location_configs {
 
     my $output_vals = $self->{__ARGS__}->get_args();
 
-    return [ { __NAME__ => $self->{__KEY__}, __VALUE__ => $output_vals } ];
+    return [ {
+            __KEYWORD__ => $self->{__KEYWORD__},
+            __ARGS__    => $output_vals
+    } ];
 }
 
 # controller_literal_block
-package #
+package # controller_literal_block
     controller_literal_block;
 use strict; use warnings;
 
 sub output_gantry_location_literal {
     my $self = shift;
-
-    my $retval = $self->make_output( 'GantryLocation' );
 
     return $self->make_output( 'GantryLocation' );
 }
@@ -386,6 +390,40 @@ have the format of Config::General.
 This module does not register any keywords.  See Bigtop::Conf
 for a list of allowed keywords (think app and controller level 'location'
 and controller level 'rel_location' statements).
+
+=head1 METHODS
+
+To keep podcoverage tests happy.
+
+=over 4
+
+=item backend_block_keywords
+
+Tells tentmaker that I understand these config section backend block keywords:
+
+    no_gen
+    gen_root
+    template
+
+=item what_do_you_make
+
+Tells tentmaker what this module makes.  Summary: app.conf in Config::General
+format, suitable for use with Gantry::Conf.
+
+=item gen_Conf
+
+Called by Bigtop::Parser to get me to do my thing.
+
+=item output_conf
+
+What I call on the various AST packages to do my thing.
+
+=item setup_template
+
+Called by Bigtop::Parser so the user can substitute an alternate template
+for the hard coded one here.
+
+=back
 
 =head1 AUTHOR
 

@@ -378,6 +378,44 @@ file back into the real stub...).
 
 =back
 
+=head1 METHODS
+
+To keep podcoverage tests happy.
+
+=over 4
+
+=item backend_block_keywords
+
+Tells tentmaker that I understand these config section backend block keywords:
+
+    no_gen
+    dbix
+    full_use
+    template
+
+=item what_do_you_make
+
+Tells tentmaker what this module makes.  Summary: Gantry controller modules.
+
+=item gen_Control
+
+Called by Bigtop::Parser to get me to do my thing.
+
+=item build_config_lists
+
+What I call on the various AST packages to do my thing.
+
+=item build_init_sub
+
+What I call on the various AST packages to do my thing.
+
+=item setup_template
+
+Called by Bigtop::Parser so the user can substitute an alternate template
+for the hard coded one here.
+
+=back
+
 =head1 AUTHOR
 
 Phil Crow <philcrow2000@yahoo.com>
@@ -441,8 +479,8 @@ BEGIN {
             qw(
                 label
                 html_form_type
-                html_form_constraint
                 html_form_optional
+                html_form_constraint
                 html_form_cols
                 html_form_rows
                 html_form_display_size
@@ -466,13 +504,32 @@ use strict;
 
 our $VERSION = '0.01';
 
+use base '[% gen_package_name %]';
+
+[% FOREACH module IN external_modules %]
+use [% module %];
+[% END %]
+[% FOREACH module IN sub_modules %]
+use [% module %];
+[% END %]
+
+1;
+
+[% pod %]
+[% END %]
+
+[% BLOCK gen_base_module %]
+package [% gen_package_name %];
+
+use strict;
+
 [% IF full_use_statement %]
 use Gantry qw{[% IF engine %] -Engine=[% engine %][% END %][% IF template_engine %] -TemplateEngine=[% template_engine %][% END %] };
-
-our @ISA = ( 'Gantry' );
 [% ELSE %]
-use base 'Gantry';
+use Gantry[% IF template_engine %] qw{ -TemplateEngine=[% template_engine %] }[% END %];
 [% END %]
+
+our @ISA = qw( Gantry );
 
 [% FOREACH module IN external_modules %]
 use [% module %];
@@ -521,7 +578,7 @@ sub site_links {
 
 1;
 
-[% pod %]
+[% gen_pod %]
 [% END %]
 
 [% BLOCK test_file %]
@@ -534,13 +591,91 @@ use_ok( '[% module %]' );
 [% END %]
 [% END %]
 
+[% BLOCK pod_test %]
+use Test::More;
+
+eval "use Test::Pod 1.14";
+plan skip_all => 'Test::Pod 1.14 required' if $@;
+plan skip_all => 'set TEST_POD to enable this test' unless $ENV{TEST_POD};
+
+all_pod_files_ok();
+[% END %]
+
+[% BLOCK pod_cover_test %]
+use Test::More;
+
+eval "use Test::Pod::Coverage 1.04";
+plan skip_all => 'Test::Pod::Coverage 1.04 required' if $@;
+plan skip_all => 'set TEST_POD to enable this test' unless $ENV{TEST_POD};
+
+all_pod_coverage_ok();
+[% END %]
+
+[% BLOCK run_test %]
+use strict;
+
+use Test::More tests => [% num_tests %];
+
+use [% app_name %] qw{ -Engine=CGI -TemplateEngine=[% template_engine || TT %] };
+
+use Gantry::Server;
+use Gantry::Engine::CGI;
+
+# these tests must contain valid template paths to the core gantry templates
+# and any application specific templates
+
+my $cgi = Gantry::Engine::CGI->new( {
+    config => {
+[% FOREACH var_pair IN configs %]
+        [% var_pair.0 %] => '[% var_pair.1 %]',
+[% END %]
+    },
+    locations => {
+[% FOREACH location IN locations %]
+        '[% location.0 %]' => '[% location.1 %]',
+[% END %]
+    },
+} );
+
+my @tests = qw(
+[% FOREACH location IN locations %]
+    [% location.0 +%]
+[% END %]
+);
+
+my $server = Gantry::Server->new();
+$server->set_engine_object( $cgi );
+
+SKIP: {
+
+    eval {
+        require DBD::SQLite;
+    };
+    skip 'DBD::SQLite is required for run tests.', [% num_tests %] if ( $@ );
+
+    unless ( -f 'app.db' ) {
+        skip 'app.db sqlite database required for run tests.', [% num_tests %];
+    }
+
+    foreach my $location ( @tests ) {
+        my( $status, $page ) = $server->handle_request_test( $location );
+        ok( $status eq '200',
+                "expected 200, received $status for $location" );
+
+        if ( $status ne '200' ) {
+            print STDERR $page . "\n\n";
+        }
+    }
+
+}
+[% END %]
+
 [% BLOCK controller_block %]
 package [% package_name %];
 
 use strict;
 
-use base '[% app_name %]';
-[% gen_use_statement %]
+use base '[% inherit_from %]';
 [% child_output %]
 
 
@@ -568,7 +703,28 @@ use base '[% app_name %]';
 
 =head1 SYNOPSIS
 
-This package is meant to be used in the Perl block of an httpd.conf file.
+This package is meant to be used in a stand alone server/CGI script or the
+Perl block of an httpd.conf file.
+
+Stand Alone Server or CGI script:
+
+    use [% package_name %];
+
+    my $cgi = Gantry::Engine::CGI->new( {
+        config => {
+            #...
+        },
+        locations => {
+[% IF sub_module %]
+            '/someurl' => '[% package_name %]',
+[% ELSE %]
+            '/' => '[% package_name %]',
+[% END %]
+            #...
+        },
+    } );
+
+httpd.conf:
 
     <Perl>
         # ...
@@ -582,15 +738,18 @@ This package is meant to be used in the Perl block of an httpd.conf file.
     </Location>
 [% END %]
 
-If all went well, the httpd.conf file was correctly written during app
-generation.
+If all went well, one of these was correctly written during app generation.
 
 =head1 DESCRIPTION
 
 This module was originally generated by Bigtop.  But feel free to edit it.
 You might even want to describe the table this module controls here.
 
+[% IF sub_module %]
 =head1 METHODS
+[% ELSE %]
+=head1 METHODS (inherited from [% gen_package_name %])
+[% END %]
 
 =over 4
 
@@ -599,8 +758,10 @@ You might even want to describe the table this module controls here.
 
 
 [% END %]
+
 =back
-[% IF gen_package_name %]
+
+[% IF gen_package_name AND sub_module %]
 
 =head1 METHODS MIXED IN FROM [% gen_package_name +%]
 
@@ -611,7 +772,9 @@ You might even want to describe the table this module controls here.
 
 
 [% END %]
+
 =back
+
 [% END -%]
 
 =head1 [% other_module_text +%]
@@ -649,6 +812,104 @@ at your option, any later version of Perl 5 you may have available.
 =cut
 [% END %]
 
+[% BLOCK gen_pod %]
+=head1 NAME
+
+[% gen_package_name %] - generated support module for [% package_name +%]
+
+=head1 SYNOPSIS
+
+In [% package_name %]:
+
+    use base '[% gen_package_name %]';
+
+=head1 DESCRIPTION
+
+This module was generated by Bigtop (and IS subject to regeneration) to
+provide methods in support of the whole [% package_name +%]
+application.
+
+[% package_name %] should inherit from this module.
+
+=head1 METHODS
+
+=over 4
+
+[% FOREACH method IN methods %]
+=item [% method +%]
+
+[% END %]
+
+=back
+
+=head1 AUTHOR
+
+[% FOREACH author IN authors %]
+[% author.0 %][% IF author.1 %], E<lt>[% author.1 %]E<gt>[% END +%]
+
+[% END %]
+[%- IF contact_us %]
+=head1 CONTACT US
+
+[% contact_us +%]
+
+[% END -%]
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) [% year %] [% copyright_holder %]
+
+
+[% IF license_text %]
+[% license_text %]
+
+[% ELSE %]
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.6 or,
+at your option, any later version of Perl 5 you may have available.
+[% END %]
+
+=cut
+[% END %]
+
+[% BLOCK gen_controller_pod %]
+=head1 NAME
+
+[% gen_package_name %] - generated support module for [% package_name +%]
+
+=head1 SYNOPSIS
+
+In [% package_name %]:
+
+    use [% gen_package_name %] qw(
+[% FOREACH method IN gen_methods %]
+        [% method +%]
+[% END %]
+    );
+
+=head1 DESCRIPTION
+
+This module was generated by bigtop and IS subject to regeneration.
+Use it in [% package_name %] to provide the methods below.
+They are exported by default.
+
+=head1 METHODS
+
+=over 4
+
+[% FOREACH method IN gen_methods %]
+=item [% method +%]
+
+[% END %]
+
+=back
+
+=head1 AUTHOR
+
+Generated by bigtop and subject to regeneration.
+
+=cut
+[% END %]
+
 [% BLOCK gen_controller_block %]
 # NEVER EDIT this file.  It was generated and will be overwritten without
 # notice upon regeneration of this application.  You have been warned.
@@ -656,14 +917,15 @@ package [% gen_package_name %];
 
 use strict;
 
-use base 'Exporter';
-
-[% export_array %]
+use base '[% app_name %]';
 
 [% child_output %]
 
 
 1;
+
+[% gen_pod %]
+
 [% END %]
 
 [% BLOCK use_stub %]
@@ -750,20 +1012,28 @@ sub [% method_name %] {
     $self->SUPER::init( $r );
 
 [% FOREACH config IN configs %]
-    $self->[% config %]( $self->fish_config( '[% config %]' ) || '' );
+    $self->set_[% config %]( $self->fish_config( '[% config %]' ) || '' );
 [% END %]
 [% END %]
 
 [% BLOCK config_accessors %]
 [% FOREACH config IN configs %]
-sub [% config %] {
+#-----------------------------------------------------------------
+# $self->set_[% config %]( $new_value )
+#-----------------------------------------------------------------
+sub set_[% config %] {
     my ( $self, $value ) = @_;
 
-    if ( defined $value ) {
-        $self->{[% config %]} = $value;
-    }
+    $self->{ __[% config %]__ } = $value;
+}
 
-    return $self->{[% config %]};
+#-----------------------------------------------------------------
+# $self->[% config %](  )
+#-----------------------------------------------------------------
+sub [% config %] {
+    my $self = shift;
+
+    return $self->{ __[% config %]__ };
 }
 
 [% END %]
@@ -853,7 +1123,8 @@ sub [% config %] {
 [%- END -%]
 
     return {
-        name       => '[% form_name %]',
+[% IF form_name %]        name       => '[% form_name %]',
+[% END -%]
 [% IF raw_row %]        row        => $row,
 [% ELSE %]        row        => $data->{row},
 [% END -%]
@@ -991,6 +1262,12 @@ sub backend_block_keywords {
           descr   => 'Skip everything for this backend',
           type    => 'boolean' },
 
+        { keyword => 'run_test',
+          label   => 'Run Tests',
+          descr   => 'Makes tests which hit pages via a simple server',
+          type    => 'boolean',
+          default => 'true' },
+
         { keyword => 'full_use',
           label   => 'Full Use Statement',
           descr   => 'use Gantry qw( -Engine=... ); [defaults to false]',
@@ -1002,6 +1279,11 @@ sub backend_block_keywords {
           descr   => 'Makes controllers usable with DBIx::Class',
           type    => 'boolean',
           default => 'false' },
+
+        { keyword => 'template',
+          label   => 'Alternate Template',
+          descr   => 'A custom TT template.',
+          type    => 'text' },
     ];
 }
 
@@ -1061,13 +1343,18 @@ sub gen_Control {
         },
     );
 
-    # Second, make the main module.
+    # Second, make the main modules.
     my $config            = $bigtop_tree->get_config();
 
     my $base_module_name  = pop @sub_dirs;
     my $base_module_file  = File::Spec->catfile(
             $build_dir, 'lib', @sub_dirs, "$base_module_name.pm"
     );
+    my $gen_base_module_name = "GEN$base_module_name";
+    my $gen_base_module_file = File::Spec->catfile(
+            $build_dir, 'lib', @sub_dirs, "$gen_base_module_name.pm"
+    );
+    my $gen_package_name = join '::', @sub_dirs, $gen_base_module_name;
 
     my $app_configs       = $bigtop_tree->{application}{lookup}{configs};
     my ( $all_configs, $accessor_configs )
@@ -1079,13 +1366,19 @@ sub gen_Control {
     );
 
     # remember the pod
-    my @pod_methods       = ( 'init', @{ $accessor_configs } );
+    my @pod_methods = map { $_, "set_$_" } @{ $accessor_configs };
+
+    unshift @pod_methods, qw( init do_main site_links );
+
     my $pod               = Bigtop::Backend::Control::Gantry::pod(
         {
             package_name     => $app_name,
+            gen_package_name => $gen_package_name,
             methods          => \@pod_methods,
             other_module_text=> 'SEE ALSO',
-            used_modules     => [ 'Gantry', @{ $sub_modules } ],
+            used_modules     => [ 'Gantry',
+                                  $gen_package_name,
+                                  @{ $sub_modules } ],
             authors          => $authors,
             contact_us       => $contact_us,
             copyright_holder => $copyright_holder,
@@ -1113,6 +1406,7 @@ sub gen_Control {
         {
             dist_name          => $base_module_name,
             app_name           => $app_name,
+            gen_package_name   => $gen_package_name,
             external_modules   => \@external_modules,
             sub_modules        => $sub_modules,
             init_sub           => $init_sub,
@@ -1132,7 +1426,48 @@ sub gen_Control {
     };
     warn $@ if ( $@ );
 
-    # finally, make the test
+    my $gen_pod = Bigtop::Backend::Control::Gantry::gen_pod(
+        {
+            package_name     => $app_name,
+            gen_package_name => $gen_package_name,
+            methods          => \@pod_methods,
+            other_module_text=> 'SEE ALSO',
+            used_modules     => [ 'Gantry',
+                                  $gen_package_name,
+                                  @{ $sub_modules } ],
+            authors          => $authors,
+            contact_us       => $contact_us,
+            copyright_holder => $copyright_holder,
+            license_text     => $license_text,
+            sub_module       => 0,
+            year             => $year,
+        }
+    );
+
+    my $gen_base_content = Bigtop::Backend::Control::Gantry::gen_base_module(
+        {
+            dist_name          => $base_module_name,
+            app_name           => $app_name,
+            gen_package_name   => $gen_package_name,
+            external_modules   => \@external_modules,
+            sub_modules        => $sub_modules,
+            init_sub           => $init_sub,
+            config_accessors   => $config_accessors,
+            gen_pod            => $gen_pod,
+            full_use_statement => $full_use_statement,
+            pages              => \@pages,
+            %{ $config },                # Go fish!
+        }
+    );
+
+    eval {
+        no warnings qw( Bigtop );
+        Bigtop::write_file( $gen_base_module_file, $gen_base_content );
+    };
+    warn $@ if ( $@ );
+
+    # finally, make the tests
+    # start with the use test (compile test for all controllers)
     my $test_dir  = File::Spec->catdir( $build_dir, 't' );
     my $test_file = File::Spec->catfile( $test_dir, '01_use.t' );
 
@@ -1151,6 +1486,86 @@ sub gen_Control {
 
     eval { Bigtop::write_file( $test_file, $test_file_content ); };
     warn $@ if ( $@ );
+
+    # now make the pod and pod coverage tests
+    my $pod_test_file       = File::Spec->catfile( $test_dir, '02_pod.t' );
+    my $pod_cover_test_file = File::Spec->catfile(
+            $test_dir, '03_podcover.t'
+    );
+
+    my $pod_test_content       =
+            Bigtop::Backend::Control::Gantry::pod_test( {} );
+    my $pod_cover_test_content =
+            Bigtop::Backend::Control::Gantry::pod_cover_test( {} );
+
+    eval {
+        no warnings qw( Bigtop );
+        Bigtop::write_file(
+                $pod_test_file, $pod_test_content, 'no overwrite'
+        );
+    };
+    warn $@ if ( $@ );
+
+    eval {
+        no warnings qw( Bigtop );
+        Bigtop::write_file(
+                $pod_cover_test_file, $pod_cover_test_content, 'no overwrite'
+        );
+    };
+    warn $@ if ( $@ );
+
+    # finally, make the run test, unless they asked not to
+    if ( not defined $config_block->{ run_test }
+            or
+         $config_block->{ run_test } )
+    {
+
+        # ...first, prepare the configs
+        my @configs;
+        my $saw_root = 0;
+
+        APP_CONFIG:
+        foreach my $var ( sort keys %{ $app_configs } ) {
+
+            next APP_CONFIG if $var eq 'dbconn';
+
+            my $value = $app_configs->{ $var }->get_first_arg();
+            if ( ref $value ) {
+                ( $value ) = keys %{ $value };
+            }
+            push @configs, [ $var, $value ];
+
+            $saw_root++ if $var eq 'root';
+        }
+        unshift @configs, [ 'dbconn', 'dbi:SQLite:dbname=app.db' ];
+        push @configs, [ 'root', 'html' ] unless $saw_root;
+
+        # ...then, the locations
+        my $locations = $bigtop_tree->walk_postorder(
+                'output_test_locations'
+        );
+        my $num_tests = @{ $locations };
+
+        my $run_test_file = File::Spec->catfile( $test_dir, '10_run.t' );
+        my $run_test_content = Bigtop::Backend::Control::Gantry::run_test(
+            {
+                app_name  => $app_name,
+                configs   => \@configs,
+                locations => $locations,
+                num_tests => $num_tests,
+                %{ $config }, # fish for template engine name
+            }
+        );
+
+        eval {
+            no warnings qw( Bigtop );
+            Bigtop::write_file(
+                    $run_test_file, $run_test_content, 'no overwrite'
+            );
+        };
+        warn $@ if ( $@ );
+
+    }
 }
 
 sub build_init_sub {
@@ -1214,9 +1629,47 @@ sub build_config_lists {
 #   Packages named in the grammar
 #-----------------------------------------------------------------
 
-# sql_block
-package #
-    sql_block;
+package # application
+    application;
+use strict; use warnings;
+
+sub output_test_locations {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my $app_name = $self->get_name();
+    my $loc_args = $self->get_app_statement( 'location' );
+    my $base_location;
+
+    if ( defined $loc_args->[0] ) {
+        $base_location = $loc_args->[0];
+    }
+    else {
+        $base_location = '/';
+    }
+
+    my @retval;
+    push @retval, [ $base_location, $app_name ];
+    while ( @{ $child_output } ) {
+        my ( $loc_type ) = shift @{ $child_output };
+
+        my $data = shift @{ $child_output };
+        my ( $location, $module ) = @{ $data };
+
+        if ( $loc_type eq 'rel_location' ) {
+            $location = $base_location . $location;
+        }
+
+        $module = $app_name . '::' . $module;
+
+        push @retval, [ $location, $module ];
+    }
+
+    return \@retval;
+}
+
+package # table_block
+    table_block;
 use strict; use warnings;
 
 sub output_field_names {
@@ -1231,8 +1684,7 @@ sub output_field_names {
     return $child_output;
 }
 
-# table_element_block
-package #
+package # table_element_block
     table_element_block;
 use strict; use warnings;
 
@@ -1245,7 +1697,7 @@ sub output_field_names {
 }
 
 # controller_block
-package #
+package # controller_block
     controller_block;
 use strict; use warnings;
 
@@ -1269,12 +1721,6 @@ sub get_gen_package_name {
     my $data = shift;
 
     return $data->{app_name} . '::GEN::' . $self->get_name();
-}
-
-sub get_controller_type {
-    my $self = shift;
-
-    return $self->{__TYPE__}[0] || 'stub';
 }
 
 sub output_extra_use {
@@ -1343,6 +1789,11 @@ sub output_controller {
         push @{ $stub_method_names }, qw( get_model_name text_descr );
     }
 
+    my $config_block = $data->{ tree }->get_config()->{ Control };
+    if ( $config_block->{ dbix } ) {
+        push @{ $stub_method_names }, qw( schema_base_class get_orm_helper );
+    }
+
     # make the gen use statement if it has methods
     my $gen_use_statement;
     if ( defined $gen_method_names ) {
@@ -1395,10 +1846,15 @@ sub output_controller {
         }
     );
 
+    my $inherit_from = $data->{app_name};
+    if ( defined $gen_method_names ) {
+        $inherit_from = $gen_package_name;
+    }
     my $output       = Bigtop::Backend::Control::Gantry::controller_block(
         {
             app_name          => $data->{app_name},
             package_name      => $package_name,
+            inherit_from      => $inherit_from,
             gen_use_statement => $gen_use_statement,
             child_output      => $output_str,
             class_accessors   => $class_access,
@@ -1408,12 +1864,24 @@ sub output_controller {
         }
     );
 
+    my $gen_pod              =
+        Bigtop::Backend::Control::Gantry::gen_controller_pod(
+        {
+            package_name     => $package_name,
+            gen_package_name =>
+                ( defined $gen_method_names ) ? $gen_package_name : undef,
+            gen_methods      => $gen_method_names,
+            sub_module       => 1,
+        }
+    );
+
     my $gen_output = Bigtop::Backend::Control::Gantry::gen_controller_block(
         {
             app_name         => $data->{app_name},
             gen_package_name => $gen_package_name,
             child_output     => $gen_output_str,
             export_array     => $export_array,
+            gen_pod          => $gen_pod,
         }
     );
 
@@ -1487,18 +1955,19 @@ sub _extract_output_from {
     }
 
     # join the results
+    my $empty_string = '';
     my ( $output, $class_access, $gen_output );
 
     if ( defined $all_output{output} ) {
-        $output       = join '', @{ $all_output{output}       };
+        $output       = join $empty_string, @{ $all_output{output}       };
     }
 
     if ( defined $all_output{gen_output} ) {
-        $gen_output   = join '', @{ $all_output{gen_output}   };
+        $gen_output   = join $empty_string, @{ $all_output{gen_output}   };
     }
 
     if ( defined $all_output{class_access} ) {
-        $class_access = join '', @{ $all_output{class_access} };
+        $class_access = join $empty_string, @{ $all_output{class_access} };
     }
 
     return (
@@ -1524,8 +1993,27 @@ sub output_nav_links {
     }
 }
 
+sub output_test_locations {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my %child_output = @{ $child_output};
+
+    my @retval;
+
+    # add my name to the data going up
+    foreach my $loc_type ( keys %child_output ) {
+        push @retval,
+            $loc_type => [
+                $child_output{ $loc_type } => $self->{ __NAME__ }
+            ];
+    }
+
+    return \@retval;
+}
+
 # controller_statement
-package #
+package # controller_statement
     controller_statement;
 use strict; use warnings;
 
@@ -1604,6 +2092,7 @@ sub uses {
 
     return [
         output       => $output,
+        gen_output   => $output,
         used_modules => \@used_modules,
     ];
 }
@@ -1612,7 +2101,7 @@ sub is_crud {
     my $self = shift;
     my $data = shift;
 
-    my $controller_name  = $self->{__PARENT__}{__PARENT__}{__NAME__};
+    my $controller_name  = $self->get_controller_name;
     my $controller_type  = $data->{lookup}
                                   {controllers}
                                   {$controller_name}
@@ -1712,8 +2201,16 @@ sub output_nav_links {
     return [];
 }
 
+sub output_test_locations {
+    my $self         = shift;
+
+    return unless ( $self->{ __KEYWORD__ } =~ /location/ );
+
+    return [ $self->{ __KEYWORD__ } => $self->{ __ARGS__ }->get_first_arg, ];
+}
+
 # controller_method
-package #
+package # controller_method
     controller_method;
 use strict; use warnings;
 
@@ -1723,7 +2220,7 @@ sub output_controller {
     my $data = shift;
 
     my $gen_package_name
-            = $self->{__PARENT__}{__PARENT__}->get_gen_package_name( $data );
+            = $self->{__PARENT__}->get_gen_package_name( $data );
 
     my $base_name = $gen_package_name;
     $base_name    =~ s/.*:://;
@@ -1848,7 +2345,7 @@ sub output_controller {
 }
 
 # method_body
-package #
+package # method_body
     method_body;
 use strict; use warnings;
 
@@ -2159,7 +2656,10 @@ sub _crud_form_outputer {
 
         $clean_field{name} = $field_name;
 
+        FIELD_STATEMENT:
         foreach my $key ( keys %{ $field } ) {
+            next FIELD_STATEMENT if ( $key eq '__IDENT__' );
+
             my $clean_key              = $key;
             $clean_key                 =~ s/html_form_//;
 
@@ -2256,15 +2756,14 @@ sub _find_all_fields_but {
     return \@retval;
 }
 
-# method_statement
-package #
+package # method_statement
     method_statement;
 use strict; use warnings;
 
 sub walker_output {
     my $self = shift;
 
-    return [ $self->{__KEY__} => $self->{__ARGS__} ];
+    return [ $self->{__KEYWORD__} => $self->{__ARGS__} ];
 }
 
 sub output_stub          { goto &walker_output; }
@@ -2276,4 +2775,3 @@ sub output_AutoCRUD_form { goto &walker_output; }
 sub output_CRUD_form     { goto &walker_output; }
 
 1;
-

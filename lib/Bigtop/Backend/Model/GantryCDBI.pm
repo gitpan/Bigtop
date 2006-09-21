@@ -138,9 +138,15 @@ sub backend_block_keywords {
           label   => 'No Gen',
           descr   => 'Skip everything for this backend',
           type    => 'boolean' },
+
         { keyword => 'model_base_class',
           label   => 'Models Inherit From',
           descr   => 'Defaults to Gantry::Utils::CDBI',
+          type    => 'text' },
+
+        { keyword => 'template',
+          label   => 'Alternate Template',
+          descr   => 'A custom TT template.',
           type    => 'text' },
     ];
 }
@@ -197,9 +203,9 @@ sub gen_Model {
 #   Packages named in the grammar
 #-----------------------------------------------------------------
 
-# sql_block
-package #
-    sql_block;
+# table_block
+package # table_block
+    table_block;
 use strict; use warnings;
 
 sub output_model {
@@ -327,7 +333,7 @@ sub output_model {
 }
 
 # table_element_block
-package #
+package # table_element_block
     table_element_block;
 use strict; use warnings;
 
@@ -429,6 +435,35 @@ This module does not register any keywords.  See Bigtop::Model for
 a list of keywords models understand.
 
 The default for the model_base_class keyword is Gantry::Utils::CDBI.
+
+=head1 METHODS
+
+To keep podcoverage tests happy.
+
+=over 4
+
+=item backend_block_keywords
+
+Tells tentmaker that I understand these config section backend block keywords:
+
+    no_gen
+    model_base_class
+    template
+    
+=item what_do_you_make
+    
+Tells tentmaker what this module makes.  Summary: Class::DBI models.
+
+=item gen_Model
+
+Called by Bigtop::Parser to get me to do my thing.
+
+=item setup_template
+
+Called by Bigtop::Parser so the user can substitute an alternate template
+for the hard coded one here.
+
+=back
 
 =head1 AUTHOR
 

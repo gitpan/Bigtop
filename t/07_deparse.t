@@ -2,17 +2,23 @@ use strict;
 
 use Test::More tests => 2;
 
+use Bigtop::Parser;
+
+#----------------------------------------------------------------------
+# Compile test on Bigtop::Deparser
+#----------------------------------------------------------------------
+
 BEGIN { use_ok( 'Bigtop::Deparser' ) }
 
-use Bigtop::Parser;
+#----------------------------------------------------------------------
+# A moderately complex deparse.  There are more tests in t/tentmaker
+#----------------------------------------------------------------------
 
 my $bigtop_string = join '', <DATA>;
 
 my $ast = Bigtop::Parser->parse_string( $bigtop_string );
 
 my $redone = Bigtop::Deparser->deparse( $ast );
-
-#use Data::Dumper; warn Dumper( $ast );
 
 my @redone_pieces = split /\n/, $redone;
 
@@ -24,6 +30,7 @@ config {
     SQL Postgres {  }
     CGI Gantry { with_server 1; }
     Control Gantry {  }
+    HttpdConf Gantry {  }
 }
 app Name {
     authors `Phil Crow` => `philcrow2000\@yahoo.com`, `Tim Keefer`;
@@ -31,12 +38,14 @@ app Name {
         dbconn `dbi:Pg:dbname=sample` => no_accessor;
         var value;
     }
+    # keeps track of names
     sequence names_seq {}
     table names {
         sequence names;
         field id {
             is int4, primary_key, auto;
         }
+        # should have been family_name
         field last {
             is varchar;
             html_form_type text;
@@ -47,6 +56,7 @@ app Name {
             html_form_optional 1;
         }
     }
+    # - Begin Controllers -
     controller Names is AutoCRUD {
         controls_table names;
         rel_location names;
@@ -61,18 +71,21 @@ app Name {
             all_fields_but id;
             extra_keys legend => `\$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
+        literal Location
+            `    require valid-user`;
+        config {
+            special_to_me 5 => no_accessor;
+        }
     }
+    # This one moved because extra_keys was reset
     controller Nothing {
         method do_nothing is stub {
-
         }
     }
 }
 EO_CORRECT_REBUILD
 
 is_deeply( \@redone_pieces, \@correct_rebuild, 'moderate deparse' );
-
-#use Data::Dumper; warn Dumper( \@redone_pieces );
 
 __DATA__
 config {
@@ -82,6 +95,7 @@ config {
     SQL Postgres {  }
     CGI  Gantry { with_server 1; }
     Control Gantry {}
+    HttpdConf Gantry {}
 }
 app Name {
     authors `Phil Crow` => `philcrow2000@yahoo.com`, `Tim Keefer`;
@@ -89,12 +103,14 @@ app Name {
         dbconn `dbi:Pg:dbname=sample` => no_accessor;
         var value;
     }
+    # keeps track of names
     sequence names_seq {}
     table names {
         sequence names;
         field id {
             is int4, primary_key, auto;
         }
+        # should have been family_name
         field last {
             is varchar;
             html_form_type text;
@@ -105,6 +121,7 @@ app Name {
             html_form_optional 1;
         }
     }
+    # - Begin Controllers -
     controller Names is AutoCRUD {
         controls_table names;
         rel_location   names;
@@ -120,7 +137,12 @@ app Name {
             extra_keys
                 legend     => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
+        literal Location `    require valid-user`;
+        config {
+            special_to_me 5 => no_accessor;
+        }
     }
+    # This one moved because extra_keys was reset
     controller Nothing {
         method do_nothing is stub {
 

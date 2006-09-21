@@ -12,6 +12,8 @@ sub purge_dir {
 sub real_purge_dir {
     my $doomed_dir = shift;
 
+    return unless -d $doomed_dir;
+
     my $purger = sub {
         my $name = $_;
 

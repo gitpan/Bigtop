@@ -58,6 +58,12 @@ sub backend_block_keywords {
                         .   'allow easy DBD switching',
           type    => 'boolean',
           default => 'false', },
+
+        { keyword => 'template',
+          label   => 'Alternate Template',
+          descr   => 'A custom TT template.',
+          type    => 'text' },
+
     ];
 }
 
@@ -192,6 +198,46 @@ EO_HELP
 
     exit 0;
 }
+
+=head1 NAME
+
+app.server - A generated server for the [% app_name %] app
+
+=head1 SYNOPSIS
+
+    usage: app.server [options] [port]
+
+port defaults to 8080
+
+=head1 DESCRIPTION
+
+This is a Gantry::Server based stand alone server for the [% app_name +%]
+app.  It was built to use an SQLite database called app.db.  Use the following
+command line flags to change database connection information (all of
+them require a value):
+
+=over 4
+
+=item --dbd (or -d)
+
+The DBD for your database, try SQLite, Pg, or mysql.  Defaults to SQLite.
+
+=item --dbuser (or -u)
+
+The database user name, defaults to the empty string.
+
+=item --dbpass (or -p)
+
+The database user's password, defaults to the empty string.
+
+=item --dbname (or -n)
+
+The name of the database, defaults to app.db.
+
+=back
+
+=cut
+
 [% END %][%# end of if flex_db %]
 [% END %][%# end of stand_alone_server %]
 
@@ -234,7 +280,7 @@ while ( $request->Accept() >= 0 ) {
 
 [% BLOCK application_config %]
     config => {
-[% body %]
+[% body +%]
     },
 [% END %][%# end of block application_config %]
 
@@ -365,8 +411,7 @@ $conffile_text
     return { cgi => $cgi_output, server => $server_output };
 }
 
-# application
-package #
+package # application
     application;
 use strict; use warnings;
 
@@ -379,25 +424,28 @@ sub output_config {
             and
          $backend_block->{ gen_root }
     ) {
-        push @{ $child_output }, "        root => 'html',\n";
+        push @{ $child_output }, "        root => 'html',";
     }
 
     my $output = Bigtop::Backend::CGI::Gantry::application_config(
         {
-            body => join '', @{ $child_output },
+            body => join "\n", @{ $child_output },
         }
     );
 
+    my @stand_alone_output = @{ $child_output };
     if ( $backend_block->{ flex_db } ) {
-        unshift @{ $child_output },
-            ' ' x 8 . 'dbconn => $dsn,' . "\n",
-            ' ' x 8 . 'dbuser => $dbuser,' . "\n",
-            ' ' x 8 . 'dbpass => $dbpass,' . "\n";
+        @stand_alone_output = grep ! /^\s*dbconn|^\s*dbuser|^\s*dbpass/,
+                                 @{ $child_output };
+        unshift @stand_alone_output,
+            ' ' x 8 . 'dbconn => $dsn,',
+            ' ' x 8 . 'dbuser => $dbuser,',
+            ' ' x 8 . 'dbpass => $dbpass,',
     }
 
     my $extra_output = Bigtop::Backend::CGI::Gantry::application_config(
         {
-            body => join '', @{ $child_output },
+            body => join "\n", @stand_alone_output,
         }
     );
 
@@ -420,8 +468,7 @@ sub output_cgi_locations {
     return [ $output ];
 }
 
-# app_statement
-package #
+package # app_statement
     app_statement;
 use strict; use warnings;
 
@@ -435,8 +482,7 @@ sub output_location {
     return [ $location ];
 }
 
-# app_config_block
-package #
+package # app_config_block
     app_config_block;
 use strict; use warnings;
 
@@ -453,11 +499,12 @@ sub output_config {
         }
     );
 
-    return [ $output ];
+    my @output = split /\n/, $output;
+
+    return \@output;
 }
 
-# app_config_statement
-package #
+package # app_config_statement
     app_config_statement;
 use strict; use warnings;
 
@@ -466,11 +513,10 @@ sub output_config {
 
     my $output_vals = $self->{__ARGS__}->get_args();
 
-    return [ { name => $self->{__KEY__}, value => $output_vals } ];
+    return [ { name => $self->{__KEYWORD__}, value => $output_vals } ];
 }
 
-# controller_block
-package #
+package # controller_block
     controller_block;
 use strict; use warnings;
 
@@ -502,7 +548,8 @@ sub output_cgi_locations {
 }
 
 # controller_statement
-package #
+
+package # controller_statement
     controller_statement;
 use strict; use warnings;
 
@@ -521,8 +568,7 @@ sub output_cgi_locations {
 
 }
 
-# literal_block
-package #
+package # literal_block
     literal_block;
 use strict; use warnings;
 
@@ -574,6 +620,45 @@ supported apps.
 This module does not register any keywords.  See Bigtop::CGI
 for a list of allowed keywords (think app and controller level 'location'
 and controller level 'rel_location' statements).
+
+=head1 METHODS
+
+To keep podcoverage tests happy.
+
+=over 4
+
+=item backend_block_keywords
+
+Tells tentmaker that I understand these config section backend block keywords:
+
+        no_gen
+        fast_cgi
+        instance
+        conffile
+        with_server
+        server_port
+        gen_root
+        flex_db
+        template
+
+=item what_do_you_make
+
+Tells tentmaker what this module makes.  Summary: app.server and app.cgi.
+
+=item gen_CGI
+
+Called by Bigtop::Parser to get me to do my thing.
+
+=item output_cgi
+
+What I call on the various AST packages to do my thing.
+
+=item setup_template
+
+Called by Bigtop::Parser so the user can substitute an alternate template
+for the hard coded one here.
+
+=back
 
 =head1 AUTHOR
 

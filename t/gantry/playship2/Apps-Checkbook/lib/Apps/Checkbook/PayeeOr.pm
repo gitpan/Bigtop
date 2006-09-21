@@ -2,11 +2,7 @@ package Apps::Checkbook::PayeeOr;
 
 use strict;
 
-use base 'Apps::Checkbook';
-use Apps::Checkbook::GEN::PayeeOr qw(
-    do_main
-    form
-);
+use base 'Apps::Checkbook::GEN::PayeeOr';
 
 use Gantry::Plugins::CRUD;
 
@@ -257,17 +253,25 @@ sub init {
     # process SUPER's init code
     $self->SUPER::init( $r );
 
-    $self->importance( $self->fish_config( 'importance' ) || '' );
+    $self->set_importance( $self->fish_config( 'importance' ) || '' );
 } # END init
 
-sub importance {
+#-----------------------------------------------------------------
+# $self->set_importance( $new_value )
+#-----------------------------------------------------------------
+sub set_importance {
     my ( $self, $value ) = @_;
 
-    if ( defined $value ) {
-        $self->{importance} = $value;
-    }
+    $self->{ __importance__ } = $value;
+}
 
-    return $self->{importance};
+#-----------------------------------------------------------------
+# $self->importance(  )
+#-----------------------------------------------------------------
+sub importance {
+    my $self = shift;
+
+    return $self->{ __importance__ };
 }
 
 
@@ -279,7 +283,24 @@ Apps::Checkbook::PayeeOr - A controller in the Apps::Checkbook application
 
 =head1 SYNOPSIS
 
-This package is meant to be used in the Perl block of an httpd.conf file.
+This package is meant to be used in a stand alone server/CGI script or the
+Perl block of an httpd.conf file.
+
+Stand Alone Server or CGI script:
+
+    use Apps::Checkbook::PayeeOr;
+
+    my $cgi = Gantry::Engine::CGI->new( {
+        config => {
+            #...
+        },
+        locations => {
+            '/someurl' => 'Apps::Checkbook::PayeeOr',
+            #...
+        },
+    } );
+
+httpd.conf:
 
     <Perl>
         # ...
@@ -291,8 +312,7 @@ This package is meant to be used in the Perl block of an httpd.conf file.
         PerlHandler Apps::Checkbook::PayeeOr
     </Location>
 
-If all went well, the httpd.conf file was correctly written during app
-generation.
+If all went well, one of these was correctly written during app generation.
 
 =head1 DESCRIPTION
 
@@ -309,7 +329,9 @@ You might even want to describe the table this module controls here.
 
 =item text_descr
 
+
 =back
+
 
 =head1 METHODS MIXED IN FROM Apps::Checkbook::GEN::PayeeOr
 
@@ -319,7 +341,9 @@ You might even want to describe the table this module controls here.
 
 =item form
 
+
 =back
+
 
 =head1 DEPENDENCIES
 

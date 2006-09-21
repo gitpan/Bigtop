@@ -32,6 +32,12 @@ app Apps::Checkbook {
         field id       { is int4, primary_key; }
         field not_much { is varchar; }
     }
+    table other {
+        field id       { is int4, primary_key; }
+    }
+    join_table payeeor_other {
+        joins payeepayor => other;
+    }
 }
 EO_Bigtop_STRING
 
@@ -51,6 +57,15 @@ INSERT INTO payeepayor ( id, name )
     VALUES ( 2, 'Crow Business Center' );
 
 CREATE INDEX payor_name_ind ON payeepayor ( name );
+CREATE TABLE other (
+    id MEDIUMINT PRIMARY KEY
+);
+
+CREATE TABLE payeeor_other (
+    id MEDIUMINT PRIMARY KEY AUTO_INCREMENT,
+    payeepayor MEDIUMINT,
+    other MEDIUMINT
+);
 EO_CORRECT_SQL
 
 file_ok( $sql_file, $correct_sql, 'tiny gened sql file' );

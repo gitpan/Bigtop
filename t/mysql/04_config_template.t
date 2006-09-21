@@ -6,8 +6,14 @@ use File::Spec;
 
 use Bigtop::Parser;
 
+use lib 't';
+use Purge;
+
 my $base_dir = File::Spec->catdir( 't', 'mysql' );
 my $template = File::Spec->catfile( $base_dir, 'ext.tt' );
+
+my $doomed_dir = File::Spec->catdir( $base_dir, 'Apps-Checkbook' );
+Purge::real_purge_dir( $doomed_dir );
 
 my $bigtop_string = <<"EO_BIGTOP";
 config {
@@ -39,8 +45,4 @@ my $sql_file = File::Spec->catfile( $docs_dir, 'schema.mysql' );
 
 file_ok( $sql_file, $correct_sql, 'template through gen_from' );
 
-use lib 't';
-use Purge;
-
-my $doomed_dir = File::Spec->catdir( $base_dir, 'Apps-Checkbook' );
 Purge::real_purge_dir( $doomed_dir );

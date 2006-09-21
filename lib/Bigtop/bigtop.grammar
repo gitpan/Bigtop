@@ -1,3 +1,5 @@
+# To build this, go to the lib/Bigtop directory and type:
+#   perl -MParse::RecDescent - bigtop.grammar Bigtop::Grammar
 {
     my $backtick_line = 0;
     my $backtick_warning = '';
@@ -38,8 +40,8 @@ config_statement : module_ident IDENT '{' backend_body '}' {
 
     $return = [ $backend_type => $backend_data ];
 }
-                 | regular_keyword[ 'config' ] arg_element SEMI_COLON {
-    $return = [ $item{regular_keyword} => $item{arg_element} ];
+                 | keyword[ 'config' ] arg_element SEMI_COLON {
+    $return = [ $item{keyword} => $item{arg_element} ];
 }
 
 backend_body : backend_statement(s?) {
@@ -57,7 +59,7 @@ backend_statement : IDENT arg_element SEMI_COLON {
 application : 'app'        module_ident '{' app_body        '}' {
                   my $retval = bless {
                       __NAME__ => $item{module_ident},
-                      app_body => $item{app_body},
+                      __BODY__ => $item{app_body},
                   }, 'application';
 
                   $retval->walk_postorder( 'set_parent' );
@@ -80,18 +82,18 @@ block : literal_block
       | app_config_block
       | app_statement
 
-app_statement : regular_keyword[ 'app' ] arg_list(?) SEMI_COLON {
+app_statement : keyword[ 'app' ] arg_list(?) SEMI_COLON {
                            bless {
-                               __KEYWORD__ => $item{regular_keyword},
+                               __KEYWORD__ => $item{keyword},
                                __ARGS__    => $item{'arg_list(?)'}->[0],
                            }, 'app_statement'
                 }
 
-literal_block : 'literal' regular_keyword[ 'app_literal' ]
+literal_block : 'literal' keyword[ 'app_literal' ]
                 string SEMI_COLON {
                     bless {
                         __IDENT__   => Bigtop::Parser->get_ident(),
-                        __BACKEND__ => $item{ regular_keyword },
+                        __BACKEND__ => $item{ keyword },
                         __BODY__    => $item{ string },
                     }, 'literal_block'
                 }
@@ -100,10 +102,11 @@ controller_block : 'controller' module_ident is_type(?) '{'
                         controller_body[ $item{module_ident} ]
                     '}' {
                         bless {
-                            __IDENT__       => Bigtop::Parser->get_ident(),
-                            __NAME__        => $item{module_ident},
-                            controller_body => $item{controller_body},
-                            __TYPE__        => $item{'is_type(?)'},
+                            __IDENT__ => Bigtop::Parser->get_ident(),
+                            __NAME__  => $item{module_ident},
+                            __BODY__  => $item{controller_body}
+                                              {'controller_statement(s?)'},
+                            __TYPE__        => $item{'is_type(?)'}[0],
                         }, 'controller_block'
                    }
 
@@ -122,29 +125,28 @@ controller_statement : 'method' <commit> IDENT
                         }
          | CONFIG '{' controller_config_statement(s?) '}' {
                    bless {
-                       controller_config_statements
-                                => $item{'controller_config_statement(s?)'}
+                       __BODY__ => $item{'controller_config_statement(s?)'}
                    }, 'controller_config_block'
                 }
-         | 'literal' regular_keyword[ 'controller_literal' ]
+         | 'literal' keyword[ 'controller_literal' ]
                      string SEMI_COLON {
                     bless {
                         __IDENT__   => Bigtop::Parser->get_ident(),
-                        __BACKEND__ => $item{ regular_keyword },
+                        __BACKEND__ => $item{ keyword },
                         __BODY__    => $item{ string },
                     }, 'controller_literal_block'
            }
-         | regular_keyword['controller'] arg_list(?) SEMI_COLON {
+         | keyword['controller'] arg_list(?) SEMI_COLON {
                            bless {
-                               __KEYWORD__ => $item{regular_keyword},
+                               __KEYWORD__ => $item{keyword},
                                __ARGS__    => $item{'arg_list(?)'}->[0],
                            }, 'controller_statement'
            }
 
 controller_config_statement : IDENT arg_list SEMI_COLON {
                         bless {
-                            __KEY__  => $item{IDENT},
-                            __ARGS__ => $item{arg_list}
+                            __KEYWORD__ => $item{IDENT},
+                            __ARGS__    => $item{arg_list}
                         }, 'controller_config_statement'
                     }
                     | /[^\}]/ {
@@ -164,10 +166,10 @@ method_type : 'is' IDENT { $item{IDENT} }
 
 method_body : method_statement(s?)
 
-method_statement : regular_keyword['method'] arg_list SEMI_COLON {
+method_statement : keyword['method'] arg_list SEMI_COLON {
                         bless {
-                            __KEY__  => $item{regular_keyword},
-                            __ARGS__ => $item{arg_list}
+                            __KEYWORD__ => $item{keyword},
+                            __ARGS__    => $item{arg_list}
                         }, 'method_statement'
                    }
 
@@ -176,16 +178,26 @@ sql_block : 'sequence' <commit> IDENT        '{' sequence_body   '}' {
                             __IDENT__ => Bigtop::Parser->get_ident(),
                             __NAME__  => $item{IDENT},
                             __TYPE__  => 'sequences',
-                            __BODY__  => $item{sequence_body},
-                }, 'sql_block'
+                            __BODY__  => $item{sequence_body}
+                                              {'sequence_statement(s?)'},
+                }, 'seq_block'
             }
           | 'table'    <commit> IDENT        '{' table_body      '}' {
                 bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
                             __NAME__  => $item{IDENT},
                             __TYPE__  => 'tables',
-                            __BODY__  => $item{table_body},
-                }, 'sql_block'
+                            __BODY__  => $item{table_body}
+                                              {'table_element_block(s?)'},
+                }, 'table_block'
+            }
+          | 'join_table' <commit> IDENT      '{' join_table_body '}' {
+                bless {
+                            __IDENT__ => Bigtop::Parser->get_ident(),
+                            __NAME__  => $item{IDENT},
+                            __BODY__  => $item{join_table_body}
+                                              {'join_table_statement(s?)'},
+                }, 'join_table'
             }
 
 sequence_body : sequence_statement(s?)
@@ -204,13 +216,14 @@ table_element_block : 'field' <commit> IDENT '{' field_body '}' {
                                __IDENT__ => Bigtop::Parser->get_ident(),
                                __TYPE__  => 'field',
                                __NAME__  => $item{IDENT},
-                               __BODY__  => $item{field_body},
+                               __BODY__  =>
+                                    $item{field_body}{'field_statement(s?)'},
                            }, 'table_element_block'
                        }
-                     | regular_keyword['table'] arg_list SEMI_COLON {
+                     | keyword['table'] arg_list SEMI_COLON {
                            bless {
                                __TYPE__  => $item[1],
-                               __VALUE__ => $item[2],
+                               __ARGS__  => $item[2],
                                __BODY__  => $item[1],
                            }, 'table_element_block'
                        }
@@ -218,9 +231,9 @@ table_element_block : 'field' <commit> IDENT '{' field_body '}' {
 
 field_body : field_statement(s?)
 
-field_statement : regular_keyword['field'] field_statement_def SEMI_COLON {
+field_statement : keyword['field'] field_statement_def SEMI_COLON {
                       bless {
-                          __NAME__ => $item[1], __DEF__ => $item[2]
+                          __KEYWORD__ => $item[1], __DEF__ => $item[2]
                       }, 'field_statement'
                   }
 
@@ -230,17 +243,24 @@ field_statement_def : arg_list(?) {
                         }, 'field_statement_def'
                       }
 
+join_table_body : join_table_statement(s?)
+
+join_table_statement : keyword['join_table'] arg_list SEMI_COLON {
+                      bless {
+                          __KEYWORD__ => $item[1], __DEF__ => $item[2]
+                      }, 'join_table_statement'
+                  }
+
 app_config_block : CONFIG '{' app_config_statement(s?) '}' {
                    bless {
-                       app_config_statements
-                            => $item{'app_config_statement(s?)'}
+                       __BODY__ => $item{'app_config_statement(s?)'}
                    }, 'app_config_block'
                 }
 
 app_config_statement : IDENT arg_list SEMI_COLON {
                          bless {
-                            __KEY__  => $item{IDENT},
-                            __ARGS__ => $item{arg_list}
+                            __KEYWORD__ => $item{IDENT},
+                            __ARGS__    => $item{arg_list}
                          }, 'app_config_statement'
                        }
                      | /[^\}]/ {
@@ -256,15 +276,20 @@ app_config_statement : IDENT arg_list SEMI_COLON {
                             );
                        }
 
-# There used to be irregular (a.k.a. config) keywords, but no more.
-regular_keyword : IDENT {
+keyword : IDENT {
     if ( Bigtop::Parser->is_valid_keyword( $arg[0], $item[1] ) ) {
         $return = $item[1];
     }
     else {
         my @expected = Bigtop::Parser->get_valid_keywords( $arg[0] );
         Bigtop::Parser->fatal_keyword_error(
-            $item[1], $text, $thisline, @expected
+            {
+                bad_keyword   => $item[1],
+                diag_text     => $text,
+                input_linenum => $thisline,
+                expected      => \@expected,
+                type          => $arg[0],
+            }
         );
     }
 }
@@ -297,7 +322,6 @@ module_ident : IDENT '::' module_ident { $item[1] . '::' . $item[3] }
 string : BACKTICK <skip:''> text BACKTICK { $item{text} }
 
 text : /[^`]*/ {
-    # XXX If there is more than one newline warn of multiline string.
     my @lines = split /\n/, $item[1];
     if ( @lines > 1 ) {
         $backtick_warning

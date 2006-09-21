@@ -101,6 +101,289 @@ function redraw_add_div() {
 }
 
 /*
+    redraw_add_field is the net.ContentLoader callback for when you need to
+    update both the raw_output div and add a field to a table.
+
+    You must pass 'table_ident' for the new field as the third
+    (and final) argument to the net.ContentLoader constructor.
+
+    The server needs to return two concatenated pieces:
+        the text of the html to add to the app body
+        the deparsed tree output
+    These are split at the first line beginning 'config {'.
+*/
+function redraw_add_field() {
+    // break response into parts
+    var response      = this.req.responseText;
+    var break_point   = response.indexOf( "config {" );
+    var new_html_text = response.substring( 0, break_point - 1 );
+    var new_input     = response.substring( break_point );
+
+    var new_html      = new_html_text.split( /<!-- END QUICK TABLE -->/ );
+    var new_quick     = new_html[0];
+    var new_divs      = new_html[1].split( /<!-- BEGIN DIV -->/ );
+
+    // show the new input file as raw output
+    var output_area       = document.getElementById( 'raw_output'     );
+    output_area.innerHTML = new_input;
+
+    var pieces            = this.data.split( /::/ );
+    var table_ident       = pieces[0];
+    var field_names       = pieces[1].split( /\s+/ );
+
+    // add the new divs to the pull down and quick edit box
+    var div_area    = document.getElementById( 'fields_for_' + table_ident );
+    var select_list = document.getElementById( table_ident + '_fields' );
+
+    for ( var i = 0; i < new_divs.length; i++ ) {
+
+        // create the new node
+        var new_node           = document.createElement( 'div' );
+        new_node.innerHTML     = new_divs[i];
+        new_node.style.display = 'none';
+
+        div_area.appendChild( new_node );
+
+        // put the new field into the pull down Edit Field list
+        var children    = new_node.childNodes;
+        new_id_text     = children[0].id; // there is only one child
+        var new_ident   = new_id_text.replace( /div_/, '' );
+
+        new_node.setAttribute( 'id', 'field_edit_' + new_ident );
+
+        var new_option  = new Option(
+                field_names[i], table_ident + '::' + new_ident
+        );
+        new_option.setAttribute( 'id', 'field_edit_option::' + new_ident );
+        select_list.add( new_option, null );
+    }
+
+    // replace the quick edit box
+    var quick_table = document.getElementById(
+            'quick_table::' + table_ident
+    );
+    quick_table.innerHTML = new_quick;
+}
+
+// Please don't cop out and use this ghostcode.
+///*
+//    refresh_app_body is the net.ContentLoader callback for when the AJAX
+//    call needs to do a hard reload of the app_body tab to reflect multiple
+//    changes (like when a field name changes).
+//*/
+//function refresh_app_body() {
+//    var main_div = document.getElementById( 'tabs' );
+//    // ask for a hard page reload
+//    document.location.replace(
+//        '/main/tab-app-body/' +
+//        main_div.scrollTop + '/' +
+//        document.body.scrollTop
+//    );
+//}
+
+/*
+    redraw_quickall is the net.ContentLoader callback for checkboxes
+    in the heading of a field quick edit box.  It sets all the checkboxes
+    for individual fields to the value of master checkbox.  It does this
+    for both the quick edit box and full edit boxes.
+*/
+function redraw_quickall() {
+    // break response into parts
+    var response     = this.req.responseText;
+    var break_point  = response.indexOf( "config {" );
+    var dom_updates  = response.substring( 0, break_point );
+    var new_input    = response.substring( break_point );
+
+    // show the new input file as raw output
+    var output_area       = document.getElementById( 'raw_output'     );
+    output_area.innerHTML = new_input;
+
+    // Now make the other updates based on what it returned.
+    var answers      = dom_updates.split( /;/ );
+    var new_value    = answers[0];
+    var table_ident  = answers[1];
+    var field_idents = answers[2].split( /,/ );
+
+    // First, set the check marks in the quick edit box.
+    // Then, set the check marks in the full edit boxes.
+    for ( var i = 0; i < field_idents.length; i++ ) {
+
+        var quick_box_id  = 'quick_html_form_optional_' + field_idents[i];
+        var quick_box     = document.getElementById( quick_box_id );
+
+        var full_box_id   = field_idents[i] + '::html_form_optional';
+        var full_box      = document.getElementById( full_box_id );
+
+        if ( new_value > 0 ) {
+            quick_box.checked = 'checked';
+            full_box.checked  = 'checked';
+        }
+        else {
+            quick_box.checked = undefined;
+            full_box.checked  = undefined;
+        }
+    }
+}
+
+/*
+    redraw_quick is the net.ContentLoader callback for fields in a
+    quick edit box.  It updates the corresponding input element in the
+    full edit for the table.
+*/
+function redraw_quick() {
+    // break response into parts
+    var response      = this.req.responseText;
+    var break_point   = response.indexOf( "config {" );
+    var instructions  = response.substring( 0, break_point - 1 );
+    var new_input     = response.substring( break_point );
+
+    // first do the normal thing (like redraw would)
+    var output_area       = document.getElementById( 'raw_output' );
+    output_area.innerHTML = new_input;
+
+    chat( 'chatter', '' );
+
+    var pieces    = this.data.split( /;/ );
+    var input_id  = pieces[0];
+    var new_value = pieces[1];
+    var type      = pieces[2];
+
+    var input_el = document.getElementById( input_id );
+
+    if ( input_el ) {
+        if ( type == 'field_statement_text' ) {
+            input_el.value = new_value;
+        }
+        else if ( new_value == 'true' ) {
+            input_el.checked = 'checked';
+        }
+        else {
+            input_el.checked = undefined;
+        }
+    }
+    else {  // it must not have an id => its a multiple
+        var input_els = document.getElementsByName( input_id );
+
+        input_els[0].value = new_value;
+        for ( var i = 1; i < input_els.length; i++ ) {
+            input_els[i].value = '';
+        }
+    }
+
+    follow_instructions( instructions );
+}
+
+/*
+    redraw_full_edit is the net.ContentLoader callback for fields in a
+    full edit box which have corresponding field in a quick edit box.
+    It updates the corresponding input element in that quick edit box for
+    the table.
+*/
+function redraw_full_edit() {
+    // first do the normal thing (like redraw would)
+    var output_area       = document.getElementById( 'raw_output' );
+    output_area.innerHTML = this.req.responseText;
+
+    chat( 'chatter', '' );
+
+    var pieces    = this.data.split( /;/ );
+    var input_id  = pieces[0];
+    var new_value = pieces[1];
+    var type      = pieces[2];
+
+    pieces        = input_id.split( /::/ );
+    var ident     = pieces[0];
+    var keyword   = pieces[1];
+
+    var quick_id  = 'quick_' + keyword + '_' + ident;
+
+    var input_el = document.getElementById( quick_id );
+
+    if ( input_el ) {
+        if ( type == 'field_statement_text' ) {
+            input_el.value = new_value;
+        }
+        else if ( new_value == 'true' ) {
+            input_el.checked = 'checked';
+        }
+        else {
+            input_el.checked = undefined;
+        }
+    }
+}
+
+/*
+    redraw_name_change is the net.ContentLoader callback for name changes.
+    These tend to cause action at a distance updates.  The front end returns
+    not only the new bigtop input dump, but a list of input ids to update.
+*/
+function redraw_name_change() {
+    // break response into parts
+    var response      = this.req.responseText;
+    var break_point   = response.indexOf( "config {" );
+    var instructions  = response.substring( 0, break_point - 1 );
+    var new_input     = response.substring( break_point );
+
+    // first do the normal thing (like redraw would)
+    var output_area       = document.getElementById( 'raw_output' );
+    output_area.innerHTML = new_input;
+
+    chat( 'chatter', '' );
+
+    follow_instructions( instructions );
+}
+
+/*
+    follow_instructions updates statements with new values.
+    Parameter: instructions - the JSON string representing an array
+    of steps to take.  Each entry is a hash with two keys.  One of the
+    keys is always keyword which must be the unique id or name of
+    the statement you are updating.  The other key is one of these:
+        value   the document element should have its value changed to this
+        text    the document element should have its text changed to this
+        values  the set of elements should have these values
+        hashes  the set of paired elements should have these key/value pairs
+                each hash has keyword and value keys
+*/
+function follow_instructions( instructions ) {
+    var todo    = eval ( instructions );
+
+    for ( var i = 0; i < todo.length; i++ ) {
+        if ( todo[i].values ) {  // multi-valued update
+            var multis = document.getElementsByName( todo[i].keyword );
+
+            for ( var j = 0; j < todo[i].values.length; j++ ) {
+                multis[j].value = todo[i].values[j];
+            }
+        }
+        else if ( todo[i].value ) { // single value update
+            var changer   = document.getElementById( todo[i].keyword );
+            changer.value = todo[i].value;
+        }
+        else if ( todo[i].text ) {
+            var changer  = document.getElementById( todo[i].keyword );
+            changer.text = todo[i].text;
+        }
+        else if ( todo[i].hashes ) {
+            for ( var k = 0; k < todo[i].hashes.length; k++ ) {
+                var multi_key = document.getElementsByName(
+                        todo[i].keyword + '_key'
+                );
+                var multi_val = document.getElementsByName(
+                        todo[i].keyword + '_value'
+                );
+
+                multi_key[k].value = todo[i].hashes[k].keyword;
+                multi_val[k].value = todo[i].hashes[k].value;
+
+                // make new boxes (always needed)
+                hatch_more_rows( todo[i].keyword, multi_key[k], multi_val[k] );
+            }
+        }
+    }
+}
+
+/*
     redraw_chat is a net.ContentLoader callback for when you want to make
     an AJAX call, but want the output to appear in the chat area instead
     of in raw_output.
@@ -132,7 +415,7 @@ function dumper( some_object ) {
         output += prop + "<br />";
     }
 
-    chat( 'chatter', output );
+    chat( 'debug_chatter', output );
 }
 
 /*
@@ -150,6 +433,53 @@ function show_or_hide( elem_name ) {
     else {
         elem.style.display = 'none';
     }
+}
+
+/*
+    expose_field changes the available Edit Field to the recently selected
+    field name.
+    Params: the selection object
+*/
+function expose_field ( selector ) {
+    var selected_index = selector.selectedIndex;
+
+    // loop starts at 1 because the first element is '- Select -', which
+    // should hide everything
+    for ( var i = 1; i < selector.options.length; i++ ) {
+
+        var option_value  = selector.options[ i ].value;
+        var ident_array   = option_value.split( /::/ );
+        var table_ident   = ident_array[0];
+        var field_ident   = ident_array[1];
+
+        var div_id        = "field_edit_" + field_ident;
+        var current_div = document.getElementById( div_id );
+
+        if ( i == selected_index ) {
+            current_div.style.display = 'inline';
+
+            // make sure it is open for immediate use
+            var edit_id  = "hideable_" + field_ident;
+            var edit_div = document.getElementById( edit_id );
+            edit_div.style.display = 'inline';
+        }
+        else {
+            current_div.style.display = 'none';
+        }
+    }
+
+// The following approach opens as many shows a new field, but keeps the
+// old ones in the order they were opened.
+//    var selected       = selector.options[ selected_index ].value;
+//    var selected_div   = document.getElementById( "field_edit_" + selected );
+//    var current_visibility = selected_div.style.display;
+//
+//    if ( current_visibility == 'none' ) {
+//        selected_div.style.display = 'inline';
+//    }
+//    else {
+//        selected_div.style.display = 'none';
+//    }
 }
 
 /*
@@ -205,9 +535,13 @@ function create_app_block () {
 */
 function delete_block ( doomed_element ) {
     var trigger_name = doomed_element.name;
-    var doomed_ident = trigger_name.replace( /[^:]*::/, "" );
+    var pieces       = doomed_element.name.split( /::/ );
+    var delete_type  = pieces[0];
+    var doomed_ident = pieces[1];
 
-    if ( ! confirm("Are you sure you want to delete")) {
+    // var doomed_ident = trigger_name.replace( /[^:]*::/, "" );
+
+    if ( ! confirm("Are you sure you want to delete") ) {
         return false; 
     }
     
@@ -238,6 +572,22 @@ function delete_block ( doomed_element ) {
     //    chat( 'debug_chatter', "error " + any_exception.message );
     }
 
+    if ( delete_type == 'field_block_delete' ) {
+        // take it out of the pull down
+        var edit_option = document.getElementById(
+                'field_edit_option::' + doomed_ident
+        );
+        var all_options = edit_option.parentNode;
+        all_options.remove( all_options.selectedIndex );
+
+        // take it out of the quick edit box
+        var quick_row = document.getElementById(
+                'quick_row::' + doomed_ident
+        );
+        var quick_table = quick_row.parentNode;
+        quick_table.removeChild( quick_row );
+    }
+
 }
 
 /*
@@ -255,8 +605,8 @@ function create_field ( table_ident ) {
     var update_url    = '/create_subblock/' + param;
     var loader        = new net.ContentLoader(
                           update_url,
-                          redraw_add_div,
-                          "hideable_" + table_ident
+                          redraw_add_field,
+                          table_ident + '::' + new_name
                         );
 }
 
@@ -297,8 +647,17 @@ function create_method ( controller_ident ) {
              parameter to change
              new value for it
              optional extra url trailer
+             optional refresh flag, make it a positive int to get a page reload
+    If a name changes, you always get a page reload, otherwise set the refresh
+    flag (and remember to include the extra url trailer even if its blank).
 */
-function update_tree (update_type, parameter, new_value, extra ) {
+function update_tree (
+            update_type,
+            parameter,
+            new_value,
+            extra,
+            refresh_type
+) {
     // chat( 'chatter', 'updating tree with ' + update_type +
     // ' ' + parameter + ' ' + new_value );
 
@@ -307,9 +666,42 @@ function update_tree (update_type, parameter, new_value, extra ) {
     var update_url = '/update_' + update_type + '/'
                         + parameter + '/' + encoded + '/' + extra;
 
-    // chat( 'chatter', update_url );
+    // Remember: you can't chat if you ask for a refresh
+    // chat( 'debug_chatter', update_url );
 
-    var loader     = new net.ContentLoader( update_url, redraw );
+    if ( update_type == 'name' ) {
+        var loader = new net.ContentLoader( update_url, redraw_name_change );
+    }
+    else if ( refresh_type == 'quick_edit' ) {
+        var how_to_update = parameter + ';' + new_value + ';' + update_type;
+        var loader = new net.ContentLoader(
+                update_url, redraw_quick, how_to_update
+        );
+    }
+    else if ( refresh_type == 'full_edit' ) {
+        var how_to_update = parameter + ';' + new_value + ';' + update_type;
+        var loader = new net.ContentLoader(
+                update_url, redraw_full_edit, how_to_update
+        );
+    }
+    else {
+        var loader = new net.ContentLoader( update_url, redraw );
+    }
+}
+
+/*
+    quick_all handles checkboxes which sit in the heading row of a
+    field quick edit box.  It tells the server to set all fields for a
+    given table to the checkbox value at once.  It uses its own redraw
+    callback (redraw_quickall).
+*/
+function quick_all (table_ident, keyword, checked) {
+    var update_url = '/table_reset_bool/'  +
+                     table_ident   +
+                     '/' + keyword +
+                     '/' + checked;
+
+    var loader = new net.ContentLoader( update_url, redraw_quickall );
 }
 
 /*
@@ -323,7 +715,12 @@ function update_tree (update_type, parameter, new_value, extra ) {
     if they are all full, this routine makes a new one.
     None are ever removed.
 */
-function update_multivalue (update_type, parameter, one_input ) {
+function update_multivalue (
+    update_type,
+    parameter,
+    one_input,
+    refresh_type
+) {
     var sybs          = document.getElementsByName( one_input.name );
     var new_names     = new Array;
 
@@ -354,7 +751,15 @@ function update_multivalue (update_type, parameter, one_input ) {
         parent.appendChild( br_node );
         parent.appendChild( clone );
     }
-    var loader      = new net.ContentLoader( update_url, redraw );
+    if ( refresh_type == 'full_edit' ) {
+        var how_to_update = parameter + ';' + new_names[0] + ';' + update_type;
+        var loader = new net.ContentLoader(
+                update_url, redraw_full_edit, how_to_update
+        );
+    }
+    else {
+        var loader      = new net.ContentLoader( update_url, redraw );
+    }
 }
 
 /*
@@ -364,14 +769,15 @@ function update_multivalue (update_type, parameter, one_input ) {
     all the same.  Pass these parameters to this function:
         suffix of do_update_* method you want
         parameter (a.k.a. statement keyword) to change
+        a boolean indicating whether new pair fields should hatch out
         one of the input text elements in the group
     Like update_tree_multivalue, this one makes new boxes if all the
-    existing ones are full.
+    existing ones are full, but only if the hatch_out boolean is true.
 */
-function update_pairs (update_type, parameter, one_input) {
+function update_pairs (update_type, parameter, hatch_out, one_input) {
     // get names of the key and value fields to be updated
     var base_name  = one_input.name.replace( /_[^_]*$/, '' );
-    var key_name = base_name + "_key";
+    var key_name   = base_name + "_key";
     var value_name = base_name + "_value";
 
     // get the sybling elemens
@@ -426,31 +832,37 @@ function update_pairs (update_type, parameter, one_input) {
     var loader        = new net.ContentLoader( update_url, redraw );
 
     // See if we need to add new boxes.
-    if ( new_key_count == current_count
-            ||
-         new_value_count == current_count )
+    if ( hatch_out > 0
+            &&
+         ( new_key_count == current_count
+              ||
+           new_value_count == current_count  ) )
     { // we're full up
-        // make the new box and a separator element
-        var clone_key   = key_sybs[0].cloneNode( true );
-        var clone_value   = value_sybs[0].cloneNode( true );
-        clone_key.value = '';
-        clone_value.value = '';
-
-        // attach them to the parent
-        var parent_table  = document.getElementById(
-                base_name + "_input_table"
-        );
-
-        var new_row_number  = parent_table.rows.length;
-        parent_table.insertRow( new_row_number );
-        var inserted_row    = parent_table.rows[ new_row_number ];
-
-        inserted_row.insertCell( 0 );
-        inserted_row.insertCell( 1 );
-
-        inserted_row.cells[0].appendChild( clone_key );
-        inserted_row.cells[1].appendChild( clone_value );
+        hatch_more_rows( base_name, key_sybs[0], value_sybs[0] );
     }
+}
+
+function hatch_more_rows ( base_name, key_syb, value_syb ) {
+    // make the new box and a separator element
+    var clone_key     = key_syb.cloneNode( true );
+    var clone_value   = value_syb.cloneNode( true );
+    clone_key.value   = '';
+    clone_value.value = '';
+
+    // attach them to the parent
+    var parent_table  = document.getElementById(
+            base_name + "_input_table"
+    );
+
+    var new_row_number  = parent_table.rows.length;
+    parent_table.insertRow( new_row_number );
+    var inserted_row    = parent_table.rows[ new_row_number ];
+
+    inserted_row.insertCell( 0 );
+    inserted_row.insertCell( 1 );
+
+    inserted_row.cells[0].appendChild( clone_key );
+    inserted_row.cells[1].appendChild( clone_value );
 }
 
 /*

@@ -1,34 +1,34 @@
 ---
 
-There should be a new app level block of sql type called join_table,
-joining_table or something similar.  It should have one statement:
-    joins tshirt => color;
-The order of the tables wouldn't matter.  This would give the standard
-three table setup:
-    +--------+                  +-------+
-    | tshirt |                  | color |
-    +--------+                  +-------+
-              \                /
-               +--------------+
-               | tshirt_color |
-               +--------------+
-Where the tshirt and color tables would have to be defined by regular table
-blocks.  When any table block is processing, it would have to look for
-any joining_tables.  If it saw its own name in one, it would have to make
-a has_many.
+Convert to new style Gantry::Conf.
 
-The bigtop script in --new mode should allow ascii art table relationships:
-    bigtop -n Contact 'family<-bday'
-    or
-    bigtop -n Contact family bday 'bday->family'
-    different model:
-    bigtop -n Store 'tshirt<->color'
+Generate the fieldset legend key in CRUD and AutoCRUD forms.
 
-Descide what to do about sequences.  Perhaps we should just stop
-using them everywhere.  I think Gantry can get along without them
-if they are never generated.  The postgres backend needs to distinguish
-between auto when a sequence is defined and when it is not.
-    Just make sure this works as expected.
+Add paging as a default behavior of main listings.
+
+Find a way to wedge bigtop syntax in the tent maker reference chapter in
+the gantry book.
+
+Should a table name change cause a cascade of field name changes for
+all the foreign keys which point to it?
+
+Could column name changes lead to the immediate construction of an alter table?
+    I think tentmaker should print the alter table statements to stdout,
+    but the backend should also append them to a log in the docs dir.
+    You'd have to read the log carefully, but the commands would be there.
+These would just be side effects of renaming things in tentmaker.
+
+When a table name changes, spew table alterations as for field name changes.
+
+Make sure all AST packages are hidden from PAUSE indexer (including
+Parser, Deparser, and all the backends).
+    I tried.  We'll see.  I think this failed before because the Deparser
+    wasn't participating.  I was more careful this time around.
+
+app.server is always calling the db app.db, even when the config says
+something else.
+    For now, you can use flex_db and provide -n on the command line:
+        ./app.server -n dbname
 
 Table field blocks should allow accessor which tells the ORM to use that
 name for the accessor.
@@ -38,7 +38,55 @@ in the main_listing, its values should be mapped via the options hash so
 they show up on screen as they were selected and not as they are actually
 stored in the database.
 
-Make tentmaker sense all Gantry::Engines on the box.
+---
+
+tentmaker should be taught to make and manage controller level config blocks.
+
+Factor gantry specific code out of the parser.
+
+When the tentmaker reloads, it would be nice if the focus could return to
+any create box next to a create button that triggered the action.
+    This is far less important now that you can create multiple fields at once.
+
+There's a java script error of uncertain vintage which gripes about:
+        if ( ready == net.READY_STATE_COMPLETE ) {
+in the onReadyState function of the net.ContentLoader.prototype
+which compains:
+    Error: net is not defined Line: 321
+I'm not sure exactly how it could see that line if net weren't defined.
+It seems to occur on page reloads.
+    This seemed to be only in one session, but I'm not sure.
+
+Skip Config in HttpdConf Gantry is a duplication of supplying a Conf
+Instance.
+    This is not quite true, since you could be using Frank's approach
+    without Gantry::Conf, but then there should be a flag for it too.
+
+tentmaker does not support controller level literals (GantryLocation of HttpdConf).
+Worse, deparser ignores them.
+    Deparser knows about them now, but there is still no way to make them at
+    the controller level in tentmaker.
+
+When a join table is created in tentmaker, the name boxes are not both
+red.  It works fine if the table exists or is created during start up.
+
+Make a way for literal SQL to be backend specific.
+    literal SQL for Backend
+This requires a slight grammar change to add an optional for Backend
+clause.  It would then have to associate that backend with the tree node.
+Some change to make_output might be in order.  Or the backends literal
+block could be asked to add the gaurd.
+When you fix this, change Bigtop::Docs::Syntax to reflect it.
+
+bigtop --create should object loudly if the directory looks lived in.
+
+Should bigtop --create default to all build?  Should it always default to all?
+
+Allow rearrangements of app body blocks via ajax drag and drop.
+
+Comments could be incorporated into the grammar.  They could become
+statements or blocks which could then survive tentmaker deletions of
+neighboring blocks.  Or I could just stop worrying about them.
 
 When values are entered in tentmaker input boxes which are currently
 triggered by buttons, add respect for carriage returns.
@@ -49,8 +97,7 @@ set them as statements in the backend block in the top level config block.
 Make a scheme similar to the backend what_do_you_make scheme for Gantry
 Engines and Template Engines, so tentmaker can dynamically provide its
 'Bigtop Config' choices.
-
-The DBIx::Class GEN modules don't use __PACKAGE__ for has_a.  Could they?
+Make tentmaker sense all Gantry::Engines on the box.
 
 There should be a special top level controller block like
     root_controller [ is type ] {
@@ -85,17 +132,11 @@ Why is a missing controls table only a warning?  Could it refuse
 to build the stub iff there is a main_listing, form, or crud_form but no
 controls_table statement?
 
-Figure out the literals allowed in Bigtop::Conf::General.  Document
-and test them.
-
-1   Allow cells in main_listings to be hrefs.  (See customer search page
+    Allow cells in main_listings to be hrefs.  (See customer search page
     of Quixote.)
         This requires a change to Gantry's results.tt.
 
-2   Add field level keywords to support user configurable model accessor names
-    and whether they get a mutator.
-
-3   handle internal alignments, e.g. in schema.sql it should be like
+    handle internal alignments, e.g. in schema.sql it should be like
         name    varchar;
         address varchar;
     not
@@ -107,7 +148,7 @@ and test them.
     The templates can make adjustments like this.
         Low.
 
-4   Reorganize the sql_block subrules so they are more like the control_block
+    Reorganize the sql_block subrules so they are more like the control_block
     ones.  Namely, stop blessing different kinds of things into the same
     class, then if testing on attributes to tell them apart.
         This really only applies to table_element_blocks and the only
@@ -117,7 +158,27 @@ and test them.
     Make the grammar report better errors.
         Place holder for problems found in the future.
 
+    Keep the vim syntax file up to date.
+        Place holder as a reminder.
+
 Not to be Done:
+
+    We need more tests of how tentmaker builds and modifies the tree rather
+    than just whether deparser can make the proper sense of the result.
+        Now that deparser is complete, I don't think this is a real issue.
+
+    When the tentmaker reloads, it would be nice if the focus could be in...
+        I take that back.  There is no reasonable place to put it.
+        The field you just left is bad because of recursive triggers.
+        The next field is just as bad because leaving it will trigger.
+
+    Remove or down case prepositions when forming default names based
+    on a table name.
+        Overly magical and surprising.  Bound to cross someone up.
+
+    Make auto crud update created and modified times by default (in Gantry).
+        Ruled out.  I couldn't find a database indepenedent way to do this.
+
     Clean up the app pair statement code.  It could probably be integrated
     into the regular app statement change code.
         While there is some duplication, the call workflow is clearly separated
@@ -186,6 +247,260 @@ Not to be Done:
         This is just litter.
 
 Done:
+
+    There should be a dirty flag in tentmaker, so it doesn't prompt on
+    control-c if you just saved.
+
+    Deparser does not handle all possible blocks.  It is missing:
+        controller_config_block
+        controller_config_statement
+    and thus it cannot handle controller level config blocks.
+
+    Tests should probably purge their play dir at the top and the bottom.
+
+    Make sure the example presented in Bigtop::Docs::Tutorial is exactly
+    billing.bigtop in the examples directory and that it builds as discussed.
+
+    Revise the billing example so it uses sqlite and the stand alone server.
+
+    Deleting blocks (at least fields) should trigger a page refresh so the
+    quick edit box and Edit Field pull down can be brought up to date.
+
+    Why do unnamed autocrud forms have names in their return hashes?
+        They don't any more, but I didn't look at the template.
+
+    In recent tests, when an autocrud form doesn't validate, the entered
+    values are lost.  During add the input fields are blanked, during
+    edit they are refreshed from the database.
+        This was a problem with Gantry's form.tt.
+
+    I want to consolidate the field boxes perhaps into a pull down list
+    of field names and a single expansion window which always shows exactly
+    one in detail, or which itself folds out of the way.
+
+    When bigtop is in new or create mode it should summarily die if the
+    build directory already exists (or at least if anything is in it).
+
+    crtl-c trap in tentmaker is not prompting, it always saves.
+    This is odd because running the one in the scripts subdirectory of the
+    build directory works as expected.
+    Actually, killing the tentmaker before making changes does wait for input.
+    After a refresh change, it no longer waits.  Something is messing with
+    standard in, which shouldn't be surprising since that is the post method.
+        Started using the profoundly more robust approach of IO::Prompt.
+
+    Generated date popup code doesn't yet pop up the date.
+        This was because gen code was not getting the use statement for the
+        calendar plugin.  When it did get it, it brought it into the
+        wrong namespace.  To fix this I finally made stubs inherit from their
+        gens.  That solves other problems as well.  If you want to implement
+        your own do_main, you can now simply do so without redefining.
+
+    When a field is changed to a date type (in is or by
+    adding date select text to it) verify and set:
+        is a date
+        html_form_type is text
+        date_select_text is 'Select Date'
+        module uses Gantry::Utils::Calendar
+        form has a name (name it for the table if needed)
+        form has extra keys javascript...
+
+    When you change a field to date in tentmaker, the javascript extra_keys
+    entry is made correctly by the backend (as you can see by immediately
+    viewing the bigtop source dump).  But, the html input field for the
+    value stops at the first single quote around the form name.
+        I switched input_boxes.ttc to use double qoutes around values,
+        allowing them to have embedded single quotes.  If you need to
+        embed double qoutes, you must use qq.
+
+    Figure out the literals allowed in Bigtop::Conf::General.  Document
+    and test them.
+
+    When tentmaker reloads a page, the current tab is not necessarily selected.
+
+    It would be nice if you could space separate field names in the create box.
+
+    Add an 'Update' do nothing button to the field quick edit box.
+
+    Perhaps the fields in a table should be shown in a little html table where
+    you could change the most common things: name, SQL type, optional, label,
+    constraint.  Then there could be a checkbox in the optional label which
+    would set or clear all the others.
+
+    When a date changes in tentmaker, lots of good things are happening.  But
+    there is no page reload, so we can't see them.
+
+    Gantry is not a bigtop prereq.
+
+    Trap control c in tentmaker and offer the chance to save.
+
+    When a table name changes, also change:
+        x all refers_to statements
+        x all controls table statements (but not for controller names)
+            Done, but should we also change the field name (and cascade
+            that change) of refers_to fields when the name of the field
+            is the name of the foreign table?
+
+    Could there be command line methods for change column names which would
+    change them everywhere they appear, including the places below?
+        x the name itself
+        x the foreign_display if the original name was there
+        x the cols list in main listing methods of any controller for the table
+        x the fields or all_fields_but list for the table's controller(s)
+        x the label if the old label eq ucfirst old name
+    tentmaker now does this.  Do we still want a command line way?
+        I don't think we need a command line approach as the api would complex:
+            bigtop -c file.bigtop 'table1:field_name->new_field_name'
+        I couldn't think of anything better.
+
+    Add tests for ScriptHelp.
+        More would always be nice, but there are some now.
+
+    If a column name has underscores, form the field label by splitting
+    the name into pieces on underscore and capitalizing each piece possibly
+    excepting: a, an, the, of, on, etc.  Same for controller names from
+    table names, except pack the result back together instead of space
+    separating it.
+        Mostly done, but not the article/preposition handling.
+
+    If table name has underscores, treat it like a column name with
+    underscores.  In other words, form its controller name by capitalizing
+    the words and removing the underscores.
+
+    Produce a useful testing script: t/10_run.t which tries to hit each page.
+    Make a temp database from the sqlite schema for it to use.
+
+    Generate pod in GEN controllers.
+
+    When the column name changes, the tree updates are working, but the
+    tentmaker screen is not be updated.
+        Done.  Now not only does the screen update, but the expansions and
+        scrolled position are retained.
+
+    When a table is created from the command line, with bigtop, it gets
+    a default foreign_display of %ident.  This needs to happen for
+    tentmaker start up and when the user pressed Create for a table.
+
+    Fix the screen shots in TentTut.
+
+    Finish the TentRef.
+
+    Find a good syntax for database independent type for datetime.  Tell the
+    SQL backends about it.  Then use it in Bigtop::ScriptHelp and in the
+    Bigtop::TentMaker for the created and modified fields.
+        Is it just datetime which they all understand?  Try it for all three.
+        Yes, they all understand that, but their notions of now are
+        subtly different.  In Postgres you can just use the string 'now'
+        as the value, in the others you have to call a function passing
+        it now as a value.  That rules out automatic management.
+
+    If there is an old sqlite, bigtop is trying to create the database with
+    it and failing to note the errors.
+        Perhaps we should abandon the fantasy of auto-generation of databases.
+        I didn't give, up.  I just tried harder to collect errors and
+        added a straight up version 3 requirement.
+
+    When you make a field in tentmaker, it should default to:
+        is varchar
+        label ucfirst name
+        html_form_type text
+
+    Add pod to backends.
+
+    During Bigtop::ScriptHelp default building, always make a foreign_display
+    with value `%ident`.
+
+    Split Model.pm and App.pm into stub and generated bits.  The Model.pm
+    needs to have its table names updated on every Model build.  The base
+    module needs new site_links whenever controllers are added.
+
+    Put template statements in the docs for all backends which understand it.
+
+    Make sure all examples are up to date.
+
+    Make tentmakers tabbed pane region taller?
+
+    Move the chatter boxes in tentmaker.  The user activated box should
+    go under the save as button (not inside the current bigtop section).
+    The debug chatter should go outside the tab panes.
+
+    Add something in the tenttut about the app.server command line flags.
+
+    Add a title above the tabs in tentmaker.
+
+    When Bigtop::ScriptHelp makes a foreign key from ascii art, it doesn't give
+    it a label.
+
+    Add pod to generated app.server.
+
+    Bring the vim syntax file up to date.
+
+    When app level blocks don't have names, the error message is odd.
+
+    The DBIx::Class GEN modules don't use __PACKAGE__ for has_a.  Could they?
+        the method is called belongs_to and yes, they now do.
+
+    The bigtop script needs a --add flag.  You must use it from a build
+    directory.  It modifies docs/*.bigtop by insertion of new tables and
+    controllers.  Suppose you started with:
+        bigtop --new Hiring 'pos->job job<->skill'
+    From the Hiring directory you can now add additional table/controller/etc
+    blocks like this:
+        bigtop --add doc/file.bigtop 'app->pos resume<->app'
+    This happened for the tentmaker too.
+
+    Make join_table available in tentmaker.
+
+    Teach deparser to understand join_table blocks.
+
+    join_table blocks should be regularized so they can have multiple
+    statements, but we should check to make sure only one joins statement
+    is allowed (not that other blocks do that -- but then they don't walk
+    for statements).  In particular I want a names statement for the
+    join_table:
+        join_table fox_sock {
+            joins fox   => sock;
+            names foxes => socks;
+        }
+        The names would default to table . s (as in foxs).
+
+    Multiple joins statements in join_table blocks produces a bad
+    error message.
+
+    Error messages don't report the possibilty of join_table (they say
+    I was expecting..., but don't mention join_table as a valid block).
+
+    The bigtop script in --new mode should allow ascii art table relationships:
+        bigtop -n Contact 'family<-bday'
+        or
+        bigtop -n Contact family bday 'bday->family'
+        different model:
+        bigtop -n Store 'tshirt<->color'
+
+    There should be a new app level block of sql type called join_table,
+    joining_table or something similar.  It should have one statement:
+        joins tshirt => color;
+    The order of the tables wouldn't matter.  This would give the standard
+    three table setup:
+        +--------+                  +-------+
+        | tshirt |                  | color |
+        +--------+                  +-------+
+                \                /
+                +--------------+
+                | tshirt_color |
+                +--------------+
+    Where the tshirt and color tables would have to be defined by regular
+    table blocks.  When any table block is processing, it would have to look
+    for any joining_tables.  If it saw its own name in one, it would have to
+    make a has_many.
+        The join_table block has been added.  And bigtop support the above:
+            bigtop -n ShirtStore 'tshirt<->color'
+
+    Descide what to do about sequences.  Perhaps we should just stop
+    using them everywhere.  I think Gantry can get along without them
+    if they are never generated.  The postgres backend needs to distinguish
+    between auto when a sequence is defined and when it is not.
+        Just make sure this works as expected.
 
     The bigtop script in --new mode should provide details on how to get
     the app running something like this:

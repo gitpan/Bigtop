@@ -1,7 +1,3 @@
-#tabs {
-    background: #eee;
-}
-
 #tab-backends table {
 background: #d6d6d6;
 }
@@ -15,9 +11,10 @@ background: #d6d6d6;
 }
 
 #tab-bigtop-config {
-background: #d6d6d6;
-border: 1px solid #777;
+    background: #d6d6d6;
+    border: 1px solid #777;
 }
+
 div.app_block_table div.app_block_element {
     background: #d6d6d6;
 }
@@ -174,10 +171,11 @@ select {
 }
 
 #tabs {
+    background: #eee;
     width:     95%;
     clear:     both;
     border:    1px solid #99d;
-    height:    450px;
+    height:    500px;
     overflow:  auto;
     padding:   5px;
     margin:    0px auto 20px auto;
@@ -263,6 +261,10 @@ table.bordered td, table.bordered th {
 
 table.bordered td table td, table.bordered td table th {
     border: none;
+}
+
+div.quick_edit_div {
+    background: #d6d6d6;
 }
 
 input.urgency_10, select.urgency_10 { background: #F00; }

@@ -1,4 +1,4 @@
-Bigtop version 0.06
+Bigtop version 0.15
 ===========================
 
 Bigtop is a central place to collect everything that has anything to
@@ -26,6 +26,7 @@ DEPENDENCIES
 This module requires these other modules and libraries:
 
     Module::Build
+    Parse::RecDescent
     Config::General
     Template
     Inline

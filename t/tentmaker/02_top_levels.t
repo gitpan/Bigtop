@@ -27,16 +27,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
 }
@@ -67,16 +68,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
 }
 app MySample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
 }
@@ -87,7 +89,7 @@ EO_changed_app_name
 is_deeply( \@maker_deparse, \@correct_input, 'app name change' );
 
 #--------------------------------------------------------------------
-# Change backend keyword
+# Add backend keyword
 #--------------------------------------------------------------------
 
 $tent_maker->do_update_conf_text(
@@ -99,16 +101,17 @@ config {
     engine CGI;
     template_engine TT;
     Init Std {  }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault { gantry_wrapper `/path/to/gantry/root`; }
 }
 app MySample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
 }
@@ -116,31 +119,32 @@ EO_backend_keyword
 
 @maker_deparse = split /\n/, $tent_maker->deparsed();
 
-is_deeply( \@maker_deparse, \@correct_input, 'change backend keyword' );
+is_deeply( \@maker_deparse, \@correct_input, 'add backend keyword' );
 
 #--------------------------------------------------------------------
-# Add backend keyword
+# Change backend keyword
 #--------------------------------------------------------------------
 
 $tent_maker->do_update_conf_text(
-    'Init::Std::fake_keyword', 'meaning_less_value'
+    'SiteLook::GantryDefault::gantry_wrapper', 'meaning_less_value'
 );
 
 @correct_input = split /\n/, <<'EO_change_backend_keyword';
 config {
     engine CGI;
     template_engine TT;
-    Init Std { fake_keyword meaning_less_value; }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
+    Init Std {  }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
-    SiteLook GantryDefault { gantry_wrapper `/path/to/gantry/root`; }
+    SiteLook GantryDefault { gantry_wrapper meaning_less_value; }
 }
 app MySample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
 }
@@ -160,17 +164,18 @@ $tent_maker->do_update_conf_bool( 'SiteLook::GantryDefault::no_gen', 'true' );
 config {
     engine CGI;
     template_engine TT;
-    Init Std { fake_keyword meaning_less_value; }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
+    Init Std {  }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
-    SiteLook GantryDefault { no_gen 1; gantry_wrapper `/path/to/gantry/root`; }
+    SiteLook GantryDefault { no_gen 1; gantry_wrapper meaning_less_value; }
 }
 app MySample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
 }
@@ -190,17 +195,18 @@ $tent_maker->do_update_conf_bool( 'SiteLook::GantryDefault::no_gen', 'false' );
 config {
     engine CGI;
     template_engine TT;
-    Init Std { fake_keyword meaning_less_value; }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
+    Init Std {  }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
-    SiteLook GantryDefault { no_gen 0; gantry_wrapper `/path/to/gantry/root`; }
+    SiteLook GantryDefault { no_gen 0; gantry_wrapper meaning_less_value; }
 }
 app MySample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
 }
@@ -220,18 +226,19 @@ $tent_maker->do_update_app_statement_text( 'location', '/site' );
 config {
     engine CGI;
     template_engine TT;
-    Init Std { fake_keyword meaning_less_value; }
-    CGI Gantry { gen_root 1; with_server 1; }
-    Control Gantry { dbix 1; }
+    Init Std {  }
     SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
-    SiteLook GantryDefault { no_gen 0; gantry_wrapper `/path/to/gantry/root`; }
+    SiteLook GantryDefault { no_gen 0; gantry_wrapper meaning_less_value; }
 }
 app MySample {
     location `/site`;
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        dbuser apache => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
 }

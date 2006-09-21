@@ -21,11 +21,17 @@ BEGIN {
             'non_essential',
         )
     );
+    Bigtop::Parser->add_valid_keywords(
+        Bigtop::Keywords->get_docs_for(
+            'join_table',
+            'joins',
+            'names',
+        )
+    );
 }
 
-# sql_block
-package #
-    sql_block;
+package # table_block
+    table_block;
 use strict; use warnings;
 
 sub _find_primary_key {
@@ -74,7 +80,7 @@ sub _build_foreign_display_body {
 }
 
 # table_element_block
-package #
+package # table_element_block
     table_element_block;
 use strict; use warnings;
 

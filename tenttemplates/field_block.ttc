@@ -10,18 +10,19 @@
 
     statements       - hash describing statements built by
                        Bigtop::Parser::get_keyword_docs
+    expanded_divs    - hash keyed by AST ident storing true if its expanded
 %]
     <div class='app_block_element'
          id='div_[% item.ident %]'>
         [% blockname = block.name
-           fieldname = item.name
+           fieldname = item.ident
            fullname  = "table_field_${blockname}::$fieldname" %]
          <fieldset>
          <legend>Field
             ( <a href='javascript:show_or_hide( "[%-
-                "hideable_$fullname" %]" );'>edit</a> |
+                "hideable_$item.ident" %]" );'>edit</a> |
                 [%- INCLUDE delete_link.ttc
-                    name  = "app_body_delete::$item.ident" %]
+                    name  = "field_block_delete::$item.ident" %]
             )
          </legend>
          <table>
@@ -42,10 +43,9 @@
             <tr>
                 <td colspan='2'>
                   [% WRAPPER show_or_hide.ttc
-                     clickable_id            = "heading_$fullname"
-                     element_under_control   = "hideable_$fullname"
+                     element_under_control   = "hideable_$item.ident"
                      label                   = ''
-                     heading_level           = 'none'
+                     expanded = view.data.expanded_divs.${item.ident} || 0
                   %]
                     [% INCLUDE field_statement_table
                                field = item %]
@@ -76,7 +76,8 @@
             [% INCLUDE input_boxes.ttc
                        statement      = field_statement
                        keyword_prefix = "$field.ident::"
-                       name_prefix    = "$block.name::$field.name::"
+                       name_prefix    = "$field.ident::"
+                       id_prefix      = "$field.ident::"
                        method_group   = 'field_statement'
                        key            = keyword
             %]

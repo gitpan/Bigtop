@@ -46,3 +46,5 @@ If you want folding, add:
     let bigtop_fold=1
 
 to your .vimrc.  This will fold all brace delimited blocks.
+
+=cut

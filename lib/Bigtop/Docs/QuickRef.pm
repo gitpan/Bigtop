@@ -7,9 +7,10 @@ Bigtop::Docs::QuickRef - a quick reference guide to bigtop syntax
 =head1 An HTML Table
 
 This file is html only.  If you want a text version see Bigtop::Docs::Keywords.
-Note that this file is note complete.  Running the tentmaker should give
+Note that this file is note complete.  Running tentmaker should give
 you complete and accurate information, since its docs come from the code.
-See Bigtop::Docs::TentTut for a tutorial on tentmaker use.
+See Bigtop::Docs::TentTut for a tutorial on tentmaker use and
+Bigtop::Docs::TentRef for full details.
 
 Below you should see a pretty table in your browser.
 
@@ -94,7 +95,8 @@ app Simple::Sample {
 The following table tries to cover all the statements and blocks available,
 but keep in mind that backends can add simple statements of their own.
 So, the table may be incomplete.  Running tentmaker will show all the
-available possibilities.
+available possibilities.  It asks all the backends on your system what
+they understand.
 </p>
 <table border>
 <tr>
@@ -152,7 +154,7 @@ available possibilities.
             Each generator has a type and a name.  These translate directly
             to the name of the module which will do the generating.  So,
            <pre>    SQL Postgres {}</pre>
-            means use Bigtop::SQL::Postgres.  Further,
+            means use Bigtop::Backend::SQL::Postgres.  Further,
             it means that the user of bigtop at the command line can request
             generation of postgres SQL by saying
             <pre>    bigtop app.bigtop SQL</pre>
@@ -205,10 +207,46 @@ available possibilities.
                     SQL
                 </td>
                 <td valign='top'>
+                    SQLite
+                </td>
+                <td>
+                    Generates docs/schema.sqlite using SQLite syntax.
+                </td>
+            </tr>
+            <tr>
+                <td valign='top'>
+                    SQL
+                </td>
+                <td valign='top'>
                     Postgres
                 </td>
                 <td>
                     Generates docs/schema.postgres using Postgres syntax.
+                </td>
+            </tr>
+            <tr>
+                <td valign='top'>
+                    SQL
+                </td>
+                <td valign='top'>
+                    MySQL
+                </td>
+                <td>
+                    Generates docs/schema.mysql using MySQL syntax.
+                </td>
+            </tr>
+            <tr>
+                <td valign='top'>
+                    Conf
+                </td>
+                <td valign='top'>
+                    General
+                </td>
+                <td>
+                    Makes docs/app.conf from app and controller level
+                    config blocks in Config::General format, usually
+                    for use with Gantry::Conf.  Use the instance statement
+                    in your HttpdConf or CGI backend block for Gantry::Conf.
                 </td>
             </tr>
             <tr>
@@ -243,10 +281,34 @@ available possibilities.
                     Model
                 </td>
                 <td valign='top'>
+                    GantryDBIxClass
+                </td>
+                <td>
+                    Makes DBIx::Class Models for use with Gantry.
+                    Remember to use <pre>  dbix 1;</pre> in your Control
+                    Gantry backend block.
+                </td>
+            </tr>
+            <tr>
+                <td valign='top'>
+                    Model
+                </td>
+                <td valign='top'>
+                    Gantry
+                </td>
+                <td>
+                    Makes native Models for use with Gantry.
+                </td>
+            </tr>
+            <tr>
+                <td valign='top'>
+                    Model
+                </td>
+                <td valign='top'>
                     GantryCDBI
                 </td>
                 <td>
-                    Makes the Models needed for use with Gantry.
+                    Makes Class::DBI Models for use with Gantry.
                 </td>
             </tr>
             <tr>
@@ -446,14 +508,14 @@ available possibilities.
                                     </td>
                                     <td>
                                         The SQL type.  The keywords
-                                        primary_key and assign_by_key
-                                        are special.  primary_key marks the
-                                        field as a primary key in the generated
+                                        int4, primary_key and assign_by_key
+                                        are special.  int4 becomes a
+                                        reasonable int for your database.
+                                        primary_key marks the field as
+                                        a primary key in the generated
                                         SQL and Model.  assign_by_key (a.k.a.
-                                        auto) yields an auto-incrementing
-                                        key based on a sequence.  The
-                                        table must have a valid sequence
-                                        statement for this to work.
+                                        auto) yields auto-incrementing
+                                        possibly based on a sequence.
                                     </td>
                                 </tr>
                                 <tr>
@@ -482,7 +544,7 @@ available possibilities.
                                         The regex (or sub which will
                                         immediately return one) which must
                                         match the value entered by the
-                                        user.
+                                        user.  See Data::FormValidator.
                                     </td>
                                 </tr>
                                 <tr>
@@ -550,7 +612,7 @@ available possibilities.
                                     <td>
                                         If true, this field will not be
                                         included in the Model's essential
-                                        field list.
+                                        field list.  Not all models honor this.
                                         (Not the same as html_form_optional.)
                                     </td>
                                 </tr>
@@ -608,8 +670,8 @@ available possibilities.
                         <td>
                             Implies that this page should appear in the
                             site navigation menu.  This is the text to
-                            use in the menu (think of the grey links
-                            at the top of the page generated by 
+                            use in the menu (think of the small links
+                            at the bottom of the page generated by 
                             sample_wrapper.tt that comes with Gantry).
                         </td>
                     </tr>

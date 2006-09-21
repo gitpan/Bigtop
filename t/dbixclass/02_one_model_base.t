@@ -7,10 +7,14 @@ use File::Find;
 
 use Bigtop::Parser qw/Model=GantryDBIxClass Control=Gantry/;
 
+use lib 't';
+use Purge;
+
 my $play_dir = File::Spec->catdir( qw( t dbixclass play ) );
 my $ship_dir = File::Spec->catdir( qw( t dbixclass playship2 ) );
 my $edit_loc = '$$site{exlocation}/editor';
 
+Purge::real_purge_dir( $play_dir );
 mkdir $play_dir;
 
 my $bigtop_string = <<"EO_Bigtop_File";
@@ -20,7 +24,7 @@ config {
     template_engine TT;
     app_dir         ``;
     Model           GantryDBIxClass { model_base_class Exotic::Base::Module; }
-    Control         Gantry { dbix 1; full_use 1; }
+    Control         Gantry { dbix 1; full_use 1; run_test 0; }
     SQL             Postgres { }
     SQL             MySQL    { }
 }
@@ -62,6 +66,7 @@ app Contact {
         autocrud_helper  Gantry::Plugins::AutoCRUDHelper::DBIxClass;
         controls_table   number;
         text_description `contact number`;
+        rel_location number;
         method do_main is main_listing {
             title             Contacts;
             cols              name, number;
@@ -84,8 +89,5 @@ Bigtop::Parser->gen_from_string(
 );
 
 compare_dirs_ok( $play_dir, $ship_dir, 'DBIxClass models' );
-
-use lib 't';
-use Purge;
 
 Purge::real_purge_dir( $play_dir );

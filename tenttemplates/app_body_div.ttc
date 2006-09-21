@@ -1,11 +1,15 @@
 [%#
     Template for the App Body section of TentMaker home page.
 
+    Expects this top level key:
+    block - an array element from app_blocks array given to tenter.tt
+
     Expects this to be in view.data
     statements       - hash describing statements built by
                        Bigtop::Parser::get_keyword_docs
 
                        sequence, table, controller, or literals.
+    expanded_divs    - hash keyed by AST ident storing true if its div is open
 %]
   <div class='app_block_[% block.type %]'
        id='div_[% block.ident %]'>
@@ -65,10 +69,11 @@
             <tr>
                 <td colspan='2'>
                   [% WRAPPER show_or_hide.ttc
-                     clickable_id            = "table_heading_$block.ident"
-                     element_under_control   = "hideable_$block.ident"
-                     label                   = 'Close Edit'
-                     heading_level           = 'none'
+                     clickable_id          = "table_heading_$block.ident"
+                     element_under_control = "hideable_$block.ident"
+                     label                 = 'Close Edit'
+                     heading_level         = 'none'
+                     expanded = view.data.expanded_divs.${block.ident} || 0
                   %]
                     [% INCLUDE table_block %]
                   [% END %] </td>
@@ -133,13 +138,14 @@
                      element_under_control = "hideable_$block.ident"
                      label                 = 'Close Edit'
                      heading_level         = 'none'
+                     expanded = view.data.expanded_divs.${block.ident} || 0
                   %]
                     [% INCLUDE controller_block %]
                   [% END %] </td>
             </tr>
         </table>
 
-      [% ELSE %][%# must be a literal %]
+      [% ELSIF block.type == 'literal' %]
         [% type_label = 'Literal' %]
         <fieldset>
         <legend>
@@ -182,6 +188,10 @@
                         <option value='PerlBlock'
   [% IF block.keyword == 'PerlBlock' %]selected='selected'[% END %]
                         > PerlBlock     </option>
+
+                        <option value='Conf'
+  [% IF block.keyword == 'Conf' %]selected='selected'[% END %]
+                        > Conf     </option>
                     </select>
                 </td>
             </tr>
@@ -200,6 +210,53 @@
             </tr>
         </table>
 
+      [% ELSIF block.type == 'join_table' %]
+        [% type_label = 'Join Table' %]
+        <fieldset>
+        <legend>
+            [% type_label %] 
+            ( <a href='javascript:show_or_hide( "[%-
+                "hideable_$block.ident" %]" );'>
+                edit</a> |  
+                [%- INCLUDE delete_link.ttc
+                    name  = "app_body_delete::$block.ident" %]
+            )
+        </legend>
+        <table>
+              <tr>
+                <td> Name: </td>
+                <td>
+                    <input type='text'
+                           id='app_block::[% block.ident %]'
+                           value='[% block.name %]'
+                           onblur='javascript:update_tree(
+                               "name",
+                               "table::[% block.ident %]",
+                               this.value
+                           )'
+                    />
+                </td>
+            </tr>
+            <tr>
+                <td colspan='2'>
+                  [% WRAPPER show_or_hide.ttc
+                     clickable_id          = "join_table_heading_$block.ident"
+                     element_under_control = "hideable_$block.ident"
+                     label                 = 'Close Edit'
+                     heading_level         = 'none'
+                     expanded = view.data.expanded_divs.${block.ident} || 0
+                  %]
+                    [% INCLUDE join_table_block %]
+                  [% END %] </td>
+            </tr>
+        </table>
+        </fieldset>
+
+      [% ELSE %][%# must be new %]
+      I don't know what to do:
+      <pre>
+      [% USE dumper %][% dumper.dump( block ) %]
+      </pre>
       [% END %]
 
       <br style='clear: both' />
@@ -210,14 +267,20 @@
 
   [% INCLUDE table_statement_table
              statements = block.body.statements %]
- 
   <br />
+
+<div id='quick_table::[% block.ident %]' class='quick_edit_div' >
+  [% INCLUDE quick_edit.ttc
+             fields      = block.body.fields
+             table_ident = block.ident   %]
+  <br />
+</div>
 
   <div class='app_block_table_new' id="create_field_box">
     <fieldset>
-    <legend>Create Field</legend>
+    <legend>Create Field(s)</legend>
     <table>
-      <tr><td> Name: </td>
+      <tr><td> Name(s): </td>
           <td>
               <input type='text' id='new_field_[% block.ident %]' />
           </td>
@@ -227,17 +290,41 @@
                       onclick='javascript:create_field( "[% block.ident %]" )'
               > Create </button>
           </td>
+          <td> Hint: separate names with spaces to add many fields at once.
+          </td>
+      </tr>
     </table>
   </div>
 
   <br />
 
+  <fieldset>
+    <legend>
+        Edit Field:
+        <select id='[% block.ident %]_fields'
+                onchange='javascript:expose_field( this )' >
+    </legend>
+            <option value='0'> - Select - </option>
   [% FOREACH item IN block.body.fields %]
     [% IF    item.type == 'field'     %]
-      [% INCLUDE field_block.ttc %]
+        <option value='[% block.ident %]::[% item.ident %]'
+                id='field_edit_option::[% item.ident %]'>
+            [% item.name %]
+        </option>
     [% END %]
-    <br />
   [% END %]
+      </select>
+      <div id='fields_for_[% block.ident %]' >
+  [% FOREACH item IN block.body.fields %]
+    [% IF    item.type == 'field'     %]
+      <div id='field_edit_[% item.ident %]' style='display: none'>
+      [% INCLUDE field_block.ttc %]
+      </div>
+    [% END %]
+    <!--<br />-->
+  [% END %]
+      </div>
+  </fieldset>
 
 [% END %][%# end table_block %]
 
@@ -260,6 +347,7 @@
                        statement      = table_statement
                        keyword_prefix = "$block.ident::"
                        name_prefix    = "$block.ident::"
+                       id_prefix      = "$block.ident::"
                        method_group   = 'table_statement'
                        key            = keyword
             %]
@@ -313,7 +401,7 @@
     <br />
   [% END %]
 
-[% END %]
+[% END %][%# end of controller_block %]
 
 [% BLOCK controller_statement_table %]
   <table class='bordered'>
@@ -334,6 +422,7 @@
                        statement      = controller_statement
                        keyword_prefix = "$block.ident::"
                        name_prefix    = "$block.ident::"
+                       id_prefix      = "$block.ident::"
                        method_group   = 'controller_statement'
                        key            = keyword
             %]
@@ -344,4 +433,43 @@
     </tr>
   [% END %]
   </table>
-[% END %]
+[% END %][%# end of controller_statement_table %]
+
+[% BLOCK join_table_block %]
+
+  [% INCLUDE join_table_statement_table
+             statements = block.body.statements %]
+ 
+  <br />
+[% END %][%# end join_table_block %]
+
+[% BLOCK join_table_statement_table %]
+  <table class='bordered'>
+    <tr>
+        <th> Keyword     </th>
+        <th> Value(s)    </th>
+        <th> Description </th>
+    </tr>
+  [% FOREACH jt_statement IN view.data.statements.join_table.statements %]
+    [% keyword = jt_statement.keyword %]
+    <tr>
+        <td> [% keyword %] </td>
+        <td>
+            [% values       = statements.$keyword.get_unquoted_args
+               single_value = values.0 %]
+            [% INCLUDE input_boxes.ttc
+                       statement      = jt_statement
+                       keyword_prefix = "$block.ident::"
+                       name_prefix    = "$block.ident::"
+                       method_group   = 'join_table_statement'
+                       key            = keyword
+            %]
+        </td>
+        <td>
+            [% jt_statement.descr %]
+        </td>
+    </tr>
+  [% END %]
+  </table>
+[% END %][%# end of join_table_statement_table %]
+

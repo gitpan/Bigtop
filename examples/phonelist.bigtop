@@ -1,32 +1,22 @@
 config {
-    engine          MP13;
+    engine          CGI;
     template_engine TT;
-    Init            Std           {}
-    SQL             Postgres      {}
-    HttpdConf       Gantry        {}
-    Control         Gantry        {}
-    Model           GantryCDBI    {}
-    SiteLook        GantryDefault {
-        gantry_wrapper `/home/pcrow/srcgantry/root/sample_wrapper.tt`;
-    }
+    Init            Std             {}
+    SQL             SQLite          {}
+    CGI             Gantry          { with_server 1; flex_db 1; gen_root 1; }
+    Control         Gantry          { dbix 1; }
+    Model           GantryDBIxClass {}
+    SiteLook        GantryDefault   {}
 }
 app Apps::Phone {
-    location `/phone`;
     authors `Phil Crow` =>   `philcrow2000@yahoo.com`;
     config {
-        dbconn    `dbi:Pg:dbname=phone`            => no_accessor;
-        dbuser    apache;
-        template_wrapper `wrapper.tt`              => no_accessor;
-        root      `/home/pcrow/Apps-Phone/html:/home/pcrow/srcgantry/root`
-                                                   => no_accessor;
-        css_root  `/home/pcrow/srcgantry/root/css` => no_accessor;
-        css_rootp `/css`                           => no_accessor;
-        app_rootp `/phone`                         => no_accessor;
+        dbconn           `dbi:Pg:dbname=phone`     => no_accessor;
+        dbuser            apache                   => no_accessor;
+        template_wrapper `genwrapper.tt`           => no_accessor;
     }
-    sequence numbers_seq        {}
     table    numbers      {
-        sequence numbers_seq;
-        field id { is int4, primary_key, assign_by_sequence; }
+        field id { is int4, primary_key, auto; }
         field name {
             is             varchar;
             label          Name;
@@ -38,10 +28,9 @@ app Apps::Phone {
             html_form_type text;
         }
     }
-    controller Numbers {
+    controller Numbers is AutoCRUD {
         controls_table   numbers;
         rel_location     numbers;
-        uses             Gantry::Plugins::AutoCRUD;
         text_description `phone number`;
         page_link_label  `Phone Numbers`;
         method do_main is main_listing {
@@ -50,7 +39,7 @@ app Apps::Phone {
             header_options   Add;
             row_options      Edit, Delete;
         }
-        method _form is AutoCRUD_form {
+        method form is AutoCRUD_form {
             form_name        numbers;
             fields           name, number;
             extra_keys

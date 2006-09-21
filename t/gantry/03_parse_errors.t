@@ -16,6 +16,8 @@ my @correct_error_output;
 my $play_dir = File::Spec->catdir( 't', 'gantry' );
 my $full_play_dir = File::Spec->catdir( $play_dir, 'Apps-Checkbook' );
 
+Purge::real_purge_dir( $full_play_dir );
+
 #---------------------------------------------------------------------------
 # main_listing uses cols arg which is not in the table
 #---------------------------------------------------------------------------
@@ -67,6 +69,8 @@ is_deeply(
      \@correct_error_output,
      'runaway string/missing semicolon'
 );
+
+Purge::real_purge_dir( $full_play_dir );
 
 #---------------------------------------------------------------------------
 # controller keywords only trigger method calls if they were registered

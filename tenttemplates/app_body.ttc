@@ -21,10 +21,11 @@
             <td> Type: </td>
             <td>
                 <select id='new_app_block_type'>
-                    <option value='sequence'>   Sequence   </option>
                     <option value='table'>      Table      </option>
                     <option value='controller'> Controller </option>
                     <option value='literal'>    Literal    </option>
+                    <option value='join_table'> Join Table </option>
+                    <option value='sequence'>   Sequence   </option>
                 </select>
             </td>
             <td colspan='2'>

@@ -18,6 +18,10 @@
     app_blocks            - hash describing these app level constructs:
                             sequences, tables, controllers, and literals.
     file_name             - the name of the original input file (optional)
+    tab                   - the name of the tab to activate
+    expanded_divs         - a hash keyed by div's ident true if expanded
+    tab_scroll            - the scrollTop of the tab pane div for repositioning
+    body_scroll           - the scrollTop of the body for repositioning
 %]
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
@@ -37,25 +41,33 @@
 </script>
     </head>
 <body>
-<form method='GET' action='#'>
+<div class='main_title'>
+<h2>tentmaker - A Bigtop Editor</h2>
+</div>
 <!--    **********************************************
         Begin the Main Table where all the input lives
         ********************************************** -->
+[% tab = view.data.tab || 'tab-bigtop-config' %]
 <div id='tabs_header'>
     <ul>
-        <li><a id='tab-bigtop-config-link' class='active'
+        <li><a id='tab-bigtop-config-link'
+               [% IF tab == 'tab-bigtop-config' %]class='active'[% END %]
                href='javascript:changetabs( "tab-bigtop-config" );'
             >Bigtop Config</a>
         <li><a id='tab-app-body-link'
+               [% IF tab == 'tab-app-body' %]class='active'[% END %]
                href='javascript:changetabs( "tab-app-body" );'
             >App Body</a>
         <li><a id='tab-backends-link'
+               [% IF tab == 'tab-backends' %]class='active'[% END %]
                href='javascript:changetabs( "tab-backends");'
             >Backends</a>
         <li><a id='tab-app-statements-link'
+               [% IF tab == 'tab-app-statements' %]class='active'[% END %]
                href='javascript:changetabs( "tab-app-statements" );'
             >App Level Statements</a>
         <li><a id='tab-app-config-link'
+               [% IF tab == 'tab-app-config' %]class='active'[% END %]
                href='javascript:changetabs( "tab-app-config" );'
             >App Config</a>
     </ul>
@@ -63,51 +75,77 @@
 
 <div id='tabs'>
 
-  <div class='active' id='tab-bigtop-config'>
+  <form method='GET' action='#'>
+  <div
+    [% IF tab == 'tab-bigtop-config' %]
+        class='active'
+    [% ELSE %]
+        class='tab'
+    [% END %]
+    id='tab-bigtop-config'>
+
     [% INCLUDE bigtop_config.ttc %]
 
-<div id="save_file">
-  <button type='button'
+    <div id="save_file">
+    <button type='button'
           onclick='javascript:saver()'> Save As: </button>
 
-  <input type='text'
+    <input type='text'
          value="[% view.data.file_name || '' %]"
          id='save_file_name'
          size='85' />
-</div>
+      <div id="chatter"></div>
+    </div>
 
-<br />
-<fieldset>
-<legend>
-Current bigtop file
-</legend>
+    <br />
+    <fieldset> <legend> Current bigtop file </legend>
 
-<div id="chatter"></div>
-<div id="debug_chatter"></div>
+    <div id="raw_output" style="white-space: pre; font-family: monospace">
 
+        [% view.data.input %]
 
-<div id="raw_output" style="white-space: pre; font-family: monospace">
-
-[% view.data.input %]
-
-</div>
-</fieldset>
+    </div>
+    </fieldset>
 
   </div>
 
-  <div class='tab' id='tab-app-body'>
+  <div
+    [% IF tab == 'tab-app-body' %]
+        class='active'
+    [% ELSE %]
+        class='tab'
+    [% END %]
+    id='tab-app-body'>
     [% INCLUDE app_body.ttc %]
   </div>
 
-  <div class='tab' id='tab-backends'>
+  <div
+    [% IF tab == 'tab-backends' %]
+        class='active'
+    [% ELSE %]
+        class='tab'
+    [% END %]
+    id='tab-backends'>
     [% INCLUDE backends.ttc %]
   </div>
 
-  <div class='tab' id='tab-app-statements'>
+  <div
+    [% IF tab == 'tab-app-statements' %]
+        class='active'
+    [% ELSE %]
+        class='tab'
+    [% END %]
+    id='tab-app-statements'>
     [% INCLUDE app_statements.ttc %]
   </div>
 
-  <div class='tab' id='tab-app-config'>
+  <div
+    [% IF tab == 'tab-app-config' %]
+        class='active'
+    [% ELSE %]
+        class='tab'
+    [% END %]
+    id='tab-app-config'>
     [% INCLUDE app_config.ttc %]
   </div>
 
@@ -116,6 +154,15 @@ Current bigtop file
 <br style='clear: both' />
 </div>
 </form>
+
+<!-- Set the tab pane's scroll bar. -->
+<script type='text/javascript'>
+var tabs_div = document.getElementById( 'tabs' );
+tabs_div.scrollTop = [% view.data.tab_scroll %];
+document.body.scrollTop = [% view.data.body_scroll %]
+</script>
+
+<div id="debug_chatter"></div>
 
 </body>
 </html>

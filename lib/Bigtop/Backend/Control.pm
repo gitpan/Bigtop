@@ -17,14 +17,28 @@ BEGIN {
     Bigtop::Parser->add_valid_keywords(
         Bigtop::Keywords->get_docs_for(
             'controller',
-            qw( controls_table uses text_description )
+            qw(
+                controls_table
+                uses
+                text_description
+                location
+                rel_location
+            )
         )
     );
 
     Bigtop::Parser->add_valid_keywords(
         Bigtop::Keywords->get_docs_for(
             'app',
-            qw( authors contact_us email copyright_holder license_text uses )
+            qw(
+                authors
+                contact_us
+                email
+                copyright_holder
+                license_text
+                uses
+                location
+            )
         )
     );
 }
@@ -125,6 +139,11 @@ Example output:
 
     All rights reserved.
 
+=item location
+
+Base url for the application.  Normally, this applies only to httpd.conf
+and things like it.  We need it here to generate tests.
+
 =back
 
 =head1 KEYWORDS in controller blocks
@@ -151,12 +170,35 @@ This is a short phrase that describes the rows of the table.  It will
 usually become the return value of get_text_description (a class accessor).
 For example, Gantry's AutoCRUD uses this in user messages.
 
+=item rel_location
+
+The location (URL suffix) relative to the base location of the application,
+which will hit a given controller.  This keyword is primarily for httpd conf
+and the like, but we need it here to generate tests.
+
+=item location
+
+The location (URL) which will hit a given controller.  This keyword is
+primarily for httpd conf and the like, but we need it here to generate tests.
+
 =back
 
 Note that some other backend types also look for information in controller
 blocks.  Pay particular attention to HttpdConf backends.  They typically
 expect a location or rel_location keyword which becomes the Apache Location
 for the controller.
+
+=head1 METHODS for Control backends
+
+=over 4
+
+=item is_controller_keyword
+
+Parameters: a word which might be a controller keyword
+
+Returns: true if it is a controller keyword, false otherwise
+
+=back
 
 =head1 AUTHOR
 
