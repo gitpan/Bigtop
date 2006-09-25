@@ -32,7 +32,7 @@ my $build = $subclass->new(
     script_files        => [ glob( 'scripts/*' ) ],
     tentmaker_files     => [ glob( 'tenttemplates/*' ) ],
     test_files          => [
-#        't/dbixclass/*.t',
+#        't/tentmaker/*.t',
         't/*.t',
         't/tentmaker/*.t',
         't/init/*.t',
@@ -162,6 +162,7 @@ sub _custom_code {
             foreach my $file ( @{ $files } ) {
                 $self->copy_if_modified( $file, $path );
             }
+            print "installed tentmaker templates to $path\n";
         }
     };
 }

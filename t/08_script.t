@@ -114,6 +114,8 @@ app Address {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
+            extra_keys
+                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
     table birth_date {
@@ -157,6 +159,8 @@ app Address {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
+            extra_keys
+                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
 
@@ -228,6 +232,7 @@ app Address {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
+            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
     table birth_date {
@@ -271,6 +276,7 @@ app Address {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
+            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
     table anniversary_date {
@@ -314,6 +320,7 @@ app Address {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
+            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
 }

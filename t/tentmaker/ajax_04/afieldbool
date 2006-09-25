@@ -1,0 +1,101 @@
+config {
+    engine CGI;
+    template_engine TT;
+    Init Std {  }
+    SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
+}
+app Sample {
+    config {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        template_wrapper `genwrapper.tt` => no_accessor;
+    }
+    controller StreetAddress is AutoCRUD {
+        controls_table address_tbl;
+        rel_location street_address;
+        text_description `street address`;
+        page_link_label `Street Address`;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title `Street Address`;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+        }
+    }
+    table address_tbl {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is datetime;
+        }
+        field modified {
+            is datetime;
+        }
+        field name {
+            is varchar;
+            label Name;
+            html_form_type text;
+            html_form_optional 1;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is datetime;
+        }
+        field modified {
+            is datetime;
+        }
+        sequence addresses_seq;
+        foreign_display `%ident`;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+        }
+    }
+}

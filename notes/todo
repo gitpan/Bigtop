@@ -1,8 +1,12 @@
 ---
 
-Convert to new style Gantry::Conf.
+When fields are deleted, the users of them are not updated.  This should
+include:
+    controller main_listing cols
+    controller form fields or all_fields_but
+    table foreign_displays
 
-Generate the fieldset legend key in CRUD and AutoCRUD forms.
+Convert to new style Gantry::Conf.
 
 Add paging as a default behavior of main listings.
 
@@ -43,10 +47,6 @@ stored in the database.
 tentmaker should be taught to make and manage controller level config blocks.
 
 Factor gantry specific code out of the parser.
-
-When the tentmaker reloads, it would be nice if the focus could return to
-any create box next to a create button that triggered the action.
-    This is far less important now that you can create multiple fields at once.
 
 There's a java script error of uncertain vintage which gripes about:
         if ( ready == net.READY_STATE_COMPLETE ) {
@@ -163,6 +163,10 @@ controls_table statement?
 
 Not to be Done:
 
+    When the tentmaker reloads, it would be nice if the focus could return to
+    any create box next to a create button that triggered the action.
+        tentmaker no longer reloads
+
     We need more tests of how tentmaker builds and modifies the tree rather
     than just whether deparser can make the proper sense of the result.
         Now that deparser is complete, I don't think this is a real issue.
@@ -247,6 +251,8 @@ Not to be Done:
         This is just litter.
 
 Done:
+
+    Generate the fieldset legend key in CRUD and AutoCRUD forms.
 
     There should be a dirty flag in tentmaker, so it doesn't prompt on
     control-c if you just saved.

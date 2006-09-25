@@ -681,9 +681,10 @@ sub do_create_subblock {
     my $new_block_hashes;
 
     if ( defined $new_blocks[0] and defined $new_blocks[0]{__PARENT__} ) {
-        $new_block_hashes = $new_blocks[0]{__PARENT__}->walk_postorder(
+        my $parent_hashes = $new_blocks[0]{__PARENT__}->walk_postorder(
                 'app_block_hashes'
         );
+        $new_block_hashes = $parent_hashes->[0]{ body }{ fields };
     }
 
     foreach my $new_block ( @new_blocks ) {
@@ -699,7 +700,7 @@ sub do_create_subblock {
         );
 
         eval {
-            my $tmp_div .= $self->do_process( );
+            my $tmp_div = $self->do_process( );
 
             $tmp_div =~ s/^\s+//;
             $tmp_div =~ s/\s+\Z//m;
@@ -730,7 +731,8 @@ sub do_create_subblock {
         );
 
         eval {
-            $quick_table = $self->do_process( );
+            my $code = $self->can( 'do_process' );
+            $quick_table = $self->do_process();
 
             $quick_table =~ s/^\s+//;
             $quick_table =~ s/\s+\Z//m;

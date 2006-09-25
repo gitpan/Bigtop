@@ -1,6 +1,8 @@
 use strict;
 
 use Test::More tests => 4;
+use Test::Files;
+use File::Spec;
 
 my $skip_all = 0;
 
@@ -16,7 +18,13 @@ BEGIN {
 
 use File::Spec;
 
-use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=Default /;
+use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=TT /;
+
+my $tent_maker;
+my @maker_deparse;
+my $ajax_dir = File::Spec->catdir( qw( t tentmaker ajax_03 ) );
+my $expected_file;
+my $ajax;
 
 #--------------------------------------------------------------------
 # Sanity Check (repeated test from 02....t)
@@ -45,43 +53,28 @@ app Sample {
 }
 EO_sample_input
 
-my $tent_maker = Bigtop::TentMaker->new();
+$tent_maker = Bigtop::TentMaker->new();
+$tent_maker->uri( '/' );
+$tent_maker->root( 'tenttemplates' );
 
-my @maker_deparse = split /\n/, $tent_maker->deparsed();
+@maker_deparse = split /\n/, $tent_maker->deparsed();
 
 is_deeply( \@maker_deparse, \@correct_input, 'simple sample deparse' );
 
 #--------------------------------------------------------------------
-# Add config statement when there is no config block
+# Add config statement to existing config block
 #--------------------------------------------------------------------
 
-$tent_maker->do_update_app_conf_statement( 'new_conf_st', 'new_value' );
+$tent_maker->template_disable( 0 );
 
-@correct_input = split /\n/, <<'EO_brand_new_config';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-        new_conf_st new_value;
-    }
-}
-EO_brand_new_config
+$ajax = $tent_maker->do_update_app_conf_statement(
+            'new_conf_st',
+            'new_value'
+);
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+$expected_file = File::Spec->catfile( $ajax_dir, 'aconfst' );
 
-is_deeply( \@maker_deparse, \@correct_input, 'new conf block' );
+file_ok( $expected_file, $ajax, 'add conf statement' );
 
 #--------------------------------------------------------------------
 # Add config statement when config block exists, but is empty
@@ -91,45 +84,26 @@ my $empty_config = File::Spec->catfile( 't', 'tentmaker', 'sample' );
 
 Bigtop::TentMaker->take_performance_hit( $empty_config );
 
-$tent_maker->do_update_app_conf_statement( 'new_conf_st', 'value' );
+$tent_maker->template_disable( 0 );
 
-@correct_input = split /\n/, <<'EO_first_config_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-}
-app Sample {
-    config {
-        new_conf_st value;
-    }
-}
-EO_first_config_statement
+$ajax = $tent_maker->do_update_app_conf_statement( 'new_conf_st', 'value' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+$expected_file = File::Spec->catfile( $ajax_dir, 'aconfstempty' );
 
-is_deeply( \@maker_deparse, \@correct_input, 'first conf statement' );
+file_ok( $expected_file, $ajax, 'first conf statement' );
 
 #--------------------------------------------------------------------
 # Change statement value
 #--------------------------------------------------------------------
 
-$tent_maker->do_update_app_conf_statement( 'new_conf_st', 'other_value' );
+$tent_maker->template_disable( 0 );
 
-@correct_input = split /\n/, <<'EO_statement_change';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-}
-app Sample {
-    config {
-        new_conf_st other_value;
-    }
-}
-EO_statement_change
+$ajax = $tent_maker->do_update_app_conf_statement(
+            'new_conf_st',
+            'other_value'
+);
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+$expected_file = File::Spec->catfile( $ajax_dir, 'cconfstempty' );
 
-is_deeply( \@maker_deparse, \@correct_input, 'add backend keyword' );
+file_ok( $expected_file, $ajax, 'change first conf statement' );
 

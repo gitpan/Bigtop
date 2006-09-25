@@ -126,6 +126,8 @@ $foreign_text
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
+            extra_keys
+                legend => `\$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
 EO_MODEL

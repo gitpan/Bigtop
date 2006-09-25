@@ -1,5 +1,6 @@
 # This file is an example of a new language for expressing data driven
-# applications.
+# applications.  This file was probably written in late September or
+# early October 2005.
 
 table billing_invoice_tasks {
     field id {

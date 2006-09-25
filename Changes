@@ -1,5 +1,12 @@
 Revision history for Perl extension Bigtop.
 
+0.16
+    - Added a field set label to default form methods.
+    - Corrected tentmaker error which caused tentmaker to dump its Quick
+      Edit box when new fields were made.
+    - Converted many tentmaker tests to check the AJAX response rather
+      than just the deparsed tree.
+
 0.15 Thu Sep 21 12:29:17 CDT 2006
     Highlights:
         many-to-many support for DBIx::Class

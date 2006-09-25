@@ -3209,6 +3209,14 @@ sub new_block {
             keyword   => 'all_fields_but',
             new_value => 'id][created][modified',
         } );
+
+        $form_method->add_method_statement( {
+            keyword   => 'extra_keys',
+            new_value => {
+                keys   => 'legend',
+                values => q{$self->path_info =~ /edit/i ? 'Edit' : 'Add'}
+            }
+        } );
     }
 
     return $self;

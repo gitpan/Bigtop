@@ -1,7 +1,16 @@
 use strict;
 
 use Test::More tests => 29;
+use Test::Files;
 use Test::Warn;
+
+# This script uses Test::Files in an unconventional way.  Normally one
+# generates a file, then checks to see if that file was correctly built.
+# Here ajax returns from tentmaker arrives as strings which are compared
+# to expected files.
+# The main effect is upon test failure, the senses of Expected and Got
+# are REVERSED.  Expected is the ajax output which arrived from tentmaker,
+# while Got is the file on the disk of what it should have been.
 
 my $skip_all = 0;
 
@@ -17,90 +26,40 @@ BEGIN {
 
 use File::Spec;
 
-use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=Default /;
+use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=TT /;
 
 Bigtop::TentMaker->take_performance_hit();
 
+my $ajax_dir   = File::Spec->catdir( qw( t tentmaker ajax_04 ) );
+my $expected_file;
+my $ajax;
 my $tent_maker = Bigtop::TentMaker->new();
+$tent_maker->uri( '/' );
+$tent_maker->root( 'tenttemplates' );
 
 #--------------------------------------------------------------------
 # Add table
 #--------------------------------------------------------------------
 
-$tent_maker->do_create_app_block( 'table::street_address' );
+$ajax = $tent_maker->do_create_app_block( 'table::street_address' );
 
 # ident counting:
 #   1   table address
 #   2-6 its fields
 #   7   controller Address
 #   8-9 its methods
-my @correct_input = split /\n/, <<'EO_first_table';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    table street_address {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        foreign_display `%ident`;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table street_address;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_first_table
 
-my @maker_deparse = split /\n/, $tent_maker->deparsed();
+$expected_file = File::Spec->catfile( $ajax_dir, 'atable' );
 
-is_deeply( \@maker_deparse, \@correct_input, 'create empty table' );
+file_ok( $expected_file, $ajax, 'add table' );
 
 #--------------------------------------------------------------------
 # Add sequence
 #--------------------------------------------------------------------
 
-$tent_maker->do_create_app_block( 'sequence::addresses_seq' );
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_create_app_block( 'sequence::addresses_seq' );
 
 # ident numbering continues:
 #  10 addresses_seq
@@ -109,327 +68,35 @@ $tent_maker->do_create_app_block( 'sequence::addresses_seq' );
 #  17 controller Addresses
 #  18-19 its methods
 
-@correct_input = split /\n/, <<'EO_addresses';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    table street_address {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        foreign_display `%ident`;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table street_address;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_addresses
+$expected_file = File::Spec->catfile( $ajax_dir, 'cseq' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'create sequence in empty app' );
+file_ok( $expected_file, $ajax, 'create sequence' );
 
 #--------------------------------------------------------------------
 # Reorder blocks
 #--------------------------------------------------------------------
 
-$tent_maker->do_move_block_after( 'ident_1', 'ident_7' );
+$tent_maker->template_disable( 0 );
 
-@correct_input = split /\n/, <<'EO_reorder';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table street_address;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table street_address {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        foreign_display `%ident`;
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_reorder
+$ajax = $tent_maker->do_move_block_after( 'ident_1', 'ident_7' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+$expected_file = File::Spec->catfile( $ajax_dir, 'reorder' );
 
-is_deeply( \@maker_deparse, \@correct_input, 'reorder blocks' );
+file_ok( $expected_file, $ajax, 'reorder blocks' );
 
 #--------------------------------------------------------------------
 # Create first field
 #--------------------------------------------------------------------
 
-$tent_maker->do_create_subblock( 'table::ident_1::field::name' );
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_create_subblock( 'table::ident_1::field::name' );
 
 # this field becomes ident_20
 
-@correct_input = split /\n/, <<'EO_new_field';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table street_address;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table street_address {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        foreign_display `%ident`;
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_new_field
+$expected_file = File::Spec->catfile( $ajax_dir, 'cfield' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'create first field' );
+file_ok( $expected_file, $ajax, 'create field' );
 
 #--------------------------------------------------------------------
 # Create field in missing table
@@ -443,692 +110,87 @@ warning_like { $tent_maker->do_create_subblock( 'table::missing::field::id' ); }
 # Change table name
 #--------------------------------------------------------------------
 
-$tent_maker->do_update_name( 'table::ident_1', 'address_tbl' );
+$tent_maker->template_disable( 0 );
 
-@correct_input = split /\n/, <<'EO_change_table_name';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        foreign_display `%ident`;
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_change_table_name
+$ajax = $tent_maker->do_update_name( 'table::ident_1', 'address_tbl' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+$expected_file = File::Spec->catfile( $ajax_dir, 'ctablename' );
 
-is_deeply( \@maker_deparse, \@correct_input, 'change table name' );
+file_ok( $expected_file, $ajax, 'create table name' );
 
 #--------------------------------------------------------------------
 # Add statement to table.
 #--------------------------------------------------------------------
 
-$tent_maker->do_update_table_statement_text(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_table_statement_text(
     'ident_1::foreign_display', '%name'
 );
 
-@correct_input = split /\n/, <<'EO_add_table_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        foreign_display `%name`;
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_add_table_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'atablest' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'new table statement' );
+file_ok( $expected_file, $ajax, 'new table statement' );
 
 #--------------------------------------------------------------------
 # Remove statement from table.
 #--------------------------------------------------------------------
 
-$tent_maker->do_update_table_statement_text(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_table_statement_text(
     'ident_1::foreign_display', 'undefined'
 );
 
-@correct_input = split /\n/, <<'EO_remove_table_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_remove_table_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'remtablest' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'remove table statement' );
+file_ok( $expected_file, $ajax, 'remove table statement' );
 
 #--------------------------------------------------------------------
 # Add statement to new field.
 #--------------------------------------------------------------------
 
-$tent_maker->do_update_field_statement_bool(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_field_statement_bool(
     'ident_20::html_form_optional', 'true'
 );
 
-@correct_input = split /\n/, <<'EO_new_field_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_new_field_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'afieldbool' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'new is field statement' );
+file_ok( $expected_file, $ajax, 'new boolean statement' );
 
 #--------------------------------------------------------------------
 # Change field statement.
 #--------------------------------------------------------------------
-$tent_maker->do_update_field_statement_text(
+
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_field_statement_text(
     'ident_2::is', 'int8][primary_key][assign_by_sequence'
 );
 
-@correct_input = split /\n/, <<'EO_change_field_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_change_field_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'cis' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'change is field statement' );
+file_ok( $expected_file, $ajax, 'change is field statement' );
 
 #--------------------------------------------------------------------
 # Third field.
 #--------------------------------------------------------------------
 
 $tent_maker->do_create_subblock( 'table::ident_1::field::street' );
-$tent_maker->do_update_table_statement_text(
+
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_table_statement_text(
     'ident_1::foreign_display', '%street'
 );
 
 # this field is ident_21
 
-@correct_input = split /\n/, <<'EO_other_field_is_update';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-        field street {
-            is varchar;
-            label Street;
-            html_form_type text;
-        }
-        foreign_display `%street`;
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_other_field_is_update
+$expected_file = File::Spec->catfile( $ajax_dir, 'afieldcst' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply(
-    \@maker_deparse, \@correct_input, 'add second field and statement in it'
-);
+file_ok( $expected_file, $ajax, 'add second field and change statement' );
 
 #--------------------------------------------------------------------
 # Change field name
@@ -1138,126 +200,22 @@ is_deeply(
 $tent_maker->do_update_method_statement_text(
     'ident_8::cols', 'ident][street][description'
 );
+# pretend street was unpopular in the form
 $tent_maker->do_update_method_statement_text(
     'ident_9::all_fields_but', 'id][created][street][modified'
 );
+# ... or not  (This combination is no illegal.)
 $tent_maker->do_update_method_statement_text(
     'ident_9::fields', 'street'
 );
-$tent_maker->do_update_name( 'field::ident_21', 'street_address' );
 
-@correct_input = split /\n/, <<'EO_change_field_name';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, street_address, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, street_address, modified;
-            fields street_address;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-        field street_address {
-            is varchar;
-            label `Street Address`;
-            html_form_type text;
-        }
-        foreign_display `%street_address`;
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_change_field_name
+$tent_maker->template_disable( 0 );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+$ajax = $tent_maker->do_update_name( 'field::ident_21', 'street_address' );
 
-is_deeply( \@maker_deparse, \@correct_input, 'change field name' );
+$expected_file = File::Spec->catfile( $ajax_dir, 'cfieldname' );
+
+file_ok( $expected_file, $ajax, 'change field name' );
 
 # put things back the way they were
 $tent_maker->do_update_method_statement_text(
@@ -1278,241 +236,29 @@ $tent_maker->do_update_table_statement_text(
     'ident_1::foreign_display', 'undef'
 );
 
-$tent_maker->do_update_field_statement_text(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_field_statement_text(
     'ident_21::label', 'Their Street Address'
 );
 
-@correct_input = split /\n/, <<'EO_other_field_is_update';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-        field street_address {
-            is varchar;
-            label `Their Street Address`;
-            html_form_type text;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_other_field_is_update
+$expected_file = File::Spec->catfile( $ajax_dir, 'clabel' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply(
-    \@maker_deparse, \@correct_input, 'set multi-word label'
-);
+file_ok( $expected_file, $ajax, 'set multi-word label' );
 
 #--------------------------------------------------------------------
 # Remove field statement
 #--------------------------------------------------------------------
-$tent_maker->do_update_field_statement_text(
+
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_field_statement_text(
     'ident_21::label', 'undefined'
 );
 
-@correct_input = split /\n/, <<'EO_remove_field_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-        field street_address {
-            is varchar;
-            html_form_type text;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_remove_field_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'rlabel' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply(
-    \@maker_deparse, \@correct_input, 'removed field statement'
-);
+file_ok( $expected_file, $ajax, 'removed field statement' );
 
 #--------------------------------------------------------------------
 # Add field statement with pair values
@@ -1525,122 +271,15 @@ $tent_maker->params(
     }
 );
 
-$tent_maker->do_update_field_statement_pair(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_field_statement_pair(
     'ident_21::html_form_options'
 );
 
-@correct_input = split /\n/, <<'EO_pair_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-        field street_address {
-            is varchar;
-            html_form_type text;
-            html_form_options Happy => 1, Unhappy => 0;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_pair_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'apair' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply(
-    \@maker_deparse, \@correct_input, 'new pair statement'
-);
+file_ok( $expected_file, $ajax, 'new pair statement' );
 
 #--------------------------------------------------------------------
 # Change field statement with pair values
@@ -1653,122 +292,15 @@ $tent_maker->params(
     }
 );
 
-$tent_maker->do_update_field_statement_pair(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_field_statement_pair(
     'ident_21::html_form_options'
 );
 
-@correct_input = split /\n/, <<'EO_update_pair_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-        field street_address {
-            is varchar;
-            html_form_type text;
-            html_form_options Happy => 1, Neutral => 2, Unhappy => 0;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_update_pair_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'cpair' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply(
-    \@maker_deparse, \@correct_input, 'update pair statement'
-);
+file_ok( $expected_file, $ajax, 'update pair statement' );
 
 #--------------------------------------------------------------------
 # Remove field statement with pair values
@@ -1780,558 +312,65 @@ $tent_maker->params(
     }
 );
 
-$tent_maker->do_update_field_statement_pair(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_field_statement_pair(
     'ident_21::html_form_options'
 );
 
-@correct_input = split /\n/, <<'EO_remove_pair_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-        field street_address {
-            is varchar;
-            html_form_type text;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_remove_pair_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'rpair' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply(
-    \@maker_deparse, \@correct_input, 'remove pair statement'
-);
+file_ok( $expected_file, $ajax, 'remove pair statement' );
 
 #--------------------------------------------------------------------
 # Add a foreign key to table, change other table name
 #--------------------------------------------------------------------
-$tent_maker->do_update_field_statement_text(
+
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_field_statement_text(
     'ident_21::refers_to', 'addresses'
 );
 
-@correct_input = split /\n/, <<'EO_add_refers_to';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-        field street_address {
-            is varchar;
-            html_form_type text;
-            refers_to addresses;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_add_refers_to
+$expected_file = File::Spec->catfile( $ajax_dir, 'afieldtext' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply(
-    \@maker_deparse, \@correct_input, 'add refers_to statement'
-);
+file_ok( $expected_file, $ajax, 'add refers_to statement' );
 
 #--------------------------------------------------------------------
 # Change table name, check foreign key updates
 #--------------------------------------------------------------------
-$tent_maker->do_update_name( 'table::ident_11', 'new_table_name' );
 
-@correct_input = split /\n/, <<'EO_second_table_name_change';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-        field street_address {
-            is varchar;
-            html_form_type text;
-            refers_to new_table_name;
-        }
-    }
-    sequence addresses_seq {}
-    table new_table_name {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table new_table_name;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_second_table_name_change
+$tent_maker->template_disable( 0 );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+$ajax = $tent_maker->do_update_name( 'table::ident_11', 'new_table_name' );
 
-is_deeply(
-    \@maker_deparse, \@correct_input, 'refers_to updates on table name change'
-);
+$expected_file = File::Spec->catfile( $ajax_dir, 'ctablename2' );
+
+file_ok( $expected_file, $ajax, 'refers_to updates on table name change' );
 
 #--------------------------------------------------------------------
 # Delete field.
 #--------------------------------------------------------------------
 
-$tent_maker->do_delete_block( 'ident_21' );
+$tent_maker->template_disable( 0 );
 
-@correct_input = split /\n/, <<'EO_remove_pair_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    table address_tbl {
-        field id {
-            is int8, primary_key, assign_by_sequence;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        field name {
-            is varchar;
-            label Name;
-            html_form_type text;
-            html_form_optional 1;
-        }
-    }
-    sequence addresses_seq {}
-    table new_table_name {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table new_table_name;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_remove_pair_statement
+$ajax = $tent_maker->do_delete_block( 'ident_21' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+$expected_file = File::Spec->catfile( $ajax_dir, 'rfield' );
 
-is_deeply(
-    \@maker_deparse, \@correct_input, 'remove field'
-);
+file_ok( $expected_file, $ajax, 'remove field' );
 
 #--------------------------------------------------------------------
 # Delete table.
 #--------------------------------------------------------------------
 
-$tent_maker->do_delete_block( 'ident_1' );
+$tent_maker->template_disable( 0 );
 
-@correct_input = split /\n/, <<'EO_new_table_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-    SQL SQLite {  }
-    SQL Postgres {  }
-    SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
-    Control Gantry { dbix 1; }
-    Model GantryDBIxClass {  }
-    SiteLook GantryDefault {  }
-}
-app Sample {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller StreetAddress is AutoCRUD {
-        controls_table address_tbl;
-        rel_location street_address;
-        text_description `street address`;
-        page_link_label `Street Address`;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title `Street Address`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-    sequence addresses_seq {}
-    table new_table_name {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table new_table_name;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-        }
-    }
-}
-EO_new_table_statement
+$ajax = $tent_maker->do_delete_block( 'ident_1' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+$expected_file = File::Spec->catfile( $ajax_dir, 'rtable' );
 
-is_deeply( \@maker_deparse, \@correct_input, 'delete table' );
+file_ok( $expected_file, $ajax, 'remove table' );
 
 #--------------------------------------------------------------------
 #--------------------------------------------------------------------
@@ -2358,80 +397,41 @@ warning_like {
 # Change table statement value.
 #--------------------------------------------------------------------
 
-$tent_maker->do_update_table_statement_text(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_table_statement_text(
     'ident_23::sequence', 'new_seq'
 );
 
-@correct_input = split /\n/, <<'EO_updated_table_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-}
-app Addresses {
-    sequence address_seq {}
-    table address {
-        sequence new_seq;
-    }
-}
-EO_updated_table_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'scratchctst' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'update table statement' );
+file_ok( $expected_file, $ajax, 'update table statement' );
 
 #--------------------------------------------------------------------
 # Add table statment by changing its value.
 #--------------------------------------------------------------------
 
-$tent_maker->do_update_table_statement_text(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_table_statement_text(
     'ident_23::foreign_display', '%name'
 );
 
-@correct_input = split /\n/, <<'EO_new_table_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-}
-app Addresses {
-    sequence address_seq {}
-    table address {
-        sequence new_seq;
-        foreign_display `%name`;
-    }
-}
-EO_new_table_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'scratchctst2' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'new table statement' );
+file_ok( $expected_file, $ajax, 'new table statement' );
 
 #--------------------------------------------------------------------
 # Add join_table
 #--------------------------------------------------------------------
-$tent_maker->do_create_app_block( 'join_table::fox_sock' );
 
-@correct_input = split /\n/, <<'EO_new_table_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-}
-app Addresses {
-    sequence address_seq {}
-    table address {
-        sequence new_seq;
-        foreign_display `%name`;
-    }
-    join_table fox_sock {
-    }
-}
-EO_new_table_statement
+$tent_maker->template_disable( 0 );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+$ajax = $tent_maker->do_create_app_block( 'join_table::fox_sock' );
 
-is_deeply( \@maker_deparse, \@correct_input, 'new join_table' );
+$expected_file = File::Spec->catfile( $ajax_dir, 'scratchaj' );
+
+file_ok( $expected_file, $ajax, 'new join table' );
 
 #--------------------------------------------------------------------
 # Add join_table statment by changing its value.
@@ -2444,32 +444,15 @@ $tent_maker->params(
     }
 );
 
-$tent_maker->do_update_join_table_statement_pair(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_join_table_statement_pair(
     'ident_24::joins'
 );
 
+$expected_file = File::Spec->catfile( $ajax_dir, 'scratchajst' );
 
-@correct_input = split /\n/, <<'EO_new_join_table_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-}
-app Addresses {
-    sequence address_seq {}
-    table address {
-        sequence new_seq;
-        foreign_display `%name`;
-    }
-    join_table fox_sock {
-        joins fox => sock;
-    }
-}
-EO_new_join_table_statement
-
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'new join table statement' );
+file_ok( $expected_file, $ajax, 'new join table statement' );
 
 #--------------------------------------------------------------------
 # Change join_table statment value
@@ -2482,32 +465,15 @@ $tent_maker->params(
     }
 );
 
-$tent_maker->do_update_join_table_statement_pair(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_join_table_statement_pair(
     'ident_24::joins'
 );
 
+$expected_file = File::Spec->catfile( $ajax_dir, 'scratchcjst' );
 
-@correct_input = split /\n/, <<'EO_new_join_table_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-}
-app Addresses {
-    sequence address_seq {}
-    table address {
-        sequence new_seq;
-        foreign_display `%name`;
-    }
-    join_table fox_sock {
-        joins fox => stocking;
-    }
-}
-EO_new_join_table_statement
-
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'change join table statement' );
+file_ok( $expected_file, $ajax, 'change join table statement' );
 
 #--------------------------------------------------------------------
 # Check app_block_hash
@@ -2559,32 +525,15 @@ $tent_maker->params(
     }
 );
 
-$tent_maker->do_update_join_table_statement_pair(
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_join_table_statement_pair(
     'ident_24::joins'
 );
 
-@correct_input = split /\n/, <<'EO_new_join_table_statement';
-config {
-    engine CGI;
-    template_engine TT;
-    Init Std {  }
-}
-app Addresses {
-    sequence address_seq {}
-    table address {
-        sequence new_seq;
-        foreign_display `%name`;
-    }
-    join_table fox_sock {
-    }
-}
-EO_new_join_table_statement
+$expected_file = File::Spec->catfile( $ajax_dir, 'scratchrjst' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
-
-is_deeply( \@maker_deparse, \@correct_input, 'remove join table statement' );
-
-#use Data::Dumper; warn Dumper( \@maker_deparse );
+file_ok( $expected_file, $ajax, 'remove join table statement' );
 
 #use Data::Dumper; warn Dumper( $tent_maker->get_tree() );
 #exit;

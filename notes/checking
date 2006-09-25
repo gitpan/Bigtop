@@ -1,3 +1,4 @@
+# This was the original spec for Bigtop.  Some of it even looks familiar.
 app Apps::Checkbook {
     controller PayeePayor {
         controls_table payeepayor;

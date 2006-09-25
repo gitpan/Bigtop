@@ -1,0 +1,1308 @@
+<fieldset>
+    <legend>Field Quick Edit</legend>
+  <table class='bordered' >
+    <tr>
+        <th> Column Name </th>
+      
+      
+      
+      
+      
+      
+        <th>
+            SQL Type
+            <br />
+            
+            
+        </th>
+      
+      
+      
+      
+      
+        <th>
+            Label
+            <br />
+            
+            
+        </th>
+      
+      
+      
+      
+      
+        <th>
+            Optional
+            <br />
+            
+            
+                
+                
+                  
+                  
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+            <input type='checkbox'
+                   name='quick_all_html_form_optional_ident_1'
+                   
+                   onchange='javascript:quick_all(
+                        "ident_1",
+                        "html_form_optional",
+                        this.checked
+                   )'
+            />
+            
+        </th>
+      
+      
+      
+        <th>
+            Constraint
+            <br />
+            
+            
+        </th>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </tr >
+    
+      
+      
+      
+      
+    <tr id='quick_row::ident_3'>
+      <td>
+        <input type='text' id='field_name_quick::ident_3'
+               value='ident'
+               onblur='javascript:update_tree(
+                    "name",
+                    "field::ident_3",
+                    this.value
+               )'
+        />
+      </td>
+      
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_is_ident_3'
+               value='varchar'
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_3::is",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_label_ident_3'
+               value='Ident'
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_3::label",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_html_form_optional_ident_3'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_3::html_form_optional",
+                    this.checked,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_constraint_ident_3'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_3::html_form_constraint",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </tr>
+    
+      
+      
+    <tr id='quick_row::ident_4'>
+      <td>
+        <input type='text' id='field_name_quick::ident_4'
+               value='description'
+               onblur='javascript:update_tree(
+                    "name",
+                    "field::ident_4",
+                    this.value
+               )'
+        />
+      </td>
+      
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_is_ident_4'
+               value='varchar'
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_4::is",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_label_ident_4'
+               value='Description'
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_4::label",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_html_form_optional_ident_4'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_4::html_form_optional",
+                    this.checked,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_constraint_ident_4'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_4::html_form_constraint",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </tr>
+    
+      
+      
+    <tr id='quick_row::ident_5'>
+      <td>
+        <input type='text' id='field_name_quick::ident_5'
+               value='created'
+               onblur='javascript:update_tree(
+                    "name",
+                    "field::ident_5",
+                    this.value
+               )'
+        />
+      </td>
+      
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_is_ident_5'
+               value='datetime'
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_5::is",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_label_ident_5'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_5::label",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_html_form_optional_ident_5'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_5::html_form_optional",
+                    this.checked,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_constraint_ident_5'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_5::html_form_constraint",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </tr>
+    
+      
+      
+    <tr id='quick_row::ident_6'>
+      <td>
+        <input type='text' id='field_name_quick::ident_6'
+               value='modified'
+               onblur='javascript:update_tree(
+                    "name",
+                    "field::ident_6",
+                    this.value
+               )'
+        />
+      </td>
+      
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_is_ident_6'
+               value='datetime'
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_6::is",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_label_ident_6'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_6::label",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_html_form_optional_ident_6'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_6::html_form_optional",
+                    this.checked,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_constraint_ident_6'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_6::html_form_constraint",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </tr>
+    
+      
+      
+    <tr id='quick_row::ident_20'>
+      <td>
+        <input type='text' id='field_name_quick::ident_20'
+               value='name'
+               onblur='javascript:update_tree(
+                    "name",
+                    "field::ident_20",
+                    this.value
+               )'
+        />
+      </td>
+      
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_is_ident_20'
+               value='varchar'
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_20::is",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_label_ident_20'
+               value='Name'
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_20::label",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_html_form_optional_ident_20'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_20::html_form_optional",
+                    this.checked,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_constraint_ident_20'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_20::html_form_constraint",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </tr>
+    
+  </table>
+  <br />
+  <button type='button' > Apply Quick Edit </button>
+  </fieldset><!-- END QUICK TABLE --><div class='app_block_element'
+         id='div_ident_20'>
+        
+         <fieldset>
+         <legend>Field
+            ( <a href='javascript:show_or_hide( "hideable_ident_20" );'>edit</a> |
+<a href="#" name='field_block_delete::ident_20' onclick='javascript:delete_block( this )'>delete</a>
+       
+
+            )
+         </legend>
+         <table>
+            <tr>
+                <td> Name: </td>
+                <td>
+                  <input type='text'
+                         id='field_name::ident_20'
+                         value='name'
+                         onblur='javascript:update_tree(
+                             "name",
+                             "field::ident_20",
+                             this.value
+                         )'
+                  />
+                </td>
+            </tr>
+            <tr>
+                <td colspan='2'>
+                  
+<div id='hideable_ident_20'
+  
+    style='display: none'
+  
+>
+  
+                    
+  <table class='bordered'>
+    <tr>
+        <th> Keyword     </th>
+        <th> Value(s)    </th>
+        <th> Description </th>
+    </tr>
+  
+    
+    <tr>
+        <td> not_for </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    <select multiple
+            name='ident_20::not_for'            class='urgency_0'
+            onchange='javascript:
+              myvalue = walk_selections( this );
+              update_tree(
+                "field_statement_text",
+                "ident_20::not_for",
+                myvalue
+              )'
+    >
+    
+        <option value='SQL'        >
+        SQL
+        </option>
+    
+        <option value='Model'        >
+        Model
+        </option>
+    
+    </select>
+
+
+        </td>
+        <td>
+            Tell Model and/or SQL to skip this field
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> non_essential </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+<input type='checkbox'
+       value='ident_20::non_essential'
+       id='ident_20::non_essential'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_20::non_essential",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Tells modeler: retrieve only when accessed
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> is </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        
+            <input type='text'
+                name='ident_20::is'
+                value="varchar"
+                class='urgency_10'
+                onblur='javascript:update_multivalue(
+                    "field_statement_text",
+                    "ident_20::is",
+                    this,
+                    "full_edit"
+                )'
+            />
+            <br />
+        
+        
+        <input type='text'
+            name='ident_20::is'
+            value=''
+            class='urgency_10'
+            onblur='javascript:update_multivalue(
+                "field_statement_text",
+                "ident_20::is",
+                this,
+                "full_edit"
+            )'
+        />
+        <br />
+        
+        <input type='text'
+            name='ident_20::is'
+            value=''
+            class='urgency_10'
+            onblur='javascript:update_multivalue(
+                "field_statement_text",
+                "ident_20::is",
+                this,
+                "full_edit"
+            )'
+        />
+        
+        
+    
+
+
+        </td>
+        <td>
+            SQL type clause phrases, e.g.:<pre>int4
+varchar
+primary_key
+auto</pre>
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> refers_to </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_20::refers_to'
+            value=""
+            class='urgency_1'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_20::refers_to",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Table this foreign key points to
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> label </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_20::label'
+            value="Name"
+            class='urgency_5'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_20::label",
+                this.value,
+                "",
+                "full_edit"
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Default on-screen label for field
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_type </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    <select             id='ident_20::html_form_type'            class='urgency_5'
+            onchange='javascript:
+              myvalue = walk_selections( this );
+              update_tree(
+                "field_statement_text",
+                "ident_20::html_form_type",
+                myvalue
+              )'
+    >
+    
+        <option value='undefined'        >
+        -- Choose One --
+        </option>
+    
+        <option value='text'selected='selected'        >
+        text
+        </option>
+    
+        <option value='textarea'        >
+        textarea
+        </option>
+    
+        <option value='select'        >
+        select
+        </option>
+    
+    </select>
+
+
+        </td>
+        <td>
+            form type: text, textarea, select
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_optional </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+<input type='checkbox'
+       value='ident_20::html_form_optional'
+       id='ident_20::html_form_optional'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_20::html_form_optional",
+           this.checked,
+           "",
+           "full_edit"
+       )'
+/>
+
+
+        </td>
+        <td>
+            May user skip this field?
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_constraint </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_20::html_form_constraint'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_20::html_form_constraint",
+                this.value,
+                "",
+                "full_edit"
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Data::FormValidator constraint, e.g.: <pre>qr{^\d$}</pre>
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_cols </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_20::html_form_cols'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_20::html_form_cols",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            cols attribute of text area
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_rows </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_20::html_form_rows'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_20::html_form_rows",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            rows attribute of text area
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_display_size </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_20::html_form_display_size'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_20::html_form_display_size",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            width attribute if type is text
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_options </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+      <table id='ident_20::html_form_options_input_table'>
+        <tr><th> Label </th>
+            <th> Database Value
+                 
+            </th></tr>
+    
+    
+        <tr><td>
+                <input
+                    type='text'
+                    name='ident_20::html_form_options_key'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_20::html_form_options",
+                        1,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_20::html_form_options_value'
+                    class='urgency_'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_20::html_form_options",
+                        1,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            Choices for fields of type select [ignored for refers_to fields]
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> date_select_text </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_20::date_select_text'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_20::date_select_text",
+                this.value,
+                "",
+                "full_edit"
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            link text for date popup window
+        </td>
+    </tr>
+  
+  </table>
+
+                  
+</div>
+ </td>
+            </tr>
+         </table>
+         </fieldset>
+
+         <br style='clear: both' />
+
+    </div>config {
+    engine CGI;
+    template_engine TT;
+    Init Std {  }
+    SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    Control Gantry { dbix 1; }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
+}
+app Sample {
+    config {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        template_wrapper `genwrapper.tt` => no_accessor;
+    }
+    controller StreetAddress is AutoCRUD {
+        controls_table street_address;
+        rel_location street_address;
+        text_description `street address`;
+        page_link_label `Street Address`;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title `Street Address`;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+        }
+    }
+    table street_address {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is datetime;
+        }
+        field modified {
+            is datetime;
+        }
+        foreign_display `%ident`;
+        field name {
+            is varchar;
+            label Name;
+            html_form_type text;
+        }
+    }
+    sequence addresses_seq {}
+    table addresses {
+        field id {
+            is int4, primary_key, auto;
+        }
+        field ident {
+            is varchar;
+            label Ident;
+            html_form_type text;
+        }
+        field description {
+            is varchar;
+            label Description;
+            html_form_type text;
+        }
+        field created {
+            is datetime;
+        }
+        field modified {
+            is datetime;
+        }
+        sequence addresses_seq;
+        foreign_display `%ident`;
+    }
+    controller Addresses is AutoCRUD {
+        controls_table addresses;
+        rel_location addresses;
+        text_description addresses;
+        page_link_label Addresses;
+        method do_main is main_listing {
+            cols ident, description;
+            header_options Add;
+            row_options Edit, Delete;
+            title Addresses;
+        }
+        method form is AutoCRUD_form {
+            all_fields_but id, created, modified;
+            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+        }
+    }
+}

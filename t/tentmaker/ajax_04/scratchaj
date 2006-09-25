@@ -1,0 +1,209 @@
+
+
+
+  <div class='app_block_join_table'
+       id='div_ident_24'>
+      
+      
+        
+        <fieldset>
+        <legend>
+            Join Table 
+            ( <a href='javascript:show_or_hide( "hideable_ident_24" );'>
+                edit</a> |  
+<a href="#" name='app_body_delete::ident_24' onclick='javascript:delete_block( this )'>delete</a>
+       
+
+            )
+        </legend>
+        <table>
+              <tr>
+                <td> Name: </td>
+                <td>
+                    <input type='text'
+                           id='app_block::ident_24'
+                           value='fox_sock'
+                           onblur='javascript:update_tree(
+                               "name",
+                               "table::ident_24",
+                               this.value
+                           )'
+                    />
+                </td>
+            </tr>
+            <tr>
+                <td colspan='2'>
+                  
+<div id='hideable_ident_24'
+  
+    style='display: none'
+  
+>
+  
+                    
+
+  
+  <table class='bordered'>
+    <tr>
+        <th> Keyword     </th>
+        <th> Value(s)    </th>
+        <th> Description </th>
+    </tr>
+  
+    
+    <tr>
+        <td> joins </td>
+        <td>
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+      <table id='ident_24::joins_input_table'>
+        <tr><th> Table </th>
+            <th> Table
+                 
+            </th></tr>
+    
+    
+        <tr><td>
+                <input
+                    type='text'
+                    name='ident_24::joins_key'
+                    class='urgency_10'
+                    onblur='javascript:update_pairs(
+                        "join_table_statement_pair",
+                        "ident_24::joins",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_24::joins_value'
+                    class='urgency_'
+                    onblur='javascript:update_pairs(
+                        "join_table_statement_pair",
+                        "ident_24::joins",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            Which tables does this one join?
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> names </td>
+        <td>
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+      <table id='ident_24::names_input_table'>
+        <tr><th> Has Many Name </th>
+            <th> Has Many Name
+                 
+            </th></tr>
+    
+    
+        <tr><td>
+                <input
+                    type='text'
+                    name='ident_24::names_key'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "join_table_statement_pair",
+                        "ident_24::names",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_24::names_value'
+                    class='urgency_'
+                    onblur='javascript:update_pairs(
+                        "join_table_statement_pair",
+                        "ident_24::names",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            What should I call the has many?
+        </td>
+    </tr>
+  
+  </table>
+
+ 
+  <br />
+
+                  
+</div>
+ </td>
+            </tr>
+        </table>
+        </fieldset>
+
+      
+
+      <br style='clear: both' />
+
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+config {
+    engine CGI;
+    template_engine TT;
+    Init Std {  }
+}
+app Addresses {
+    sequence address_seq {}
+    table address {
+        sequence new_seq;
+        foreign_display `%name`;
+    }
+    join_table fox_sock {
+    }
+}
