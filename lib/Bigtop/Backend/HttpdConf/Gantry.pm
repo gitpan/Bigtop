@@ -1,6 +1,7 @@
 package Bigtop::Backend::HttpdConf::Gantry;
 
 use Bigtop::Backend::HttpdConf;
+use Bigtop;
 use Inline;
 
 sub what_do_you_make {
@@ -16,29 +17,22 @@ sub backend_block_keywords {
           descr   => 'Skip everything for this backend',
           type    => 'boolean' },
 
-        { keyword => 'instance',
-          label   => 'Conf Instance',
-          descr   => 'Your Gantry::Conf instance '
-                        .   '[use with skip_config; '
-                        .   'requires Conf General backend]',
-          type    => 'text' },
+        { keyword => 'gantry_conf',
+          label   => 'Use Gantry::Conf',
+          descr   => 'check here if you use the Conf Gantry backend',
+          type    => 'boolean', },
 
-        { keyword => 'conffile',
-          label   => 'Conf File',
-          descr   => 'Replacement for /etc/gantry.conf '
-                        .   '[use with Conf Instance]',
-          type    => 'text' },
+        { keyword => 'skip_config',
+          label   => 'Skip Config',
+          descr   => 'do not generate PerlSetVar statements ' .
+                     '[checking gantry_conf makes this true]',
+          type    => 'boolean' },
 
         { keyword => 'full_use',
           label   => 'Full Use Statement',
           descr   => 'use Gantry qw( -Engine=... ); [defaults to true]',
           type    => 'boolean',
           default => 'true'},
-
-        { keyword => 'skip_config',
-          label   => 'Skip Config',
-          descr   => 'do not generate PerlSetVar statements',
-          type    => 'boolean' },
 
         { keyword => 'gen_root',
           label   => 'Generate Root Path',
@@ -64,25 +58,32 @@ sub gen_HttpdConf {
 
     my $conf_file     = File::Spec->catfile( $docs_dir, 'httpd.conf' );
 
-    my $CONF;
-    unless ( open $CONF, '>', $conf_file ) {
-        warn "Couldn't write file $conf_file: $!\n";
-        return;
-    }
-
-    print $CONF $conf_content;
-
-    close $CONF or warn "Problem closing $conf_file: $!\n";
+    Bigtop::write_file( $conf_file, $conf_content );
 }
 
 sub output_httpd_conf {
     my $class = shift;
     my $tree  = shift;
 
-    my $skip_config = $tree->get_config->{HttpdConf}{skip_config} || 0;
-    my $instance    = $tree->get_config->{HttpdConf}{instance   } || 0;
-    my $conffile    = $tree->get_config->{HttpdConf}{conffile   } || 0;
-    my $gen_root    = $tree->get_config->{HttpdConf}{gen_root   } || 0;
+    my $config      = $tree->get_config->{HttpdConf};
+
+    my $skip_config = $config->{skip_config} || 0;
+    my $gen_root    = $config->{gen_root   } || 0;
+    my $gconf       = $config->{gantry_conf} || 0;
+
+    my $instance;
+    my $conffile;
+
+    if ( $gconf ) {
+        $skip_config      = 1;
+        my $gantry_config = $tree->get_config->{Conf};
+        $instance         = $gantry_config->{instance};
+        $conffile         = $gantry_config->{conffile};
+    }
+
+    # let old timers go as before
+    $instance    ||= $config->{instance   } || 0;
+    $conffile    ||= $config->{conffile   } || 0;
 
     # first find the base location
     my $location_output = $tree->walk_postorder( 'output_httpd_conf_loc' );
@@ -560,12 +561,18 @@ To keep podcoverage tests happy.
 Tells tentmaker that I understand these config section backend block keywords:
 
     no_gen
-    instance
-    conffile
     gen_root
     full_use
+    gantry_conf
     skip_config
     template
+
+    instance
+    conffile
+
+Note that instance and conffile are deprecated.  You should use the single
+gantry_conf instead.  Then the instance and conffile will be drawn from the
+Conf Gantry backend's config block.  This save duplicating that data.
 
 =item what_do_you_make
     

@@ -129,6 +129,7 @@ on them (designed to print on a few of pages, if you cut everthing above):
                                 a foreign key)
                 _constraint   - backquoted perl code which returns a regex
                                 which must match this field's value
+                _default_value- becomes the default if nothing else will do
             non_essential - excludes field from greedy retrieval, if true
 
         data      - a comma separated list of key value pairs which become

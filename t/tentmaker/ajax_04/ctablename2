@@ -32,7 +32,8 @@ app Sample {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
-            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+            extra_keys
+                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
     table address_tbl {
@@ -104,7 +105,8 @@ app Sample {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
-            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+            extra_keys
+                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
 }

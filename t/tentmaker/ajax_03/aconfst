@@ -14,6 +14,6 @@ app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
-        new_conf_st new_value;
+        new_conf_st new_value => no_accessor;
     }
 }

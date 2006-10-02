@@ -41,6 +41,7 @@ app Apps::Checkbook {
     }
     table other {
         field id       { is int4, primary_key; }
+        field bday     { is datetime; }
     }
     join_table payeeor_other {
         joins payeepayor => other;
@@ -64,7 +65,8 @@ INSERT INTO payeepayor ( id, name )
 
 CREATE INDEX payor_name_ind ON payeepayor ( name );
 CREATE TABLE other (
-    id int4 PRIMARY KEY
+    id int4 PRIMARY KEY,
+    bday TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE payeeor_other (

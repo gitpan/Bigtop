@@ -1,6 +1,7 @@
 package Bigtop::Backend::Conf::General;
 
 use Bigtop::Backend::Conf;
+use Bigtop;
 use Inline;
 
 sub what_do_you_make {
@@ -43,15 +44,7 @@ sub gen_Conf {
     $app_name        =~ s/::/-/g;
     my $conf_file    = File::Spec->catfile( $docs_dir, "$app_name.conf" );
 
-    my $CONF;
-    unless ( open $CONF, '>', $conf_file ) {
-        warn "Couldn't write file $conf_file: $!\n";
-        return;
-    }
-
-    print $CONF $conf_content;
-
-    close $CONF or warn "Problem closing $conf_file: $!\n";
+    Bigtop::write_file( $conf_file, $conf_content );
 }
 
 sub output_conf {
@@ -61,12 +54,14 @@ sub output_conf {
     my $gen_root = $tree->get_config->{Conf}{gen_root} || 0;
 
     # first find the base location
-    my $location_output = $tree->walk_postorder( 'output_base_location' );
+    my $location_output = $tree->walk_postorder(
+            'output_base_location_general'
+    );
     my $location        = $location_output->[0] || '';
 
     # now build the <GantryLocation> blocks
     my $locations        = $tree->walk_postorder(
-            'output_gantry_locations',
+            'output_gantry_locations_general',
             {
                 location => $location,
                 gen_root => $gen_root,
@@ -126,12 +121,11 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-# application
 package # application
     application;
 use strict; use warnings;
 
-sub output_gantry_locations {
+sub output_gantry_locations_general {
     my $self         = shift;
     my $child_output = shift;
     my $data         = shift;
@@ -139,13 +133,13 @@ sub output_gantry_locations {
     my $gen_root     = $data->{ gen_root };
 
     # handle set vars at root location
-    my $setvars  = $self->walk_postorder( 'output_setvars', $gen_root );
-    my $literals = $self->walk_postorder( 'output_top_level_literal' );
+    my $config   = $self->walk_postorder( 'output_conf_general', $gen_root );
+    my $literals = $self->walk_postorder( 'output_top_level_literal_general' );
 
     my $output   = Bigtop::Backend::Conf::General::all_locations(
         {
             root_loc     => $location,
-            configs      => $setvars,
+            configs      => $config,
             literals     => $literals,
             child_output => $child_output,
         }
@@ -159,7 +153,7 @@ package # app_statement
     app_statement;
 use strict; use warnings;
 
-sub output_base_location {
+sub output_base_location_general {
     my $self = shift;
 
     return unless $self->{__KEYWORD__} eq 'location';
@@ -174,7 +168,7 @@ package # app_config_block
     app_config_block;
 use strict; use warnings;
 
-sub output_setvars {
+sub output_conf_general {
     my $self         = shift;
     my $child_output = shift;
     my $gen_root     = shift;
@@ -209,7 +203,7 @@ package # app_config_statement
     app_config_statement;
 use strict; use warnings;
 
-sub output_setvars {
+sub output_conf_general {
     my $self         = shift;
 
     my $output_vals = $self->{__ARGS__}->get_args();
@@ -225,7 +219,7 @@ package # literal_block
     literal_block;
 use strict; use warnings;
 
-sub output_top_level_literal {
+sub output_top_level_literal_general {
     my $self = shift;
 
     return $self->make_output( 'Conf' );
@@ -236,7 +230,7 @@ package # controller_block
     controller_block;
 use strict; use warnings;
 
-sub output_gantry_locations {
+sub output_gantry_locations_general {
     my $self         = shift;
     my $child_output = shift;
     my $data         = shift;
@@ -253,10 +247,10 @@ sub output_gantry_locations {
     my $full_name    = $app->get_name() . '::' . $self->get_name();
 
     my $loc_configs
-            = $self->walk_postorder( 'output_gantry_location_configs' );
+            = $self->walk_postorder( 'output_glocation_configs_general' );
 
     my $literals     = $self->walk_postorder(
-                            'output_gantry_location_literal'
+                            'output_glocation_literal_general'
                        );
 
     my $child_location;
@@ -287,7 +281,7 @@ package # controller_statement
     controller_statement;
 use strict; use warnings;
 
-sub output_gantry_locations {
+sub output_gantry_locations_general {
     my $self         = shift;
 
     if ( $self->{__KEYWORD__} eq 'rel_location' ) {
@@ -306,7 +300,7 @@ package # controller_config_block
     controller_config_block;
 use strict; use warnings;
 
-sub output_gantry_location_configs {
+sub output_glocation_configs_general {
     my $self         = shift;
     my $child_output = shift;
 
@@ -332,7 +326,7 @@ package # controller_config_statement
     controller_config_statement;
 use strict; use warnings;
 
-sub output_gantry_location_configs {
+sub output_glocation_configs_general {
     my $self         = shift;
 
     my $output_vals = $self->{__ARGS__}->get_args();
@@ -348,7 +342,7 @@ package # controller_literal_block
     controller_literal_block;
 use strict; use warnings;
 
-sub output_gantry_location_literal {
+sub output_glocation_literal_general {
     my $self = shift;
 
     return $self->make_output( 'GantryLocation' );
@@ -382,8 +376,10 @@ of its virtual hosts.
 
 =head1 DESCRIPTION
 
-This is a Bigtop backend which generates gantry.conf files.  These
-have the format of Config::General.
+This is a Bigtop backend which generates conf files.  These
+have the format of Config::General.  While you could use these with
+Gantry::Conf the Conf Gantry backend provides more directl help for that
+case.
 
 =head1 KEYWORDS
 

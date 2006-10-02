@@ -481,6 +481,7 @@ BEGIN {
                 html_form_type
                 html_form_optional
                 html_form_constraint
+                html_form_default_value
                 html_form_cols
                 html_form_rows
                 html_form_display_size

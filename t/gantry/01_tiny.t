@@ -140,11 +140,14 @@ unlink $httpd_conf;
 
 $bigtop_string = << 'EO_no_set_vars';
 config {
+    Conf Gantry {
+        instance app;
+        conffile `/path/to/something`;
+    }
     HttpdConf Gantry {
         skip_config 1;
         full_use    0;
-        instance    app;
-        conffile    `/path/to/something`;
+        gantry_conf 1;
     }
 }
 app Apps::Checkbook {

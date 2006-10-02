@@ -278,6 +278,11 @@ subs provided by Data::FormValidator modules, you must add those modules
 to the uses list of the controller which will display the form for this
 table.
 
+=item Default
+
+A literal string (or number) to use as the form element's default value.  This
+will be overriden by prior user input or a good value from the database row.
+
 =back
 
 All of the things which appear in the quick edit table appear in the more
@@ -370,6 +375,13 @@ this one optional.
 =item html_form_constraint
 
 A Data::FormValidator constraint.  See its docs for all the clever options.
+
+=item html_form_default_value
+
+What the form.tt template will put in the HTML input element if it can't
+think of anything better to use.  Better values come from prior user
+input (when the user submitted a page with errors) or from the database
+row object (during edit only, obviously).
 
 =item html_form_cols and html_form_rows
 
@@ -510,9 +522,9 @@ table something like this:
 Most statements apply to either main_listings or forms, not to both.
 When you expand a method for editing, you see something like this:
 
-=for html <img src='http://www.usegantry.org/images/tenttut/mainlistedit.png' alt='editing a main listing' />
+=for html <img src='http://www.usegantry.org/images/tenttut/stubmethodedit.png' alt='editing a method' />
 
-    http://www.usegantry.org/images/tenttut/mainlistedit.png
+    http://www.usegantry.org/images/tenttut/stubmethodedit.png
 
 Note that there is a column labeled 'Applies to.'  It tells you which
 method types understand statement.  For stubs, only the first two are
@@ -657,8 +669,8 @@ these appear in the output in the order of their appearance.
 
 =item Conf
 
-Output goes into app.config at the top level.  This only applies when the
-Conf::General is in use.
+Output goes into app.config at the top level.  This only applies when
+Conf::Gantry or Conf::General is in use.
 
 =back
 
@@ -782,14 +794,10 @@ to regenerate the scripts.
 If you will deploy your CGI to a FastCGI environment instead of regular
 CGI, check this box.  The generated code in app.cgi will be slightly different.
 
-=item Conf Instance
+=item Use Gantry::Conf
 
-If you use Gantry::Conf, specify your instance here.
-
-=item Conf File
-
-If you use Gantry::Conf, but don't keep your master conf file in
-/etc/gantry.conf, put the path to your master conf file here.
+If you use Gantry::Conf, check this box.  Then remember to use the Conf
+Gantry backend (see below).
 
 =item Build Server
 
@@ -816,6 +824,9 @@ the CGI Gantry backend block in the config section and add a root
 parameter, with the proper path to the installed location of your templates,
 to the app level config block.
 
+Note that this will be ignored if you are using Gantry::Conf.  But the
+Conf Gantry backend has the same flag.
+
 =item Database Flexibility
 
 Selected by default.
@@ -831,11 +842,53 @@ Allows you to supply your own template, which controls the generation.
 
 =back
 
+=item Conf Gantry
+
+Produces docs/AppName.gantry.conf suitable for immediate use in the
+/etc/gantry.d directory of most Gantry::Conf deployments.  It uses all
+of the information from the app and controller level config blocks.
+The output is in Config::General format, which is wrapped in instance
+tags.
+
+=over 4
+
+=item No Gen
+
+Just as for CGI Gantry.
+
+=item Conf Instance
+
+The name of the conf instance for this app.  Gantry::Conf uses this to
+locate the config for the app.  It must be unique among instances on the
+box.
+
+=item Conf File
+
+By default Gantry::Conf expects to begin conf searching in /etc/gantry.conf.
+If your master conf file is somewhere else, supply the absolute path here.
+
+=item Generate Root Path
+
+Check this if you want the backend to manufacture a 'root' config variable
+giving it the value 'html.'  This works great for initial development with
+the stand alone server.  You put all your templates in the html subdirectory
+of the build directory, the backend tells TT where to find them.  But, the
+approach breaks down for deployment.  Then you need to uncheck this box,
+and add a proper root variable to the conf.  Its value should be an
+absolute path to the TT templates.
+
+=item Alternate Template
+
+Just as for CGI Gantry.
+
+=back
+
 =item Conf General
 
-This backend writes the information from your app and controller level
+This backend is not used much any more.  It is mostly surpassed by Conf Gantry.
+It writes the information from your app and controller level
 config blocks into docs/appname.conf in Config::General format, suitable
-for use with Gantry::Conf.
+for use with Gantry::Conf, if you are using ConfigureVia statements.
 
 =over 4
 
@@ -918,33 +971,26 @@ a virtual host for the app.
 
 =over 4
 
-=item No Gen
+=item Use Gantry::Conf
 
 Just as for CGI Gantry.
 
-=item Conf Instance
+=item Skip Config
 
-Just as for CGI Gantry.
-
-=item Conf File
-
-Just as for CGI Gantry.
+Does not write any PerlSetVars into the generated output.  This is useful
+if you use the old Conf General backend.  In that case, you need to add
+some literals to set the GantryConfInstance and GantryConfFile.  The
+later is only needed if your master conf file is not /etc/gantry.conf.
 
 =item Full Use Statement
 
 The flip side of the same statement in Control Gantry.  We religiously
 choose the one here when we are using or planning to use mod_perl.
 
-=item Skip Config
-
-Indicates that you don't want generated PerlSetVar statements for app level
-config statements.  Usually this means that you are using Gantry::Conf,
-in which case you should supply a Conf Instance and select the Conf
-General backend.
-
 =item Generate Root Path
 
-Just as for CGI Gantry.
+Just as for CGI Gantry.  Remember that if you choose to Use Gantry::Conf,
+you should use its 'Generate Root Path' instead of the one here.
 
 =item Alternate Template
 

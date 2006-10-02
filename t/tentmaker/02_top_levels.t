@@ -75,11 +75,11 @@ is_deeply( \@maker_deparse, \@correct_input, 'simple sample deparse' );
 # Change App Name
 #--------------------------------------------------------------------
 
-$ajax = $tent_maker->do_update_std( 'appname', 'MySample' );
+$ajax = $tent_maker->do_update_std( 'appname', 'MySample' ) . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cappname' );
 
-file_ok( $expected_file, $ajax, 'change app name' );
+file_ok( $expected_file, $ajax, 'change app name (cappname)' );
 
 #--------------------------------------------------------------------
 # Add backend keyword
@@ -89,11 +89,11 @@ $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_conf_text(
     'SiteLook::GantryDefault::gantry_wrapper', '/path/to/gantry/root'
-);
+) . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'abackword' );
 
-file_ok( $expected_file, $ajax, 'add backend keyword' );
+file_ok( $expected_file, $ajax, 'add backend keyword (abackword)' );
 
 #--------------------------------------------------------------------
 # Change backend keyword
@@ -103,11 +103,11 @@ $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_conf_text(
     'SiteLook::GantryDefault::gantry_wrapper', 'meaning_less_value'
-);
+) . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cbackword' );
 
-file_ok( $expected_file, $ajax, 'change backend keyword' );
+file_ok( $expected_file, $ajax, 'change backend keyword (cbackword)' );
 
 #--------------------------------------------------------------------
 # Add backend bool
@@ -118,11 +118,11 @@ $tent_maker->template_disable( 0 );
 $ajax = $tent_maker->do_update_conf_bool(
             'SiteLook::GantryDefault::no_gen',
             'true'
-);
+) . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'abackbool' );
 
-file_ok( $expected_file, $ajax, 'add backend boolean' );
+file_ok( $expected_file, $ajax, 'add backend boolean (abackbool)' );
 
 #--------------------------------------------------------------------
 # Turn off backend bool
@@ -133,11 +133,11 @@ $tent_maker->template_disable( 0 );
 $ajax = $tent_maker->do_update_conf_bool(
             'SiteLook::GantryDefault::no_gen',
             'false'
-);
+) . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cbackbool' );
 
-file_ok( $expected_file, $ajax, 'change backend boolean' );
+file_ok( $expected_file, $ajax, 'change backend boolean (cbackbool)' );
 
 #--------------------------------------------------------------------
 # Add base location statement
@@ -145,9 +145,10 @@ file_ok( $expected_file, $ajax, 'change backend boolean' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_app_statement_text( 'location', '/site' );
+$ajax = $tent_maker->do_update_app_statement_text( 'location', '/site' )
+      . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'aappst' );
 
-file_ok( $expected_file, $ajax, 'add app statement' );
+file_ok( $expected_file, $ajax, 'add app statement (aappst)' );
 

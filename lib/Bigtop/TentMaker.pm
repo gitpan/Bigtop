@@ -1188,17 +1188,19 @@ sub do_update_app_conf_statement {
     my $keyword = shift;
     my $value   = unescape( shift );
     my $checked = shift;
+    my $accessor;
 
     if ( $value eq 'undefined' or $value eq 'undef' ) {
         $value = '';
     }
 
+    # if box is checked, don't make an accessor
     if ( defined $checked ) {
-        $checked = ( $checked eq 'undefined' ) ? undef :
-                   ( $checked eq 'false'     ) ? 0     : 1;
+        $accessor = ( $checked eq 'undefined' ) ? undef :
+                    ( $checked eq 'false'     ) ? 0     : 1;
     }
 
-    $tree->get_app->set_config_statement( $keyword, $value, $checked );
+    $tree->get_app->set_config_statement( $keyword, $value, $accessor );
 
     $self->complete_update();
 }

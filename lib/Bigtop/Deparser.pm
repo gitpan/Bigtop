@@ -158,14 +158,24 @@ sub output_app_body {
 
     my @retval;
 
+    my $indent = ' ' x 8;
+
     if ( $self->{__TYPE__} eq 'field' ) {
-        push @retval, "        field $self->{__NAME__} {";
+        push @retval, "${indent}field $self->{__NAME__} {";
         push @retval, @{ $child_output };
-        push @retval, '        }';
+        push @retval, "${indent}}";
     }
     else {
-        my $args = $self->{__ARGS__}->get_quoted_args;
-        push @retval, "        $self->{__TYPE__} $args;";
+        if ( $self->{__TYPE__} eq 'data' ) {
+            push @retval, "${indent}data";
+            my $args = $self->{__ARGS__}->get_quoted_args;
+            $args    =~ s/, /,\n${indent}    /g;
+            push @retval, "${indent}    $args;";
+        }
+        else {
+            my $args = $self->{__ARGS__}->get_quoted_args;
+            push @retval, "${indent}$self->{__TYPE__} $args;";
+        }
     }
 
     return \@retval;
@@ -179,8 +189,24 @@ sub output_app_body {
     my $self         = shift;
     my $child_output = shift;
 
-    my $retval = ' ' x 12 . "$self->{__KEYWORD__} ";
-    $retval   .= join( '', @{ $child_output } ) . ';';
+    my $indent = ' ' x 12;
+
+    my $retval;
+    if ( $self->{__KEYWORD__} eq 'html_form_options' ) {
+        my @retval;
+
+        push @retval, "${indent}html_form_options";
+
+        $child_output->[0] =~ s/, /,\n${indent}    /g;
+
+        push @retval, "${indent}    $child_output->[0];";
+
+        $retval = join "\n", @retval;
+    }
+    else {
+        $retval = "${indent}$self->{__KEYWORD__} ";
+        $retval   .= join( '', @{ $child_output } ) . ';';
+    }
 
     return [ $retval ];
 }
@@ -280,8 +306,25 @@ use strict; use warnings;
 sub output_app_body {
     my $self          = shift;
 
-    my $retval  = "            $self->{__KEYWORD__} ";
-    $retval    .= $self->{__ARGS__}->get_quoted_args . ';';
+    my $indent = ' ' x 12;
+
+    my $retval;
+    if ( $self->{__KEYWORD__} eq 'extra_keys' ) {
+        my @retval;
+
+        push @retval, "${indent}extra_keys";
+
+        my $args = $self->{__ARGS__}->get_quoted_args;
+        $args    =~ s/, /,\n${indent}    /g;
+
+        push @retval, "${indent}    $args;";
+
+        $retval  = join "\n", @retval;
+    }
+    else {
+        $retval  = "            $self->{__KEYWORD__} ";
+        $retval    .= $self->{__ARGS__}->get_quoted_args . ';';
+    }
 
     return [ $retval ];
 }

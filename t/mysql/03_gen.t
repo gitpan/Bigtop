@@ -6,10 +6,18 @@ use Test::Files;
 
 use Bigtop::Parser;
 
+use lib 't';
+use Purge;
+
 my $dir         = File::Spec->catdir( qw( t mysql ) );
 my $sql_file    = File::Spec->catfile(
     $dir, 'Apps-Checkbook', 'docs', 'schema.mysql'
 );
+
+my $actual_dir  = File::Spec->catdir( $dir, 'Apps-Checkbook' );
+
+Purge::real_purge_dir( $actual_dir );
+
 my $bigtop_string = << "EO_Bigtop_STRING";
 config {
     base_dir   `$dir`;
@@ -69,10 +77,5 @@ CREATE TABLE payeeor_other (
 EO_CORRECT_SQL
 
 file_ok( $sql_file, $correct_sql, 'tiny gened sql file' );
-
-my $actual_dir         = File::Spec->catdir( $dir, 'Apps-Checkbook' );
-
-use lib 't';
-use Purge;
 
 Purge::real_purge_dir( $actual_dir );

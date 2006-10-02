@@ -286,11 +286,14 @@ $bigtop_string = << 'EO_gantry_conf';
 config {
     engine          CGI;
     template_engine TT;
-    CGI Gantry {
+    Conf Gantry {
         instance    tinker;
         conffile    `/path/to/something`;
+    }
+    CGI Gantry {
         with_server 1;
         server_port 8192;
+        gantry_conf 1;
     }
 }
 app Apps::Checkbook {

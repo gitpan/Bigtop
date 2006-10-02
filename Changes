@@ -1,11 +1,23 @@
 Revision history for Perl extension Bigtop.
 
-0.16
+0.17 Mon Oct  2 09:50:12 CDT 2006
+    - There is a new Backend: Conf Gantry.  It makes files ready for
+      immediate deployment to /etc/gantry.d when /etc/gantry.conf has an
+      include /etc/gantry.d/*.conf.
+    - Corrected tentmaker error which did not allow proper creation of new
+      config variables.
+    - Added html_form_default_value as a legal field statement.  Gantry form
+      templates already understood it.  It's now in tentmaker's quick edit.
+    - Several statements now pretty print (a little bit) on deparse.
+    - Improved maintainability of AJAX expected response test files.
+    - Corrected Postgres SQL backend's datetime type.
+
+0.16 Mon Sep 25 09:57 CDT 2006
     - Added a field set label to default form methods.
     - Corrected tentmaker error which caused tentmaker to dump its Quick
       Edit box when new fields were made.
     - Converted many tentmaker tests to check the AJAX response rather
-      than just the deparsed tree.
+      than just the deparsed tree, this would have caught the previous error.
 
 0.15 Thu Sep 21 12:29:17 CDT 2006
     Highlights:

@@ -195,7 +195,7 @@ my %doc_for = (
         no_gen => {
             keyword  => 'no_gen',
             label    => 'No Gen',
-            descr    => "Skip this method completely",
+            descr    => "Skip this field completely",
             type     => 'boolean',
         },
         not_for => {
@@ -270,6 +270,14 @@ my %doc_for = (
             type     => 'text',
             multiple => 0,
             quick_label => 'Constraint',
+        },
+        html_form_default_value => {
+            keyword     => 'html_form_default_value',
+            label       => 'Default Value',
+            descr       => 'Form element value when no other is available',
+            type        => 'text',
+            multiple    => 0,
+            quick_label => 'Default',
         },
         html_form_cols => {
             keyword    => 'html_form_cols',

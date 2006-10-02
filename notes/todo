@@ -1,4 +1,32 @@
+When you change engines in tentmaker, should it also magically change
+backends?  CGI->mod_per would unclick CGI backend and click corresponding
+HttpdConf backend and vice versa.  If CGI backend had generate root
+checked, add a root var to conf with build dir html as an absolute path.
+In the other direction, do the opposite and always check generate root.
+Generate root should be superceded by an genuine root conf var?
+
+--create does not try to make the sqlite database (if you are using
+that backend) nor does it give advice on how to start the app.
+
+There are occasional javascript errors.  I think these happen when an update
+could have caused a cascade, but did not.  Usually these are todo has no
+props.
+
+Add paging as the default behavior of main listings.
+    This is a Gantry change to: Gantry::Utils::DBIxClass
+
+Could column name changes lead to the immediate construction of an alter table?
+    I think tentmaker should print the alter table statements to stdout,
+    but the backend should also append them to a log in the docs dir.
+    You'd have to read the log carefully, but the commands would be there.
+These would just be side effects of renaming or adding things in tentmaker.
+
+When a table name changes, spew table alterations as for field name changes.
+
 ---
+
+Continue work on improving the AST.  Read the Modules doc and the
+gantry book chapters about the tree, concentrate on things marked awkward.
 
 When fields are deleted, the users of them are not updated.  This should
 include:
@@ -6,33 +34,11 @@ include:
     controller form fields or all_fields_but
     table foreign_displays
 
-Convert to new style Gantry::Conf.
-
-Add paging as a default behavior of main listings.
-
 Find a way to wedge bigtop syntax in the tent maker reference chapter in
-the gantry book.
+the gantry book.  Or have a chapter on it.
 
 Should a table name change cause a cascade of field name changes for
 all the foreign keys which point to it?
-
-Could column name changes lead to the immediate construction of an alter table?
-    I think tentmaker should print the alter table statements to stdout,
-    but the backend should also append them to a log in the docs dir.
-    You'd have to read the log carefully, but the commands would be there.
-These would just be side effects of renaming things in tentmaker.
-
-When a table name changes, spew table alterations as for field name changes.
-
-Make sure all AST packages are hidden from PAUSE indexer (including
-Parser, Deparser, and all the backends).
-    I tried.  We'll see.  I think this failed before because the Deparser
-    wasn't participating.  I was more careful this time around.
-
-app.server is always calling the db app.db, even when the config says
-something else.
-    For now, you can use flex_db and provide -n on the command line:
-        ./app.server -n dbname
 
 Table field blocks should allow accessor which tells the ORM to use that
 name for the accessor.
@@ -48,24 +54,16 @@ tentmaker should be taught to make and manage controller level config blocks.
 
 Factor gantry specific code out of the parser.
 
-There's a java script error of uncertain vintage which gripes about:
-        if ( ready == net.READY_STATE_COMPLETE ) {
-in the onReadyState function of the net.ContentLoader.prototype
-which compains:
-    Error: net is not defined Line: 321
-I'm not sure exactly how it could see that line if net weren't defined.
-It seems to occur on page reloads.
-    This seemed to be only in one session, but I'm not sure.
-
 Skip Config in HttpdConf Gantry is a duplication of supplying a Conf
 Instance.
     This is not quite true, since you could be using Frank's approach
     without Gantry::Conf, but then there should be a flag for it too.
 
-tentmaker does not support controller level literals (GantryLocation of HttpdConf).
+tentmaker does not support controller level literals (GantryLocation of
+HttpdConf).
 Worse, deparser ignores them.
-    Deparser knows about them now, but there is still no way to make them at
-    the controller level in tentmaker.
+    Deparser knows about them now, but there is still no way to make them
+    in tentmaker.
 
 When a join table is created in tentmaker, the name boxes are not both
 red.  It works fine if the table exists or is created during start up.
@@ -78,15 +76,9 @@ Some change to make_output might be in order.  Or the backends literal
 block could be asked to add the gaurd.
 When you fix this, change Bigtop::Docs::Syntax to reflect it.
 
-bigtop --create should object loudly if the directory looks lived in.
-
 Should bigtop --create default to all build?  Should it always default to all?
 
 Allow rearrangements of app body blocks via ajax drag and drop.
-
-Comments could be incorporated into the grammar.  They could become
-statements or blocks which could then survive tentmaker deletions of
-neighboring blocks.  Or I could just stop worrying about them.
 
 When values are entered in tentmaker input boxes which are currently
 triggered by buttons, add respect for carriage returns.
@@ -151,9 +143,8 @@ controls_table statement?
     Reorganize the sql_block subrules so they are more like the control_block
     ones.  Namely, stop blessing different kinds of things into the same
     class, then if testing on attributes to tell them apart.
-        This really only applies to table_element_blocks and the only
-        test I found questionable today is a test of leaf vs. interior node.
-        Priority: low to not to be done
+        This now only applies to table_element_blocks and the only
+        test I find questionable is a test of leaf vs. interior node.
 
     Make the grammar report better errors.
         Place holder for problems found in the future.
@@ -162,6 +153,15 @@ controls_table statement?
         Place holder as a reminder.
 
 Not to be Done:
+
+    app.server is always calling the db app.db, even when the config says
+    something else.
+        You can use flex_db and provide -n on the command line:
+            ./app.server -n dbname
+
+    Comments could be incorporated into the grammar.  They could become
+    statements or blocks which could then survive tentmaker deletions of
+    neighboring blocks.  Or I could just stop worrying about them.
 
     When the tentmaker reloads, it would be nice if the focus could return to
     any create box next to a create button that triggered the action.
@@ -252,6 +252,24 @@ Not to be Done:
 
 Done:
 
+    Make the deparser a little kinder to data statements and others likely to
+    wrap.
+
+    tentmaker does not display a field keyword for html_form_default_value.
+        It was not registered as a legal field keyword.  That has been fixed.
+
+    Convert to new style Gantry::Conf.
+        there is a new Conf Gantry backend, CGI Gantry and HttpdConf Gantry
+        were modified to work and play well with it.
+
+    bigtop --create should object loudly if the directory looks lived in.
+
+    Make sure all AST packages are hidden from PAUSE indexer (including
+    Parser, Deparser, and all the backends).
+        I tried.  We'll see.  I think this failed before because the Deparser
+        wasn't participating.  I was more careful this time around.
+        It was finally notes/Postgres.pm, which is no more.
+
     Generate the fieldset legend key in CRUD and AutoCRUD forms.
 
     There should be a dirty flag in tentmaker, so it doesn't prompt on
@@ -261,6 +279,16 @@ Done:
         controller_config_block
         controller_config_statement
     and thus it cannot handle controller level config blocks.
+
+    Apparently mysql does not like varchar, so we need to map that to something
+    reasonable, like varchar(150).
+
+    If there is an old sqlite, bigtop is trying to create the database with
+    it and failing to note the errors.
+        Fixed.
+
+    The bigtop script in --new mode should provide details on how to get
+    the app running.
 
     Tests should probably purge their play dir at the top and the bottom.
 

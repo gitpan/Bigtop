@@ -674,6 +674,15 @@ value the user supplies will have to match this.
 
 These are passed to Data::FormValidator, see its docs for full details.
 
+=item html_form_default_value
+
+(registered by Bigtop::Backend::Control::Gantry)
+
+A literal value to plug into an HTML form element when the user has not
+supplied one and the database row is missing or has no value for the field.
+
+    html_form_default_value KS;
+
 =item html_form_display_size
 
 (registered by Bigtop::Backend::Control::Gantry)
@@ -1176,18 +1185,57 @@ The default server binds to port 8080, to change that, add server_port:
     CGI Gantry { with_server 1;
                  server_port 8192; }
 
-If you want to use Gantry::Conf, you should use the instance statement:
+If you want to use Gantry::Conf, you should use the gantry_conf statement:
 
-    CGI Gantry { instance name; }
+    CGI Gantry { gantry_conf 1; }
 
-This will put the single hash key GantryConfInstance into the CGI engine
-object.  You should also use the Conf General backend to make the config
-file for Gantry::Conf to use.  If you don't use /etc/gantry.conf for
-your master conf file, add the conffile statement:
+This will put GantryConfInstance -- and GantryConfFile if needed -- into
+the CGI engine object.  The values for these will be drawn from the the
+Conf Gantry backend's config block.
 
-    CGI Gantry { instance name; conffile `/path/to/your/master.conf`; }
+Note that you may still use instance and conffile keywords, but they
+are deprecated.
+
+=item Conf Gantry
+
+Makes docs/appname.gantry.conf suitable for immediate use in /etc/gantry.d.
+That is, it wraps Config::General output in an <instance></instance> tag
+pair, making a stand alone Gantry::Conf file.  Normal Gantry::Conf master
+files have an C<include /etc/gantry.d/*.conf> statement, which brings
+in everything ending in conf from /etc/gantry.d.
+
+You need to specify an instance to use this backend:
+
+    Conf Gantry { instance your_instance; }
+
+If your conf is not drawn from /etc/gantry.conf, you need to add the
+master file name:
+
+    Conf Gantry {
+        instance your_instance;
+        conffile `/path/to/your/master.conf`;
+    }
+
+If you want a default TT root path add gen_root:
+
+    Conf Gantry {
+        instance your_instance;
+        gen_root 1;
+    }
+
+This creates a config variable called roots and gives it the value 'html.'
+That probably won't work in production, but is highly useful for initial
+development.  The path needs to point to your app specific templates,
+so don't use this unless you are using the stand alone server and keep your
+templates in the html subdirectory of the build directory.  In other cases,
+you need to put a proper root config variable in the app's config block
+with an absolute path to the templates.
 
 =item Conf General
+
+This backend is not very useful now that Conf Gantry does a better job
+of integrating with Gantry::Conf.  But, you may still want it if your
+conf scheme is different.
 
 Puts all app and controller level config statements into a Config::General
 formatted file (Appname.conf in the docs subdirectory of the build directory).
@@ -1219,10 +1267,17 @@ since dbic is now our preferred ORM.
 
 =item HttpdConf Gantry
 
-You may turn off PerlSetVar generation for app and controller level config
-block statements by setting skip_config to a true value:
+If you are using Gantry::Conf, set the gantry_conf statement:
+
+    HttpdConf Gantry { gantry_conf 1; }
+
+Alternatively, if you are usuing the Conf General backend, you may want
+to turn off PerlSetVar generation for app and controller level config
+block statements by setting skip_config:
 
     HttpdConf Gantry { skip_config 1; }
+
+Note that gantry_conf implies skip_config.
 
 If you do not want the Engine and TemplateEngine import values in your use
 App::Name statement in the Perl block of the generated httpd.conf, say

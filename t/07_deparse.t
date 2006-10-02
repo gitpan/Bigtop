@@ -55,9 +55,12 @@ app Name {
             is varchar;
             html_form_optional 1;
         }
+        data
+            last => Jones,
+            first => Pam;
     }
-    # - Begin Controllers -
     controller Names is AutoCRUD {
+    # - Begin Controllers -
         controls_table names;
         rel_location names;
         method do_main is main_listing {
@@ -69,7 +72,8 @@ app Name {
         method _form is AutoCRUD_form {
             form_name address;
             all_fields_but id;
-            extra_keys legend => `\$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+            extra_keys
+                legend => `\$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
         literal Location
             `    require valid-user`;
@@ -77,8 +81,8 @@ app Name {
             special_to_me 5 => no_accessor;
         }
     }
-    # This one moved because extra_keys was reset
     controller Nothing {
+    # This one moved because extra_keys was reset
         method do_nothing is stub {
         }
     }
@@ -120,6 +124,9 @@ app Name {
             is varchar;
             html_form_optional 1;
         }
+        data
+            last => Jones,
+            first => Pam;
     }
     # - Begin Controllers -
     controller Names is AutoCRUD {

@@ -24,17 +24,10 @@ sub backend_block_keywords {
           descr   => 'Make the script for use with FastCGI',
           type    => 'boolean' },
 
-        { keyword => 'instance',
-          label   => 'Conf Instance',
-          descr   => 'Your Gantry::Conf instance '
-                        .   '[requires Conf General backend]',
-          type    => 'text' },
-
-        { keyword => 'conffile',
-          label   => 'Conf File',
-          descr   => 'Replacement for /etc/gantry.conf '
-                        .   '[use with Conf Instance]',
-          type    => 'text' },
+        { keyword => 'gantry_conf',
+          label   => 'Use Gantry::Conf',
+          descr   => 'check here if you use the Conf Gantry backend',
+          type    => 'boolean', },
 
         { keyword => 'with_server',
           label   => 'Build Server',
@@ -340,16 +333,30 @@ sub output_cgi {
 
     my $literal   = join "\n", @{ $literals };
 
-    my $backend_block = $tree->get_config->{CGI};
-    if ( defined $backend_block->{instance} ) {
+    my $backend_block     = $tree->get_config->{CGI};
+
+    my $gconf = $backend_block->{ gantry_conf };
+    my $instance;
+    my $conffile;
+
+    if ( $gconf ) {
+        my $gantry_conf_block = $tree->get_config->{ Conf };
+        $instance             = $gantry_conf_block->{ instance };
+        $conffile             = $gantry_conf_block->{ conffile };
+    }
+
+    $instance ||= $backend_block->{ instance };
+    $conffile ||= $backend_block->{ conffile };
+
+    if ( $instance ) {
         my $conffile_text = '';
-        if ( $backend_block->{conffile} ) {
+        if ( $conffile ) {
             $conffile_text = ' ' x 8
-                . "GantryConfFile => '$backend_block->{ conffile }',";
+                . "GantryConfFile => '$conffile',";
         }
         $config = 
 "    config => {
-        GantryConfInstance => '$backend_block->{ instance }',
+        GantryConfInstance => '$instance',
 $conffile_text
     },
 ";
@@ -633,13 +640,19 @@ Tells tentmaker that I understand these config section backend block keywords:
 
         no_gen
         fast_cgi
-        instance
-        conffile
         with_server
         server_port
         gen_root
         flex_db
+        gantry_conf
         template
+
+        instance
+        conffile
+
+Note that instance and conffile are now deprecated in favor of setting
+gantry_conf to true, which draws the values from the Conf Gantry backend.
+You may still use them if you like, but that may change in the future.
 
 =item what_do_you_make
 

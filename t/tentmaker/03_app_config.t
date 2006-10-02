@@ -69,12 +69,13 @@ $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_app_conf_statement(
             'new_conf_st',
-            'new_value'
-);
+            'new_value',
+            'true'
+) . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'aconfst' );
 
-file_ok( $expected_file, $ajax, 'add conf statement' );
+file_ok( $expected_file, $ajax, 'add conf statement (aconfst)' );
 
 #--------------------------------------------------------------------
 # Add config statement when config block exists, but is empty
@@ -86,11 +87,12 @@ Bigtop::TentMaker->take_performance_hit( $empty_config );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_app_conf_statement( 'new_conf_st', 'value' );
+$ajax = $tent_maker->do_update_app_conf_statement( 'new_conf_st', 'value' )
+      . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'aconfstempty' );
 
-file_ok( $expected_file, $ajax, 'first conf statement' );
+file_ok( $expected_file, $ajax, 'first conf statement (aconfstempty)' );
 
 #--------------------------------------------------------------------
 # Change statement value
@@ -101,9 +103,9 @@ $tent_maker->template_disable( 0 );
 $ajax = $tent_maker->do_update_app_conf_statement(
             'new_conf_st',
             'other_value'
-);
+) . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cconfstempty' );
 
-file_ok( $expected_file, $ajax, 'change first conf statement' );
+file_ok( $expected_file, $ajax, 'change first conf statement (cconfstempty)' );
 

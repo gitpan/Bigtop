@@ -549,6 +549,15 @@ they understand.
                                 </tr>
                                 <tr>
                                     <td valign='top'>
+                                        html_form_default_value
+                                    </td>
+                                    <td>
+                                        A literal to use when the user and
+                                        the database have provided a value.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td valign='top'>
                                         html_form_display_size
                                     </td>
                                     <td>

@@ -4330,8 +4330,8 @@ sub new {
  
     if ( $accessor ) {
         $self = {
-            __KEY__  => $keyword,
-            __ARGS__ => arg_list->new( [ { $value => 'no_accessor' } ] )
+            __KEYWORD__  => $keyword,
+            __ARGS__     => arg_list->new( [ { $value => 'no_accessor' } ] )
         };
     }
     else {

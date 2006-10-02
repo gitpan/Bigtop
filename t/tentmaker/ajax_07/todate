@@ -69,7 +69,9 @@ app Address {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
-            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`, javascript => `$self->calendar_month_js( 'family' )`;
+            extra_keys
+                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`,
+                javascript => `$self->calendar_month_js( 'family' )`;
             form_name family;
         }
         uses Missing, Module, Gantry::Plugins::Calendar;

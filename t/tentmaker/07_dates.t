@@ -82,7 +82,8 @@ app Address {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
-            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+            extra_keys
+                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
 }
@@ -114,8 +115,8 @@ $tent_maker->do_update_controller_statement_text(
 
 my $ajax = $tent_maker->do_update_field_statement_text(
     'ident_4::is', 'date'
-);
+) . "\n";
 
 my $expected_file = File::Spec->catfile( qw( t tentmaker ajax_07 todate ) );
 
-file_ok( $expected_file, $ajax, 'field is changed to date' );
+file_ok( $expected_file, $ajax, 'field is changed to date (todate)' );

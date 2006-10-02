@@ -31,11 +31,11 @@ $tent_maker->root( 'tenttemplates' );
 # Add literal
 #--------------------------------------------------------------------
 
-$ajax = $tent_maker->do_create_app_block( 'literal::' );
+$ajax = $tent_maker->do_create_app_block( 'literal::' ) . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'alit' );
 
-file_ok( $expected_file, $ajax, 'create empty literal' );
+file_ok( $expected_file, $ajax, 'create empty literal (alit)' );
 
 #--------------------------------------------------------------------
 # Change literal type
@@ -43,11 +43,11 @@ file_ok( $expected_file, $ajax, 'create empty literal' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_type_change( 'ident_1', 'Location' );
+$ajax = $tent_maker->do_type_change( 'ident_1', 'Location' ) . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'clittype' );
 
-file_ok( $expected_file, $ajax, 'change literal type' );
+file_ok( $expected_file, $ajax, 'change literal type (clittype)' );
 
 #--------------------------------------------------------------------
 # Change literal value
@@ -55,11 +55,12 @@ file_ok( $expected_file, $ajax, 'change literal type' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_literal( 'ident_1', '    require valid-user' );
+$ajax = $tent_maker->do_update_literal( 'ident_1', '    require valid-user' )
+      . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'clittext' );
 
-file_ok( $expected_file, $ajax, 'change literal text' );
+file_ok( $expected_file, $ajax, 'change literal text (clittext)' );
 
 #--------------------------------------------------------------------
 # Delete literal
@@ -67,9 +68,9 @@ file_ok( $expected_file, $ajax, 'change literal text' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_delete_block( 'ident_1' );
+$ajax = $tent_maker->do_delete_block( 'ident_1' ) . "\n";
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rlit' );
 
-file_ok( $expected_file, $ajax, 'remove literal' );
+file_ok( $expected_file, $ajax, 'remove literal (rlit)' );
 

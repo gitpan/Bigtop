@@ -521,6 +521,12 @@ Here is a table with several types of fields:
             refers_to          customers;
             html_form_type     select;
         }
+        field has_good_default {
+            is                       varchar;
+            label                    `Replace as Desired`;
+            html_form_type           text;
+            html_form_default_value `avalue`;
+        }
         field notes {
             is                 text;
             label              `Notes to Customer`;
@@ -565,6 +571,9 @@ for details.  The Gantry template is form.tt.  Note that html_form_constraint
 is actually used by Gantry plugins which rely on Gantry::Utils::CRUDHelp.
 This includes at least Gantry::Plugins::AutoCRUD and Gantry::Plugins::CRUD.
 These constraints are enforced by Data::FormValidator.
+
+Use html_form_default_value if you want a default when the user and the
+database row haven't provided one.
 
 =head2 How can I include initial data in a table?
 
@@ -690,30 +699,36 @@ config hash of the Gantry::Engine::CGI object.
 
 =head2 How do I specify Gantry::Conf configuration values?
 
-To use Gantry::Conf with CGI scripts, do two things.  First, add an
-instance statement to the CGI backend block:
+To use Gantry::Conf with CGI scripts, do two things.  First, use the Conf
+Gantry backend, telling it the instance name of your app.  Second, set
+gantry_conf in the CGI backend block:
 
     config {
         #...
-        CGI Gantry { instance `your_name`; }
+        Conf Gantry { instacne `your_name`; }
+        CGI  Gantry { gantry_conf 1; }
     }
 
-This instance must be the name of one of the instances in your
+The instance will be the name of the app's instance in your
 /etc/gantry.conf.  If your master conf lives in a different file, use
 a block like this instead:
 
     config {
         #...
-        CGI Gantry {
+        Conf Gantry {
             instance `your_name`;
             conffile `/etc/my_hidden_conf/master.conf`;
+            gen_root 1;
+        }
+        CGI  Gantry {
+            gantry_conf 1;
         }
     }
 
-Second, use the Conf General backend.  If you use a SiteLook backend,
-you probably want to include the gen_root command, so the backend will
-manufacture a path to your wrapper and other templates.  Note that
-this works for either the Conf General or the CGI Gantry backend.
+If you use a SiteLook backend, you probably want to gen_root in the Conf
+Gantry backend, so it will manufacture a path to your wrapper and
+other templates.  Note that this works for either the Conf General or the
+CGI Gantry backend.
 
 =head2 How do I control CGI locations?
 
@@ -819,11 +834,10 @@ Gantry::Conf for details on its use.
     config {
         engine MP13;
         Init      Std     {}
-        Conf      General {}
-        HttpdConf Gantry  { skip_config 1; instance `your_instance`; }
+        Conf      Gantry  { instance `your_instance`; }
+        HttpdConf Gantry  { skip_config 1; gantry_conf 1; }
     }
     app Name {
-        literal Location `PerlSetVar GantryConfInstance example`;
         config {
             variable_1 value;
             variable_2 `multi-word value`;
@@ -838,19 +852,21 @@ Gantry::Conf for details on its use.
     }
 
 The process is very similar for Gantry::Conf as for PerlSetVars.  There
-are a couple of key differences.  First, you should add the Conf General
+are a couple of key differences.  First, you should add the Conf Gantry
 backend.  Second, you should mark the HttpdConf Gantry backend with
-skip_config, so it won't write PerlSetVars.  Finally, you should include
-the instance statement, whose value is the name of your instance in
-/etc/gantry.conf.  If your master config file lives somewhere else,
-also include conffile in the HttpdConf Gantry backend block:
+gantry_conf, so it won't write PerlSetVars.  Finally, you should include
+the instance statement in the Conf Gantry backend, whose value is the
+name of your instance in /etc/gantry.conf.  If your master config file
+lives somewhere else, also include conffile in the Conf Gantry backend block:
 
     config {
         #...
-        HttpdConf Gantry  {
-            skip_config 1;
+        Conf      Gantry  {
             instance `your_instance`;
             conffile `/etc/exotic/location/master.conf`;
+        }
+        HttpdConf Gantry  {
+            gantry_conf 1;
         }
     }
 
@@ -865,7 +881,7 @@ Here's docs/httpd.conf:
     </Perl>
 
     <Location />
-        PerlSetVar GantryConfInstance example
+        PerlSetVar GantryConfInstance your_instance
     </Location>
 
     <Location /subpage>
@@ -873,8 +889,9 @@ Here's docs/httpd.conf:
         PerlHandler Name::SubPage
     </Location>
 
-Here's docs/Name.conf:
+Here's docs/Name.gantry.conf:
 
+    <instance your_instance>
     variable_1 value
     variable_2 multi-word value
     overriden global
@@ -882,6 +899,7 @@ Here's docs/Name.conf:
     <GantryLocation /subpage>
         overriden subpage
     </GantryLocation>
+    </instance>
 
 =head2 How do I put extra statements into my Apache Perl block?
 

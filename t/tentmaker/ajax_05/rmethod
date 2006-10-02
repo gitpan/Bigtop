@@ -18,7 +18,8 @@ app Sample {
     controller AddressControl is AutoCRUD {
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
-            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+            extra_keys
+                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
         method do_alt_main is main_listing {
         }

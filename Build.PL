@@ -32,7 +32,7 @@ my $build = $subclass->new(
     script_files        => [ glob( 'scripts/*' ) ],
     tentmaker_files     => [ glob( 'tenttemplates/*' ) ],
     test_files          => [
-#        't/tentmaker/*.t',
+#        't/gantry/06*.t',
         't/*.t',
         't/tentmaker/*.t',
         't/init/*.t',

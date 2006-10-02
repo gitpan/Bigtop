@@ -283,6 +283,15 @@
       
       
       
+        <th>
+            Default
+            <br />
+            
+            
+        </th>
+      
+      
+      
       
       
       
@@ -382,6 +391,24 @@
                onblur='javascript:update_tree(
                     "field_statement_text",
                     "ident_3::html_form_constraint",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_default_value_ident_3'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_3::html_form_default_value",
                     this.value,
                     "",
                     "quick_edit"
@@ -499,6 +526,24 @@
         
       
         
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_default_value_ident_4'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_4::html_form_default_value",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
       
         
       
@@ -606,6 +651,24 @@
         
       
         
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_default_value_ident_5'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_5::html_form_default_value",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
       
         
       
@@ -703,6 +766,24 @@
                onblur='javascript:update_tree(
                     "field_statement_text",
                     "ident_6::html_form_constraint",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_default_value_ident_6'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_6::html_form_default_value",
                     this.value,
                     "",
                     "quick_edit"
@@ -1190,6 +1271,41 @@ auto</pre>
         </td>
         <td>
             Data::FormValidator constraint, e.g.: <pre>qr{^\d$}</pre>
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_default_value </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_2::html_form_default_value'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_2::html_form_default_value",
+                this.value,
+                "",
+                "full_edit"
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Form element value when no other is available
         </td>
     </tr>
   
@@ -1772,6 +1888,41 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_default_value </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_3::html_form_default_value'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_3::html_form_default_value",
+                this.value,
+                "",
+                "full_edit"
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Form element value when no other is available
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_cols </td>
         <td>
 
@@ -2344,6 +2495,41 @@ auto</pre>
         </td>
         <td>
             Data::FormValidator constraint, e.g.: <pre>qr{^\d$}</pre>
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_default_value </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_4::html_form_default_value'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_4::html_form_default_value",
+                this.value,
+                "",
+                "full_edit"
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Form element value when no other is available
         </td>
     </tr>
   
@@ -2926,6 +3112,41 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_default_value </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_5::html_form_default_value'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_5::html_form_default_value",
+                this.value,
+                "",
+                "full_edit"
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Form element value when no other is available
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_cols </td>
         <td>
 
@@ -3498,6 +3719,41 @@ auto</pre>
         </td>
         <td>
             Data::FormValidator constraint, e.g.: <pre>qr{^\d$}</pre>
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_default_value </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_6::html_form_default_value'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_6::html_form_default_value",
+                this.value,
+                "",
+                "full_edit"
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Form element value when no other is available
         </td>
     </tr>
   
@@ -5747,7 +6003,8 @@ app Sample {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
-            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+            extra_keys
+                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
 }

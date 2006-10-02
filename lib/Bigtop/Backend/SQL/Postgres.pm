@@ -215,6 +215,7 @@ my %code_for = (
     primary_key        => sub { 'PRIMARY KEY' },
     assign_by_sequence => \&gen_seq_text,
     auto               => \&gen_seq_text,
+    datetime           => sub { 'TIMESTAMP WITH TIME ZONE' },
 );
 
 sub gen_seq_text {

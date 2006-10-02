@@ -28,7 +28,8 @@ app Sample {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
-            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+            extra_keys
+                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
     table address_tbl {
@@ -60,7 +61,9 @@ app Sample {
         field street_address {
             is varchar;
             html_form_type text;
-            html_form_options Happy => 1, Unhappy => 0;
+            html_form_options
+                Happy => 1,
+                Unhappy => 0;
         }
     }
     sequence addresses_seq {}
@@ -100,7 +103,8 @@ app Sample {
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
-            extra_keys legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+            extra_keys
+                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
 }
