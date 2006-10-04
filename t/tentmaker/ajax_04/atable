@@ -207,8 +207,6 @@
       
       
       
-      
-      
         <th>
             SQL Type
             <br />
@@ -301,6 +299,8 @@
       
       
       
+      
+      
     </tr >
     
       
@@ -318,8 +318,6 @@
                )'
         />
       </td>
-      
-        
       
         
       
@@ -428,6 +426,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -443,8 +443,6 @@
                )'
         />
       </td>
-      
-        
       
         
       
@@ -553,6 +551,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -568,8 +568,6 @@
                )'
         />
       </td>
-      
-        
       
         
       
@@ -678,6 +676,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -693,8 +693,6 @@
                )'
         />
       </td>
-      
-        
       
         
       
@@ -791,6 +789,8 @@
         />
           
       </td>
+        
+      
         
       
         
@@ -965,36 +965,6 @@
         </td>
         <td>
             Tell Model and/or SQL to skip this field
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> non_essential </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-<input type='checkbox'
-       value='ident_2::non_essential'
-       id='ident_2::non_essential'
-       class='urgency_0'       onchange='javascript:update_tree(
-           "field_statement_bool",
-           "ident_2::non_essential",
-           this.checked
-       )'
-/>
-
-
-        </td>
-        <td>
-            Tells modeler: retrieve only when accessed
         </td>
     </tr>
   
@@ -1500,6 +1470,36 @@ auto</pre>
         </td>
     </tr>
   
+    
+    <tr>
+        <td> non_essential </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+<input type='checkbox'
+       value='ident_2::non_essential'
+       id='ident_2::non_essential'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_2::non_essential",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Tells modeler: retrieve only when accessed
+        </td>
+    </tr>
+  
   </table>
 
                   
@@ -1603,36 +1603,6 @@ auto</pre>
         </td>
         <td>
             Tell Model and/or SQL to skip this field
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> non_essential </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-<input type='checkbox'
-       value='ident_3::non_essential'
-       id='ident_3::non_essential'
-       class='urgency_0'       onchange='javascript:update_tree(
-           "field_statement_bool",
-           "ident_3::non_essential",
-           this.checked
-       )'
-/>
-
-
-        </td>
-        <td>
-            Tells modeler: retrieve only when accessed
         </td>
     </tr>
   
@@ -2112,6 +2082,36 @@ auto</pre>
         </td>
     </tr>
   
+    
+    <tr>
+        <td> non_essential </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+<input type='checkbox'
+       value='ident_3::non_essential'
+       id='ident_3::non_essential'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_3::non_essential",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Tells modeler: retrieve only when accessed
+        </td>
+    </tr>
+  
   </table>
 
                   
@@ -2215,36 +2215,6 @@ auto</pre>
         </td>
         <td>
             Tell Model and/or SQL to skip this field
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> non_essential </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-<input type='checkbox'
-       value='ident_4::non_essential'
-       id='ident_4::non_essential'
-       class='urgency_0'       onchange='javascript:update_tree(
-           "field_statement_bool",
-           "ident_4::non_essential",
-           this.checked
-       )'
-/>
-
-
-        </td>
-        <td>
-            Tells modeler: retrieve only when accessed
         </td>
     </tr>
   
@@ -2724,6 +2694,36 @@ auto</pre>
         </td>
     </tr>
   
+    
+    <tr>
+        <td> non_essential </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+<input type='checkbox'
+       value='ident_4::non_essential'
+       id='ident_4::non_essential'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_4::non_essential",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Tells modeler: retrieve only when accessed
+        </td>
+    </tr>
+  
   </table>
 
                   
@@ -2827,36 +2827,6 @@ auto</pre>
         </td>
         <td>
             Tell Model and/or SQL to skip this field
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> non_essential </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-<input type='checkbox'
-       value='ident_5::non_essential'
-       id='ident_5::non_essential'
-       class='urgency_0'       onchange='javascript:update_tree(
-           "field_statement_bool",
-           "ident_5::non_essential",
-           this.checked
-       )'
-/>
-
-
-        </td>
-        <td>
-            Tells modeler: retrieve only when accessed
         </td>
     </tr>
   
@@ -3336,6 +3306,36 @@ auto</pre>
         </td>
     </tr>
   
+    
+    <tr>
+        <td> non_essential </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+<input type='checkbox'
+       value='ident_5::non_essential'
+       id='ident_5::non_essential'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_5::non_essential",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Tells modeler: retrieve only when accessed
+        </td>
+    </tr>
+  
   </table>
 
                   
@@ -3439,36 +3439,6 @@ auto</pre>
         </td>
         <td>
             Tell Model and/or SQL to skip this field
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> non_essential </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-<input type='checkbox'
-       value='ident_6::non_essential'
-       id='ident_6::non_essential'
-       class='urgency_0'       onchange='javascript:update_tree(
-           "field_statement_bool",
-           "ident_6::non_essential",
-           this.checked
-       )'
-/>
-
-
-        </td>
-        <td>
-            Tells modeler: retrieve only when accessed
         </td>
     </tr>
   
@@ -3948,6 +3918,36 @@ auto</pre>
         </td>
     </tr>
   
+    
+    <tr>
+        <td> non_essential </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+<input type='checkbox'
+       value='ident_6::non_essential'
+       id='ident_6::non_essential'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_6::non_essential",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Tells modeler: retrieve only when accessed
+        </td>
+    </tr>
+  
   </table>
 
                   
@@ -4279,38 +4279,6 @@ auto</pre>
   
     
     <tr>
-        <td> autocrud_helper </td>
-        <td>
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-    
-        <input type='text'
-            id='ident_7::autocrud_helper'
-            value=""
-            class='urgency_0'
-            onblur='javascript:update_tree(
-                "controller_statement_text",
-                "ident_7::autocrud_helper",
-                this.value
-            )'
-        />
-    
-
-
-        </td>
-        <td>
-            Gantry::Plugins::AutoCRUDHelper for your ORM
-        </td>
-    </tr>
-  
-    
-    <tr>
         <td> page_link_label </td>
         <td>
             
@@ -4338,6 +4306,38 @@ auto</pre>
         </td>
         <td>
             Link text in navigation bar [use only for navigable controllers]
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> autocrud_helper </td>
+        <td>
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_7::autocrud_helper'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "controller_statement_text",
+                "ident_7::autocrud_helper",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Gantry::Plugins::AutoCRUDHelper for your ORM
         </td>
     </tr>
   

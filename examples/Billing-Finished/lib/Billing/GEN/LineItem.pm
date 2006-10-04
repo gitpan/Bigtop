@@ -28,6 +28,7 @@ sub do_main {
     my $retval = {
         headings       => [
             'Name',
+            'Invoice Number',
             'Due Date',
         ],
         header_options => [
@@ -47,6 +48,7 @@ sub do_main {
             @{ $retval->{rows} }, {
                 data => [
                     $row->name,
+                    $row->invoice->foreign_display(),
                     $row->due_date,
                 ],
                 options => [

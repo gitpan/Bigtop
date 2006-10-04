@@ -77,7 +77,7 @@ sub _make_model_code {
                 my $new_foreigner = <<"EO_Foreign_Field";
         field $foreign_key {
             is             int4;
-            label          $label;
+            label          `$label`;
             refers_to      $foreign_key;
             html_form_type select;
         }
@@ -179,15 +179,18 @@ sub augment_tree {
                   keys %{ $ast->{application}{lookup}{tables} };
     my $joins   = $ast->{application}{lookup}{join_tables};
 
-    foreach my $joined_table ( keys %{ $joins } ) {
+    foreach my $join_member ( keys %{ $joins } ) {
 
-        my ( $join_table ) = values %{ $joins->{ $joined_table }{ joins } };
+        foreach my $membership ( @{ $joins->{ $join_member } } ) {
 
-        $initial_tables{ $join_table } = 1;
+            my ( $join_table ) = values %{ $membership->{ joins } };
+
+            $initial_tables{ $join_table } = 1;
+        }
     }
 
     my $parsed_art = parse_ascii_art( $art, \%initial_tables );
-    my ( $tables, $all_tables, $joiners, $foreign_key_for ) = (
+    my ( $tables, $new_tables, $joiners, $foreign_key_for ) = (
         $parsed_art->{ all_tables },
         $parsed_art->{ new_tables },
         $parsed_art->{ joiners    },
@@ -197,7 +200,7 @@ sub augment_tree {
     # make new tables with tentmaker hooks
     my %new_table;
     my %new_controller_for;
-    foreach my $table ( @{ $all_tables } ) {
+    foreach my $table ( @{ $new_tables } ) {
         my $controller  = Bigtop::ScriptHelp->default_controller( $table );
         my $descr       = $table;
         $descr          =~ s/_/ /g;
@@ -316,7 +319,7 @@ sub parse_ascii_art {
     my $art    = shift || '';
     my $tables = shift || {};
 
-    my @all_tables;
+    my @new_tables;
     my @joiners;
     my %foreign_key_for;
 
@@ -335,12 +338,12 @@ sub parse_ascii_art {
 
             # make sure tables are in the list of all tables
             unless ( defined $tables->{ $table1 } ) {
-                push @all_tables, $table1;
+                push @new_tables, $table1;
                 $tables->{ $table1 }++;
             }
 
             unless ( defined $tables->{ $table2 } ) {
-                push @all_tables, $table2;
+                push @new_tables, $table2;
                 $tables->{ $table2 }++;
             }
 
@@ -364,7 +367,7 @@ sub parse_ascii_art {
         }
         elsif ( valid_ident( $art_element ) ) {
             unless ( defined $tables->{ $art_element } ) {
-                push @all_tables, $art_element;
+                push @new_tables, $art_element;
                 $tables->{ $art_element }++;
             }
         }
@@ -375,7 +378,7 @@ sub parse_ascii_art {
 
     return {
         all_tables => $tables,
-        new_tables => \@all_tables,
+        new_tables => \@new_tables,
         joiners    => \@joiners,
         foreigners => \%foreign_key_for,
     }

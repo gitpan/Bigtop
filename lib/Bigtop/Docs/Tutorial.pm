@@ -180,18 +180,21 @@ idea with bigtop too.  We could just run bigtop to make a default app:
 
     bigtop --new Billing
 
-But it can do a lot of initial work for us if we give some information
-about our data model.  That could be as simple as listing the tables:
+Instead we can make it do a lot of initial work for us if we give some
+information about our data model.  That could be as simple as listing the
+tables:
 
     bigtop -n Billing customers my_companies \
             invoices line_items status
 
-But, we could go further and tell it about the foreign key relationships
+Or, we could go further and tell it about the foreign key relationships
 between the tables:
 
     bigtop -n Billing 'customers<-invoices
     invoices->status invoices->my_companies
     line_items->customers line_items->invoices'
+
+Pick one of the above versions to start following the discussion below.
 
 Since this document started before the -n flag to arguments, the
 billing.bigtop file it describes will differ from yours if you use

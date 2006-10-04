@@ -8,12 +8,14 @@ my %doc_for = (
             label      => 'Parent Dir',
             descr      => 'parent of build dir',
             type       => 'deprecated',
+            sort_order  => 20000,
         },
         app_dir  => {
             keyword    => 'app_dir',
             label      => 'Build Dir',
             descr      => 'build dir. relative to parent dir',
             type       => 'deprecated',
+            sort_order  => 20001,
         },
         engine   => {
             keyword    => 'engine',
@@ -24,13 +26,15 @@ my %doc_for = (
                 { label => 'mod_perl 1.3', value => 'MP13' },
                 { label => 'mod_perl 2.0', value => 'MP20' },
                 { label => 'CGI/FastCGI',  value => 'CGI'  },
-            ]
+            ],
+            sort_order  => 10,
         },
         template_engine => {
             keyword    => 'template_engine',
             label      => 'Template Engine',
             descr      => 'Template Toolkit, Mason, etc.',
-            type       => 'text'
+            type       => 'text',
+            sort_order => 20,
         },
     },
 
@@ -41,6 +45,7 @@ my %doc_for = (
             descr    => "Skip this app completely",
             type     => 'boolean',
             urgency  => 0,
+            sort_order => 10,
         },
         location => {
             keyword  => 'location',
@@ -49,6 +54,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 0,
             urgency  => 0,
+            sort_order => 20,
         },
         authors => {
             keyword    => 'authors',
@@ -59,6 +65,7 @@ my %doc_for = (
             urgency    => 1,
             pair_labels => [ 'Name', 'Email Address' ],
             pair_required => 0,
+            sort_order    => 30,
         },
 
         contact_us => {
@@ -68,6 +75,7 @@ my %doc_for = (
             type     => 'textarea',
             multiple => 0,
             urgency  => 0,
+            sort_order => 40,
         },
         email => {
             keyword  => 'email',
@@ -76,6 +84,7 @@ my %doc_for = (
             multiple => 0,
             urgency  => 0,
             type       => 'deprecated',
+            sort_order  => 20001,
         },
         copyright_holder => {
             keyword  => 'copyright_holder',
@@ -84,6 +93,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 1,
             urgency  => 0,
+            sort_order => 50,
         },
         license_text => {
             keyword  => 'license_text',
@@ -91,6 +101,7 @@ my %doc_for = (
             descr    => 'Restrictions [defaults to Perl license]',
             type     => 'textarea',
             urgency  => 0,
+            sort_order => 60,
         },
         uses => {
             keyword  => 'uses',
@@ -99,6 +110,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 1,
             urgency  => 0,
+            sort_order => 70,
         },
     },
 
@@ -107,36 +119,43 @@ my %doc_for = (
             keyword  => 'Conf',
             label    => 'Global Level',
             descr    => 'Place outside all gened config blocks',
+            sort_order => 10,
         },
         GantryLocation => {
             keyword  => 'GantryLocation',
             label    => 'Root level config',
             descr    => 'Place in root GantryLocation',
+            sort_order => 20,
         },
         PerlTop => {
             keyword  => 'PerlTop',
             label    => 'Preamble',
             descr    => 'Place at the top of the generated script(s)',
-        },
-        HttpdConf => {
-            keyword  => 'HttpdConf',
-            label    => 'Apache Conf',
-            descr    => 'Place outside of all generated blocks',
-        },
-        Location => {
-            keyword  => 'Location',
-            label    => 'Base Location',
-            descr    => 'Place inside base Location block',
+            sort_order => 30,
         },
         PerlBlock => {
             keyword  => 'PerlBlock',
             label    => 'Epilogue',
             descr    => 'Place inside Perl block',
+            sort_order => 40,
+        },
+        HttpdConf => {
+            keyword  => 'HttpdConf',
+            label    => 'Apache Conf',
+            descr    => 'Place outside of all generated blocks',
+            sort_order => 50,
+        },
+        Location => {
+            keyword  => 'Location',
+            label    => 'Base Location',
+            descr    => 'Place inside base Location block',
+            sort_order => 60,
         },
         SQL => {
             keyword   => 'SQL',
             label     => 'SQL',
             descr     => 'Dumped directly into schema',
+            sort_order => 70,
         },
     },
 
@@ -146,6 +165,7 @@ my %doc_for = (
             label    => 'No Gen',
             descr    => "Skip this table completely",
             type     => 'boolean',
+            sort_order => 10,
         },
         not_for => {
             keyword  => 'not_for',
@@ -157,14 +177,7 @@ my %doc_for = (
                 { label => 'SQL',       value => 'SQL'        },
                 { label => 'Model',     value => 'Model'      },
             ],
-        },
-        sequence => {
-            keyword   => 'sequence',
-            label     => 'Sequence',
-            descr     => 'Which sequence to take default keys from',
-            type      => 'text',
-            multiple  => 0,
-            urgency   => 1,
+            sort_order => 20,
         },
         data => {
             keyword    => 'data',
@@ -173,6 +186,7 @@ my %doc_for = (
             type       => 'pair',
             multiple   => 1,
             repeatable => 1,
+            sort_order => 20000,
         },
         foreign_display => {
             keyword  => 'foreign_display',
@@ -181,6 +195,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 0,
             urgency  => 3,
+            sort_order => 30,
         },
         model_base_class => {
             keyword  => 'model_base_class',
@@ -188,6 +203,16 @@ my %doc_for = (
             descr    => 'Models inherit from this [has good default]',
             type     => 'text',
             multiple => 0,
+            sort_order => 40,
+        },
+        sequence => {
+            keyword   => 'sequence',
+            label     => 'Sequence',
+            descr     => 'Which sequence to take default keys from',
+            type      => 'text',
+            multiple  => 0,
+            urgency   => 1,
+            sort_order => 50,
         },
     },
 
@@ -197,6 +222,7 @@ my %doc_for = (
             label    => 'No Gen',
             descr    => "Skip this field completely",
             type     => 'boolean',
+            sort_order => 10,
         },
         not_for => {
             keyword  => 'not_for',
@@ -208,6 +234,7 @@ my %doc_for = (
                 { label => 'SQL',       value => 'SQL'        },
                 { label => 'Model',     value => 'Model'      },
             ],
+            sort_order => 20,
         },
         is => {
             keyword   => 'is',
@@ -218,6 +245,7 @@ my %doc_for = (
             multiple  => 1,
             urgency   => 10,
             quick_label => 'SQL Type',
+            sort_order  => 30,
         },
         refers_to => {
             keyword   => 'refers_to',
@@ -226,6 +254,7 @@ my %doc_for = (
             type      => 'text',
             multiple  => 0,
             urgency   => 1,
+            sort_order => 40,
         },
         label => {
             keyword  => 'label',
@@ -235,12 +264,7 @@ my %doc_for = (
             multiple => 0,
             urgency   => 5,
             quick_label => 'Label',
-        },
-        non_essential => {
-             keyword  => 'non_essential',
-             label    => 'Non-essential',
-             descr    => 'Tells modeler: retrieve only when accessed',
-             type     => 'boolean',
+            sort_order => 60,
         },
         html_form_type => {
             keyword  => 'html_form_type',
@@ -254,6 +278,7 @@ my %doc_for = (
               { label => 'select',           value => 'select'    },
             ],
             urgency   => 5,
+            sort_order => 70,
         },
         html_form_optional => {
             keyword  => 'html_form_optional',
@@ -261,6 +286,7 @@ my %doc_for = (
             descr    => 'May user skip this field?',
             type     => 'boolean',
             quick_label => 'Optional',
+            sort_order => 80,
         },
         html_form_constraint => {
             keyword  => 'html_form_constraint',
@@ -270,6 +296,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 0,
             quick_label => 'Constraint',
+            sort_order  => 90,
         },
         html_form_default_value => {
             keyword     => 'html_form_default_value',
@@ -278,6 +305,7 @@ my %doc_for = (
             type        => 'text',
             multiple    => 0,
             quick_label => 'Default',
+            sort_order  => 100,
         },
         html_form_cols => {
             keyword    => 'html_form_cols',
@@ -286,6 +314,7 @@ my %doc_for = (
             type       => 'text',
             field_type => 'textarea',
             multiple   => 0,
+            sort_order => 110,
         },
         html_form_rows => {
             keyword    => 'html_form_rows',
@@ -294,6 +323,7 @@ my %doc_for = (
             type       => 'text',
             field_type => 'textarea',
             multiple   => 0,
+            sort_order => 120,
         },
         html_form_display_size => {
             keyword    => 'html_form_display_size',
@@ -302,6 +332,7 @@ my %doc_for = (
             type       => 'text',
             field_type => 'text',
             multiple   => 0,
+            sort_order => 130,
         },
         html_form_options => {
             keyword     => 'html_form_options',
@@ -313,8 +344,8 @@ my %doc_for = (
             multiple    => 1,
             pair_labels => [ 'Label', 'Database Value' ],
             pair_required => 1,
+            sort_order    => 140,
         },
-
         date_select_text => {
             keyword    => 'date_select_text',
             label      => 'Date Popup Link Text',
@@ -323,6 +354,14 @@ my %doc_for = (
             field_type => 'text',
             multiple   => 0,
             refresh    => 1,
+            sort_order => 150,
+        },
+        non_essential => {
+             keyword  => 'non_essential',
+             label    => 'Non-essential',
+             descr    => 'Tells modeler: retrieve only when accessed',
+             type     => 'boolean',
+            sort_order => 160,
         },
     },
 
@@ -336,6 +375,7 @@ my %doc_for = (
             pair_required => 1,
             multiple      => 0,
             urgency       => 10,
+            sort_order    => 10,
         },
         names => {
             keyword       => 'names',
@@ -346,6 +386,7 @@ my %doc_for = (
             pair_required => 1,
             multiple      => 0,
             urgency       => 0,
+            sort_order    => 20,
         },
     },
 
@@ -356,6 +397,7 @@ my %doc_for = (
             descr    => "Skip this controller completely",
             type     => 'boolean',
             urgency  => 0,
+            sort_order => 10,
         },
         location => {
             keyword  => 'location',
@@ -366,6 +408,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 0,
             urgency  => 5,
+            sort_order => 20,
         },
         rel_location => {
             keyword  => 'rel_location',
@@ -376,6 +419,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 0,
             urgency  => 5,
+            sort_order => 30,
         },
         controls_table => {
             keyword  => 'controls_table',
@@ -384,6 +428,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 0,
             urgency  => 10,
+            sort_order => 40,
         },
         uses => {
             keyword  => 'uses',
@@ -391,6 +436,7 @@ my %doc_for = (
             descr    => 'List of modules used by this controller',
             type     => 'text',
             multiple => 1,
+            sort_order => 50,
         },
         text_description => {
             keyword  => 'text_description',
@@ -399,6 +445,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 0,
             urgency  => 3,
+            sort_order => 60,
         },
         page_link_label => {
             keyword  => 'page_link_label',
@@ -408,6 +455,7 @@ my %doc_for = (
             type     => 'text',
             multiple => 0,
             urgency  => 1,
+            sort_order => 70,
         },
         autocrud_helper => {
             keyword  => 'autocrud_helper',
@@ -416,6 +464,7 @@ my %doc_for = (
             type     => 'text',
             mulitple => 0,
             urgency  => 0,
+            sort_order => 80,
         },
     },
 
@@ -424,11 +473,14 @@ my %doc_for = (
             keyword  => 'Location',
             label    => 'Controller Loc.',
             descr    => 'Place inside Location block for this controller',
+            sort_order => 10,
         },
         GantryLocation => {
             keyword  => 'GantryLocation',
             label    => 'Controller Loc.',
-            descr    => 'Place inside GantryLocation block for this controller'
+            descr    =>
+                'Place inside GantryLocation block for this controller',
+            sort_order => 20,
         },
     },
 
@@ -440,6 +492,17 @@ my %doc_for = (
             type       => 'boolean',
             applies_to => 'All',
             urgency    => 0,
+            sort_order => 10,
+        },
+        extra_args => {
+            keyword     => 'extra_args',
+            label       => 'Extra Arguments',
+            descr       => 'Extra args for any method',
+            type        => 'text',
+            applies_to  => 'All',
+            multiple    => 1,
+            urgency     => 0,
+            sort_order  => 20,
         },
         cols => {
             keyword     => 'cols',
@@ -449,6 +512,7 @@ my %doc_for = (
             applies_to  => 'main_listing',
             multiple    => 1,
             urgency     => 5,
+            sort_order  => 30,
         },
         col_labels => {
             keyword     => 'col_labels',
@@ -459,55 +523,7 @@ my %doc_for = (
             applies_to  => 'main_listing',
             multiple    => 1,
             urgency     => 0,
-        },
-        extra_args => {
-            keyword     => 'extra_args',
-            label       => 'Extra Arguments',
-            descr       => 'Extra args for any method',
-            type        => 'text',
-            applies_to  => 'All',
-            multiple    => 1,
-            urgency     => 0,
-        },
-        extra_keys => {
-            keyword       => 'extra_keys',
-            label         => 'Keys for form hash',
-            descr         => 'Extra keys to put in the form method hash',
-            type          => 'pair',
-            pair_labels   => [ 'key', 'value' ],
-            pair_required => 1,
-            applies_to    => 'forms',
-            multiple      => 1,
-            urgency       => 0,
-        },
-        all_fields_but => {
-            keyword     => 'all_fields_but',
-            label       => 'Exclued These Fields',
-            descr       => 'Fields to exclude from a form '
-                            .  '[either all_fields_but or fields is REQUIRED]',
-            type        => 'text',
-            applies_to  => 'forms',
-            multiple    => 1,
-            urgency     => 5,
-        },
-        fields => {
-            keyword     => 'fields',
-            label       => 'Include These Fields',
-            descr       => 'Fields to include on a form '
-                            .  '[either all_fields_but or fields is REQUIRED]',
-            type        => 'text',
-            applies_to  => 'forms',
-            multiple    => 1,
-            urgency     => 5,
-        },
-        form_name => {
-            keyword     => 'form_name',
-            label       => 'Form Name',
-            descr       => 'Form name [used with date selections]',
-            type        => 'text',
-            applies_to  => 'forms',
-            multiple    => 0,
-            urgency     => 0,
+            sort_order  => 40,
         },
         header_options => {
             keyword       => 'header_options',
@@ -519,16 +535,7 @@ my %doc_for = (
             applies_to    => 'main_listing',
             multiple      => 1,
             urgency       => 5,
-        },
-        html_template => {
-            keyword     => 'html_template',
-            label       => 'Output Template',
-            descr       => 'Template to use for main_listing [defaults '
-                              .     'to results.tt]',
-            type        => 'text',
-            applies_to  => 'main_listing',
-            multiple    => 0,
-            urgency     => 0,
+            sort_order    => 50,
         },
         row_options => {
             keyword       => 'row_options',
@@ -540,6 +547,7 @@ my %doc_for = (
             applies_to    => 'main_listing',
             multiple      => 1,
             urgency       => 5,
+            sort_order    => 60,
         },
         title => {
             keyword     => 'title',
@@ -549,6 +557,62 @@ my %doc_for = (
             applies_to  => 'main_listing',
             multiple    => 0,
             urgency     => 3,
+            sort_order  => 70,
+        },
+        html_template => {
+            keyword     => 'html_template',
+            label       => 'Output Template',
+            descr       => 'Template to use for main_listing [defaults '
+                              .     'to results.tt]',
+            type        => 'text',
+            applies_to  => 'main_listing',
+            multiple    => 0,
+            urgency     => 0,
+            sort_order  => 80,
+        },
+        all_fields_but => {
+            keyword     => 'all_fields_but',
+            label       => 'Exclued These Fields',
+            descr       => 'Fields to exclude from a form '
+                            .  '[either all_fields_but or fields is REQUIRED]',
+            type        => 'text',
+            applies_to  => 'forms',
+            multiple    => 1,
+            urgency     => 5,
+            sort_order  => 90,
+        },
+        fields => {
+            keyword     => 'fields',
+            label       => 'Include These Fields',
+            descr       => 'Fields to include on a form '
+                            .  '[either all_fields_but or fields is REQUIRED]',
+            type        => 'text',
+            applies_to  => 'forms',
+            multiple    => 1,
+            urgency     => 5,
+            sort_order  => 100,
+        },
+        extra_keys => {
+            keyword       => 'extra_keys',
+            label         => 'Keys for form hash',
+            descr         => 'Extra keys to put in the form method hash',
+            type          => 'pair',
+            pair_labels   => [ 'key', 'value' ],
+            pair_required => 1,
+            applies_to    => 'forms',
+            multiple      => 1,
+            urgency       => 0,
+            sort_order    => 110,
+        },
+        form_name => {
+            keyword     => 'form_name',
+            label       => 'Form Name',
+            descr       => 'Form name [used with date selections]',
+            type        => 'text',
+            applies_to  => 'forms',
+            multiple    => 0,
+            urgency     => 0,
+            sort_order  => 120,
         },
     },
 );

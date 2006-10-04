@@ -328,7 +328,7 @@ app Billing {
         page_link_label  `Line Items`;
         method do_main is main_listing {
             title            `Line Items`;
-            cols             name, due_date;
+            cols             name, invoice, due_date;
             header_options   Add;
             row_options      Edit, Delete;
         }

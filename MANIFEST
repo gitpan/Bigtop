@@ -109,6 +109,9 @@ t/05_lookuphash.t
 t/06_create_die.t
 t/07_deparse.t
 t/08_script.t
+t/expected/augmented
+t/expected/big_default
+t/expected/minimal
 t/cdbi/01_cdbisweet.t
 t/cdbi/02_one_model_base.t
 t/cdbi/playship/Apps-Checkbook/lib/Apps/Checkbook/Model/auth_db_user.pm

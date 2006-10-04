@@ -1,3 +1,6 @@
+Build.PL's default for tentmaker template installation dir should be
+drawn from system installed TentMakerPath.pm if there is one.
+
 When you change engines in tentmaker, should it also magically change
 backends?  CGI->mod_per would unclick CGI backend and click corresponding
 HttpdConf backend and vice versa.  If CGI backend had generate root
@@ -251,6 +254,16 @@ Not to be Done:
         This is just litter.
 
 Done:
+
+    It appears that if one table has two foreign keys in a single ascii art,
+    their is a missing semi-colon or other syntax error.
+        Actually, it was a foreign key target with an underscore, but only
+        under -n with bigtop.
+
+    ScriptHelp has a bug when you augment an app which already has a
+    join_table.
+    It causes a Pseudo-hash deprecation warning at line 184 and might have
+    put the process into deep recursion or other CPU sucking behavior.
 
     Make the deparser a little kinder to data statements and others likely to
     wrap.

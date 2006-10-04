@@ -66,6 +66,9 @@ sub build_backend_list {
     %engines           = ();
     %template_engines  = ();
 
+    my %seen;  # don't try to load all possible modules, just the first ones
+    my @modules;
+
     my $filter = sub {
         my $module = $File::Find::name;
 
@@ -90,6 +93,20 @@ sub build_backend_list {
         my $module_prefix = File::Spec->catfile( 'Bigtop', 'Backend' );
 
         $module =~ s{.*Bigtop.Backend}{$module_prefix}; # could use look ahead
+
+        return if $seen{ $module }++;
+
+        push @modules, $module;
+    };
+
+    my @real_inc;
+    foreach my $entry ( @INC ) {
+        push @real_inc, $entry if ( -d $entry );
+    }
+
+    find( { wanted => $filter, chdir => 0 }, @real_inc );
+
+    foreach my $module ( sort @modules ) {
 
         require "$module";
 
@@ -119,14 +136,7 @@ sub build_backend_list {
             $backends{ $type }{ $name }{ in_use     } = 0;
             $backends{ $type }{ $name }{ statements } = {};
         }
-    };
-
-    my @real_inc;
-    foreach my $entry ( @INC ) {
-        push @real_inc, $entry if ( -d $entry );
     }
-
-    find( { wanted => $filter, chdir => 0 }, @real_inc );
 
     my @engines          = sort keys %engines;
     my @template_engines = sort keys %template_engines;

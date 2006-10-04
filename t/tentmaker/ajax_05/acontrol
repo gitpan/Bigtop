@@ -280,38 +280,6 @@
   
     
     <tr>
-        <td> autocrud_helper </td>
-        <td>
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-    
-        <input type='text'
-            id='ident_1::autocrud_helper'
-            value=""
-            class='urgency_0'
-            onblur='javascript:update_tree(
-                "controller_statement_text",
-                "ident_1::autocrud_helper",
-                this.value
-            )'
-        />
-    
-
-
-        </td>
-        <td>
-            Gantry::Plugins::AutoCRUDHelper for your ORM
-        </td>
-    </tr>
-  
-    
-    <tr>
         <td> page_link_label </td>
         <td>
             
@@ -339,6 +307,38 @@
         </td>
         <td>
             Link text in navigation bar [use only for navigable controllers]
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> autocrud_helper </td>
+        <td>
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_1::autocrud_helper'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "controller_statement_text",
+                "ident_1::autocrud_helper",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Gantry::Plugins::AutoCRUDHelper for your ORM
         </td>
     </tr>
   

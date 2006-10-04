@@ -1,5 +1,14 @@
 Revision history for Perl extension Bigtop.
 
+0.18 Wed Oct  4 15:07:47 CDT 2006
+    - Corrected fatal bug in -a flag for scripts when the bigtop file had an
+      existing join table.
+    - Corrected test bug which depended on the load order of backends by
+      tentmaker.
+    - Corrected fatal error with bigtop -n which created unparsable bigtop
+      code when foreign key targets had underscores.
+    Thanks to Paul Espinosa for noticing these bugs.
+
 0.17 Mon Oct  2 09:50:12 CDT 2006
     - There is a new Backend: Conf Gantry.  It makes files ready for
       immediate deployment to /etc/gantry.d when /etc/gantry.conf has an

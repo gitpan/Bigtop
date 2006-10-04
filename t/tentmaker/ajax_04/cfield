@@ -7,8 +7,6 @@
       
       
       
-      
-      
         <th>
             SQL Type
             <br />
@@ -106,6 +104,8 @@
       
       
       
+      
+      
     </tr >
     
       
@@ -123,8 +123,6 @@
                )'
         />
       </td>
-      
-        
       
         
       
@@ -233,6 +231,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -248,8 +248,6 @@
                )'
         />
       </td>
-      
-        
       
         
       
@@ -358,6 +356,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -373,8 +373,6 @@
                )'
         />
       </td>
-      
-        
       
         
       
@@ -483,6 +481,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -498,8 +498,6 @@
                )'
         />
       </td>
-      
-        
       
         
       
@@ -608,6 +606,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -623,8 +623,6 @@
                )'
         />
       </td>
-      
-        
       
         
       
@@ -733,6 +731,8 @@
       
         
       
+        
+      
     </tr>
     
   </table>
@@ -819,36 +819,6 @@
         </td>
         <td>
             Tell Model and/or SQL to skip this field
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> non_essential </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-<input type='checkbox'
-       value='ident_20::non_essential'
-       id='ident_20::non_essential'
-       class='urgency_0'       onchange='javascript:update_tree(
-           "field_statement_bool",
-           "ident_20::non_essential",
-           this.checked
-       )'
-/>
-
-
-        </td>
-        <td>
-            Tells modeler: retrieve only when accessed
         </td>
     </tr>
   
@@ -1325,6 +1295,36 @@ auto</pre>
         </td>
         <td>
             link text for date popup window
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> non_essential </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+<input type='checkbox'
+       value='ident_20::non_essential'
+       id='ident_20::non_essential'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_20::non_essential",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Tells modeler: retrieve only when accessed
         </td>
     </tr>
   

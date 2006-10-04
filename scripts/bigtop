@@ -103,9 +103,20 @@ sub make_new {
     my $bigtop_name = lc $bigtop_dir . '.bigtop';
 
     # do the build
-    Bigtop::Parser->gen_from_string(
-        $bigtop_string, $bigtop_name, 'create', $things_to_build
-    );
+    eval {
+        Bigtop::Parser->gen_from_string(
+            $bigtop_string, $bigtop_name, 'create', $things_to_build
+        );
+    };
+    if ( $@ ) {
+        if ( not -f 'tmp.bigtop' and open my $TMP, '>tmp.bigtop' ) {
+            print $TMP $bigtop_string;
+            close $TMP;
+            warn "\nI had a fatal problem parsing my bigtop file.\n"
+                .   "I wrote that bigtop file to tmp.bigtop\n\n";
+        }
+        die $@;
+    }
 
     # make the .bigtop file in docs subdir of build dir
     my $bigtop_file

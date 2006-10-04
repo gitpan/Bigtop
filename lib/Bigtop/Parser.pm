@@ -115,6 +115,14 @@ sub get_valid_keywords {
 }
 
 sub get_keyword_docs {
+
+    foreach my $type ( keys %keyword_for ) {
+        my @sorted = sort { $a->{ sort_order } <=> $b->{ sort_order } }
+                        @{ $keyword_for{ $type }{ statements } };
+
+        $keyword_for{ $type }{ statements } = \@sorted;
+    }
+
     return \%keyword_for;
 }
 
