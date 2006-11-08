@@ -410,6 +410,11 @@ Under Label, enter what you want the user to see in the pull down list.
 Under Database Value, enter what you want the database to store.  Each time
 you add an option, a new pair of boxes will appear.
 
+=item html_form_foreign
+
+Applies only to html_form_type display.  Indicates that this field is a
+foreign key and the foreign_display should be used instead of the id.
+
 =item date_select_text
 
 Gantry provides a mechanism for user date entry via a popup calendar.
@@ -471,6 +476,16 @@ generation will not add use statements to the stub.  But, items in the
 uses list are also used in the GEN modules, which will incorporate new
 ones.
 
+=item stub_uses
+
+Just like uses, except that the used modules only appear in the stub.
+Remember that stubs are not regenerated, so this is still not effective
+if you already have your stub.
+
+=item gen_uses
+
+Just like uses, except that the modules only appear in the stub.
+
 =item text_description
 
 What fills in the blank in questions like 'Delete this ____?'
@@ -531,6 +546,16 @@ method types understand statement.  For stubs, only the first two are
 available.  For main_listings we can set these extras:
 
 =over 4
+
+=item rows
+
+The number of rows to include on each main listing page.
+
+=item paged_conf
+
+An accessor which returns the number of rows to include on each main
+listing page.  Frequently, this is a conf variable of the same name,
+but that is up to you.
 
 =item cols
 
@@ -621,6 +646,44 @@ Then be glad tentmaker already knows all that.
 The statements are exactly the same as for AutoCRUD_forms, they differ only
 internally so they can respond to the slightly different APIs of AutoCRUD
 and CRUD.
+
+=back
+
+=item Base Controller
+
+This optional special controller allows you to control the base module
+of the app.  The base module is the one the rest of the controllers
+inherit from.  If you don't have one of these blocks, one will be provided
+with minimal functionality.
+
+Without a Base Controller, the only controls you have over the base
+module are the app level location and uses statements.  By having a
+genuine Base Controller, you can use most controller level statements.
+For instance, if you want a one table/one controller app, you can add
+statements like controls_table.  In any case, you can include method
+blocks in the Base Controller as you would for any other Controller.
+For a one table app, this allows you to use a regular main_listing
+method as your do_main.  You could also explicitly create the do_main
+nav method normally provided by default.
+
+There are two method types primarily of interest in base controllers:
+
+=over 4
+
+=item base_links
+
+This makes a method usually called do_main.  By default its template
+is main.tt, but the html_template statement overrides that.  That template
+shows links to all of the other controllers which have page_link_labels.
+You probably want to use the title statement to specify the browser
+window title and the heading for the nav links.
+
+=item links
+
+This method is usually called site_links.  It is provided by the base
+module so that other controllers (or more likely their templates) can
+retrieve the nav links.  Every controller with a page_link_label appears
+in the nav links.  This method type ignores all statements.
 
 =back
 
@@ -1002,20 +1065,21 @@ Just as for CGI Gantry.
 
 This is really useful, but mostly when you first build an app.  It is
 responsible for building the directories and default distribution files
-(like Changes and README).  Once the app is built, you probably want to
-check the No Gen box for this one.  Alternatively, you can pick and
-choose what gets overwritten, see below.
+(like Changes and README).  After initial generation, the only thing it
+does is update MANIFEST.  If you want to do that manually, set no_gen
+for the backen.
 
 =over 4
 
 =item No Gen
 
-Just as for CGI Gantry.
+Just as for CGI Gantry, except that only one file is ever overwritten:
+MANIFEST.  After initial generation, turn off MANIFEST updates by checking
+this box.  Even if you do that, you can still obtain MANIFEST updates with:
 
-=item Skip Build.PL, Changes, README, MANIFEST, MANIFEST.SKIP
+    ./Build manifest
 
-Checking any of these will keep Init Std from overwritting that single
-file.  Usually we just use No Gen on the whole backend.
+Both approaches use the same code to update the MANIFEST.
 
 =item Alternate Template
 

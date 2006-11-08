@@ -31,7 +31,7 @@ $tent_maker->root( 'tenttemplates' );
 # Add literal
 #--------------------------------------------------------------------
 
-$ajax = $tent_maker->do_create_app_block( 'literal::' ) . "\n";
+$ajax = $tent_maker->do_create_app_block( 'literal::' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'alit' );
 
@@ -43,7 +43,7 @@ file_ok( $expected_file, $ajax, 'create empty literal (alit)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_type_change( 'ident_1', 'Location' ) . "\n";
+$ajax = $tent_maker->do_type_change( 'ident_4', 'Location' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'clittype' );
 
@@ -55,8 +55,7 @@ file_ok( $expected_file, $ajax, 'change literal type (clittype)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_literal( 'ident_1', '    require valid-user' )
-      . "\n";
+$ajax = $tent_maker->do_update_literal( 'ident_4', '    require valid-user' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'clittext' );
 
@@ -68,7 +67,7 @@ file_ok( $expected_file, $ajax, 'change literal text (clittext)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_delete_block( 'ident_1' ) . "\n";
+$ajax = $tent_maker->do_delete_block( 'ident_4' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rlit' );
 

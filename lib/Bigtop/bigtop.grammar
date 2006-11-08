@@ -1,5 +1,7 @@
 # To build this, go to the lib/Bigtop directory and type:
 #   perl -MParse::RecDescent - bigtop.grammar Bigtop::Grammar
+# Then append the pod to keep the tests happy:
+#   cat Grammar.pm grammar.pod > tmp; mv tmp Grammar.pm
 {
     my $backtick_line = 0;
     my $backtick_warning = '';
@@ -98,9 +100,32 @@ literal_block : 'literal' keyword[ 'app_literal' ]
                     }, 'literal_block'
                 }
 
-controller_block : 'controller' module_ident is_type(?) '{'
+controller_block : 'controller' 'is' 'base_controller' '{'
+                        controller_body[ 'base_controller' ]
+                    '}' {
+                        bless {
+                            __IDENT__ => Bigtop::Parser->get_ident(),
+                            __BODY__  => $item{controller_body}
+                                              {'controller_statement(s?)'},
+                            __NAME__  => 'base_controller',
+                            __TYPE__  => 'base_controller',
+                        }, 'controller_block'
+                    }
+                 | 'controller' module_ident is_type(?) '{'
                         controller_body[ $item{module_ident} ]
                     '}' {
+                        if ( defined $item{'is_type(?)'}[0]
+                                and
+                             $item{'is_type(?)'}[0] eq 'base_controller'
+                        ) {
+                            my $message = "base_controller cannot have an "
+                                        . "explicit name";
+                            my $diag_text = "controller $item{module_ident} "
+                                          . "is base_controller";
+                            Bigtop::Parser->fatal_error_two_lines(
+                                $message, $diag_text, $thisline
+                            );
+                        }
                         bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
                             __NAME__  => $item{module_ident},
@@ -173,19 +198,19 @@ method_statement : keyword['method'] arg_list SEMI_COLON {
                         }, 'method_statement'
                    }
 
-sql_block : 'sequence' <commit> IDENT        '{' sequence_body   '}' {
+sql_block : 'sequence' <commit> table_ident  '{' sequence_body   '}' {
                 bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
-                            __NAME__  => $item{IDENT},
+                            __NAME__  => $item{table_ident},
                             __TYPE__  => 'sequences',
                             __BODY__  => $item{sequence_body}
                                               {'sequence_statement(s?)'},
                 }, 'seq_block'
             }
-          | 'table'    <commit> IDENT        '{' table_body      '}' {
+          | 'table'    <commit> table_ident  '{' table_body      '}' {
                 bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
-                            __NAME__  => $item{IDENT},
+                            __NAME__  => $item{table_ident},
                             __TYPE__  => 'tables',
                             __BODY__  => $item{table_body}
                                               {'table_element_block(s?)'},
@@ -198,6 +223,12 @@ sql_block : 'sequence' <commit> IDENT        '{' sequence_body   '}' {
                             __BODY__  => $item{join_table_body}
                                               {'join_table_statement(s?)'},
                 }, 'join_table'
+            }
+          | 'schema' <commit> IDENT '{' '}' {
+                bless {
+                            __IDENT__ => Bigtop::Parser->get_ident(),
+                            __NAME__  => $item{ IDENT },
+                }, 'schema_block'
             }
 
 sequence_body : sequence_statement(s?)
@@ -315,6 +346,9 @@ arg_element : module_ident { $item[1] }
         $message, $text, $thisline
     );
 }
+
+table_ident : IDENT '.' IDENT { $item[1] . '.' . $item[3] }
+            | IDENT           { $item[1] }
 
 module_ident : IDENT '::' module_ident { $item[1] . '::' . $item[3] }
              | IDENT                   { $item[1] }

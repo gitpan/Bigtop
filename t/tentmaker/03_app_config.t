@@ -50,6 +50,12 @@ app Sample {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
+    controller is base_controller {
+        method do_main is base_links {
+        }
+        method site_links is links {
+        }
+    }
 }
 EO_sample_input
 
@@ -71,7 +77,7 @@ $ajax = $tent_maker->do_update_app_conf_statement(
             'new_conf_st',
             'new_value',
             'true'
-) . "\n";
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'aconfst' );
 
@@ -87,8 +93,7 @@ Bigtop::TentMaker->take_performance_hit( $empty_config );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_app_conf_statement( 'new_conf_st', 'value' )
-      . "\n";
+$ajax = $tent_maker->do_update_app_conf_statement( 'new_conf_st', 'value' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'aconfstempty' );
 
@@ -103,7 +108,7 @@ $tent_maker->template_disable( 0 );
 $ajax = $tent_maker->do_update_app_conf_statement(
             'new_conf_st',
             'other_value'
-) . "\n";
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cconfstempty' );
 

@@ -140,7 +140,13 @@ EO_Bigtop_File
 # strip_decimal_point and insert_decimal_point would be functions in the
 # data model class.
 
-Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'Control' );
+Bigtop::Parser->gen_from_string(
+    {
+        bigtop_string => $bigtop_string,
+        create        => 'create',
+        build_list    => [ 'Control', ],
+    }
+);
 
 dir_only_contains_ok(
     $play_dir,
@@ -249,7 +255,11 @@ EO_Another_Bigtop
 
 warning_like {
     Bigtop::Parser->gen_from_string(
-        $bigtop_string, undef, 'create', 'Control'
+        {
+            bigtop_string => $bigtop_string,
+            create        => 'create',
+            build_list    => [ 'Control', ],
+        }
     );
 } qr/skipping generation/, 'warning for app level no_gen';
 

@@ -79,6 +79,7 @@ sub gen_SiteLook {
         my $title_list    = $statements->{page_link_label};
 
         next CONTROLLER unless $title_list;
+        next CONTROLLER if ( $controller eq 'base_controller' );
 
         unless ( $location_list ) {
             die 'Error: no location or rel_location defined for '

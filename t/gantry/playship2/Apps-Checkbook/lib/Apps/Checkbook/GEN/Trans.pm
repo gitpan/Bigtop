@@ -22,6 +22,12 @@ sub do_main {
     $self->stash->view->template( 'results.tt' );
     $self->stash->view->title( 'Transactions' );
 
+    my $real_location = $self->location() || '';
+    if ( $real_location ) {
+        $real_location =~ s{/+$}{};
+        $real_location .= '/';
+    }
+
     my $retval = {
         headings       => [
             'Status 3',
@@ -32,7 +38,7 @@ sub do_main {
         header_options => [
             {
                 text => 'Add',
-                link => $self->location() . "/add",
+                link => $real_location . "add",
             },
         ],
     };
@@ -52,11 +58,11 @@ sub do_main {
                 options => [
                     {
                         text => 'Edit',
-                        link => $self->location() . "/edit/$id",
+                        link => $real_location . "edit/$id",
                     },
                     {
                         text => 'Delete',
-                        link => $self->location() . "/delete/$id",
+                        link => $real_location . "delete/$id",
                     },
                 ],
             }
@@ -128,6 +134,12 @@ sub form {
                 is => 'varchar',
                 rows => 3,
                 cols => 60,
+            },
+            {
+                options => $selections->{sch_tbl},
+                name => 'sch_tbl',
+                type => 'select',
+                is => 'int4',
             },
         ],
     };

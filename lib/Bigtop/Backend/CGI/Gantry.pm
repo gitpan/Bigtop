@@ -479,16 +479,6 @@ package # app_statement
     app_statement;
 use strict; use warnings;
 
-sub output_location {
-    my $self = shift;
-
-    return unless $self->{__KEYWORD__} eq 'location';
-
-    my $location = $self->{__ARGS__}[0];
-
-    return [ $location ];
-}
-
 package # app_config_block
     app_config_block;
 use strict; use warnings;
@@ -531,6 +521,8 @@ sub output_cgi_locations {
     my $self         = shift;
     my $child_output = shift;
     my $location     = shift;
+
+    return if $self->is_base_controller();
 
     my %child_loc    = @{ $child_output };
 

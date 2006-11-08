@@ -30,7 +30,6 @@ my $my_crud = Gantry::Plugins::CRUD->new(
     form            => \&my_crud_form,
     redirect        => \&my_crud_redirect,
     text_descr      => 'Payee/Payor',
-    use_clean_dates => 1,
 );
 
 #-----------------------------------------------------------------
@@ -134,7 +133,6 @@ my $crud = Gantry::Plugins::CRUD->new(
     form            => \&_form,
     redirect        => \&crud_redirect,
     text_descr      => 'Payee/Payor',
-    use_clean_dates => 1,
 );
 
 #-----------------------------------------------------------------
@@ -333,7 +331,7 @@ You might even want to describe the table this module controls here.
 =back
 
 
-=head1 METHODS MIXED IN FROM Apps::Checkbook::GEN::PayeeOr
+=head1 METHODS INHERITED FROM Apps::Checkbook::GEN::PayeeOr
 
 =over 4
 

@@ -13,7 +13,7 @@ Here are the highlights:
     Lazy people should start with Bigtop::Docs::TentTut
     Those allergic to web apps should start with Bigtop::Docs::Tutorial
     Pedants should look in Bigtop::Docs::Syntax instead
-    Developers should carefully read Bigtop::Docs::Modules
+    Bigtop developers should carefully read Bigtop::Docs::Modules
 
 =over 4
 
@@ -33,12 +33,13 @@ than on tentmaker.
 A (fairly) complete list of keywords Bigtop understands in a compact text
 file.  See Bigtop::Docs::QuickRef for most of the same information in
 html tabular formatting or run tentmaker which shows complete information
-in your browser.
+in your browser.  Or look in Bigtop::Keywords where all the words should
+be listed.
 
 =item Bigtop::Docs::Modules
 
 Documents many of the modules in the bigtop distribution including at least:
-Bigtop.pm, Bigtop::Parser.  This includes a description of the grammar
+Bigtop.pm and Bigtop::Parser.  This includes a description of the grammar
 of the Bigtop language and how to work with it.  (Note that the grammar
 is now in its own file called bigtop.grammar, but this has no effect on
 the docs in Bigtop::Docs::Modules.  It may be out of date, but the extraction
@@ -50,18 +51,21 @@ This provides a somewhat complete list of all the keywords Bigtop understands
 along with some examples in html form.  The depth of the tables involved
 makes it somewhat difficult to use.  For a more compact version in plain
 text, see Bigtop::Docs::Keywords or run tentmaker for complete information
-in a different web format.
+in a different web format.  Or just look directly in Bigtop::Keywords where
+all the keywords are defined.
 
 =item Bigtop::Docs::Syntax
 
 This is meant to fully describe all of the syntax (including deprecations)
 in the Bigtop language.  It is the encyclopedic version of
-Bigtop::Docs::Keywords.
+Bigtop::Docs::Keywords and is meant as complete documentation of
+Bigtop::Keywords..
 
 =item Bigtop::Docs::TentTut
 
 The tentmaker tutorial.  Explains in detail how to use tentmaker to edit
-Bigtop files.  Filled with beautiful screen shots.
+Bigtop files.  Filled with beautiful screen shots (sometimes, they are even
+up to date).
 
 =item Bigtop::Docs::TentRef
 

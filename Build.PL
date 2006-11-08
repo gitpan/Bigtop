@@ -32,7 +32,7 @@ my $build = $subclass->new(
     script_files        => [ glob( 'scripts/*' ) ],
     tentmaker_files     => [ glob( 'tenttemplates/*' ) ],
     test_files          => [
-#        't/gantry/06*.t',
+#        't/gantry/07_base_cont.t',
         't/*.t',
         't/tentmaker/*.t',
         't/init/*.t',
@@ -41,7 +41,6 @@ my $build = $subclass->new(
         't/mysql/*.t',
         't/gantry/*.t',
         't/sitelook/*.t',
-        't/ganmodel/*.t',
         't/dbixclass/*.t',
         't/cdbi/*.t',
         't/cleanup/*.t',

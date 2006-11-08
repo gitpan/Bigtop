@@ -1,5 +1,62 @@
 Revision history for Perl extension Bigtop.
 
+0.19 Wed Nov  8 12:31:31 CST 2006
+    Highlights:
+    * table names can now have schema prefixes: sch.tbl
+    * t/10_run.t is now gen output (not a stub any more)
+    * tables can have 0, 1, or more primary key columns
+    * support for improved Gantry::Conf
+    * all init files except MANIFEST are now stubs
+    * main listings can now be paged (instead of showing all rows)
+    * one controller can be of type base controller to control AppName.pm
+    * tentmaker has a stop server button, use it an never be fooled by
+      javascript into thinking the server is up when its not
+
+    * Added support for table names with schema prefixes and schema blocks
+      (but only Postgres really has these).
+    - Removed Model Gantry backend.  It (and the models themselves) are
+      not really maintained and it was starting to show.
+    * Changed Gantry Control backend so it updates t/10_run.t instead of
+      considering it a stub (it now agrees with various docs).
+    - Added skip_test controller statement, use it to opt out of t/10_run.t.
+    * Attempted to add support for tables with no primary key and
+      tables with multi-column primary keys.  The SQL works, but I haven't
+      tried an app with these features.
+    * Converted to new Gantry::Conf style.  Choose the Conf Gantry backend,
+      supply your instance there, then check Use Gantry::Conf in CGI Gantry
+      or HttpdConf Gantry.
+    - Added support for Gantry's new html_form_type display and its cousin
+      html_form_foreign.  display fields are shown on the input form as
+      plain text (not in input elements).
+    - Cosmetic improvements to generated Changes and README files.
+    * All the plain files Init Std generates are now stubs except MANIFEST.
+      no_gens for each file are now unneeded except for MANIFEST.
+    - Added a stop server button to tentmaker.  If you shut down that way,
+      the browser will prevent you from trying to use the deceased server.
+    - Stopped generating use_clean_dates for CRUD object constructors since
+      it is superceeded by default cleaning of params.  (Use
+      turn_off_clean_params => 1 and use_clean_dates => 1 for the old way.)
+    - Suppressed javascript errors in tentmaker when changes could have
+      cascaded but didn't.
+    * Added paging to main listings upon request.  Use rows or paged_conf
+      method statements to enable it.
+    * There is now a:
+        controller is base_controller { ... }
+      block so you can put methods into the base module.  There are two
+      method types specially designed for it: base_links (a do_main with
+      nav links to other pages) and links (a site_links method other
+      controllers, or their templates, use to generate nav links).
+      But, you can use these for one table/one controller apps.
+    - tentmaker now only displays input boxes for controller and method
+      statements if the type of method or controller understands the
+      statement.  TODO: Changing types requires a manual refresh.
+    - Corrected a critical and long standing bug with the urgency color
+      of tentmaker created join tables.  Everyone will be happy to know
+      that both table boxes are now red.
+    - Added gen_uses and stub_uses statements for controllers.  You can
+      still use uses to put the use statement in both.  None of these
+      alter an existing stub.
+
 0.18 Wed Oct  4 15:07:47 CDT 2006
     - Corrected fatal bug in -a flag for scripts when the bigtop file had an
       existing join table.

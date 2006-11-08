@@ -63,6 +63,10 @@ CREATE [% keyword %] [% name %][% child_output %]
 );
 [% END %]
 
+[% BLOCK pk_text %]
+    PRIMARY KEY( [% FOREACH pk IN pks %][% pk %][% UNLESS loop.last %], [% END %][% END %] )
+[%- END -%]
+
 [% BLOCK table_element_block %]    [% name %] [% child_output %][% END %]
 
 [% BLOCK field_statement %]
@@ -108,6 +112,7 @@ use strict; use warnings;
 sub output_sql {
     my $self         = shift;
     my $child_output = shift;
+    my $lookup       = shift;
 
     return if ( $self->_skip_this_block );
 
@@ -117,6 +122,15 @@ sub output_sql {
     foreach my $statement ( @{ $child_output } ) {
         my ( $type, $output ) = @{ $statement };
         push @{ $output{ $type } }, $output;
+    }
+
+    my $pks = $self->find_primary_key( $self->{__NAME__}, $lookup );
+
+    if ( ref( $pks ) eq 'ARRAY' ) { # multi-column primary key
+        my $pk_text = Bigtop::Backend::SQL::Postgres::pk_text(
+            { pks => $pks, }
+        );
+        push @{ $output{ table_body } }, $pk_text;
     }
 
     $child_out_str = Bigtop::Backend::SQL::Postgres::table_body(
@@ -157,6 +171,24 @@ sub output_sql {
         {
             keyword      => $self->get_create_keyword(),
             child_output => $child_out_str,
+            name         => $self->get_name(),
+        }
+    );
+
+    return [ $output ];
+}
+
+package # schema_block
+    schema_block;
+use strict; use warnings;
+
+sub output_sql {
+    my $self         = shift;
+
+    my $output = Bigtop::Backend::SQL::Postgres::sql_block(
+        {
+            keyword      => $self->get_create_keyword(),
+            child_output => ';',
             name         => $self->get_name(),
         }
     );
@@ -212,11 +244,21 @@ package # field_statement
 use strict; use warnings;
 
 my %code_for = (
-    primary_key        => sub { 'PRIMARY KEY' },
+    primary_key        => \&postgres_pk_text,
     assign_by_sequence => \&gen_seq_text,
     auto               => \&gen_seq_text,
     datetime           => sub { 'TIMESTAMP WITH TIME ZONE' },
 );
+
+sub postgres_pk_text {
+    my $self   = shift;
+    my $lookup = shift;
+    my $table  = $self->get_table_name();
+
+    my $pks    = table_block->find_primary_key( $table, $lookup );
+
+    return ( ref( $pks ) eq 'ARRAY' ) ? '' : 'PRIMARY KEY';
+}
 
 sub gen_seq_text {
     my $self       = shift;
@@ -260,7 +302,7 @@ sub output_sql {
                 unshift @keywords, $new_keyword;
             }
             else {
-                push @keywords, $new_keyword;
+                push @keywords, $new_keyword if ( $new_keyword );
             }
         }
         else {

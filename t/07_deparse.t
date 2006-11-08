@@ -36,6 +36,7 @@ app Name {
     authors `Phil Crow` => `philcrow2000\@yahoo.com`, `Tim Keefer`;
     config {
         dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        odbcconn `dbi:ODBC:OddOS`;
         var value;
     }
     # keeps track of names
@@ -56,7 +57,7 @@ app Name {
             html_form_optional 1;
         }
         data
-            last => Jones,
+            last => `Jones, John Paul`,
             first => Pam;
     }
     controller Names is AutoCRUD {
@@ -105,6 +106,7 @@ app Name {
     authors `Phil Crow` => `philcrow2000@yahoo.com`, `Tim Keefer`;
     config {
         dbconn `dbi:Pg:dbname=sample` => no_accessor;
+        odbcconn `dbi:ODBC:OddOS`;
         var value;
     }
     # keeps track of names
@@ -125,7 +127,7 @@ app Name {
             html_form_optional 1;
         }
         data
-            last => Jones,
+            last => `Jones, John Paul`,
             first => Pam;
     }
     # - Begin Controllers -

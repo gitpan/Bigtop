@@ -105,7 +105,13 @@ sub make_new {
     # do the build
     eval {
         Bigtop::Parser->gen_from_string(
-            $bigtop_string, $bigtop_name, 'create', $things_to_build
+            {
+                bigtop_string => $bigtop_string,
+                bigtop_file   => $bigtop_name,
+                create        => 'create',
+                build_list    => [ $things_to_build ],
+                flags         => "-n @models",
+            }
         );
     };
     if ( $@ ) {
@@ -123,7 +129,9 @@ sub make_new {
             = File::Spec->catfile( $bigtop_dir, 'docs', $bigtop_name );
 
     if ( open my $BIGTOP, ">", $bigtop_file ) {
-        $bigtop_string =~ s/\{\}/{ no_gen 1; }/;
+        # We used to turn off all Init gens, now it thinks most of its
+        # files are stubs, so the following is not needed:
+        # $bigtop_string =~ s/\{\}/{ no_gen 1; }/;
         print $BIGTOP $bigtop_string;
         close $BIGTOP;
     }

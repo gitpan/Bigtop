@@ -58,6 +58,15 @@ app Apps::Checkbook {
         DB     app_db => no_accessor;
         DBName someone;
     }
+    controller is base_controller {
+        method do_main is base_links {
+            title `Checkbook App`;
+        }
+        method site_links is links {
+        }
+        location `/site`;
+        skip_test 1;
+    }
     sequence payee_seq {}
     sequence trans_seq {}
     table payee {
@@ -113,11 +122,15 @@ app Apps::Checkbook {
             html_form_cols         60;
             html_form_optional     1;
         }
+        field sch_tbl {
+            is             int4;
+            refers_to      `sch.tbl`;
+            html_form_type select;
+        }
     }
     controller PayeeOr is CRUD {
         uses              SomePackage::SomeModule, ExportingModule;
         rel_location      payee;
-        controls_table    payee;
         text_description `Payee/Payor`;
         page_link_label  `Payee/Payor`;
         config {
@@ -129,6 +142,7 @@ app Apps::Checkbook {
             header_options    Add => `$add_loc`;
             row_options       Edit, `Make Some`, Delete;
         }
+        controls_table    payee;
         method my_crud_form is CRUD_form {
             form_name         payee_crud;
             fields            name;
@@ -185,7 +199,18 @@ app Apps::Checkbook {
             fields    status;
         }
     }
-    controller NoOp { rel_location none; }
+    controller NoOp { rel_location none; skip_test 1; }
+    table sch.tbl {
+        field id { is int4, primary_key, auto; }
+        field name { is varchar; }
+    }
+    controller SchTbl is AutoCRUD {
+        controls_table `sch.tbl`;
+        rel_location   sch_tbl;
+        method form is AutoCRUD_form {
+            fields    name;
+        }
+    }
 }
 EO_Bigtop_File
 
@@ -199,7 +224,11 @@ EO_Bigtop_File
 
 warning_like {
     Bigtop::Parser->gen_from_string(
-        $bigtop_string, undef, 'create', 'Control'
+        {
+            bigtop_string => $bigtop_string,
+            create        => 'create',
+            build_list    => [ 'Control', ],
+        }
     );
 } qr/^form methods should have/, '_form CRUD form name warning';
 
@@ -231,6 +260,7 @@ app Apps::Checkbook {
     controller PayeeOr {
         controls_table    payee;
         text_description `Payee/Payor`;
+        rel_location      payee;
         method do_main is main_listing {
             title             Payees;
             cols              name;
@@ -254,7 +284,13 @@ my $building_dir = File::Spec->catdir( $play_dir, 'Apps-Checkbook' );
 
 chdir $building_dir;
 
-Bigtop::Parser->gen_from_string( $new_bigtop, undef, 0, 'Control' );
+Bigtop::Parser->gen_from_string(
+    {
+        bigtop_string => $new_bigtop,
+        create        => 0,
+        build_list    => [ 'Control', ],
+    }
+);
 
 chdir $old_cwd;
 
@@ -411,9 +447,17 @@ EO_No_Full_Use
 
 mkdir $play_dir;
 
-Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'Control' );
+Bigtop::Parser->gen_from_string(
+    {
+        bigtop_string => $bigtop_string,
+        create        => 1,
+        build_list    => [ 'Control', ],
+    }
+);
 
 my $correct = <<'EO_Correct_Simple_Use';
+# NEVER EDIT this file.  It was generated and will be overwritten without
+# notice upon regeneration of this application.  You have been warned.
 package Apps::GENCheckbook;
 
 use strict;
@@ -424,10 +468,6 @@ our @ISA = qw( Gantry );
 
 use Some::Module;
 use Some::Other::Module;
-use Apps::Checkbook::PayeeOr;
-use Apps::Checkbook::Trans;
-use Apps::Checkbook::Trans::Action;
-use Apps::Checkbook::NoOp;
 
 ##-----------------------------------------------------------------
 ## $self->init( $r )
@@ -445,7 +485,7 @@ use Apps::Checkbook::NoOp;
 # $self->do_main( )
 #-----------------------------------------------------------------
 sub do_main {
-    my ( $self ) = shift;
+    my ( $self ) = @_;
 
     $self->stash->view->template( 'main.tt' );
     $self->stash->view->title( 'Checkbook' );
@@ -454,7 +494,7 @@ sub do_main {
         pages => [
         ],
     } );
-}
+} # END do_main
 
 #-----------------------------------------------------------------
 # $self->site_links( )
@@ -464,7 +504,7 @@ sub site_links {
 
     return [
     ];
-}
+} # END site_links
 
 1;
 
@@ -510,6 +550,7 @@ Copyright (C) 2006 Somebody SomewhereElse
 All rights reserved.
 
 =cut
+
 EO_Correct_Simple_Use
 
 file_ok(

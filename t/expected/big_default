@@ -17,6 +17,12 @@ app Address {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
+    controller is base_controller {
+        method do_main is base_links {
+        }
+        method site_links is links {
+        }
+    }
     table family_address {
         field id {
             is int4, primary_key, auto;
@@ -41,8 +47,8 @@ app Address {
 
     }
     controller FamilyAddress is AutoCRUD {
-        controls_table family_address;
-        rel_location   family_address;
+        controls_table `family_address`;
+        rel_location family_address;
         text_description `family address`;
         page_link_label `Family Address`;
         method do_main is main_listing {
@@ -81,13 +87,13 @@ app Address {
         field family_address {
             is             int4;
             label          `Family Address`;
-            refers_to      family_address;
+            refers_to      `family_address`;
             html_form_type select;
         }
     }
     controller BirthDate is AutoCRUD {
-        controls_table birth_date;
-        rel_location   birth_date;
+        controls_table `birth_date`;
+        rel_location birth_date;
         text_description `birth date`;
         page_link_label `Birth Date`;
         method do_main is main_listing {
@@ -126,8 +132,8 @@ app Address {
 
     }
     controller A is AutoCRUD {
-        controls_table a;
-        rel_location   a;
+        controls_table `a`;
+        rel_location a;
         text_description `a`;
         page_link_label `A`;
         method do_main is main_listing {
@@ -166,8 +172,8 @@ app Address {
 
     }
     controller B is AutoCRUD {
-        controls_table b;
-        rel_location   b;
+        controls_table `b`;
+        rel_location b;
         text_description `b`;
         page_link_label `B`;
         method do_main is main_listing {

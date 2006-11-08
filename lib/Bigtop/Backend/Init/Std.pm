@@ -9,6 +9,13 @@ use File::Basename;
 use File::Copy;
 use Inline;
 
+my %stubs = (
+    'Build.PL'      => 1,
+    'Changes'       => 1,
+    'MANIFEST.SKIP' => 1,
+    'README'        => 1,
+);
+
 BEGIN {
     Bigtop::Parser->add_valid_keywords(
         Bigtop::Keywords->get_docs_for(
@@ -40,48 +47,8 @@ sub backend_block_keywords {
     return [
         { keyword => 'no_gen',
           label   => 'No Gen',
-          descr   => 'Skip everything for this backend',
+          descr   => 'Skip MANIFEST generation',
           type    => 'boolean' },
-
-        { keyword => 'Build.PL',
-          label   => 'Skip Build.PL',
-          descr   => 'Do not regen Build.PL file',
-          type    => 'controlled_boolean',
-          default => undef,
-          false   => undef,
-          true    => 'no_gen' },
-
-        { keyword => 'Changes',
-          label   => 'Skip Changes',
-          descr   => 'Do not regen Changes file',
-          type    => 'controlled_boolean',
-          default => undef,
-          false   => undef,
-          true    => 'no_gen' },
-
-        { keyword => 'README',
-          label   => 'Skip README',
-          descr   => 'Do not regen README file',
-          type    => 'controlled_boolean',
-          default => undef,
-          false   => undef,
-          true    => 'no_gen' },
-
-        { keyword => 'MANIFEST',
-          label   => 'Skip MANIFEST',
-          descr   => 'Do not regen MANIFEST file',
-          type    => 'controlled_boolean',
-          default => undef,
-          false   => undef,
-          true    => 'no_gen' },
-
-        { keyword => 'MANIFEST.SKIP',
-          label   => 'Skip MANIFEST.SKIP',
-          descr   => 'Do not regen MANIFEST.SKIP file',
-          type    => 'controlled_boolean',
-          default => undef,
-          false   => undef,
-          true    => 'no_gen' },
 
         { keyword => 'template',
           label   => 'Alternate Template',
@@ -96,7 +63,9 @@ our $default_template_text = <<'EO_Template';
 Revision history for Perl web application [% app_name %]
 
 0.01  [% time_stamp %]
-    - original version created with bigtop
+    - original version created with bigtop[% IF flags %] using:
+        [% flags %]
+[% END %]
 [% END %]
 
 [% BLOCK README %]
@@ -117,6 +86,8 @@ To install this module type:
 DEPENDENCIES
 
 This module requires these other modules and libraries:
+
+    [% control_backend %]
 
 COPYRIGHT AND LICENCE
 
@@ -413,6 +384,7 @@ sub gen_Init {
     my $build_dir   = shift;
     my $tree        = shift;
     my $bigtop_file = shift;
+    my $flags       = shift;
 
     # build dirs: lib, t
     my $test_dir     = File::Spec->catdir( $build_dir, 't' );
@@ -424,16 +396,17 @@ sub gen_Init {
     foreach my $simple_file
                     qw(
                         Changes
-                        MANIFEST.SKIP
+                        MANIFEST_SKIP
                         README
-                        Build.PL
+                        Build_PL
                     )
     {
         next if ( defined $tree->{configuration}{Init}{$simple_file}
                     and
                   $tree->{configuration}{Init}{$simple_file} eq 'no_gen'
                 );
-        $class->init_simple_file( $build_dir, $tree, $simple_file );
+        ( my $actual_file = $simple_file ) =~ s/_/./;
+        $class->init_simple_file( $build_dir, $tree, $actual_file, $flags );
     }
 
     # copy the bigtop file to its new home
@@ -468,12 +441,16 @@ sub init_simple_file {
     my $build_dir    = shift;
     my $tree         = shift;
     my $file_base    = shift;
+    my $flags        = shift;
 
     # where does this belong?
     my $file_name    = File::Spec->catfile( $build_dir, $file_base );
     my $app_name     = $tree->get_appname();
     my $app_dash_name= $app_name;
     $app_dash_name   =~ s/::/-/g;
+
+    # should we really build this file?
+    return if ( $stubs{ $file_base } and -f $file_name );
 
     # get the time
     my $right_now = scalar localtime;
@@ -484,6 +461,15 @@ sub init_simple_file {
     my $statements       = $tree->{application}{lookup}{app_statements};
     my $copyright_holder = $tree->get_copyright_holder();
     my $license_text;
+
+    # what framework?
+
+    my $control_backend;
+    my $config = $tree->get_config;
+    if ( defined $config->{__BACKENDS__}{ Control } ) {
+        $control_backend =
+            $tree->get_config->{__BACKENDS__}{ Control }[0]{ __NAME__ };
+    }
 
     if ( defined $statements->{license_text} ) {
         $license_text = $statements->{license_text}[0];
@@ -510,6 +496,8 @@ sub init_simple_file {
             copyright_holder => $copyright_holder,
             year             => $year,
             license_text     => $license_text,
+            flags            => $flags,
+            control_backend  => $control_backend,
         } );
     }
 
@@ -600,11 +588,11 @@ bigtop input, except to build the default app_dir from the app_name.
 Tells tentmaker that I understand these config section backend block keywords:
 
     no_gen
-    Build.PL
+    Build_PL
     Changes
     README
     MANIFEST
-    MANIFEST.SKIP
+    MANIFEST_SKIP
     template
 
 =item what_do_you_make

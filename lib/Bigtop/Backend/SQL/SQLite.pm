@@ -63,6 +63,10 @@ CREATE [% keyword %] [% name %][% child_output %]
 );
 [% END %]
 
+[% BLOCK pk_text %]
+    PRIMARY KEY( [% FOREACH pk IN pks %][% pk %][% UNLESS loop.last %], [% END %][% END %] )
+[%- END -%]
+
 [% BLOCK table_element_block %]    [% name %] [% child_output %][% END %]
 
 [% BLOCK field_statement %]
@@ -107,6 +111,7 @@ use strict; use warnings;
 sub output_sql_lite {
     my $self         = shift;
     my $child_output = shift;
+    my $lookup       = shift;
 
     return if ( $self->_skip_this_block );
 
@@ -114,6 +119,15 @@ sub output_sql_lite {
     foreach my $statement ( @{ $child_output } ) {
         my ( $type, $output ) = @{ $statement };
         push @{ $output{ $type } }, $output;
+    }
+
+    my $pks = $self->find_primary_key( $self->{__NAME__}, $lookup );
+
+    if ( ref( $pks ) eq 'ARRAY' ) { # multi-column primary key
+        my $pk_text = Bigtop::Backend::SQL::SQLite::pk_text(
+                { pks => $pks, }
+        );
+        push @{ $output{ table_body } }, $pk_text;
     }
 
     my $child_out_str = Bigtop::Backend::SQL::SQLite::table_body(
@@ -184,10 +198,19 @@ use strict; use warnings;
 
 my %expansion_for = (
     int4               => 'INTEGER',
-    primary_key        => 'PRIMARY KEY',
     assign_by_sequence => 'AUTOINCREMENT',
     auto               => 'AUTOINCREMENT',
 );
+
+sub sqlite_pk_text {
+    my $self   = shift;
+    my $lookup = shift;
+    my $table  = $self->get_table_name();
+
+    my $pks    = table_block->find_primary_key( $table, $lookup );
+
+    return ( ref( $pks ) eq 'ARRAY' ) ? '' : 'PRIMARY KEY';
+}
 
 sub output_sql_lite {
     my $self   = shift;
@@ -200,7 +223,11 @@ sub output_sql_lite {
     foreach my $arg ( @{ $self->{__DEF__}{__ARGS__} } ) {
         my $expanded_form = $expansion_for{$arg};
 
-        if ( defined $expanded_form ) {
+        if ( $arg eq 'primary_key' ) {
+            my $pk_text = $self->sqlite_pk_text( $lookup );
+            push @keywords, $pk_text if $pk_text;
+        }
+        elsif ( defined $expanded_form ) {
             push @keywords, $expanded_form;
         }
         else {

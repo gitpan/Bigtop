@@ -10,7 +10,7 @@ This file is html only.  If you want a text version see Bigtop::Docs::Keywords.
 Note that this file is note complete.  Running tentmaker should give
 you complete and accurate information, since its docs come from the code.
 See Bigtop::Docs::TentTut for a tutorial on tentmaker use and
-Bigtop::Docs::TentRef for full details.
+Bigtop::Docs::TentRef or Bigtop::Docs::Syntax for full details.
 
 Below you should see a pretty table in your browser.
 
@@ -55,7 +55,7 @@ might help to see a bigger example:
 config {
     engine          MP13;
     template_engine TT;
-    Init            Std      { no_gen 1; }
+    Init            Std      {}
     SQL             Postgres {}
 }
 app Simple::Sample {
@@ -611,7 +611,19 @@ they understand.
                                     <td>
                                         The html element type used when this
                                         field appears in an html form.  Choose
-                                        from: text, textarea, or select.
+                                        from: text, textarea, select, or
+                                        display.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td valign='top'>
+                                        html_form_foreign
+                                    </td>
+                                    <td>
+                                        For fields of type 'display,' indicates
+                                        field is a foreign key and the
+                                        foreign_display of its row should
+                                        be shown instead of the row id.
                                     </td>
                                 </tr>
                                 <tr>
@@ -707,11 +719,29 @@ they understand.
                     </tr>
                     <tr>
                         <td valign='top'>
-                            uses
+                            gen_uses
                         </td>
                         <td>
                             A comma separated list of modules that the
-                            generated stub will use.
+                            generated module will use.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign='top'>
+                            stub_uses
+                        </td>
+                        <td>
+                            A comma separated list of modules that the
+                            stub module will use.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign='top'>
+                            uses
+                        </td>
+                        <td>
+                            A comma separated list of modules that both the
+                            generated and the stub modules will use.
                         </td>
                     </tr>
                     <tr>
@@ -748,6 +778,26 @@ they understand.
                                 <th colspan='2' align='left'>
                                     Legal statements for main_listing methods:
                                 </th>
+                            </tr>
+                            <tr>
+                                <td valign='top'>
+                                    rows
+                                </td>
+                                <td valign='top'>
+                                    number of rows to include in each main
+                                    listing page
+                                </td>
+                            </tr>
+                            <tr>
+                                <td valign='top'>
+                                    paged_conf
+                                </td>
+                                <td valign='top'>
+                                    name of conf parameter which hold number
+                                    of rows to include in each main listing
+                                    page (the value is really the name of
+                                    any accessor on the gantry site object)
+                                </td>
                             </tr>
                             <tr>
                                 <td valign='top'>

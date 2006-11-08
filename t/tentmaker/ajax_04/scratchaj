@@ -2,16 +2,16 @@
 
 
   <div class='app_block_join_table'
-       id='div_ident_24'>
+       id='div_ident_27'>
       
       
         
         <fieldset>
         <legend>
             Join Table 
-            ( <a href='javascript:show_or_hide( "hideable_ident_24" );'>
+            ( <a href='javascript:show_or_hide( "hideable_ident_27" );'>
                 edit</a> |  
-<a href="#" name='app_body_delete::ident_24' onclick='javascript:delete_block( this )'>delete</a>
+<a href="#" name='app_body_delete::ident_27' onclick='javascript:delete_block( this )'>delete</a>
        
 
             )
@@ -21,11 +21,11 @@
                 <td> Name: </td>
                 <td>
                     <input type='text'
-                           id='app_block::ident_24'
+                           id='app_block::ident_27'
                            value='fox_sock'
                            onblur='javascript:update_tree(
                                "name",
-                               "table::ident_24",
+                               "table::ident_27",
                                this.value
                            )'
                     />
@@ -34,7 +34,7 @@
             <tr>
                 <td colspan='2'>
                   
-<div id='hideable_ident_24'
+<div id='hideable_ident_27'
   
     style='display: none'
   
@@ -62,21 +62,20 @@
 
 
 
-      <table id='ident_24::joins_input_table'>
+      <table id='ident_27::joins_input_table'>
         <tr><th> Table </th>
             <th> Table
                  
             </th></tr>
     
-    
-        <tr><td>
+            <tr><td>
                 <input
                     type='text'
-                    name='ident_24::joins_key'
+                    name='ident_27::joins_key'
                     class='urgency_10'
                     onblur='javascript:update_pairs(
                         "join_table_statement_pair",
-                        "ident_24::joins",
+                        "ident_27::joins",
                         0,
                         this
                     )'
@@ -85,11 +84,11 @@
             <td>
                 <input
                     type='text'
-                    name='ident_24::joins_value'
-                    class='urgency_'
+                    name='ident_27::joins_value'
+                    class='urgency_10'
                     onblur='javascript:update_pairs(
                         "join_table_statement_pair",
-                        "ident_24::joins",
+                        "ident_27::joins",
                         0,
                         this
                     )'
@@ -118,21 +117,20 @@
 
 
 
-      <table id='ident_24::names_input_table'>
+      <table id='ident_27::names_input_table'>
         <tr><th> Has Many Name </th>
             <th> Has Many Name
                  
             </th></tr>
     
-    
-        <tr><td>
+            <tr><td>
                 <input
                     type='text'
-                    name='ident_24::names_key'
+                    name='ident_27::names_key'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "join_table_statement_pair",
-                        "ident_24::names",
+                        "ident_27::names",
                         0,
                         this
                     )'
@@ -141,11 +139,11 @@
             <td>
                 <input
                     type='text'
-                    name='ident_24::names_value'
-                    class='urgency_'
+                    name='ident_27::names_value'
+                    class='urgency_0'
                     onblur='javascript:update_pairs(
                         "join_table_statement_pair",
-                        "ident_24::names",
+                        "ident_27::names",
                         0,
                         this
                     )'

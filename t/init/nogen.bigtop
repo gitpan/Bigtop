@@ -1,6 +1,6 @@
 config {
     base_dir `t`;
-    Init Std { README no_gen; Changes no_gen; MANIFEST no_gen; }
+    Init Std { }
 }
 app Apps::Checkbook {
     authors `Phil Crow`;

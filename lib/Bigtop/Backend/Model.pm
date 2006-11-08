@@ -34,34 +34,6 @@ package # table_block
     table_block;
 use strict; use warnings;
 
-sub _find_primary_key {
-    my $fields = shift;
-
-    my $primary;
-
-    FIELD:
-    foreach my $field_name ( keys %{ $fields } ) {
-
-        my $field = $fields->{$field_name};
-
-        foreach my $statement_keyword ( keys %{ $field } ) {
-
-            next unless $statement_keyword eq 'is';
-
-            my $statement = $field->{ $statement_keyword };
-
-            foreach my $arg ( @{ $statement->{args} } ) {
-                if ( $arg eq 'primary_key' ) {
-                    $primary = $field_name;
-                    last FIELD;
-                }
-            } # end of foreach argument
-        } # end of foreach statement
-    } # end of foreach field
-
-    return $primary;
-}
-
 sub _build_foreign_display_body {
     my $foreign_display = shift;
     my @field_names     = @_;

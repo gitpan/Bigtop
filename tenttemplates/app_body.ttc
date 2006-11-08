@@ -23,8 +23,10 @@
                 <select id='new_app_block_type'>
                     <option value='table'>      Table      </option>
                     <option value='controller'> Controller </option>
+                    <option value='base_controller'> Base Controller </option>
                     <option value='literal'>    Literal    </option>
                     <option value='join_table'> Join Table </option>
+                    <option value='schema'>     Schema (Postgres only)</option>
                     <option value='sequence'>   Sequence   </option>
                 </select>
             </td>

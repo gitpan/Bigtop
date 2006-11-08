@@ -3,6 +3,7 @@
     I modified it to remove IE support and to simplify it a bit,
     then I added my specific functions update_tree/redraw, etc.
 */
+var server_stopped = 0;
 var net=new Object();
 net.READY_STATE_UNITIALIZED = 0;
 net.READY_STATE_LOADING     = 1;
@@ -62,7 +63,8 @@ function redraw() {
     var output_area       = document.getElementById( 'raw_output' );
     output_area.innerHTML = this.req.responseText;
 
-    chat( 'chatter', '' );
+    chat( 'chatter',       '' );
+    chat( 'debug_chatter', '' );
 }
 
 /*
@@ -94,7 +96,7 @@ function redraw_add_div() {
 
     var new_node       = document.createElement( 'div' );
     var new_br         = document.createElement( 'br' );
-    new_node.innerHTML = new_div_text
+    new_node.innerHTML = new_div_text;
 
     div_area.appendChild( new_node );
     div_area.appendChild( new_br );
@@ -316,6 +318,9 @@ function redraw_full_edit() {
     redraw_name_change is the net.ContentLoader callback for name changes.
     These tend to cause action at a distance updates.  The front end returns
     not only the new bigtop input dump, but a list of input ids to update.
+    You can also use this callback any time the AJAX request will return
+    instructions, for example when the change might affect the app
+    level config table.
 */
 function redraw_name_change() {
     // break response into parts
@@ -346,6 +351,15 @@ function redraw_name_change() {
                 each hash has keyword and value keys
 */
 function follow_instructions( instructions ) {
+
+    var opener  = instructions.indexOf( '[' );
+
+    if ( instructions.indexOf( '[' ) == -1 ) { /* nothing to do here */
+        return;
+    }
+
+    //chat( 'debug_chatter', 'about to follow instructions ' + instructions );
+
     var todo    = eval ( instructions );
 
     for ( var i = 0; i < todo.length; i++ ) {
@@ -380,6 +394,10 @@ function follow_instructions( instructions ) {
                 hatch_more_rows( todo[i].keyword, multi_key[k], multi_val[k] );
             }
         }
+        else if ( todo[i].config_value ) {
+            // we know we need a new one, otherwise we wouldn't be here
+            insert_app_config( todo[i].keyword, todo[i].config_value, 0 );
+        }
     }
 }
 
@@ -391,6 +409,16 @@ function follow_instructions( instructions ) {
 */
 function redraw_chat() {
     chat( 'chatter', this.req.responseText );
+}
+
+/*
+    redraw_stopped is a net.ContentLoader callback for when you want to show
+    the user that the server is stopped.  It destroys the underlying page.
+*/
+function redraw_stopped() {
+    var body = document.body();
+
+    body.innerHTML = '<h2>Your tentmaker server has stopped.</h2>';
 }
 
 /*
@@ -510,7 +538,12 @@ function walk_selections ( select_element ) {
     See also create_* which make subblocks.
 */
 function create_app_block () {
-    
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var type_selector = document.getElementById( 'new_app_block_type' );
     var type_namer    = document.getElementById( 'new_app_block_name' );
 
@@ -521,7 +554,15 @@ function create_app_block () {
     type_namer.value  = '';
 
     // Go do it!
-    var update_url    = '/create_app_block/' + block_type + '::' + block_name;
+    var update_url;
+    if ( block_type == 'base_controller' ) {
+        update_url    = '/create_app_block/' +
+                            'controller::base_controller/base_controller';
+    }
+    else {
+        update_url    = '/create_app_block/' + block_type + '::' + block_name;
+    }
+
     var loader        = new net.ContentLoader(
                             update_url,
                             redraw_add_div,
@@ -534,6 +575,12 @@ function create_app_block () {
     Note that the config block has its own delete scheme.
 */
 function delete_block ( doomed_element ) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var trigger_name = doomed_element.name;
     var pieces       = doomed_element.name.split( /::/ );
     var delete_type  = pieces[0];
@@ -594,6 +641,12 @@ function delete_block ( doomed_element ) {
     create_field creates a new field in a table.
 */
 function create_field ( table_ident ) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var field_namer   = document.getElementById( 'new_field_' + table_ident );
     var new_name      = field_namer.value;
 
@@ -614,6 +667,12 @@ function create_field ( table_ident ) {
     create_method creates a new method in a controller.
 */
 function create_method ( controller_ident ) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     // Find the new name.
     var method_namer   = document.getElementById(
                             'new_method_' + controller_ident
@@ -658,6 +717,12 @@ function update_tree (
             extra,
             refresh_type
 ) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     // chat( 'chatter', 'updating tree with ' + update_type +
     // ' ' + parameter + ' ' + new_value );
 
@@ -669,7 +734,7 @@ function update_tree (
     // Remember: you can't chat if you ask for a refresh
     // chat( 'debug_chatter', update_url );
 
-    if ( update_type == 'name' ) {
+    if ( update_type == 'name' || parameter.indexOf( 'paged_conf' ) >= 0 ) {
         var loader = new net.ContentLoader( update_url, redraw_name_change );
     }
     else if ( refresh_type == 'quick_edit' ) {
@@ -696,6 +761,12 @@ function update_tree (
     callback (redraw_quickall).
 */
 function quick_all (table_ident, keyword, checked) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var update_url = '/table_reset_bool/'  +
                      table_ident   +
                      '/' + keyword +
@@ -721,6 +792,12 @@ function update_multivalue (
     one_input,
     refresh_type
 ) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var sybs          = document.getElementsByName( one_input.name );
     var new_names     = new Array;
 
@@ -775,6 +852,12 @@ function update_multivalue (
     existing ones are full, but only if the hatch_out boolean is true.
 */
 function update_pairs (update_type, parameter, hatch_out, one_input) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     // get names of the key and value fields to be updated
     var base_name  = one_input.name.replace( /_[^_]*$/, '' );
     var key_name   = base_name + "_key";
@@ -871,6 +954,12 @@ function hatch_more_rows ( base_name, key_syb, value_syb ) {
     app_config_new text input box.
 */
 function add_app_config () {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var config_table    = document.getElementById( 'app_config_table' );
     var last_row_number = config_table.rows.length - 1;
     // We subtract one to account for the row with the button in it.
@@ -928,12 +1017,89 @@ function add_app_config () {
 }
 
 /*
+    insert_app_config puts a new config statement into the app config table.
+    It is designed to be used while following an instruction to add a
+    config statement from the server.  Pass it:
+        new_keyword - conf variable to define
+        new_value   - value to give the variable
+        no_accessor - true if you want the box checked, false otherwise
+    this routine is very similar to add_app_config and the two could probably
+    share
+*/
+function insert_app_config ( new_keyword, new_value, no_accessor ) {
+
+    var config_table    = document.getElementById( 'app_config_table' );
+    var last_row_number = config_table.rows.length - 1;
+    // We subtract one to account for the row with the button in it.
+    var first_row       = config_table.rows[ 0 ];
+
+    config_table.insertRow( last_row_number );
+    var inserted_row    = config_table.rows[ last_row_number ];
+    inserted_row.id     = 'app_config::row::' + new_keyword
+
+    for ( var i = 0; i < first_row.cells.length; i++ ) {
+        inserted_row.insertCell( i );
+    }
+
+    // insert the new keyword (once installed, it is imutable)
+    inserted_row.cells[0].innerHTML = new_keyword;
+
+    // insert the text box for input
+    var value_box_name = 'app_conf_value::' + new_keyword;
+    var value_box = myCreateNodeFromText(
+         "<input type='text' name='" + value_box_name + "'" +
+         "     value='" + new_value + "'" +
+         "/>"
+    );
+
+    value_box.onblur = config_statement_update;
+
+    inserted_row.cells[1].appendChild( value_box );
+
+    // insert the checkbox for accessor skipping (and check it)
+    var accessor_bool_name = 'app_conf_box::' + new_keyword;
+    var accessor_text      =
+        "<input type='checkbox' value='" + accessor_bool_name + "'" +
+        "       name='" + accessor_bool_name                  + "'";
+
+    if ( no_accessor ) {
+        accessor_text = accessor_text + "       checked='checked' />";
+    }
+    else {
+        accessor_text = accessor_text + "/>";
+    }
+
+    var accessor_box      = myCreateNodeFromText( accessor_text );
+
+    accessor_box.onchange = config_statement_accessor_update;
+
+    inserted_row.cells[2].appendChild( accessor_box );
+
+    // insert delete button
+    var delete_button = myCreateNodeFromText(
+          "<button type='button'                                      " +
+          "           name='app_config_delete::" + new_keyword + "' />" +
+          "  Delete                                                   " +
+          "</button>                                                  "
+    )
+    delete_button.onclick = config_statement_delete;
+
+    inserted_row.cells[3].appendChild( delete_button );
+}
+
+/*
     delete_app_config is the button handler for all the delete buttons
     in the App Config Block table.  It tells the server to remove the
     config statement and deletes the corresponding table row in the
     browser view.
 */
 function delete_app_config ( delete_button ) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var name_pieces = delete_button.name.split( '::' );
     var keyword     = name_pieces[1];
 
@@ -958,6 +1124,11 @@ function delete_app_config ( delete_button ) {
 */
 function config_statement_update( event ) {
 
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var source   = event.currentTarget;
     var keyword  = source.name;
     keyword      = keyword.replace( 'app_conf_value::', '' );
@@ -973,6 +1144,12 @@ function config_statement_update( event ) {
 }
 
 function config_statement_accessor_update( event ) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var source  = event.currentTarget;
     var keyword = source.name;
     keyword     = keyword.replace( 'app_conf_box::', '' );
@@ -985,6 +1162,12 @@ function config_statement_accessor_update( event ) {
 }
 
 function config_statement_delete( event ) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var source  = event.currentTarget;
 
     delete_app_config( source );
@@ -999,6 +1182,11 @@ function config_statement_delete( event ) {
 */
 function type_change ( ident, new_type ) {
 
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var update_url = '/type_change/' + ident + '/' + new_type;
 
     var loader     = new net.ContentLoader( update_url, redraw );
@@ -1008,6 +1196,12 @@ function type_change ( ident, new_type ) {
     saver puts the file back on the server's disk.
 */
 function saver () {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var file_namer = document.getElementById( 'save_file_name' );
     var file_name  = file_namer.value; // don't even think about clearing this
 
@@ -1016,6 +1210,30 @@ function saver () {
 
     var url        = '/save/' + encoded;
     var loader     = new net.ContentLoader( url, redraw_chat );
+}
+
+/*
+    server_stop sends an AJAX message to the server, telling it to shut
+    down.  It also sets the server_stopped flag here, so future activity
+    tells you that the server is down.
+*/
+function server_stop () {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is already stopped.' );
+        return;
+    }
+
+    server_stopped = 1;
+
+    if ( ! confirm(
+                "Are you sure you want to stop the server (did you save)?"
+           )
+    ) {
+        return false; 
+    }
+    
+    var loader = new net.ContentLoader( '/server_stop', redraw_stopped );
 }
 
 /*
@@ -1046,6 +1264,12 @@ function myCreateNodeFromText ( txt ) {
     implementation is different.
 */
 function changetabs( activate_id ) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
     var tab_holder = document.getElementById( 'tabs' );
     var tabs       = tab_holder.getElementsByTagName( 'div' );
 

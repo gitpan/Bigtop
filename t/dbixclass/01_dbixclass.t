@@ -74,6 +74,11 @@ app Contact {
     table color {
         field id      { is int4, primary_key, assign_by_sequence; }
         field ident   { is varchar; label Ident; html_form_type text; }
+        field foreigner {
+            is int4;
+            refers_to `sch.name`;
+            html_form_type select;
+        }
     }
     join_table tshirt_color {
         joins tshirt => color;
@@ -94,12 +99,13 @@ app Contact {
         names writers => books;
     }
     controller Number is AutoCRUD {
-        autocrud_helper  Gantry::Plugins::AutoCRUDHelper::DBIxClass;
+        autocrud_helper  Gantry::Plugins::AutoCRUDHelper::NewHelper;
         controls_table   number;
         text_description `contact number`;
-        rel_location `number`;
+        rel_location     `number`;
         method do_main is main_listing {
             title             Contacts;
+            rows              25;
             cols              name, number;
             header_options    Add, CSV;
             row_options       Edit, Delete;
@@ -112,11 +118,30 @@ app Contact {
             extra_args `\$id`;
         }
     }
+    sequence sch.name_seq {}
+    table sch.name {
+        sequence `sch.name_seq`;
+        field id   { is int4, primary_key, assign_by_sequence; }
+        field name {
+            is                     varchar;
+            label                  `Name`;
+            html_form_type         text;
+        }
+        field number {
+            is                     varchar;
+            label                  `Number`;
+            html_form_type         text;
+        }
+    }
 }
 EO_Bigtop_File
 
 Bigtop::Parser->gen_from_string(
-        $bigtop_string, undef, 'create', 'Control', 'Model'
+    {
+        bigtop_string => $bigtop_string,
+        create        => 'create',
+        build_list    => [ 'Control', 'Model' ],
+    }
 );
 
 compare_dirs_ok( $play_dir, $ship_dir, 'DBIxClass models' );

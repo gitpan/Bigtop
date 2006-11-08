@@ -53,7 +53,7 @@ sub deparse {
         }
     }
 
-    return join "\n", @source;
+    return join( "\n", @source ) . "\n";
 }
 
 sub _get_backend_block_content {
@@ -148,6 +148,17 @@ sub output_app_body {
     return [ "    sequence $self->{__NAME__} {}" ];
 }
 
+package # schema_block
+    schema_block;
+use strict; use warnings;
+
+sub output_app_body {
+    my $self         = shift;
+    my $child_output = shift;
+
+    return [ "    schema $self->{__NAME__} {}" ];
+}
+
 package # table_element_block
     table_element_block;
 use strict; use warnings;
@@ -168,9 +179,11 @@ sub output_app_body {
     else {
         if ( $self->{__TYPE__} eq 'data' ) {
             push @retval, "${indent}data";
-            my $args = $self->{__ARGS__}->get_quoted_args;
-            $args    =~ s/, /,\n${indent}    /g;
-            push @retval, "${indent}    $args;";
+
+            my @args = $self->{__ARGS__}->get_quoted_args;
+            my $args = join ",\n$indent    ", @args;
+
+            push @retval, "    $indent$args;";
         }
         else {
             my $args = $self->{__ARGS__}->get_quoted_args;
@@ -218,7 +231,8 @@ use strict; use warnings;
 sub output_app_body {
     my $self         = shift;
 
-    return [ $self->{__ARGS__}->get_quoted_args ];
+    my $args = $self->{__ARGS__}->get_quoted_args;
+    return [ $args ];
 }
 
 package # join_table
@@ -264,9 +278,16 @@ sub output_app_body {
     my $is_type = $self->get_controller_type;
     $is_type    = ( $is_type eq 'stub' ) ? ' ' : " is $is_type ";
 
-    push @retval, "    controller $self->{__NAME__}$is_type\{";
-    push @retval, @{ $child_output };
-    push @retval, '    }';
+    if ( $self->is_base_controller ) {
+        push @retval, "    controller is base_controller \{";
+        push @retval, @{ $child_output };
+        push @retval, '    }';
+    }
+    else {
+        push @retval, "    controller $self->{__NAME__}$is_type\{";
+        push @retval, @{ $child_output };
+        push @retval, '    }';
+    }
 
     return \@retval;
 }

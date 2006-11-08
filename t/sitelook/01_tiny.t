@@ -18,6 +18,7 @@ my $wrapper  = File::Spec->catfile( qw( t sitelook sample_wrapper.tt ) );
 # build wrapper.tt
 #-------------------------------------------------------------------
 
+Purge::real_purge_dir( $play_dir );
 mkdir $play_dir;
 
 my $bigtop_string = <<"EO_Bigtop_File";
@@ -31,6 +32,9 @@ config {
 }
 app Apps::Checkbook {
     location checks;
+    controller is base_controller {
+        page_link_label Home;
+    }
     controller PayeeOr {
         rel_location    payeeor;
         page_link_label `Payee/Payor`;
@@ -41,7 +45,13 @@ app Apps::Checkbook {
 }
 EO_Bigtop_File
 
-Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'SiteLook' );
+Bigtop::Parser->gen_from_string(
+    {
+        bigtop_string => $bigtop_string,
+        create        => 'create',
+        build_list    => [ 'SiteLook', ],
+    }
+);
 
 my $correct_wrapper = << 'EO_WRAPPER';
 <?xml version="1.0" encoding="utf-8"?>
@@ -162,7 +172,13 @@ app Apps::Checkbook {
 }
 EO_Bigtop_File_No_Base_Loc
 
-Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'SiteLook' );
+Bigtop::Parser->gen_from_string(
+    {
+        bigtop_string => $bigtop_string,
+        create        => 'create',
+        build_list    => [ 'SiteLook', ],
+    }
+);
 
 $correct_wrapper = << 'EO_WRAPPER';
 <?xml version="1.0" encoding="utf-8"?>
@@ -283,7 +299,13 @@ app Apps::Checkbook {
 }
 EO_Bigtop_File_No_Base_Loc
 
-Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'SiteLook' );
+Bigtop::Parser->gen_from_string(
+    {
+        bigtop_string => $bigtop_string,
+        create        => 'create',
+        build_list    => [ 'SiteLook', ],
+    }
+);
 
 $gened_wrapper = File::Spec->catfile( $html_dir, 'genwrapper.tt' );
 

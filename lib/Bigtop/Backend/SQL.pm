@@ -35,8 +35,6 @@ sub _skip_this_block {
     my $skip = $self->walk_postorder( 'skip_this' );
 
     return pop @{ $skip };
-
-    return 0;
 }
 
 package # seq_block
@@ -55,8 +53,22 @@ sub _skip_this_block {
     my $skip = $self->walk_postorder( 'skip_this' );
 
     return pop @{ $skip };
+}
 
-    return 0;
+package # schema_block
+    schema_block;
+use strict; use warnings;
+
+sub get_create_keyword {
+    my $self = shift;
+
+    return 'SCHEMA';
+}
+
+sub _skip_this_block {
+    my $self = shift;
+
+    return;
 }
 
 package # table_element_block

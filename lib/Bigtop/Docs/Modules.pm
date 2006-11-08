@@ -35,8 +35,8 @@ If you have a file on the disk and want to parse it into an abstract
 syntax tree (AST), call Bigtop::Parser->parse_file( $file_name ).
 This returns the AST.
 
-The bigtop script is quite simple, but it relies on Bigtop::ScriptHelp
-when it needs to manufacture or modify bigtop source files.  Mostly,
+The bigtop script is quite simple.  (It relies on Bigtop::ScriptHelp
+when it needs to manufacture or modify bigtop source files.)  Mostly,
 it handles command line options, then directly passes the rest of its
 command line arguments to gen_from_file in Bigtop::Parser.  gen_from_file
 reads the file into memory and passes it and the other command line
@@ -374,6 +374,11 @@ Controllers are specified as:
     controller Name is type {...}
 
 This attribute is the controller's type.
+
+Note that if the type is base_controller, the controller cannot have
+an explicit name, but must be written as:
+
+    controller is base_controller {...}
 
 =item __BODY__
 

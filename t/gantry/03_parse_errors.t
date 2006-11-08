@@ -58,7 +58,11 @@ EO_error_output
 
 eval {
     Bigtop::Parser->gen_from_string(
-        $bigtop_string, undef, 'create', 'Control'
+        {
+            bigtop_string => $bigtop_string,
+            create        => 'create',
+            build_list    => [ 'Control', ],
+        }
     );
 };
 
@@ -108,7 +112,11 @@ EO_with_location
 
 eval {
     Bigtop::Parser->gen_from_string(
-        $bigtop_string, undef, 'create', 'Control'
+        {
+            bigtop_string => $bigtop_string,
+            create        => 'create',
+            build_list    => [ 'Control', ],
+        }
     );
 };
 
@@ -151,7 +159,11 @@ EO_with_location2
 
 eval {
     Bigtop::Parser->gen_from_string(
-        $bigtop_string, undef, 'create', 'Control'
+        {
+            bigtop_string => $bigtop_string,
+            create        => 'create',
+            build_list    => [ 'Control', ],
+        }
     );
 };
 

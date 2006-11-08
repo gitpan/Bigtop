@@ -65,6 +65,14 @@
     [% IF item.method_type == 'CRUD_form' %]selected='selected'[% END %] >
                         CRUD_form
                       </option>
+                      <option value='base_links'
+    [% IF item.method_type == 'base_links' %]selected='selected'[% END %] >
+                        base_links
+                      </option>
+                      <option value='links'
+    [% IF item.method_type == 'links' %]selected='selected'[% END %] >
+                        links
+                      </option>
                     </select>
                 </td>
             </tr>
@@ -88,14 +96,18 @@
     </div>
 
 [% BLOCK method_statement_table %]
+[% mtype = method.method_type %]
   <table class='bordered'>
     <tr>
         <th> Keyword     </th>
         <th> Value(s)    </th>
-        <th> Applies to  </th>
         <th> Description </th>
     </tr>
   [% FOREACH method_statement IN view.data.statements.method.statements %]
+    [% NEXT UNLESS method_statement.method_types.all
+            OR
+          method_statement.method_types.$mtype
+    %]
     [% keyword = method_statement.keyword %]
     <tr>
         <td> [% keyword %] </td>
@@ -111,9 +123,6 @@
                        method_group   = 'method_statement'
                        key            = keyword
             %]
-        </td>
-        <td>
-            [% method_statement.applies_to %]
         </td>
         <td>
             [% method_statement.descr %]

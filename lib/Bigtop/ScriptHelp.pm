@@ -31,6 +31,12 @@ app $name {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
+    controller is base_controller {
+        method do_main is base_links {
+        }
+        method site_links is links {
+        }
+    }
 }
 EO_Little_Default
 }
@@ -64,21 +70,33 @@ sub _make_model_code {
     my $retval = '';
 
     foreach my $model ( @{ $new_tables } ) {
+        my $schema_free = $model;
+        $schema_free    = _strip_schema( $schema_free );
+
         my $controller  = Bigtop::ScriptHelp->default_controller( $model );
-        my $descr       = $model;
+
+        my $rel_loc     = $model;
+        $rel_loc        =~ s/\./_/;
+
+        my $descr       = $schema_free;
         $descr          =~ s/_/ /g;
-        my $model_label = Bigtop::ScriptHelp->default_label( $model );
+
+        my $model_label = Bigtop::ScriptHelp->default_label( $schema_free );
 
         my @foreign_fields;
         my $foreign_text = "\n";
         if ( defined $foreign_key_for->{ $model } ) {
             foreach my $foreign_key ( @{ $foreign_key_for->{ $model } } ) {
-                my $label = Bigtop::ScriptHelp->default_label( $foreign_key );
+                my $label = Bigtop::ScriptHelp->default_label(
+                        _strip_schema( $foreign_key )
+                );
+                my $name  = $foreign_key;
+                $name     =~ s/\./_/;
                 my $new_foreigner = <<"EO_Foreign_Field";
-        field $foreign_key {
+        field $name {
             is             int4;
             label          `$label`;
-            refers_to      $foreign_key;
+            refers_to      `$foreign_key`;
             html_form_type select;
         }
 EO_Foreign_Field
@@ -114,8 +132,8 @@ EO_Foreign_Field
 $foreign_text
     }
     controller $controller is AutoCRUD {
-        controls_table $model;
-        rel_location   $model;
+        controls_table `$model`;
+        rel_location $rel_loc;
         text_description `$descr`;
         page_link_label `$model_label`;
         method do_main is main_listing {
@@ -164,9 +182,22 @@ app $app_name {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
+    controller is base_controller {
+        method do_main is base_links {
+        }
+        method site_links is links {
+        }
+    }
 $model_code
 }
 EO_Model_Bigtop
+}
+
+sub _strip_schema {
+    my $input = shift;
+    $input    =~ s/^[^\.]*\.//;
+
+    return $input;
 }
 
 sub augment_tree {
@@ -202,9 +233,16 @@ sub augment_tree {
     my %new_controller_for;
     foreach my $table ( @{ $new_tables } ) {
         my $controller  = Bigtop::ScriptHelp->default_controller( $table );
-        my $descr       = $table;
+
+        my $schema_free = _strip_schema( $table );
+
+        my $descr       = $schema_free;
         $descr          =~ s/_/ /g;
-        my $model_label = Bigtop::ScriptHelp->default_label( $table );
+
+        my $model_label = Bigtop::ScriptHelp->default_label( $schema_free );
+
+        my $rel_loc     = $table;
+        $rel_loc        =~ s/\./_/;
 
         $new_table{ $table } = $ast->create_block( 'table', $table, {} );
 
@@ -226,6 +264,7 @@ sub augment_tree {
                   table            => $table,
                   text_description => $descr,
                   page_link_label  => $model_label,
+                  rel_loc          => $rel_loc,
                 }
         );
     }
@@ -243,8 +282,13 @@ sub augment_tree {
 
         foreach my $foreign_key ( @{ $foreign_key_for->{ $point_from } } ) {
 
+            my $name  = $foreign_key;
+            $name     =~ s/\./_/;
+
             my $label =
-                    Bigtop::ScriptHelp->default_label( $foreign_key );
+                    Bigtop::ScriptHelp->default_label(
+                            _strip_schema( $foreign_key )
+                    );
 
             my $refers_to_field = $ast->create_subblock(
                 {
@@ -253,7 +297,7 @@ sub augment_tree {
                     },
                     new_child => {
                         type => 'field',
-                        name => $foreign_key,
+                        name => $name,
                     },
                 }
             );
@@ -388,21 +432,16 @@ sub valid_ident {
     my $candidate = shift;
 
     # XXX this regex is allowing leading digits
-    return $candidate =~ /^\w[\w\d_:]*$/;
+    return $candidate =~ /^\w[\w\d_:\.]*$/;
 }
 
 sub default_label {
     my $class  = shift;
     my $name   = shift;
-    my $label  = '';
-    my @output_pieces;
 
-    foreach my $piece ( split /_/, $name ) {
-        $piece = ucfirst $piece;
-        push @output_pieces, $piece;
-    }
+    my @output_pieces = _name_breaker( $name, qr/_/ );
 
-    return join ' ', @output_pieces;
+    return join ' ', @output_pieces;  # one space separator
 }
 
 sub default_controller {
@@ -412,7 +451,23 @@ sub default_controller {
     my $name = $class->default_label( $table );
     $name    =~ s/ //g;
 
-    return $name;
+    my @output_pieces = _name_breaker( $name, qr/\./ );
+
+    return join '', @output_pieces;  # no space separator
+}
+
+sub _name_breaker {
+    my $name     = shift;
+    my $split_on = shift;
+
+    my @output_pieces;
+
+    foreach my $piece ( split $split_on, $name ) {
+        $piece = ucfirst $piece;
+        push @output_pieces, $piece;
+    }
+
+    return @output_pieces;
 }
 
 1;

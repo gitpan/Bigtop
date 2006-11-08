@@ -108,7 +108,7 @@ You might even want to describe the table this module controls here.
 =back
 
 
-=head1 METHODS MIXED IN FROM Apps::Checkbook::GEN::Trans
+=head1 METHODS INHERITED FROM Apps::Checkbook::GEN::Trans
 
 =over 4
 

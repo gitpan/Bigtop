@@ -49,7 +49,13 @@ app Apps::Checkbook {
 }
 EO_Bigtop_STRING
 
-Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'SQL' );
+Bigtop::Parser->gen_from_string(
+    {
+        bigtop_string => $bigtop_string,
+        create        => 'create',
+        build_list    => [ 'SQL', ],
+    }
+);
 
 my $correct_sql = <<'EO_CORRECT_SQL';
 CREATE TABLE payeepayor (

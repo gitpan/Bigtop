@@ -86,9 +86,13 @@ sub output_httpd_conf {
     $conffile    ||= $config->{conffile   } || 0;
 
     # first find the base location
-    my $location_output = $tree->walk_postorder( 'output_httpd_conf_loc' );
+    my $location_output = $tree->walk_postorder( 'output_location' );
     my $location        = $location_output->[0] || ''; # default to host root
     $location           =~ s{/+$}{};
+
+    # then find out if we have a base controller
+    my $base_handler    = $tree->walk_postorder( 'base_handler_anyone' );
+    $base_handler       = ( $base_handler->[0] ) ? $tree->get_appname : 0;
 
     # now build the <Perl> and <Location> blocks
     my $perl_block_lines = $tree->walk_postorder(
@@ -98,11 +102,12 @@ sub output_httpd_conf {
     my $locations        = $tree->walk_postorder(
             'output_httpd_conf_locations',
             {
-                location    => $location,
-                skip_config => $skip_config,
-                instance    => $instance,
-                conffile    => $conffile,
-                gen_root    => $gen_root,
+                location     => $location,
+                skip_config  => $skip_config,
+                instance     => $instance,
+                conffile     => $conffile,
+                gen_root     => $gen_root,
+                base_handler => $base_handler,
             }
     );
 
@@ -148,6 +153,12 @@ our $default_template_text = <<'EO_TT_BLOCKS';
 <Location [% root_loc %]>
 [% FOREACH config IN configs %][% config %][% END %]
 [% FOREACH literal IN literals %][% literal %][% END %]
+[% IF base_handler %]
+
+    SetHandler  perl-script
+    PerlHandler [% base_handler +%]
+
+[% END %]
 </Location>
 
 [% FOREACH child_piece IN child_output %][% child_piece %][% END %]
@@ -192,7 +203,6 @@ sub setup_template {
     $template_is_setup = 1;
 }
 
-# application
 package # application
     application;
 use strict; use warnings;
@@ -276,6 +286,7 @@ sub output_httpd_conf_locations {
             configs      => $configs,
             literals     => $literals,
             child_output => $child_output,
+            base_handler => $data->{base_handler},
         }
     );
 
@@ -286,17 +297,6 @@ package # app_statement
     app_statement;
 use strict; use warnings;
 
-sub output_httpd_conf_loc {
-    my $self = shift;
-
-    return unless $self->{__KEYWORD__} eq 'location';
-
-    my $location = $self->{__ARGS__}[0];
-
-    return [ $location ];
-}
-
-# app_config_block
 package # app_config_block
     app_config_block;
 use strict; use warnings;
@@ -372,15 +372,24 @@ sub output_httpd_conf_locations {
     return $self->make_output( 'HttpdConf' );
 }
 
-# controller_block
 package # controller_block
     controller_block;
 use strict; use warnings;
+
+sub base_handler_anyone {
+    my $self = shift;
+
+    return unless $self->is_base_controller;
+
+    return [ 1 ];
+}
 
 sub output_perl_block {
     my $self         = shift;
     my $app          = $self->{__PARENT__}{__PARENT__}{__PARENT__};
     my $full_name    = $app->get_name() . '::' . $self->get_name();
+
+    return if ( $self->is_base_controller );
 
     return [ { PerlBlock => ' ' x 4 . "use $full_name;\n" } ];
 }
@@ -391,6 +400,8 @@ sub output_httpd_conf_locations {
     my $data          = shift;
     my $location      = $data->{location};
     my $skip_config   = $data->{skip_config};
+
+    return if ( $self->is_base_controller );
 
     my %child_loc    = @{ $child_output };
 
@@ -429,7 +440,6 @@ sub output_httpd_conf_locations {
     return [ $output ];
 }
 
-# controller_statement
 package # controller_statement
     controller_statement;
 use strict; use warnings;
@@ -448,7 +458,6 @@ sub output_httpd_conf_locations {
     }
 }
 
-# controller_config_block
 package # controller_config_block
     controller_config_block;
 use strict; use warnings;
@@ -490,7 +499,6 @@ sub output_controller_configs {
     } ];
 }
 
-# controller_literal_block
 package # controller_literal_block
     controller_literal_block;
 use strict; use warnings;

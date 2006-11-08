@@ -127,7 +127,13 @@ app Apps::Checkbook {
 }
 EO_Bigtop_File
 
-Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'Model' );
+Bigtop::Parser->gen_from_string(
+    {
+        bigtop_string => $bigtop_string,
+        create        => 'create',
+        build_list    => [ 'Model' ],
+    }
+);
 
 compare_dirs_ok( $play_dir, $ship_dir, 'CDBI models' );
 

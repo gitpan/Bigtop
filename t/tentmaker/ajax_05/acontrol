@@ -2,70 +2,72 @@
 
 
   <div class='app_block_controller'
-       id='div_ident_1'>
+       id='div_ident_4'>
       
       
         
-        <fieldset>
-        <legend>
-            Controller 
-            ( <a href='javascript:show_or_hide( "hideable_ident_1" );'>
-                edit</a> |  
-<a href="#" name='app_body_delete::ident_1' onclick='javascript:delete_block( this )'>delete</a>
+          
+          <fieldset>
+          <legend>
+              Controller 
+              ( <a href='javascript:show_or_hide( "hideable_ident_4" );'>
+                  edit</a> |  
+<a href="#" name='app_body_delete::ident_4' onclick='javascript:delete_block( this )'>delete</a>
        
 
-            )
-        </legend>
-         <table>
-            <tr>
-                <td> Name: </td>
-                <td>
-                    <input type='text'
-                           id='app_block::ident_1'
-                           value='Address'
-                           onblur='javascript:update_tree(
-                               "name",
-                               "controller::ident_1",
-                               this.value
-                           )'
-                    />
-                </td>
-            </tr>
-            <tr><td> Controller Type: </td>
-                <td>
-                    <select
-                        id='Controller::type_select::ident_1'
-                        onchange='javascript:type_change(
-                            "ident_1",
-                            this.value
-                        )'
-                    >
-                        <option value='stub'
-  
-                        > stub     </option>
+              )
+          </legend>
+           <table>
+              <tr>
+                  <td> Name: </td>
+                  <td>
+                      <input type='text'
+                             id='app_block::ident_4'
+                             value='Address'
+                             onblur='javascript:update_tree(
+                                 "name",
+                                 "controller::ident_4",
+                                 this.value
+                             )'
+                      />
+                  </td>
+              </tr>
+              <tr><td> Controller Type: </td>
+                  <td>
+                      <select
+                          id='Controller::type_select::ident_4'
+                          onchange='javascript:type_change(
+                              "ident_4",
+                              this.value
+                          )'
+                      >
+                          <option value='stub'
+    
+                          > stub     </option>
 
-                        <option value='AutoCRUD'
-  selected='selected'
-                        > AutoCRUD </option>
+                          <option value='AutoCRUD'
+    selected='selected'
+                          > AutoCRUD </option>
 
-                        <option value='CRUD'
-  
-                        > CRUD     </option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td colspan='2'>
-                  
-<div id='hideable_ident_1'
+                          <option value='CRUD'
+    
+                          > CRUD     </option>
+                      </select>
+                  </td>
+              </tr>
+              <tr>
+                  <td colspan='2'>
+                    
+<div id='hideable_ident_4'
   
     style='display: none'
   
 >
   
-                    
+                      
 
   
+
   <table class='bordered'>
     <tr>
         <th> Keyword     </th>
@@ -73,6 +75,7 @@
         <th> Description </th>
     </tr>
   
+    
     
     <tr>
         <td> no_gen </td>
@@ -86,11 +89,11 @@
 
 
 <input type='checkbox'
-       value='ident_1::no_gen'
-       id='ident_1::no_gen'
+       value='ident_4::no_gen'
+       id='ident_4::no_gen'
        class='urgency_0'       onchange='javascript:update_tree(
            "controller_statement_bool",
-           "ident_1::no_gen",
+           "ident_4::no_gen",
            this.checked
        )'
 />
@@ -102,6 +105,7 @@
         </td>
     </tr>
   
+    
     
     <tr>
         <td> location </td>
@@ -116,12 +120,12 @@
 
     
         <input type='text'
-            id='ident_1::location'
+            id='ident_4::location'
             value=""
             class='urgency_5'
             onblur='javascript:update_tree(
                 "controller_statement_text",
-                "ident_1::location",
+                "ident_4::location",
                 this.value
             )'
         />
@@ -130,42 +134,13 @@
 
         </td>
         <td>
-            Absolute Location of this controller [You must choose either a location or a rel_location.]
+            Absolute Location of this controller [non-base controllers must have either a location or a rel_location.]
         </td>
     </tr>
   
     
-    <tr>
-        <td> rel_location </td>
-        <td>
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
     
-        <input type='text'
-            id='ident_1::rel_location'
-            value=""
-            class='urgency_5'
-            onblur='javascript:update_tree(
-                "controller_statement_text",
-                "ident_1::rel_location",
-                this.value
-            )'
-        />
     
-
-
-        </td>
-        <td>
-            Location of this controller relative to app location[You must choose either a location or a rel_location.]
-        </td>
-    </tr>
-  
     
     <tr>
         <td> controls_table </td>
@@ -180,12 +155,12 @@
 
     
         <input type='text'
-            id='ident_1::controls_table'
+            id='ident_4::controls_table'
             value=""
-            class='urgency_10'
+            class='urgency_5'
             onblur='javascript:update_tree(
                 "controller_statement_text",
-                "ident_1::controls_table",
+                "ident_4::controls_table",
                 this.value
             )'
         />
@@ -194,10 +169,109 @@
 
         </td>
         <td>
-            Table this controller manages [REQUIRED]
+            Table this controller manages
         </td>
     </tr>
   
+    
+    
+    <tr>
+        <td> gen_uses </td>
+        <td>
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        
+        
+        <input type='text'
+            name='ident_4::gen_uses'
+            value=''
+            class='urgency_0'
+            onblur='javascript:update_multivalue(
+                "controller_statement_text",
+                "ident_4::gen_uses",
+                this
+            )'
+        />
+        <br />
+        
+        <input type='text'
+            name='ident_4::gen_uses'
+            value=''
+            class='urgency_0'
+            onblur='javascript:update_multivalue(
+                "controller_statement_text",
+                "ident_4::gen_uses",
+                this
+            )'
+        />
+        
+        
+    
+
+
+        </td>
+        <td>
+            List of modules used gen module
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
+        <td> stub_uses </td>
+        <td>
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        
+        
+        <input type='text'
+            name='ident_4::stub_uses'
+            value=''
+            class='urgency_0'
+            onblur='javascript:update_multivalue(
+                "controller_statement_text",
+                "ident_4::stub_uses",
+                this
+            )'
+        />
+        <br />
+        
+        <input type='text'
+            name='ident_4::stub_uses'
+            value=''
+            class='urgency_0'
+            onblur='javascript:update_multivalue(
+                "controller_statement_text",
+                "ident_4::stub_uses",
+                this
+            )'
+        />
+        
+        
+    
+
+
+        </td>
+        <td>
+            List of modules used stub module
+        </td>
+    </tr>
+  
+    
     
     <tr>
         <td> uses </td>
@@ -214,24 +288,24 @@
         
         
         <input type='text'
-            name='ident_1::uses'
+            name='ident_4::uses'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "controller_statement_text",
-                "ident_1::uses",
+                "ident_4::uses",
                 this
             )'
         />
         <br />
         
         <input type='text'
-            name='ident_1::uses'
+            name='ident_4::uses'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "controller_statement_text",
-                "ident_1::uses",
+                "ident_4::uses",
                 this
             )'
         />
@@ -242,10 +316,11 @@
 
         </td>
         <td>
-            List of modules used by this controller
+            List of modules used by gen and stub modules
         </td>
     </tr>
   
+    
     
     <tr>
         <td> text_description </td>
@@ -260,12 +335,12 @@
 
     
         <input type='text'
-            id='ident_1::text_description'
+            id='ident_4::text_description'
             value=""
             class='urgency_3'
             onblur='javascript:update_tree(
                 "controller_statement_text",
-                "ident_1::text_description",
+                "ident_4::text_description",
                 this.value
             )'
         />
@@ -278,6 +353,7 @@
         </td>
     </tr>
   
+    
     
     <tr>
         <td> page_link_label </td>
@@ -292,12 +368,12 @@
 
     
         <input type='text'
-            id='ident_1::page_link_label'
+            id='ident_4::page_link_label'
             value=""
             class='urgency_1'
             onblur='javascript:update_tree(
                 "controller_statement_text",
-                "ident_1::page_link_label",
+                "ident_4::page_link_label",
                 this.value
             )'
         />
@@ -310,6 +386,7 @@
         </td>
     </tr>
   
+    
     
     <tr>
         <td> autocrud_helper </td>
@@ -324,12 +401,12 @@
 
     
         <input type='text'
-            id='ident_1::autocrud_helper'
+            id='ident_4::autocrud_helper'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "controller_statement_text",
-                "ident_1::autocrud_helper",
+                "ident_4::autocrud_helper",
                 this.value
             )'
         />
@@ -339,6 +416,36 @@
         </td>
         <td>
             Gantry::Plugins::AutoCRUDHelper for your ORM
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
+        <td> skip_test </td>
+        <td>
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+<input type='checkbox'
+       value='ident_4::skip_test'
+       id='ident_4::skip_test'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "controller_statement_bool",
+           "ident_4::skip_test",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Skip default page hit test of this controller
         </td>
     </tr>
   
@@ -353,21 +460,23 @@
     <table>
       <tr><td> Name: </td>
           <td>
-              <input type='text' id='new_method_ident_1' />
+              <input type='text' id='new_method_ident_4' />
           </td>
           <td> Method Type: </td>
           <td>
-            <select id='new_method_type_ident_1'>
+            <select id='new_method_type_ident_4'>
               <option value='stub'>          stub          </option>
               <option value='main_listing'>  main_listing  </option>
               <option value='AutoCRUD_form'> AutoCRUD_form </option>
               <option value='CRUD_form'>     CRUD_form     </option>
+              <option value='base_links'>    base_links    </option>
+              <option value='links'>         links         </option>
             </select>
           </td>
           <td colspan='2'>
               <button type='button'
-                      name='new_method_ident_1_create'
-                      onclick='javascript:create_method( "ident_1" )'
+                      name='new_method_ident_4_create'
+                      onclick='javascript:create_method( "ident_4" )'
               > Create </button>
           </td>
           </tr>
@@ -379,12 +488,12 @@
   
       
     <div class='app_block_element'
-         id='div_ident_2'>
+         id='div_ident_5'>
         
          <fieldset>
          <legend>Method 
-            ( <a href='javascript:show_or_hide( "hideable_ident_2" );'>edit</a> |  
-<a href="#" name='app_body_delete::ident_2' onclick='javascript:delete_block( this )'>delete</a>
+            ( <a href='javascript:show_or_hide( "hideable_ident_5" );'>edit</a> |  
+<a href="#" name='app_body_delete::ident_5' onclick='javascript:delete_block( this )'>delete</a>
        
 
             )
@@ -394,11 +503,11 @@
                 <td>Name: </td>
                 <td>
                   <input type='text'
-                         id='method_name::ident_2'
+                         id='method_name::ident_5'
                          value='do_main'
                          onblur='javascript:update_tree(
                              "name",
-                             "method::ident_2",
+                             "method::ident_5",
                              this.value
                          )'
                   />
@@ -408,9 +517,9 @@
                 <td> Type: </td>
                 <td>
                     <select
-                        id='method_type_ident_1::ident_2'
+                        id='method_type_ident_4::ident_5'
                         onchange='javascript:type_change(
-                            "ident_2",
+                            "ident_5",
                             this.value
                         )'
                     >
@@ -430,27 +539,36 @@
      >
                         CRUD_form
                       </option>
+                      <option value='base_links'
+     >
+                        base_links
+                      </option>
+                      <option value='links'
+     >
+                        links
+                      </option>
                     </select>
                 </td>
             </tr>
             <tr>
                 <td colspan='2'>
                   
-<div id='hideable_ident_2'
+<div id='hideable_ident_5'
   
     style='display: none'
   
 >
   
                     
+
   <table class='bordered'>
     <tr>
         <th> Keyword     </th>
         <th> Value(s)    </th>
-        <th> Applies to  </th>
         <th> Description </th>
     </tr>
   
+    
     
     <tr>
         <td> no_gen </td>
@@ -465,11 +583,11 @@
 
 
 <input type='checkbox'
-       value='ident_2::no_gen'
-       id='ident_2::no_gen'
+       value='ident_5::no_gen'
+       id='ident_5::no_gen'
        class='urgency_0'       onchange='javascript:update_tree(
            "method_statement_bool",
-           "ident_2::no_gen",
+           "ident_5::no_gen",
            this.checked
        )'
 />
@@ -477,13 +595,11 @@
 
         </td>
         <td>
-            All
-        </td>
-        <td>
             Skip this method completely
         </td>
     </tr>
   
+    
     
     <tr>
         <td> extra_args </td>
@@ -501,24 +617,24 @@
         
         
         <input type='text'
-            name='ident_2::extra_args'
+            name='ident_5::extra_args'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_2::extra_args",
+                "ident_5::extra_args",
                 this
             )'
         />
         <br />
         
         <input type='text'
-            name='ident_2::extra_args'
+            name='ident_5::extra_args'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_2::extra_args",
+                "ident_5::extra_args",
                 this
             )'
         />
@@ -529,13 +645,79 @@
 
         </td>
         <td>
-            All
-        </td>
-        <td>
             Extra args for any method
         </td>
     </tr>
   
+    
+    
+    <tr>
+        <td> rows </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_5::rows'
+            value=""
+            class='urgency_3'
+            onblur='javascript:update_tree(
+                "method_statement_text",
+                "ident_5::rows",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            How many rows should appear per listing page?
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
+        <td> paged_conf </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_5::paged_conf'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "method_statement_text",
+                "ident_5::paged_conf",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Take rows per page from this (conf var) accessor
+        </td>
+    </tr>
+  
+    
     
     <tr>
         <td> cols </td>
@@ -552,24 +734,24 @@
     
         
             <input type='text'
-                name='ident_2::cols'
+                name='ident_5::cols'
                 value="ident"
                 class='urgency_5'
                 onblur='javascript:update_multivalue(
                     "method_statement_text",
-                    "ident_2::cols",
+                    "ident_5::cols",
                     this
                 )'
             />
             <br />
         
             <input type='text'
-                name='ident_2::cols'
+                name='ident_5::cols'
                 value="description"
                 class='urgency_5'
                 onblur='javascript:update_multivalue(
                     "method_statement_text",
-                    "ident_2::cols",
+                    "ident_5::cols",
                     this
                 )'
             />
@@ -577,24 +759,24 @@
         
         
         <input type='text'
-            name='ident_2::cols'
+            name='ident_5::cols'
             value=''
             class='urgency_5'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_2::cols",
+                "ident_5::cols",
                 this
             )'
         />
         <br />
         
         <input type='text'
-            name='ident_2::cols'
+            name='ident_5::cols'
             value=''
             class='urgency_5'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_2::cols",
+                "ident_5::cols",
                 this
             )'
         />
@@ -605,13 +787,11 @@
 
         </td>
         <td>
-            main_listing
-        </td>
-        <td>
             Fields to include in main_listing
         </td>
     </tr>
   
+    
     
     <tr>
         <td> col_labels </td>
@@ -629,24 +809,24 @@
         
         
         <input type='text'
-            name='ident_2::col_labels'
+            name='ident_5::col_labels'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_2::col_labels",
+                "ident_5::col_labels",
                 this
             )'
         />
         <br />
         
         <input type='text'
-            name='ident_2::col_labels'
+            name='ident_5::col_labels'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_2::col_labels",
+                "ident_5::col_labels",
                 this
             )'
         />
@@ -657,13 +837,11 @@
 
         </td>
         <td>
-            main_listing
-        </td>
-        <td>
             Labels for fields on main_listing [optional defaults to fields label]
         </td>
     </tr>
   
+    
     
     <tr>
         <td> header_options </td>
@@ -677,7 +855,7 @@
 
 
 
-      <table id='ident_2::header_options_input_table'>
+      <table id='ident_5::header_options_input_table'>
         <tr><th> Label </th>
             <th> Location
                  
@@ -693,12 +871,12 @@
         <tr><td>
                 <input
                     type='text'
-                    name='ident_2::header_options_key'
+                    name='ident_5::header_options_key'
                     value="Add"
                     class='urgency_5'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_2::header_options",
+                        "ident_5::header_options",
                         1,
                         this
                     )'
@@ -707,12 +885,12 @@
             <td>
                 <input
                     type='text'
-                    name='ident_2::header_options_value'
+                    name='ident_5::header_options_value'
                     value=""
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_2::header_options",
+                        "ident_5::header_options",
                         1,
                         this
                     )'
@@ -720,15 +898,14 @@
             </td>
         </tr>
     
-    
-        <tr><td>
+            <tr><td>
                 <input
                     type='text'
-                    name='ident_2::header_options_key'
+                    name='ident_5::header_options_key'
                     class='urgency_5'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_2::header_options",
+                        "ident_5::header_options",
                         1,
                         this
                     )'
@@ -737,11 +914,11 @@
             <td>
                 <input
                     type='text'
-                    name='ident_2::header_options_value'
+                    name='ident_5::header_options_value'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_2::header_options",
+                        "ident_5::header_options",
                         1,
                         this
                     )'
@@ -754,13 +931,11 @@
 
         </td>
         <td>
-            main_listing
-        </td>
-        <td>
             User actions affecting the table [like Add]
         </td>
     </tr>
   
+    
     
     <tr>
         <td> row_options </td>
@@ -774,7 +949,7 @@
 
 
 
-      <table id='ident_2::row_options_input_table'>
+      <table id='ident_5::row_options_input_table'>
         <tr><th> Label </th>
             <th> Location
                  
@@ -790,12 +965,12 @@
         <tr><td>
                 <input
                     type='text'
-                    name='ident_2::row_options_key'
+                    name='ident_5::row_options_key'
                     value="Edit"
                     class='urgency_5'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_2::row_options",
+                        "ident_5::row_options",
                         1,
                         this
                     )'
@@ -804,12 +979,12 @@
             <td>
                 <input
                     type='text'
-                    name='ident_2::row_options_value'
+                    name='ident_5::row_options_value'
                     value=""
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_2::row_options",
+                        "ident_5::row_options",
                         1,
                         this
                     )'
@@ -825,12 +1000,12 @@
         <tr><td>
                 <input
                     type='text'
-                    name='ident_2::row_options_key'
+                    name='ident_5::row_options_key'
                     value="Delete"
                     class='urgency_5'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_2::row_options",
+                        "ident_5::row_options",
                         1,
                         this
                     )'
@@ -839,12 +1014,12 @@
             <td>
                 <input
                     type='text'
-                    name='ident_2::row_options_value'
+                    name='ident_5::row_options_value'
                     value=""
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_2::row_options",
+                        "ident_5::row_options",
                         1,
                         this
                     )'
@@ -852,15 +1027,14 @@
             </td>
         </tr>
     
-    
-        <tr><td>
+            <tr><td>
                 <input
                     type='text'
-                    name='ident_2::row_options_key'
+                    name='ident_5::row_options_key'
                     class='urgency_5'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_2::row_options",
+                        "ident_5::row_options",
                         1,
                         this
                     )'
@@ -869,11 +1043,11 @@
             <td>
                 <input
                     type='text'
-                    name='ident_2::row_options_value'
+                    name='ident_5::row_options_value'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_2::row_options",
+                        "ident_5::row_options",
                         1,
                         this
                     )'
@@ -886,13 +1060,11 @@
 
         </td>
         <td>
-            main_listing
-        </td>
-        <td>
             User actions affecting rows [like Edit]
         </td>
     </tr>
   
+    
     
     <tr>
         <td> title </td>
@@ -908,12 +1080,12 @@
 
     
         <input type='text'
-            id='ident_2::title'
+            id='ident_5::title'
             value="Address"
             class='urgency_3'
             onblur='javascript:update_tree(
                 "method_statement_text",
-                "ident_2::title",
+                "ident_5::title",
                 this.value
             )'
         />
@@ -922,13 +1094,11 @@
 
         </td>
         <td>
-            main_listing
-        </td>
-        <td>
             Browser title bar title for main_listing
         </td>
     </tr>
   
+    
     
     <tr>
         <td> html_template </td>
@@ -944,12 +1114,12 @@
 
     
         <input type='text'
-            id='ident_2::html_template'
+            id='ident_5::html_template'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "method_statement_text",
-                "ident_2::html_template",
+                "ident_5::html_template",
                 this.value
             )'
         />
@@ -958,213 +1128,14 @@
 
         </td>
         <td>
-            main_listing
-        </td>
-        <td>
-            Template to use for main_listing [defaults to results.tt]
+            Template to use for main_listing [defaults to results.tt or main.tt]
         </td>
     </tr>
   
     
-    <tr>
-        <td> all_fields_but </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-    
-        
-        
-        <input type='text'
-            name='ident_2::all_fields_but'
-            value=''
-            class='urgency_5'
-            onblur='javascript:update_multivalue(
-                "method_statement_text",
-                "ident_2::all_fields_but",
-                this
-            )'
-        />
-        <br />
-        
-        <input type='text'
-            name='ident_2::all_fields_but'
-            value=''
-            class='urgency_5'
-            onblur='javascript:update_multivalue(
-                "method_statement_text",
-                "ident_2::all_fields_but",
-                this
-            )'
-        />
-        
-        
-    
-
-
-        </td>
-        <td>
-            forms
-        </td>
-        <td>
-            Fields to exclude from a form [either all_fields_but or fields is REQUIRED]
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> fields </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-    
-        
-        
-        <input type='text'
-            name='ident_2::fields'
-            value=''
-            class='urgency_5'
-            onblur='javascript:update_multivalue(
-                "method_statement_text",
-                "ident_2::fields",
-                this
-            )'
-        />
-        <br />
-        
-        <input type='text'
-            name='ident_2::fields'
-            value=''
-            class='urgency_5'
-            onblur='javascript:update_multivalue(
-                "method_statement_text",
-                "ident_2::fields",
-                this
-            )'
-        />
-        
-        
-    
-
-
-        </td>
-        <td>
-            forms
-        </td>
-        <td>
-            Fields to include on a form [either all_fields_but or fields is REQUIRED]
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> extra_keys </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-      <table id='ident_2::extra_keys_input_table'>
-        <tr><th> key </th>
-            <th> value
-                 
-            </th></tr>
     
     
-        <tr><td>
-                <input
-                    type='text'
-                    name='ident_2::extra_keys_key'
-                    class='urgency_0'
-                    onblur='javascript:update_pairs(
-                        "method_statement_pair",
-                        "ident_2::extra_keys",
-                        1,
-                        this
-                    )'
-                />
-            </td>
-            <td>
-                <input
-                    type='text'
-                    name='ident_2::extra_keys_value'
-                    class='urgency_'
-                    onblur='javascript:update_pairs(
-                        "method_statement_pair",
-                        "ident_2::extra_keys",
-                        1,
-                        this
-                    )'
-                />
-            </td>
-        </tr>
-      
-      </table>
-
-
-        </td>
-        <td>
-            forms
-        </td>
-        <td>
-            Extra keys to put in the form method hash
-        </td>
-    </tr>
-  
     
-    <tr>
-        <td> form_name </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-    
-        <input type='text'
-            id='ident_2::form_name'
-            value=""
-            class='urgency_0'
-            onblur='javascript:update_tree(
-                "method_statement_text",
-                "ident_2::form_name",
-                this.value
-            )'
-        />
-    
-
-
-        </td>
-        <td>
-            forms
-        </td>
-        <td>
-            Form name [used with date selections]
-        </td>
-    </tr>
-  
   </table>
 
                   
@@ -1183,12 +1154,12 @@
   
       
     <div class='app_block_element'
-         id='div_ident_3'>
+         id='div_ident_6'>
         
          <fieldset>
          <legend>Method 
-            ( <a href='javascript:show_or_hide( "hideable_ident_3" );'>edit</a> |  
-<a href="#" name='app_body_delete::ident_3' onclick='javascript:delete_block( this )'>delete</a>
+            ( <a href='javascript:show_or_hide( "hideable_ident_6" );'>edit</a> |  
+<a href="#" name='app_body_delete::ident_6' onclick='javascript:delete_block( this )'>delete</a>
        
 
             )
@@ -1198,11 +1169,11 @@
                 <td>Name: </td>
                 <td>
                   <input type='text'
-                         id='method_name::ident_3'
+                         id='method_name::ident_6'
                          value='form'
                          onblur='javascript:update_tree(
                              "name",
-                             "method::ident_3",
+                             "method::ident_6",
                              this.value
                          )'
                   />
@@ -1212,9 +1183,9 @@
                 <td> Type: </td>
                 <td>
                     <select
-                        id='method_type_ident_1::ident_3'
+                        id='method_type_ident_4::ident_6'
                         onchange='javascript:type_change(
-                            "ident_3",
+                            "ident_6",
                             this.value
                         )'
                     >
@@ -1234,27 +1205,36 @@
      >
                         CRUD_form
                       </option>
+                      <option value='base_links'
+     >
+                        base_links
+                      </option>
+                      <option value='links'
+     >
+                        links
+                      </option>
                     </select>
                 </td>
             </tr>
             <tr>
                 <td colspan='2'>
                   
-<div id='hideable_ident_3'
+<div id='hideable_ident_6'
   
     style='display: none'
   
 >
   
                     
+
   <table class='bordered'>
     <tr>
         <th> Keyword     </th>
         <th> Value(s)    </th>
-        <th> Applies to  </th>
         <th> Description </th>
     </tr>
   
+    
     
     <tr>
         <td> no_gen </td>
@@ -1269,11 +1249,11 @@
 
 
 <input type='checkbox'
-       value='ident_3::no_gen'
-       id='ident_3::no_gen'
+       value='ident_6::no_gen'
+       id='ident_6::no_gen'
        class='urgency_0'       onchange='javascript:update_tree(
            "method_statement_bool",
-           "ident_3::no_gen",
+           "ident_6::no_gen",
            this.checked
        )'
 />
@@ -1281,13 +1261,11 @@
 
         </td>
         <td>
-            All
-        </td>
-        <td>
             Skip this method completely
         </td>
     </tr>
   
+    
     
     <tr>
         <td> extra_args </td>
@@ -1305,24 +1283,24 @@
         
         
         <input type='text'
-            name='ident_3::extra_args'
+            name='ident_6::extra_args'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_3::extra_args",
+                "ident_6::extra_args",
                 this
             )'
         />
         <br />
         
         <input type='text'
-            name='ident_3::extra_args'
+            name='ident_6::extra_args'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_3::extra_args",
+                "ident_6::extra_args",
                 this
             )'
         />
@@ -1331,9 +1309,6 @@
     
 
 
-        </td>
-        <td>
-            All
         </td>
         <td>
             Extra args for any method
@@ -1341,305 +1316,14 @@
     </tr>
   
     
-    <tr>
-        <td> cols </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-    
-        
-        
-        <input type='text'
-            name='ident_3::cols'
-            value=''
-            class='urgency_5'
-            onblur='javascript:update_multivalue(
-                "method_statement_text",
-                "ident_3::cols",
-                this
-            )'
-        />
-        <br />
-        
-        <input type='text'
-            name='ident_3::cols'
-            value=''
-            class='urgency_5'
-            onblur='javascript:update_multivalue(
-                "method_statement_text",
-                "ident_3::cols",
-                this
-            )'
-        />
-        
-        
-    
-
-
-        </td>
-        <td>
-            main_listing
-        </td>
-        <td>
-            Fields to include in main_listing
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> col_labels </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-    
-        
-        
-        <input type='text'
-            name='ident_3::col_labels'
-            value=''
-            class='urgency_0'
-            onblur='javascript:update_multivalue(
-                "method_statement_text",
-                "ident_3::col_labels",
-                this
-            )'
-        />
-        <br />
-        
-        <input type='text'
-            name='ident_3::col_labels'
-            value=''
-            class='urgency_0'
-            onblur='javascript:update_multivalue(
-                "method_statement_text",
-                "ident_3::col_labels",
-                this
-            )'
-        />
-        
-        
-    
-
-
-        </td>
-        <td>
-            main_listing
-        </td>
-        <td>
-            Labels for fields on main_listing [optional defaults to fields label]
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> header_options </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-      <table id='ident_3::header_options_input_table'>
-        <tr><th> Label </th>
-            <th> Location
-                 
-                    [optional]
-                 
-            </th></tr>
     
     
-        <tr><td>
-                <input
-                    type='text'
-                    name='ident_3::header_options_key'
-                    class='urgency_5'
-                    onblur='javascript:update_pairs(
-                        "method_statement_pair",
-                        "ident_3::header_options",
-                        1,
-                        this
-                    )'
-                />
-            </td>
-            <td>
-                <input
-                    type='text'
-                    name='ident_3::header_options_value'
-                    class='urgency_'
-                    onblur='javascript:update_pairs(
-                        "method_statement_pair",
-                        "ident_3::header_options",
-                        1,
-                        this
-                    )'
-                />
-            </td>
-        </tr>
-      
-      </table>
-
-
-        </td>
-        <td>
-            main_listing
-        </td>
-        <td>
-            User actions affecting the table [like Add]
-        </td>
-    </tr>
-  
-    
-    <tr>
-        <td> row_options </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-      <table id='ident_3::row_options_input_table'>
-        <tr><th> Label </th>
-            <th> Location
-                 
-                    [optional]
-                 
-            </th></tr>
     
     
-        <tr><td>
-                <input
-                    type='text'
-                    name='ident_3::row_options_key'
-                    class='urgency_5'
-                    onblur='javascript:update_pairs(
-                        "method_statement_pair",
-                        "ident_3::row_options",
-                        1,
-                        this
-                    )'
-                />
-            </td>
-            <td>
-                <input
-                    type='text'
-                    name='ident_3::row_options_value'
-                    class='urgency_'
-                    onblur='javascript:update_pairs(
-                        "method_statement_pair",
-                        "ident_3::row_options",
-                        1,
-                        this
-                    )'
-                />
-            </td>
-        </tr>
-      
-      </table>
-
-
-        </td>
-        <td>
-            main_listing
-        </td>
-        <td>
-            User actions affecting rows [like Edit]
-        </td>
-    </tr>
-  
     
-    <tr>
-        <td> title </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
     
-        <input type='text'
-            id='ident_3::title'
-            value=""
-            class='urgency_3'
-            onblur='javascript:update_tree(
-                "method_statement_text",
-                "ident_3::title",
-                this.value
-            )'
-        />
     
-
-
-        </td>
-        <td>
-            main_listing
-        </td>
-        <td>
-            Browser title bar title for main_listing
-        </td>
-    </tr>
-  
     
-    <tr>
-        <td> html_template </td>
-        <td>
-
-            
-            
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
-
-    
-        <input type='text'
-            id='ident_3::html_template'
-            value=""
-            class='urgency_0'
-            onblur='javascript:update_tree(
-                "method_statement_text",
-                "ident_3::html_template",
-                this.value
-            )'
-        />
-    
-
-
-        </td>
-        <td>
-            main_listing
-        </td>
-        <td>
-            Template to use for main_listing [defaults to results.tt]
-        </td>
-    </tr>
-  
     
     <tr>
         <td> all_fields_but </td>
@@ -1656,36 +1340,36 @@
     
         
             <input type='text'
-                name='ident_3::all_fields_but'
+                name='ident_6::all_fields_but'
                 value="id"
                 class='urgency_5'
                 onblur='javascript:update_multivalue(
                     "method_statement_text",
-                    "ident_3::all_fields_but",
+                    "ident_6::all_fields_but",
                     this
                 )'
             />
             <br />
         
             <input type='text'
-                name='ident_3::all_fields_but'
+                name='ident_6::all_fields_but'
                 value="created"
                 class='urgency_5'
                 onblur='javascript:update_multivalue(
                     "method_statement_text",
-                    "ident_3::all_fields_but",
+                    "ident_6::all_fields_but",
                     this
                 )'
             />
             <br />
         
             <input type='text'
-                name='ident_3::all_fields_but'
+                name='ident_6::all_fields_but'
                 value="modified"
                 class='urgency_5'
                 onblur='javascript:update_multivalue(
                     "method_statement_text",
-                    "ident_3::all_fields_but",
+                    "ident_6::all_fields_but",
                     this
                 )'
             />
@@ -1693,24 +1377,24 @@
         
         
         <input type='text'
-            name='ident_3::all_fields_but'
+            name='ident_6::all_fields_but'
             value=''
             class='urgency_5'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_3::all_fields_but",
+                "ident_6::all_fields_but",
                 this
             )'
         />
         <br />
         
         <input type='text'
-            name='ident_3::all_fields_but'
+            name='ident_6::all_fields_but'
             value=''
             class='urgency_5'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_3::all_fields_but",
+                "ident_6::all_fields_but",
                 this
             )'
         />
@@ -1721,13 +1405,11 @@
 
         </td>
         <td>
-            forms
-        </td>
-        <td>
             Fields to exclude from a form [either all_fields_but or fields is REQUIRED]
         </td>
     </tr>
   
+    
     
     <tr>
         <td> fields </td>
@@ -1745,24 +1427,24 @@
         
         
         <input type='text'
-            name='ident_3::fields'
+            name='ident_6::fields'
             value=''
             class='urgency_5'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_3::fields",
+                "ident_6::fields",
                 this
             )'
         />
         <br />
         
         <input type='text'
-            name='ident_3::fields'
+            name='ident_6::fields'
             value=''
             class='urgency_5'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_3::fields",
+                "ident_6::fields",
                 this
             )'
         />
@@ -1773,13 +1455,11 @@
 
         </td>
         <td>
-            forms
-        </td>
-        <td>
             Fields to include on a form [either all_fields_but or fields is REQUIRED]
         </td>
     </tr>
   
+    
     
     <tr>
         <td> extra_keys </td>
@@ -1793,7 +1473,7 @@
 
 
 
-      <table id='ident_3::extra_keys_input_table'>
+      <table id='ident_6::extra_keys_input_table'>
         <tr><th> key </th>
             <th> value
                  
@@ -1805,12 +1485,12 @@
         <tr><td>
                 <input
                     type='text'
-                    name='ident_3::extra_keys_key'
+                    name='ident_6::extra_keys_key'
                     value="legend"
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_3::extra_keys",
+                        "ident_6::extra_keys",
                         1,
                         this
                     )'
@@ -1819,12 +1499,12 @@
             <td>
                 <input
                     type='text'
-                    name='ident_3::extra_keys_value'
+                    name='ident_6::extra_keys_value'
                     value="$self->path_info =~ /edit/i ? 'Edit' : 'Add'"
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_3::extra_keys",
+                        "ident_6::extra_keys",
                         1,
                         this
                     )'
@@ -1832,15 +1512,14 @@
             </td>
         </tr>
     
-    
-        <tr><td>
+            <tr><td>
                 <input
                     type='text'
-                    name='ident_3::extra_keys_key'
+                    name='ident_6::extra_keys_key'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_3::extra_keys",
+                        "ident_6::extra_keys",
                         1,
                         this
                     )'
@@ -1849,11 +1528,11 @@
             <td>
                 <input
                     type='text'
-                    name='ident_3::extra_keys_value'
+                    name='ident_6::extra_keys_value'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_3::extra_keys",
+                        "ident_6::extra_keys",
                         1,
                         this
                     )'
@@ -1866,13 +1545,11 @@
 
         </td>
         <td>
-            forms
-        </td>
-        <td>
             Extra keys to put in the form method hash
         </td>
     </tr>
   
+    
     
     <tr>
         <td> form_name </td>
@@ -1888,21 +1565,18 @@
 
     
         <input type='text'
-            id='ident_3::form_name'
+            id='ident_6::form_name'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "method_statement_text",
-                "ident_3::form_name",
+                "ident_6::form_name",
                 this.value
             )'
         />
     
 
 
-        </td>
-        <td>
-            forms
         </td>
         <td>
             Form name [used with date selections]
@@ -1927,11 +1601,12 @@
   
 
 
-                  
+                    
 </div>
  </td>
-            </tr>
-        </table>
+              </tr>
+          </table>
+        
 
       
 
@@ -1968,6 +1643,12 @@ app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
+    }
+    controller is base_controller {
+        method do_main is base_links {
+        }
+        method site_links is links {
+        }
     }
     controller Address is AutoCRUD {
         method do_main is main_listing {

@@ -1,3 +1,5 @@
+# NEVER EDIT this file.  It was generated and will be overwritten without
+# notice upon regeneration of this application.  You have been warned.
 package GENContact;
 
 use strict;
@@ -6,7 +8,6 @@ use Gantry qw{ -Engine=MP20 -TemplateEngine=TT };
 
 our @ISA = qw( Gantry );
 
-use Contact::Number;
 
 ##-----------------------------------------------------------------
 ## $self->init( $r )
@@ -24,7 +25,7 @@ use Contact::Number;
 # $self->do_main( )
 #-----------------------------------------------------------------
 sub do_main {
-    my ( $self ) = shift;
+    my ( $self ) = @_;
 
     $self->stash->view->template( 'main.tt' );
     $self->stash->view->title( 'Contact' );
@@ -33,7 +34,7 @@ sub do_main {
         pages => [
         ],
     } );
-}
+} # END do_main
 
 #-----------------------------------------------------------------
 # $self->site_links( )
@@ -43,7 +44,7 @@ sub site_links {
 
     return [
     ];
-}
+} # END site_links
 
 1;
 
@@ -91,3 +92,4 @@ it under the same terms as Perl itself, either Perl version 5.8.6 or,
 at your option, any later version of Perl 5 you may have available.
 
 =cut
+

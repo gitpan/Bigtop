@@ -227,6 +227,14 @@ You may include the following keys in the method block:
 
 =over 4
 
+=item rows
+
+An integer number of rows to display on each page of main listing output.
+There is no default.  If you omit this, you get all the rows, which is
+painful if there are very many.
+
+You must be using DBIx::Class for this to be effective.
+
 =item cols
 
 This is the list of columns that should appear in the listing.
@@ -285,7 +293,8 @@ do_strange_add.
 =item html_template
 
 The name of the Template Toolkit file to use as the view for this page.
-By default this is results.tt.
+By default this is results.tt for main_listing methods and main.tt for
+base_link methods.
 
 =item row_options
 
@@ -459,6 +468,8 @@ BEGIN {
             'method',
             qw(
                 extra_args
+                rows
+                paged_conf
                 cols
                 col_labels
                 header_options
@@ -486,6 +497,7 @@ BEGIN {
                 html_form_rows
                 html_form_display_size
                 html_form_options
+                html_form_foreign
                 date_select_text
             )
         )
@@ -514,12 +526,31 @@ use [% module %];
 use [% module %];
 [% END %]
 
+[% child_output %]
+
+
+[%- IF class_accessors -%]
+[% class_accessors %]
+[%- END -%]
+
+[% IF init_sub %]
+#-----------------------------------------------------------------
+# $self->init( $r )
+#-----------------------------------------------------------------
+# This method supplied by [% gen_package_name +%]
+[% END %]
+[% IF config_accessor_comments %]
+[% config_accessor_comments %]
+[% END %]
+
 1;
 
 [% pod %]
 [% END %]
 
 [% BLOCK gen_base_module %]
+# NEVER EDIT this file.  It was generated and will be overwritten without
+# notice upon regeneration of this application.  You have been warned.
 package [% gen_package_name %];
 
 use strict;
@@ -535,18 +566,18 @@ our @ISA = qw( Gantry );
 [% FOREACH module IN external_modules %]
 use [% module %];
 [% END %]
-[% FOREACH module IN sub_modules %]
-use [% module %];
-[% END %]
 
 [% init_sub %]
 
 [% config_accessors %]
+[% IF child_output %]
+[% child_output %]
+[% ELSE %]
 #-----------------------------------------------------------------
 # $self->do_main( )
 #-----------------------------------------------------------------
 sub do_main {
-    my ( $self ) = shift;
+    my ( $self ) = @_;
 
     $self->stash->view->template( 'main.tt' );
     $self->stash->view->title( '[% dist_name %]' );
@@ -558,7 +589,7 @@ sub do_main {
 [% END %]
         ],
     } );
-}
+} # END do_main
 
 #-----------------------------------------------------------------
 # $self->site_links( )
@@ -575,11 +606,12 @@ sub site_links {
 [% END %]
 [% END %]
     ];
-}
+} # END site_links
+[% END %]
 
 1;
 
-[% gen_pod %]
+[% gen_pod +%]
 [% END %]
 
 [% BLOCK test_file %]
@@ -676,7 +708,19 @@ package [% package_name %];
 
 use strict;
 
+[% IF sub_modules %]
+our $VERSION = '0.01';
+
 use base '[% inherit_from %]';
+[% ELSE %]
+use base '[% inherit_from %]';
+[% END %]
+[% FOREACH module IN sub_modules %]
+[% IF loop.first %]
+
+[% END %]
+use [% module %];
+[% END %]
 [% child_output %]
 
 
@@ -748,8 +792,10 @@ You might even want to describe the table this module controls here.
 
 [% IF sub_module %]
 =head1 METHODS
-[% ELSE %]
+[% ELSIF gen_package_name AND NOT sub_modules %]
 =head1 METHODS (inherited from [% gen_package_name %])
+[% ELSE %]
+=head1 METHODS
 [% END %]
 
 =over 4
@@ -762,9 +808,9 @@ You might even want to describe the table this module controls here.
 
 =back
 
-[% IF gen_package_name AND sub_module %]
+[% IF gen_package_name AND mixins %]
 
-=head1 METHODS MIXED IN FROM [% gen_package_name +%]
+=head1 METHODS INHERITED FROM [% gen_package_name +%]
 
 =over 4
 
@@ -782,6 +828,9 @@ You might even want to describe the table this module controls here.
 
 [% FOREACH used_module IN used_modules %]
     [% used_module +%]
+[% END %]
+[% FOREACH see_also IN sub_modules %]
+    [% see_also +%]
 [% END %]
 
 =head1 AUTHOR
@@ -964,7 +1013,7 @@ use Gantry::Plugins::DBIxClassConn qw( get_schema );
 # get_orm_helper( )
 #-----------------------------------------------------------------
 sub get_orm_helper {
-    return 'Gantry::Plugins::AutoCRUDHelper::DBIxClass';
+    return '[% helper %]';
 }
 
 [% END %]
@@ -1053,6 +1102,32 @@ sub [% config %] {
 [% BLOCK self_setup %]
     $self->stash->view->template( '[% template %]' );
     $self->stash->view->title( '[% title %]' );
+[% IF with_real_loc %]
+
+    my $real_location = $self->location() || '';
+    if ( $real_location ) {
+        $real_location =~ s{/+$}{};
+        $real_location .= '/';
+    }
+[% END %]
+[% END %]
+
+[% BLOCK main_links %]
+    $self->stash->view->data( {
+        pages => [
+[% FOREACH page IN pages %]
+            { link => '[% page.link %]', label => '[% page.label %]' },
+[% END %]
+        ],
+    } );
+[% END %]
+
+[% BLOCK site_links %]
+    return [
+[% FOREACH page IN pages %]
+        { link => [% page.link %], label => '[% page.label %]' },
+[% END %]
+    ];
 [% END %]
 
 [% BLOCK main_heading %]
@@ -1078,16 +1153,34 @@ sub [% config %] {
 [% END %]
 
 [% BLOCK main_table %]
-[%- IF dbix -%]
+[%- IF dbix AND rows -%]
+    my $query   = $self->get_arg_hash;
+    my $page    = $query->{ page } || 1;
+
+    my $schema  = $self->get_schema();
+    my $results = $[% model %]->get_listing(
+        {
+            schema => $schema,
+            rows   => [% rows %],
+            page   => $page,
+        }
+    );
+
+    $retval->{ page } = $results->pager();
+    my $rows          = $results->page();
+
+    while ( my $row = $rows->next ) {
+[%- ELSIF dbix -%]
     my $schema = $self->get_schema();
     my @rows   = $[% model %]->get_listing( { schema => $schema } );
 
+    foreach my $row ( @rows ) {
 [%- ELSE -%]
     my @rows = $[% model %]->get_listing();
 
+    foreach my $row ( @rows ) {
 [%- END -%]
 
-    foreach my $row ( @rows ) {
         my $id = $row->id;
         push(
             @{ $retval->{rows} }, {
@@ -1168,7 +1261,6 @@ my $[% crud_name %] = Gantry::Plugins::CRUD->new(
     form            => \&[% form_method_name %],
     redirect        => \&[% crud_name %]_redirect,
     text_descr      => '[% text_descr %]',
-    use_clean_dates => 1,
 );
 
 #-----------------------------------------------------------------
@@ -1317,6 +1409,13 @@ sub gen_Control {
     my @external_modules;
     my $copyright_holder    = $bigtop_tree->get_copyright_holder();
     my $license_text        = $bigtop_tree->get_license_text();
+    my $config              = $bigtop_tree->get_config();
+    my $config_block        = $config->{Control};
+
+    my $full_use_statement = 0;
+    if ( defined $config_block->{full_use} and $config_block->{full_use} ) {
+        $full_use_statement = 1;
+    }
 
     @external_modules    = @{ $app_stmnts->{uses} }
             if defined ( $app_stmnts->{uses} );
@@ -1330,7 +1429,7 @@ sub gen_Control {
     # First, make one controller for each controller block in the bigtop_file
     # collect the names of all the controllers and their models.
     my $sub_modules = $bigtop_tree->walk_postorder(
-        'output_controller',
+        'output_controllers',
         {
             module_dir       => $module_dir,
             app_name         => $app_name,
@@ -1341,61 +1440,31 @@ sub gen_Control {
             copyright_holder => $copyright_holder,
             license_text     => $license_text,
             year             => $year,
+            sub_modules      => undef,
         },
     );
 
     # Second, make the main modules.
-    my $config            = $bigtop_tree->get_config();
+    my $app_configs     = $bigtop_tree->{application}{lookup}{configs};
+    my $base_controller = $bigtop_tree->walk_postorder( 'base_controller' );
 
-    my $base_module_name  = pop @sub_dirs;
-    my $base_module_file  = File::Spec->catfile(
-            $build_dir, 'lib', @sub_dirs, "$base_module_name.pm"
-    );
-    my $gen_base_module_name = "GEN$base_module_name";
-    my $gen_base_module_file = File::Spec->catfile(
-            $build_dir, 'lib', @sub_dirs, "$gen_base_module_name.pm"
-    );
-    my $gen_package_name = join '::', @sub_dirs, $gen_base_module_name;
-
-    my $app_configs       = $bigtop_tree->{application}{lookup}{configs};
     my ( $all_configs, $accessor_configs )
                           = build_config_lists( $app_configs );
 
-    my $init_sub          = build_init_sub( $accessor_configs );
-    my $config_accessors  = Bigtop::Backend::Control::Gantry::config_accessors(
-        { configs => $accessor_configs, }
-    );
+    my $config_accessors  =
+        Bigtop::Backend::Control::Gantry::config_accessors(
+            { configs => $accessor_configs, }
+        );
 
-    # remember the pod
     my @pod_methods = map { $_, "set_$_" } @{ $accessor_configs };
 
-    unshift @pod_methods, qw( init do_main site_links );
+    my $init_sub          = build_init_sub( $accessor_configs );
 
-    my $pod               = Bigtop::Backend::Control::Gantry::pod(
-        {
-            package_name     => $app_name,
-            gen_package_name => $gen_package_name,
-            methods          => \@pod_methods,
-            other_module_text=> 'SEE ALSO',
-            used_modules     => [ 'Gantry',
-                                  $gen_package_name,
-                                  @{ $sub_modules } ],
-            authors          => $authors,
-            contact_us       => $contact_us,
-            copyright_holder => $copyright_holder,
-            license_text     => $license_text,
-            sub_module       => 0,
-            year             => $year,
-        }
+    # now form nav links
+    my $location  = $bigtop_tree->walk_postorder( 'output_location'  )->[0];
+    my $nav_links = $bigtop_tree->walk_postorder(
+            'output_nav_links', $location
     );
-
-    my $full_use_statement = 0;
-    my $config_block = $config->{Control};
-    if ( defined $config_block->{full_use} and $config_block->{full_use} ) {
-        $full_use_statement = 1;
-    }
-
-    my $nav_links = $bigtop_tree->walk_postorder( 'output_nav_links' );
 
     my @pages;
     foreach my $nav_link ( @{ $nav_links } ) {
@@ -1403,69 +1472,129 @@ sub gen_Control {
         push @pages, \%nav_pair;
     }
 
-    my $base_module_content = Bigtop::Backend::Control::Gantry::base_module(
-        {
-            dist_name          => $base_module_name,
-            app_name           => $app_name,
-            gen_package_name   => $gen_package_name,
-            external_modules   => \@external_modules,
-            sub_modules        => $sub_modules,
-            init_sub           => $init_sub,
-            config_accessors   => $config_accessors,
-            pod                => $pod,
-            full_use_statement => $full_use_statement,
-            pages              => \@pages,
-            %{ $config },                # Go fish!
-        }
-    );
-
-    eval {
-        no warnings qw( Bigtop );
-        Bigtop::write_file(
-            $base_module_file, $base_module_content, 'no_overwrite'
+    if ( defined $base_controller->[0] and $base_controller->[0] ) {
+        # warn "skipping previously generated modules\n";
+        $bigtop_tree->walk_postorder(
+            'output_controllers',
+            {
+                module_dir         => $module_dir,
+                app_name           => $app_name,
+                lookup             => $lookup,
+                tree               => $bigtop_tree,
+                authors            => $authors,
+                contact_us         => $contact_us,
+                copyright_holder   => $copyright_holder,
+                license_text       => $license_text,
+                year               => $year,
+                sub_modules        => $sub_modules,
+                full_use_statement => $full_use_statement,
+                init_sub           => $init_sub,
+                config_accessors   => $config_accessors,
+                methods            => \@pod_methods,
+                pages              => \@pages,
+                %{ $config },
+            },
         );
-    };
-    warn $@ if ( $@ );
+    }
+    else { # spoof up a base_controller block, if they don't provide one
+        my $base_module_name  = pop @sub_dirs;
+        my $base_module_file  = File::Spec->catfile(
+                $build_dir, 'lib', @sub_dirs, "$base_module_name.pm"
+        );
+        my $gen_base_module_name = "GEN$base_module_name";
+        my $gen_base_module_file = File::Spec->catfile(
+                $build_dir, 'lib', @sub_dirs, "$gen_base_module_name.pm"
+        );
+        my $gen_package_name = join '::', @sub_dirs, $gen_base_module_name;
 
-    my $gen_pod = Bigtop::Backend::Control::Gantry::gen_pod(
-        {
-            package_name     => $app_name,
-            gen_package_name => $gen_package_name,
-            methods          => \@pod_methods,
-            other_module_text=> 'SEE ALSO',
-            used_modules     => [ 'Gantry',
-                                  $gen_package_name,
-                                  @{ $sub_modules } ],
-            authors          => $authors,
-            contact_us       => $contact_us,
-            copyright_holder => $copyright_holder,
-            license_text     => $license_text,
-            sub_module       => 0,
-            year             => $year,
-        }
-    );
+        # remember the pod
 
-    my $gen_base_content = Bigtop::Backend::Control::Gantry::gen_base_module(
-        {
-            dist_name          => $base_module_name,
-            app_name           => $app_name,
-            gen_package_name   => $gen_package_name,
-            external_modules   => \@external_modules,
-            sub_modules        => $sub_modules,
-            init_sub           => $init_sub,
-            config_accessors   => $config_accessors,
-            gen_pod            => $gen_pod,
-            full_use_statement => $full_use_statement,
-            pages              => \@pages,
-            %{ $config },                # Go fish!
-        }
-    );
+        unshift @pod_methods, qw( init do_main site_links );
 
-    eval {
-        no warnings qw( Bigtop );
-        Bigtop::write_file( $gen_base_module_file, $gen_base_content );
-    };
-    warn $@ if ( $@ );
+        my $pod               = Bigtop::Backend::Control::Gantry::pod(
+            {
+                package_name     => $app_name,
+                gen_package_name => $gen_package_name,
+                methods          => \@pod_methods,
+                other_module_text=> 'SEE ALSO',
+                used_modules     => [ 'Gantry',
+                                      $gen_package_name,
+                                      @{ $sub_modules } ],
+                authors          => $authors,
+                contact_us       => $contact_us,
+                copyright_holder => $copyright_holder,
+                license_text     => $license_text,
+                sub_module       => 0,
+                year             => $year,
+            }
+        );
+
+        my $base_module_content =
+            Bigtop::Backend::Control::Gantry::base_module(
+                {
+                    dist_name          => $base_module_name,
+                    app_name           => $app_name,
+                    gen_package_name   => $gen_package_name,
+                    external_modules   => \@external_modules,
+                    sub_modules        => $sub_modules,
+                    init_sub           => $init_sub,
+                    config_accessors   => $config_accessors,
+                    pod                => $pod,
+                    full_use_statement => $full_use_statement,
+                    pages              => \@pages,
+                    %{ $config },                # Go fish!
+                }
+            );
+
+        eval {
+            no warnings qw( Bigtop );
+            Bigtop::write_file(
+                $base_module_file, $base_module_content, 'no_overwrite'
+            );
+        };
+        warn $@ if ( $@ );
+
+        my $gen_pod = Bigtop::Backend::Control::Gantry::gen_pod(
+            {
+                package_name     => $app_name,
+                gen_package_name => $gen_package_name,
+                methods          => \@pod_methods,
+                other_module_text=> 'SEE ALSO',
+                used_modules     => [ 'Gantry',
+                                      $gen_package_name,
+                                      @{ $sub_modules } ],
+                authors          => $authors,
+                contact_us       => $contact_us,
+                copyright_holder => $copyright_holder,
+                license_text     => $license_text,
+                sub_module       => 0,
+                year             => $year,
+            }
+        );
+
+        my $gen_base_content =
+            Bigtop::Backend::Control::Gantry::gen_base_module(
+                {
+                    dist_name          => $base_module_name,
+                    app_name           => $app_name,
+                    gen_package_name   => $gen_package_name,
+                    external_modules   => \@external_modules,
+                    sub_modules        => $sub_modules,
+                    init_sub           => $init_sub,
+                    config_accessors   => $config_accessors,
+                    gen_pod            => $gen_pod,
+                    full_use_statement => $full_use_statement,
+                    pages              => \@pages,
+                    %{ $config },                # Go fish!
+                }
+            );
+
+        eval {
+            no warnings qw( Bigtop );
+            Bigtop::write_file( $gen_base_module_file, $gen_base_content );
+        };
+        warn $@ if ( $@ );
+    }
 
     # finally, make the tests
     # start with the use test (compile test for all controllers)
@@ -1543,7 +1672,7 @@ sub gen_Control {
 
         # ...then, the locations
         my $locations = $bigtop_tree->walk_postorder(
-                'output_test_locations'
+                'output_test_locations', $lookup
         );
         my $num_tests = @{ $locations };
 
@@ -1561,7 +1690,7 @@ sub gen_Control {
         eval {
             no warnings qw( Bigtop );
             Bigtop::write_file(
-                    $run_test_file, $run_test_content, 'no overwrite'
+                    $run_test_file, $run_test_content,
             );
         };
         warn $@ if ( $@ );
@@ -1637,20 +1766,26 @@ use strict; use warnings;
 sub output_test_locations {
     my $self         = shift;
     my $child_output = shift;
+    my $lookup       = shift;
 
-    my $app_name = $self->get_name();
-    my $loc_args = $self->get_app_statement( 'location' );
-    my $base_location;
-
-    if ( defined $loc_args->[0] ) {
-        $base_location = $loc_args->[0];
-    }
-    else {
-        $base_location = '/';
-    }
+    my $app_name      = $self->get_name();
+    my $base_location = '/';
 
     my @retval;
-    push @retval, [ $base_location, $app_name ];
+
+    # we only skip the test if there is an explicit, true, skip test statement
+    my $skip_base_test  = 0;
+    my $base_controller = $lookup->{ controllers }{ base_controller };
+
+    if ( defined $base_controller ) {
+        my $skip_test  = $base_controller->{ statements }{ skip_test };
+        if ( defined $skip_test ) {
+            $skip_base_test = $skip_test->[0];
+        }
+    }
+
+    push @retval, [ $base_location, $app_name ] unless $skip_base_test;
+
     while ( @{ $child_output } ) {
         my ( $loc_type ) = shift @{ $child_output };
 
@@ -1697,7 +1832,6 @@ sub output_field_names {
     return [ $self->{__NAME__} ];
 }
 
-# controller_block
 package # controller_block
     controller_block;
 use strict; use warnings;
@@ -1721,7 +1855,31 @@ sub get_gen_package_name {
     my $self = shift;
     my $data = shift;
 
-    return $data->{app_name} . '::GEN::' . $self->get_name();
+    if ( $self->is_base_controller ) {
+        my @pieces      = split /::/, $data->{ app_name };
+        my $module_name = 'GEN' . pop @pieces;
+        return join '::', @pieces, $module_name;
+    }
+    else {
+        return $data->{app_name} . '::GEN::' . $self->get_name();
+    }
+}
+
+# this on is for walk_postorder use
+sub base_controller {
+    my $self = shift;
+
+    return [ 1 ] if ( $self->is_base_controller );
+}
+
+sub skip_base_controller {
+    my $self = shift;
+
+    return unless $self->is_base_controller;
+
+    #warn "I'm the base controller\n";
+
+    return;
 }
 
 sub output_extra_use {
@@ -1736,15 +1894,28 @@ sub output_extra_use {
 
     my %extra_use = @{ $poser->uses };
 
-    my $output    = $extra_use{ output };
+    my $output    = $extra_use{ uses_output };
 
     return ( $output, $module );
 }
 
-sub output_controller {
+sub output_controllers {
     my $self         = shift;
-    my $child_output = shift;
+    shift;
     my $data         = shift;
+
+    if ( $self->is_base_controller ) { # if its the base, we need the subs
+        return unless defined $data->{ sub_modules };
+    }
+    else { # if we have the subs, we don't need them again
+        return if     defined $data->{ sub_modules };
+    }
+
+    my $model_alias  = $self->walk_postorder( 'get_model_alias' )->[0];
+
+    $data->{ model_alias } = $model_alias;
+
+    my $child_output = $self->walk_postorder( 'output_controller', $data );
 
     # generate the content of the controller and its GEN module
     my $short_name            = $self->get_name();
@@ -1772,7 +1943,9 @@ sub output_controller {
 
     # build beginning of dependencies section (the base app and the GEN
     # if it has methods)
-    my @depend_head = ( $data->{app_name} );
+    my @depend_head = ( $data->{app_name} )
+            unless ( $self->is_base_controller );
+
     push @depend_head, $gen_package_name if defined $gen_method_names;
 
     unshift @{ $output_hash->{used_modules} }, \@depend_head;
@@ -1827,6 +2000,50 @@ sub output_controller {
         );
     }
 
+    my $inherit_from;
+    my $other_module_text  = 'DEPENDENCIES';
+
+    my @pack_pieces;
+    my $base_name;
+
+    if ( $self->is_base_controller ) {
+        @pack_pieces       = split /::/, $data->{ app_name };
+        $base_name         = pop @pack_pieces;
+        $base_name        .= '.pm';
+
+        $inherit_from      = 'Gantry';  # only a default
+        $other_module_text = 'SEE ALSO';
+
+        $package_name      = $data->{ app_name };
+        $used_modules      = [ 'Gantry' ];
+        if ( $gen_method_names ) {
+            push @{ $used_modules }, $gen_package_name;
+        }
+        # now push in any modules from uses statements
+    }
+    else {
+        @pack_pieces  = split /::/, $short_name;
+        $base_name    = pop @pack_pieces;
+        $base_name   .= '.pm';
+
+        $inherit_from = $data->{ app_name };
+    }
+
+    if ( defined $gen_method_names ) {  # in either case, use GEN if available
+        $inherit_from = $gen_package_name;
+    }
+
+    my $all_gen_methods = $gen_method_names;
+
+    if ( $data->{ init_sub } and $self->is_base_controller ) {
+        unshift @{ $gen_method_names }, 'init';
+
+        $all_gen_methods = [
+                @{ $gen_method_names },
+                @{ $data->{ methods } },
+        ];
+    }
+
     my $pod                 = Bigtop::Backend::Control::Gantry::pod(
         {
             app_name         => $data->{app_name}, 
@@ -1835,83 +2052,156 @@ sub output_controller {
             methods          => $stub_method_names,
             gen_package_name =>
                 ( defined $gen_method_names ) ? $gen_package_name : undef,
-            mixins           => $gen_method_names,
-            other_module_text=> 'DEPENDENCIES',
+            mixins           => $all_gen_methods,
+            other_module_text=> $other_module_text,
             used_modules     => $used_modules,
             authors          => $data->{authors},
             contact_us       => $data->{contact_us},
             copyright_holder => $data->{copyright_holder},
             license_text     => $data->{license_text},
-            sub_module       => 1,
+            sub_module       => ( not $self->is_base_controller ),
+            sub_modules      => $data->{sub_modules},
             year             => $data->{year},
         }
     );
 
-    my $inherit_from = $data->{app_name};
-    if ( defined $gen_method_names ) {
-        $inherit_from = $gen_package_name;
+    my $output;
+    my $gen_pod;
+    my $gen_output;
+
+    if ( $self->is_base_controller ) {
+        $output = Bigtop::Backend::Control::Gantry::base_module(
+            {
+                package_name      => $package_name,
+                gen_package_name  => $inherit_from,
+                gen_use_statement => $gen_use_statement,
+                child_output      => $output_str,
+                class_accessors   => $class_access,
+                pod               => $pod,
+                config_accessors  => $config_accessors,
+                %{ $data },
+            }
+        );
+        $gen_pod =
+            Bigtop::Backend::Control::Gantry::gen_pod(
+            {
+                package_name     => $data->{ app_name },
+                gen_package_name => $gen_package_name,
+                other_module_text=> 'SEE ALSO',
+                used_modules     => [ 'Gantry',
+                                      $gen_package_name,
+                                      @{ $data->{ sub_modules } } ],
+                sub_module       => 0,
+                %{ $data },
+                methods          => $all_gen_methods,
+            }
+            # these are in $data: authors, contact_ud, copyright_holder,
+            # license_text, year, and app_name
+        );
+        $gen_output = Bigtop::Backend::Control::Gantry::gen_base_module(
+            {
+                child_output       => $gen_output_str,
+                gen_package_name   => $gen_package_name,
+#                external_modules   => \@external_modules,
+                init_sub           => $init_sub,
+                config_accessors   => $config_accessors,
+                gen_pod            => $gen_pod,
+#                full_use_statement => $full_use_statement,
+#                pages              => \@pages,
+                %{ $data },                # Go fish!
+            }
+        );
     }
-    my $output       = Bigtop::Backend::Control::Gantry::controller_block(
-        {
-            app_name          => $data->{app_name},
-            package_name      => $package_name,
-            inherit_from      => $inherit_from,
-            gen_use_statement => $gen_use_statement,
-            child_output      => $output_str,
-            class_accessors   => $class_access,
-            pod               => $pod,
-            init_sub          => $init_sub,
-            config_accessors  => $config_accessors,
-        }
-    );
+    else {
+        $output = Bigtop::Backend::Control::Gantry::controller_block(
+            {
+                app_name          => $data->{app_name},
+                package_name      => $package_name,
+                inherit_from      => $inherit_from,
+                gen_use_statement => $gen_use_statement,
+                child_output      => $output_str,
+                class_accessors   => $class_access,
+                pod               => $pod,
+                init_sub          => $init_sub,
+                config_accessors  => $config_accessors,
+                sub_modules       => $data->{sub_modules},
+            }
+        );
 
-    my $gen_pod              =
-        Bigtop::Backend::Control::Gantry::gen_controller_pod(
-        {
-            package_name     => $package_name,
-            gen_package_name =>
-                ( defined $gen_method_names ) ? $gen_package_name : undef,
-            gen_methods      => $gen_method_names,
-            sub_module       => 1,
-        }
-    );
+        $gen_pod =
+            Bigtop::Backend::Control::Gantry::gen_controller_pod(
+            {
+                package_name     => $package_name,
+                gen_package_name =>
+                    ( defined $gen_method_names ) ? $gen_package_name : undef,
+                gen_methods      => $gen_method_names,
+                sub_module       => 1,
+            }
+        );
 
-    my $gen_output = Bigtop::Backend::Control::Gantry::gen_controller_block(
-        {
-            app_name         => $data->{app_name},
-            gen_package_name => $gen_package_name,
-            child_output     => $gen_output_str,
-            export_array     => $export_array,
-            gen_pod          => $gen_pod,
-        }
-    );
+        $gen_output = Bigtop::Backend::Control::Gantry::gen_controller_block(
+            {
+                app_name         => $data->{app_name},
+                gen_package_name => $gen_package_name,
+                child_output     => $gen_output_str,
+                export_array     => $export_array,
+                gen_pod          => $gen_pod,
+            }
+        );
+    }
+
+    my $pm_file;
+    my $gen_pm_file;
+    my $retval;
 
     # put the content onto the disk
-    my @pack_pieces  = split /::/, $short_name;
-    my $base_name    = pop @pack_pieces;
-    $base_name      .= '.pm';
+    if ( $self->is_base_controller ) {
 
-    # ... first make sure the directories exist for this piece
-    my $module_home  = File::Spec->catdir( $data->{module_dir} );
-    foreach my $subdir ( @pack_pieces ) {
-        $module_home = File::Spec->catdir( $module_home, $subdir );
-        mkdir $module_home;
+        my $module_dir = $data->{ module_dir };
+
+        # Example: module_dir = t/gantry/play/Apps-Checkbook/lib/Apps/Checkbook
+        # we want to strip off the last dir and put our module names there:
+        # t/gantry/play/Apps-Checkbook/lib/Apps/Checkbook.pm
+        # t/gantry/play/Apps-Checkbook/lib/Apps/GENCheckbook.pm
+        my @module_dir_pieces = File::Spec->splitdir( $module_dir );
+        pop @module_dir_pieces;
+        my $base_module_dir   = File::Spec->catdir( @module_dir_pieces );
+
+        mkdir $base_module_dir;
+
+        $pm_file       = File::Spec->catfile( $base_module_dir, $base_name );
+        $gen_pm_file   = File::Spec->catfile(
+                $base_module_dir, "GEN$base_name"
+        );
+
+        $retval        = [];
     }
+    else {
 
-    # ... then make sure GEN directories exist (similar plan)
-    my $gen_home = File::Spec->catdir( $data->{module_dir}, 'GEN' );
-
-    if ( defined $gen_method_names ) {
-        mkdir $gen_home;
-
+        # ... first make sure the directories exist for this piece
+        my $module_home  = File::Spec->catdir( $data->{module_dir} );
         foreach my $subdir ( @pack_pieces ) {
-            $gen_home = File::Spec->catdir( $gen_home, $subdir );
-            mkdir $gen_home;
+            $module_home = File::Spec->catdir( $module_home, $subdir );
+            mkdir $module_home;
         }
-    }
 
-    my $pm_file     = File::Spec->catfile( $module_home, $base_name);
-    my $gen_pm_file = File::Spec->catfile( $gen_home,    $base_name);
+        # ... then make sure GEN directories exist (similar plan)
+        my $gen_home = File::Spec->catdir( $data->{module_dir}, 'GEN' );
+
+        if ( defined $gen_method_names ) {
+            mkdir $gen_home;
+
+            foreach my $subdir ( @pack_pieces ) {
+                $gen_home = File::Spec->catdir( $gen_home, $subdir );
+                mkdir $gen_home;
+            }
+        }
+
+        $pm_file     = File::Spec->catfile( $module_home, $base_name);
+        $gen_pm_file = File::Spec->catfile( $gen_home,    $base_name);
+
+        $retval      = [ $package_name ];
+    }
 
     # ... then write them
     eval {
@@ -1925,7 +2215,7 @@ sub output_controller {
     return if ( $@ );
 
     # tell postorder walker what we just built
-    return [ $package_name ];
+    return $retval;
 }
 
 sub _flatten {
@@ -1957,18 +2247,30 @@ sub _extract_output_from {
 
     # join the results
     my $empty_string = '';
-    my ( $output, $class_access, $gen_output );
+    my $output       = $empty_string;
+    my $class_access = $empty_string;
+    my $gen_output   = $empty_string;
 
+    # make sure uses are near the top
+    if ( defined $all_output{uses_output} ) {
+        $output       .= join $empty_string, @{ $all_output{uses_output}  };
+    }
+
+    if ( defined $all_output{uses_gen_output} ) {
+        $gen_output   .= join $empty_string, @{ $all_output{uses_gen_output} };
+    }
+
+    # then get the rest
     if ( defined $all_output{output} ) {
-        $output       = join $empty_string, @{ $all_output{output}       };
+        $output       .= join $empty_string, @{ $all_output{output}       };
     }
 
     if ( defined $all_output{gen_output} ) {
-        $gen_output   = join $empty_string, @{ $all_output{gen_output}   };
+        $gen_output   .= join $empty_string, @{ $all_output{gen_output}   };
     }
 
     if ( defined $all_output{class_access} ) {
-        $class_access = join $empty_string, @{ $all_output{class_access} };
+        $class_access .= join $empty_string, @{ $all_output{class_access} };
     }
 
     return (
@@ -1980,13 +2282,18 @@ sub _extract_output_from {
 }
 
 sub output_nav_links {
-    my $self         = shift;
-    my $child_output = shift;
-    my $data         = shift;
+    my $self          = shift;
+    my $child_output  = shift;
+    my $base_location = shift || '';
 
-    my %retval       = @{ $child_output };
+    my %retval        = @{ $child_output };
 
     if ( defined $retval{ label } and $retval{ label } ) {
+
+        if ( $self->is_base_controller ) {
+            push @{ $child_output }, 'link', $base_location;
+        }
+
         return [ $child_output ];
     }
     else {
@@ -1997,8 +2304,24 @@ sub output_nav_links {
 sub output_test_locations {
     my $self         = shift;
     my $child_output = shift;
+    my $lookup       = shift;
+
+    return if ( $self->is_base_controller );
 
     my %child_output = @{ $child_output};
+
+    my @keys = keys %{ $self };
+
+    my $controller_statements = $lookup->{ controllers }
+                                         { $self->{__NAME__} }
+                                         { statements };
+
+    if ( defined $controller_statements->{ skip_test}
+                and
+         $controller_statements->{ skip_test}
+    ) {
+        return;
+    }
 
     my @retval;
 
@@ -2014,6 +2337,7 @@ sub output_test_locations {
 }
 
 # controller_statement
+
 package # controller_statement
     controller_statement;
 use strict; use warnings;
@@ -2030,10 +2354,8 @@ sub output_controller {
     return [ $self->$keyword( $child_output, $data ) ];
 }
 
-sub uses {
-    my $self         = shift;
-    my $child_output = shift;
-    my $data         = shift;
+sub _form_uses {
+    my $self = shift;
 
     my @output;
     my @used_modules;
@@ -2091,10 +2413,40 @@ sub uses {
     my $output = join "\n", @output;
     $output   .= "\n\n";
 
+    return $output, \@used_modules;
+}
+
+sub uses {
+    my $self         = shift;
+
+    my ( $output, $used_modules ) = $self->_form_uses();
+
     return [
-        output       => $output,
-        gen_output   => $output,
-        used_modules => \@used_modules,
+        uses_output     => $output,
+        uses_gen_output => $output,
+        used_modules    => $used_modules,
+    ];
+}
+
+sub stub_uses {
+    my $self         = shift;
+
+    my ( $output, $used_modules ) = $self->_form_uses();
+
+    return [
+        uses_output     => $output,
+        used_modules    => $used_modules,
+    ];
+}
+
+sub gen_uses {
+    my $self         = shift;
+
+    my ( $output, $used_modules ) = $self->_form_uses();
+
+    return [
+        uses_gen_output => $output,
+        used_modules    => $used_modules,
     ];
 }
 
@@ -2120,16 +2472,28 @@ sub is_dbix_class {
     return $config_block->{ dbix };
 }
 
+sub get_model_alias {
+    my $self = shift;
+
+    return unless $self->{ __KEYWORD__ } eq 'controls_table';
+
+    my $alias = uc $self->{ __ARGS__ }[0];
+    $alias    =~ s/\./_/;
+
+    return [ $alias ];
+}
+
 sub controls_table {
     my $self             = shift;
     my $child_output     = shift;
     my $data             = shift;
     my $table            = $self->{__ARGS__}[0];
 
+    $table               =~ s/\./_/;
+
     my $model            = "$data->{app_name}\::Model::$table";
 
-    my $model_alias      = uc $table;
-    $data->{model_alias} = $model_alias;
+    my $model_alias      = $data->{ model_alias };
 
     my $output           = Bigtop::Backend::Control::Gantry::use_stub(
         { module => $model, imports => "\$$model_alias" }
@@ -2144,8 +2508,33 @@ sub controls_table {
         );
 
         if ( $self->is_dbix_class( $data ) ) {
+            my $helper = 'Gantry::Plugins::AutoCRUDHelper::DBIxClass';
+            my $controller = $self->get_controller_name();
+
+            if ( defined $data->{ tree }
+                                { application     }
+                                { lookup          }
+                                { controllers     }
+                                { $controller     }
+                                { statements      }
+                                { autocrud_helper }
+            ) {
+                $helper = $data->{tree}
+                                 { application     }
+                                 { lookup          }
+                                 { controllers     }
+                                 { $controller     }
+                                 { statements      }
+                                 { autocrud_helper }
+                                 [ 0 ];
+            }
+
             $class_access .=
-                Bigtop::Backend::Control::Gantry::get_orm_helper( {} );
+                Bigtop::Backend::Control::Gantry::get_orm_helper(
+                    {
+                        helper => $helper,
+                    }
+                );
         }
     }
 
@@ -2158,10 +2547,10 @@ sub controls_table {
 
     # This use statement goes in both stub and gen output.
     return [
-        output       => $output,
-        gen_output   => $gen_output,
-        class_access => $class_access,
-        used_modules => [ $model ],
+        uses_output     => $output,
+        uses_gen_output => $gen_output,
+        class_access    => $class_access,
+        used_modules    => [ $model ],
     ];
 }
 
@@ -2210,7 +2599,6 @@ sub output_test_locations {
     return [ $self->{ __KEYWORD__ } => $self->{ __ARGS__ }->get_first_arg, ];
 }
 
-# controller_method
 package # controller_method
     controller_method;
 use strict; use warnings;
@@ -2346,6 +2734,7 @@ sub output_controller {
 }
 
 # method_body
+
 package # method_body
     method_body;
 use strict; use warnings;
@@ -2423,12 +2812,97 @@ sub output_stub {
      ];
 }
 
+sub output_base_links {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    my $choices      = { @{ $child_output } };
+
+    # set up args
+    my ( $arg_capture, @doc_args )
+            = _build_arg_capture( @{ $choices->{extra_args} } );
+
+    my $title         = $choices->{title}[0]          || 'Main Listing';
+    my $template      = $choices->{html_template}[0]  || 'main.tt';
+
+    # set self vars for title/template etc.
+    my $self_setup = Bigtop::Backend::Control::Gantry::self_setup(
+        { title => $title, template => $template }
+    );
+
+    my $view_data = Bigtop::Backend::Control::Gantry::main_links(
+        { pages => $data->{ pages } }
+    );
+
+    return [
+        gen_output => {
+            body     => "$arg_capture\n$self_setup\n$view_data",
+            doc_args => \@doc_args,
+        },
+        comment_output => {
+            doc_args => \@doc_args,
+        }
+    ];
+}
+
+sub output_links {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    my $choices      = { @{ $child_output } };
+
+    # set up args
+    my ( $arg_capture, @doc_args )
+            = _build_arg_capture( @{ $choices->{extra_args} } );
+
+    my @abs_pages;
+    foreach my $page ( @{ $data->{ pages } } ) {
+        my $abs_page;
+
+        if ( $page->{ link } =~ m{^/} ) {
+            $abs_page = {
+                link => qq{'$page->{ link }'},
+            },
+        }
+        else {
+            $abs_page = {
+                link => qq{\$self->app_rootp() . '$page->{ link }'},
+            };
+        }
+        $abs_page->{ label } = $page->{ label };
+        push @abs_pages, $abs_page;
+    }
+
+    my $body = Bigtop::Backend::Control::Gantry::site_links(
+        { pages => \@abs_pages }
+    );
+
+    return [
+        gen_output => {
+            body     => "$arg_capture\n$body",
+#            body     => "$arg_capture\n$self_setup\n$view_data",
+            doc_args => \@doc_args,
+        },
+        comment_output => {
+            doc_args => \@doc_args,
+        }
+    ];
+}
+
 sub output_main_listing {
     my $self         = shift;
     my $child_output = shift;
     my $data         = shift;
 
     my $choices      = { @{ $child_output } };
+
+    # see if we are paging
+    my $rows = $choices->{ rows }[0] || undef;
+    if ( $choices->{ paged_conf }[0] ) {
+        $rows = '$self->' . $choices->{ paged_conf }[0];
+    }
 
     # set up args
     my ( $arg_capture, @doc_args )
@@ -2440,7 +2914,7 @@ sub output_main_listing {
 
     # set self vars for title/template etc.
     my $self_setup = Bigtop::Backend::Control::Gantry::self_setup(
-        { title => $title, template => $template }
+        { title => $title, template => $template, with_real_loc => 1 }
     );
 
     # set up headings
@@ -2512,6 +2986,7 @@ sub output_main_listing {
     my $main_table = Bigtop::Backend::Control::Gantry::main_table(
         {
             model       => $data->{model_alias},
+            rows        => $rows,
             data_cols   => \@cols,
             row_options => $row_options,
             dbix        => $self->is_dbix_class( $data ),
@@ -2569,7 +3044,7 @@ sub _build_options {
             $label    = $option;
             my $type  = lc $option;
             $type     =~ s/ /_/g;
-            $location = '$self->location() . "/' . $type . $url_suffix . '"';
+            $location = '$real_location . "' . $type . $url_suffix . '"';
         }
 
         push @options, {
@@ -2669,6 +3144,7 @@ sub _crud_form_outputer {
             # translate foreign key into select list
             if ( $clean_key eq 'refers_to' ) {
                 $clean_key   = 'options_string';
+                $clean_value =~ s/\./_/; # might have schema prefix
                 $clean_value = '$selections->{' . $clean_value . '}';
             }
             # pull out all pairs
@@ -2774,5 +3250,9 @@ sub output_main_listing  { goto &walker_output; }
 sub output_AutoCRUD_form { goto &walker_output; }
 
 sub output_CRUD_form     { goto &walker_output; }
+
+sub output_base_links    { goto &walker_output; }
+
+sub output_links         { goto &walker_output; }
 
 1;

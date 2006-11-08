@@ -213,6 +213,10 @@
         </tr>
     [% END %]
     [% IF statement.multiple OR values.length == 0 %]
+[%- pair_urgency = statement.urgency || 0 -%]
+[%- UNLESS statement.pair_required;
+        pair_urgency = 0;
+    END -%]
         <tr><td>
                 <input
                     type='text'

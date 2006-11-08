@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 11;
+use Test::More tests => 13;
 use Test::Files;
 use File::Spec;
 
@@ -31,10 +31,9 @@ $tent_maker->root( 'tenttemplates' );
 # Add controller
 #--------------------------------------------------------------------
 
-$ajax = $tent_maker->do_create_app_block( 'controller::Address', 'AutoCRUD' )
-      . "\n";
+$ajax = $tent_maker->do_create_app_block( 'controller::Address', 'AutoCRUD' );
 
-# this made idents 1-3
+# this made idents 4-6
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'acontrol' );
 
@@ -47,10 +46,10 @@ file_ok( $expected_file, $ajax, 'create default controller (acontrol)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_create_subblock(
-    'controller::ident_1::method::do_alt_main', 'main_listing'
-) . "\n";
+    'controller::ident_4::method::do_alt_main', 'main_listing'
+);
 
-# the new method is ident_4
+# the new method is ident_5
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'amethod' );
 
@@ -63,8 +62,8 @@ file_ok( $expected_file, $ajax, 'add method to controller (amethod)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_controller_statement_text(
-    'ident_1::uses', 'Date::Calc][Carp'
-) . "\n";
+    'ident_4::uses', 'Date::Calc][Carp'
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'acontrolst' );
 
@@ -77,8 +76,8 @@ file_ok( $expected_file, $ajax, 'new controller statement (acontrolst)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_controller_statement_text(
-    'ident_1::uses', 'Carp][Date::Calc'
-) . "\n";
+    'ident_4::uses', 'Carp][Date::Calc'
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'ccontrolst' );
 
@@ -91,8 +90,8 @@ file_ok( $expected_file, $ajax, 'change controller statement (ccontrolst)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_method_statement_text(
-    'ident_4::title', 'A Label'
-) . "\n";
+    'ident_7::title', 'A Label'
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'amethodst' );
 
@@ -105,8 +104,8 @@ file_ok( $expected_file, $ajax, 'new method statement (amethodst)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_method_statement_text(
-    'ident_4::title', 'Addresses'
-) . "\n";
+    'ident_7::title', 'Addresses'
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cmethodst' );
 
@@ -118,9 +117,7 @@ file_ok( $expected_file, $ajax, 'change method statement (cmethodst)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_name(
-    'controller::ident_1', 'AddressControl'
-) . "\n";
+$ajax = $tent_maker->do_update_name( 'controller::ident_4', 'AddressControl' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'ccontrolname' );
 
@@ -132,9 +129,7 @@ file_ok( $expected_file, $ajax, 'change controller name (ccontrolname)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_name(
-    'method::ident_2', 'do_main_listing'
-) . "\n";
+$ajax = $tent_maker->do_update_name( 'method::ident_5', 'do_main_listing' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cmethodname' );
 
@@ -147,8 +142,8 @@ file_ok( $expected_file, $ajax, 'change method name (cmethodname)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_controller_statement_text(
-    'ident_1::uses', 'undefined'
-) . "\n";
+    'ident_4::uses', 'undefined'
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rcontrolst' );
 
@@ -161,12 +156,26 @@ file_ok( $expected_file, $ajax, 'remove controller statement (rcontrolst)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_method_statement_text(
-    'ident_4::title', 'undefined'
-) . "\n";
+    'ident_7::title', 'undefined'
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rmethodst' );
 
 file_ok( $expected_file, $ajax, 'remove method statement (rmethodst)' );
+
+#--------------------------------------------------------------------
+# Add paged_conf method statement
+#--------------------------------------------------------------------
+
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_method_statement_text(
+    'ident_7::paged_conf', 'list_rows'
+);
+
+$expected_file = File::Spec->catfile( $ajax_dir, 'apagedst' );
+
+file_ok( $expected_file, $ajax, 'add paged_conf method statement (apagedst)' );
 
 #--------------------------------------------------------------------
 # Remove method.
@@ -174,9 +183,28 @@ file_ok( $expected_file, $ajax, 'remove method statement (rmethodst)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_delete_block( 'ident_2' ) . "\n";
+$ajax = $tent_maker->do_delete_block( 'ident_5' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rmethod' );
 
 file_ok( $expected_file, $ajax, 'remove method (rmethod)' );
+
+#--------------------------------------------------------------------
+# Removed base controller and make a new one
+#--------------------------------------------------------------------
+
+$tent_maker->template_disable( 0 );
+
+# first remove the existing one
+my $discard = $tent_maker->do_delete_block( 'ident_3' );
+
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_create_app_block(
+        'controller::base_controller', 'base_controller'
+);
+
+$expected_file = File::Spec->catfile( $ajax_dir, 'newbase' );
+
+file_ok( $expected_file, $ajax, 'new base controller (newbase)' );
 

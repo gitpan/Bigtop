@@ -1,22 +1,23 @@
-Build.PL's default for tentmaker template installation dir should be
-drawn from system installed TentMakerPath.pm if there is one.
+---
 
-When you change engines in tentmaker, should it also magically change
-backends?  CGI->mod_per would unclick CGI backend and click corresponding
-HttpdConf backend and vice versa.  If CGI backend had generate root
-checked, add a root var to conf with build dir html as an absolute path.
-In the other direction, do the opposite and always check generate root.
-Generate root should be superceded by an genuine root conf var?
+In the generated do_main, any calls to foreign display should be wrapped
+with evals and warnings issued with default blank.
 
---create does not try to make the sqlite database (if you are using
-that backend) nor does it give advice on how to start the app.
+You should be able to use data statements in a join_table.
 
-There are occasional javascript errors.  I think these happen when an update
-could have caused a cascade, but did not.  Usually these are todo has no
-props.
+Remaing issues with base_controller blocks:
+    These errors could be reported:
+        using a rel_location in a base_controller block
+        using an app level location and a base_controller location
+        app level uses statements are ignored if you have a base_controller
+    tentmaker does not indicate which method statements apply to *links methods
+    tentmaker does not indicate which controller statements apply
+The last two are probabaly not in the spirit of tentmaker anyway, but some
+docs might be nice, like [does NOT apply to base_controllers].
 
-Add paging as the default behavior of main listings.
-    This is a Gantry change to: Gantry::Utils::DBIxClass
+When you change a method or controller type, tentmaker should completely
+refresh the statement edit div so the statements applying to the new type
+are the only ones visible.
 
 Could column name changes lead to the immediate construction of an alter table?
     I think tentmaker should print the alter table statements to stdout,
@@ -26,19 +27,21 @@ These would just be side effects of renaming or adding things in tentmaker.
 
 When a table name changes, spew table alterations as for field name changes.
 
----
+When you change engines in tentmaker, should it also magically change
+backends?  CGI->mod_perl would unclick CGI backend and click corresponding
+HttpdConf backend and vice versa.  If CGI backend had generate root
+checked, add a root var to conf with build dir html as an absolute path.
+In the other direction, do the opposite and always check generate root.
+Generate root should be superceded by an genuine root conf var?
 
-Continue work on improving the AST.  Read the Modules doc and the
-gantry book chapters about the tree, concentrate on things marked awkward.
+--create does not try to make the sqlite database (if you are using
+that backend) nor does it give advice on how to start the app.
 
 When fields are deleted, the users of them are not updated.  This should
 include:
     controller main_listing cols
     controller form fields or all_fields_but
     table foreign_displays
-
-Find a way to wedge bigtop syntax in the tent maker reference chapter in
-the gantry book.  Or have a chapter on it.
 
 Should a table name change cause a cascade of field name changes for
 all the foreign keys which point to it?
@@ -52,6 +55,12 @@ they show up on screen as they were selected and not as they are actually
 stored in the database.
 
 ---
+
+A stray semi-colon after a config block yield a crummy error, without even
+a line number.
+
+Build.PL's default for tentmaker template installation dir should be
+drawn from system installed TentMakerPath.pm if there is one.
 
 tentmaker should be taught to make and manage controller level config blocks.
 
@@ -68,9 +77,6 @@ Worse, deparser ignores them.
     Deparser knows about them now, but there is still no way to make them
     in tentmaker.
 
-When a join table is created in tentmaker, the name boxes are not both
-red.  It works fine if the table exists or is created during start up.
-
 Make a way for literal SQL to be backend specific.
     literal SQL for Backend
 This requires a slight grammar change to add an optional for Backend
@@ -78,6 +84,13 @@ clause.  It would then have to associate that backend with the tree node.
 Some change to make_output might be in order.  Or the backends literal
 block could be asked to add the gaurd.
 When you fix this, change Bigtop::Docs::Syntax to reflect it.
+    We could also do this by moving to:
+        literal Postgres
+        literal MySQL
+        literal SQLite
+    while keeping
+        literal SQL
+    to mean for all of them
 
 Should bigtop --create default to all build?  Should it always default to all?
 
@@ -94,26 +107,6 @@ Engines and Template Engines, so tentmaker can dynamically provide its
 'Bigtop Config' choices.
 Make tentmaker sense all Gantry::Engines on the box.
 
-There should be a special top level controller block like
-    root_controller [ is type ] {
-    }
-which can take all the statements and blocks a regular controller can
-take.  This will put code into the app's base module.  (Syntax is
-subject to discussion, but I object to bare words at the app level like
-controls_table etc.  Although there is already a location directive, but
-since you have to have it (or take the default) and in other controllers
-you must have exactly one of location or rel_location the app level
-can't really function as a controller block without more work.)
-    These keywords should move from the app level into the root controller:
-        location [ defaults to / ]
-        uses
-    These keywords should be introduced for the root level controller:
-        controls_table
-        text_description
-        autocrud_helper
-    The legal root controller types would be the same as the controller types.
-    The root controller could have method blocks just like other controllers.
-
 Allow for multiple config blocks with user defined types:
     config for default {}
     config for dev     {}
@@ -122,6 +115,7 @@ Allow for multiple config blocks with user defined types:
     config for tim     {}
 and a way to pick one of these during generation:
     bigtop --config=phil --create file.bigtop all
+or generate them all and give app.server a flag to pick among them
 
 Why is a missing controls table only a warning?  Could it refuse
 to build the stub iff there is a main_listing, form, or crud_form but no
@@ -143,12 +137,6 @@ controls_table statement?
     The templates can make adjustments like this.
         Low.
 
-    Reorganize the sql_block subrules so they are more like the control_block
-    ones.  Namely, stop blessing different kinds of things into the same
-    class, then if testing on attributes to tell them apart.
-        This now only applies to table_element_blocks and the only
-        test I find questionable is a test of leaf vs. interior node.
-
     Make the grammar report better errors.
         Place holder for problems found in the future.
 
@@ -156,6 +144,19 @@ controls_table statement?
         Place holder as a reminder.
 
 Not to be Done:
+
+    bigtop -n AppName
+    without a table list is generating, but not generating everything.
+    In particular, it does not make app.cgi, app.server, or anything in
+    lib.  Immediately running bigtop docs/appname.bigtop all makes those things.
+        I think this is correct behavior.  while you could immediately build,
+        that would make stubs
+
+    A heart beat to the server might be nice when you do things in the browser,
+    to make sure the server is up.
+        The recommended way to stop the server is now from within the browser.
+        This lets the browser set a server down flag to prevent you from
+        thinking you are working when you are not.
 
     app.server is always calling the db app.db, even when the config says
     something else.
@@ -253,7 +254,229 @@ Not to be Done:
     Add comment stubs for methods imported from uses statements.
         This is just litter.
 
+Bug fixes:
+
+    in ~/Bigtop/play/Address on ren:
+    bigtop docs/address.bigtop all
+    Use of uninitialized value in pattern match (m//) at
+    /usr/lib/perl5/site_perl/5.8.3/Bigtop/Backend/Control/Gantry.pm line 2747.
+    Use of uninitialized value in concatenation (.) or string at
+    /usr/lib/perl5/site_perl/5.8.3/Bigtop/Backend/Control/Gantry.pm line 2755.
+        supplied an empty string as the location when none is provided
+    Error: no location or rel_location defined for controller base_controller
+        instructed SiteLook GantryDefault backend to ignore base controllers
+
+    You can't really mark MANIFEST.SKIP and Build.PL as no_gen in Init Std
+    backend, since their names have dots embedded.
+
+    Values in data statments under Deparse are having newlines inserted after
+    each comma.
+
+    When config values have colons in them, deparse is not quoting them.
+
 Done:
+
+    I want a way for tentmaker keywords to know what types they apply to.
+    Then the statements should only appear if the type matches.  If you change
+    the type, I'm not going to worry about existing inapplicable statements.
+    They are not syntax errors, they are just ignored.  If you bumped the
+    type changer, you can recover by moving it back.
+        The problem is that when you change the type nothing in the statement
+        box changes.  We need an ajax response for that.  Yet, I want this
+        feature, since I think type changes are rare.  For now, if you change
+        the type, you must do a manual full refresh to get the additional
+        statements.
+
+    We need more testing of base controllers.
+
+    Finally, we need to verify that the statements really apply to their type.
+    This is particularly important for base controllers.
+
+    10_run.t is not handling base controllers correctly.  It is always putting
+    a / Base location in, and when there is a base controller, it is making
+    a App::base_controller location.
+        it needs to respect skip_test
+        it needs to omit the base_controller duplicate
+    In fact 10_run.t never respects location (which makes sense, since the
+    stand alone server can't handle them).
+
+    I'm wondering how wise it is to explicitly ask for imports in gen modules,
+    since the stub also usually uses the same modules and the exports are
+    then taken twice: once at the GEN (parent) level and again at the stub
+    (child) level.
+        There should really be two statements: stub_uses and gen_uses you
+        should never get both for free.  Existing uses statements should be
+        treated as gen_uses since stubs can't be regened.
+        Actually, I don't object to having three statements: stub_uses,
+        gen_uses, and uses (both).
+        Note that magical uses caused by controller type are not affected,
+        since they are only brought in to the stub.
+    All three statements are now available.
+
+    When a join table is created in tentmaker, the name boxes are not both
+    red.  It works fine if the table exists or is created during start up.
+
+    Tim reminds me that buried below is a request for an app level block called
+    base_controller which would affect AppName.pm and GENAppName.pm.  This is
+    especially useful for one controller apps.  It would subsume the app level
+    location and uses statements (if you had them at the app level they
+    would be ignored).  But, it would add the ability to include methods.
+    This is mainly for one controller apps.
+        It could be controller AppName is base_controller {}.
+        Or, is could be base_controller { }
+        Or, as it turned out controller is base_controller {}.
+    At first I liked:
+        base_controller {}
+    thinking that it was separate.
+    But the more I think, the more I like:
+        controller is base_controller {
+        }
+    So it is a regular block.  So much of what is legal in it and what it needs
+    to do is similar to the other controllers, this makes the most sense.
+    Questions:
+    1   What do we do with legacy bigtop files which don't have a controller of
+        type base_controller?
+        We spoof one.
+    2   What about things that are not legal in base_controllers:
+            rel_location comes to mind (ignore it, possibly with a warning)
+    3   How do we handle their locations?
+        If a base_controller is used, it may have a location (or you keep using
+        the app level one).  rel_location won't have the desired effect.
+        Currently no errors are called here.  But some that should be include:
+            using a rel_location in a base_controller block
+            using an app level location and a base_controller location
+            app level uses statements are ignored if you have a base_controller
+    Can tentmaker provide some assistance with this (by say indicating that a
+    controller statement can only occur for a certain type of controller?
+    If we had a general solution to that, we could leverage it into method
+    statements.  All of that might just be overkill.
+
+    Original version of request above:
+    There should be a special top level controller block like
+        root_controller [ is type ] {
+        }
+    which can take all the statements and blocks a regular controller can
+    take.  This will put code into the app's base module.  (Syntax is
+    subject to discussion, but I object to bare words at the app level like
+    controls_table etc.  Although there is already a location directive, but
+    since you have to have it (or take the default) and in other controllers
+    you must have exactly one of location or rel_location the app level
+    can't really function as a controller block without more work.)
+        These keywords should move from the app level into the root controller:
+            location [ defaults to / ]
+            uses
+        These keywords should be introduced for the root level controller:
+            controls_table
+            text_description
+            autocrud_helper
+        The legal root controller types would be the same as the controller
+        types.  The root controller could have method blocks just like
+        other controllers.
+
+    Reorganize the sql_block subrules so they are more like the control_block
+    ones.  Namely, stop blessing different kinds of things into the same
+    class, then if testing on attributes to tell them apart.
+        This has largely been done as of about 0.16.
+
+    Find a way to wedge bigtop syntax in the tent maker reference chapter in
+    the gantry book.  Or have a chapter on it.
+        There is a chapter for it: bigsyntax
+
+    Continue work on improving the AST.  Read the Modules doc and the
+    gantry book chapters about the tree, concentrate on things marked awkward.
+
+    When tentmaker sets the paged_conf it could magically add the conf var
+    with a good default.
+        Work flows:
+            paged_conf added as a new statement
+                see if there is a conf statement of the same name
+                if so, leave it alone
+                if not, make one set its value to 20
+            paged_conf removed as a statement
+                do nothing
+            paged_conf is changed
+                see if there is a conf statment of the same name
+                if not, add a statement with the same name
+
+    Add paging as the default behavior of main listings.
+        This requires a Gantry change to: Gantry::Utils::DBIxClass, but could
+        be an additional method there and control in bigtop for which one
+        you use.  Control could be via new controller type: paged_listing
+            Looking closer, Gantry::Utils::DBIxClass get_listing already
+            returns the result of search (context may be an issue).  If you
+            supplied page (and optionally rows) this should give you a
+            resultset on which you can call page (to get your rows) and
+            pager (to get a Data::Page object).  These can be fed to the
+            existing standard templates.
+            What we need:
+                a new main_listing method statement rows, if true indicates
+                paging is desired with the specified number of rows per page.
+                then the do_main would admit a page number arg (defaulting
+                to 1) and would page with prev and next links.
+                We might also allow a paged => conf_var_name, with the number
+                of rows taken from conf.
+
+    We need a way for a controller to opt out of the default run tests.
+
+    Incorporate schema support into bigtop.
+    x   1. a new schema block:
+            schema schname {}
+    x   2. allow table names to include a schema name:
+            table schname.tblname { ... }
+    x   3. SQL backends generate create shema statement.
+            Only Postgres does this since both mysql and sqlite don't separate
+            the notion of schema from the notion of database.
+    x   4. Refers to statement allows schname.table as a value, and converts
+        the dot to _.  Or user puts the _ in manually.
+        Note that default processes will not make schemas, so no controller
+        naming problems need to be addressed.
+    x   5. Generatred cdbi code understands schemas.
+    x   6. Make -a and -n understand table names with dots.
+        Make them generate a schema block.
+
+    Paul said a zero in an ident varchar got canned and did not make it to the
+    database.
+        This was overly aggressive clean_params in Gantry::Utils::CRUDHelp.
+
+    Since Init Std now thinks of most of its files as stubs, we should stop
+    putting no_gen 1; in its backend block under bigtop -n.
+
+    There are occasional javascript errors.  I think these happen when an
+    update could have caused a cascade, but did not.  Usually these are
+    todo has no props.
+        follow_instrustions no longer throws an error when the instruction
+        string is blank
+
+    Stop generating use_clean_dates since clean params is already on by
+    default.
+
+    There should be a way to stop the tentmaker server from the browser.
+
+    Be more sensible about which files Init Std overwrites.
+        README
+        Changes
+        Build.PL
+        MANIFEST.SKIP
+    should be stubs.  Only MANIFEST should be updated by default.
+
+    The README should list the Control backend (like Gantry) in DEPENDENCIES.
+
+    The note that bigtop makes in Changes:
+        - original version created with bigtop
+    could give the flags used
+
+    The following -n worked with bigtop but not with tentmaker (these
+    should really be merged, with get_big_default going away):
+    -n 'type<-event question->event auth_to_rr answer->question answer->event'
+        I tried this again, but it worked both ways.
+
+    tentmaker does not support the new html form type 'display' for
+    value which are not in input boxes.  It also knows nothing about
+    html_form_foreign statement which allows 'display' fields to convert the
+    foreign keys to foreign_display text.
+
+    The Model and SQL backends now understand no primary key and multi-column
+    primary key.
 
     It appears that if one table has two foreign keys in a single ascii art,
     their is a missing semi-colon or other syntax error.

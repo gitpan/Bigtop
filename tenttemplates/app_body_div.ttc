@@ -40,6 +40,32 @@
                 </td>
             </tr>
         </table>
+      [% ELSIF    block.type == 'schema'   %]
+        [% type_label = 'Schema' %]
+        <fieldset>
+        <legend>
+            [% type_label %] 
+            ( 
+                [%- INCLUDE delete_link.ttc
+                    name  = "app_body_delete::$block.ident" %]
+            )
+        </legend>
+         <table>
+            <tr>
+                <td> Name: </td>
+                <td>
+                    <input type='text'
+                           id='app_block::[% block.ident %]'
+                           value='[% block.name %]'
+                           onblur='javascript:update_tree(
+                               "name",
+                               "schema::[% block.ident %]",
+                               this.value
+                           )'
+                    />
+                </td>
+            </tr>
+        </table>
       [% ELSIF block.type == 'table'      %]
         [% type_label = 'Table' %]
         <fieldset>
@@ -82,68 +108,91 @@
         </fieldset>
 
       [% ELSIF block.type == 'controller' %]
-        [% type_label = 'Controller' %]
-        <fieldset>
-        <legend>
-            [% type_label %] 
-            ( <a href='javascript:show_or_hide( "[%-
-                "hideable_$block.ident" %]" );'>
-                edit</a> |  
-                [%- INCLUDE delete_link.ttc
-                    name  = "app_body_delete::$block.ident" %]
-            )
-        </legend>
-         <table>
-            <tr>
-                <td> Name: </td>
-                <td>
-                    <input type='text'
-                           id='app_block::[% block.ident %]'
-                           value='[% block.name %]'
-                           onblur='javascript:update_tree(
-                               "name",
-                               "controller::[% block.ident %]",
-                               this.value
-                           )'
-                    />
-                </td>
-            </tr>
-            <tr><td> [% type_label %] Type: </td>
-                <td>
-                    <select
-                        id='[% type_label %]::type_select::[% block.ident %]'
-                        onchange='javascript:type_change(
-                            "[% block.ident %]",
-                            this.value
-                        )'
-                    >
-                        <option value='stub'
-  [% IF block.controller_type == 'stub' %]selected='selected'[% END %]
-                        > stub     </option>
+        [% IF block.controller_type == 'base_controller' %]
+          [% type_label = 'Base Controller' %]
+          <fieldset>
+          <legend>
+              [% type_label %]
+              ( <a href='javascript:show_or_hide( "[%-
+                  "hideable_$block.ident" %]" );'>
+                  edit</a>|
+                  [%- INCLUDE delete_link.ttc
+                      name = "app_body_delete::$block.ident" %]
+              )
+          </legend>
+              [% WRAPPER show_or_hide.ttc
+                 clickable_id          = "controller_heading_$block.ident"
+                 element_under_control = "hideable_$block.ident"
+                 label                 = 'Close Edit'
+                 heading_level         = 'none'
+              %]
+                [% INCLUDE controller_block %]
+              [% END %] </td>
+          </fieldset>
+        [% ELSE %]
+          [% type_label = 'Controller' %]
+          <fieldset>
+          <legend>
+              [% type_label %] 
+              ( <a href='javascript:show_or_hide( "[%-
+                  "hideable_$block.ident" %]" );'>
+                  edit</a> |  
+                  [%- INCLUDE delete_link.ttc
+                      name  = "app_body_delete::$block.ident" %]
+              )
+          </legend>
+           <table>
+              <tr>
+                  <td> Name: </td>
+                  <td>
+                      <input type='text'
+                             id='app_block::[% block.ident %]'
+                             value='[% block.name %]'
+                             onblur='javascript:update_tree(
+                                 "name",
+                                 "controller::[% block.ident %]",
+                                 this.value
+                             )'
+                      />
+                  </td>
+              </tr>
+              <tr><td> [% type_label %] Type: </td>
+                  <td>
+                      <select
+                          id='[% type_label %]::type_select::[% block.ident %]'
+                          onchange='javascript:type_change(
+                              "[% block.ident %]",
+                              this.value
+                          )'
+                      >
+                          <option value='stub'
+    [% IF block.controller_type == 'stub' %]selected='selected'[% END %]
+                          > stub     </option>
 
-                        <option value='AutoCRUD'
-  [% IF block.controller_type == 'AutoCRUD' %]selected='selected'[% END %]
-                        > AutoCRUD </option>
+                          <option value='AutoCRUD'
+    [% IF block.controller_type == 'AutoCRUD' %]selected='selected'[% END %]
+                          > AutoCRUD </option>
 
-                        <option value='CRUD'
-  [% IF block.controller_type == 'CRUD' %]selected='selected'[% END %]
-                        > CRUD     </option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td colspan='2'>
-                  [% WRAPPER show_or_hide.ttc
-                     clickable_id          = "controller_heading_$block.ident"
-                     element_under_control = "hideable_$block.ident"
-                     label                 = 'Close Edit'
-                     heading_level         = 'none'
-                     expanded = view.data.expanded_divs.${block.ident} || 0
-                  %]
-                    [% INCLUDE controller_block %]
-                  [% END %] </td>
-            </tr>
-        </table>
+                          <option value='CRUD'
+    [% IF block.controller_type == 'CRUD' %]selected='selected'[% END %]
+                          > CRUD     </option>
+                      </select>
+                  </td>
+              </tr>
+              <tr>
+                  <td colspan='2'>
+                    [% WRAPPER show_or_hide.ttc
+                       clickable_id          = "controller_heading_$block.ident"
+                       element_under_control = "hideable_$block.ident"
+                       label                 = 'Close Edit'
+                       heading_level         = 'none'
+                       expanded = view.data.expanded_divs.${block.ident} || 0
+                    %]
+                      [% INCLUDE controller_block %]
+                    [% END %] </td>
+              </tr>
+          </table>
+        [% END %][%# controller sub type base_controller or not %]
 
       [% ELSIF block.type == 'literal' %]
         [% type_label = 'Literal' %]
@@ -382,6 +431,8 @@
               <option value='main_listing'>  main_listing  </option>
               <option value='AutoCRUD_form'> AutoCRUD_form </option>
               <option value='CRUD_form'>     CRUD_form     </option>
+              <option value='base_links'>    base_links    </option>
+              <option value='links'>         links         </option>
             </select>
           </td>
           <td colspan='2'>
@@ -404,6 +455,7 @@
 [% END %][%# end of controller_block %]
 
 [% BLOCK controller_statement_table %]
+[% ctype = block.controller_type %]
   <table class='bordered'>
     <tr>
         <th> Keyword     </th>
@@ -413,6 +465,9 @@
   [% FOREACH controller_statement IN
              view.data.statements.controller.statements %]
     [% keyword = controller_statement.keyword %]
+    [% NEXT UNLESS controller_statement.controller_types.all
+            OR
+        controller_statement.controller_types.$ctype %]
     <tr>
         <td> [% keyword %] </td>
         <td>

@@ -16,6 +16,7 @@ Apps::Checkbook::Model::trans->columns ( All       => qw/
     amount
     payee_payor
     descr
+    foreigner
 / );
 
 Apps::Checkbook::Model::trans->columns ( Essential => qw/
@@ -24,10 +25,12 @@ Apps::Checkbook::Model::trans->columns ( Essential => qw/
     trans_date
     amount
     payee_payor
+    foreigner
 / );
 
 Apps::Checkbook::Model::trans->has_a( status => 'Apps::Checkbook::Model::status' );
 Apps::Checkbook::Model::trans->has_a( payee_payor => 'Apps::Checkbook::Model::payee' );
+Apps::Checkbook::Model::trans->has_a( foreigner => 'Apps::Checkbook::Model::sch_name' );
 
 sub get_foreign_display_fields {
     return [ qw( id ) ];
@@ -37,6 +40,7 @@ sub get_foreign_tables {
     return qw(
         Apps::Checkbook::Model::status
         Apps::Checkbook::Model::payee
+        Apps::Checkbook::Model::sch_name
     );
 }
 

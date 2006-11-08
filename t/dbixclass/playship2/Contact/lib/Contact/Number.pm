@@ -119,7 +119,7 @@ You might even want to describe the table this module controls here.
 =back
 
 
-=head1 METHODS MIXED IN FROM Contact::GEN::Number
+=head1 METHODS INHERITED FROM Contact::GEN::Number
 
 =over 4
 

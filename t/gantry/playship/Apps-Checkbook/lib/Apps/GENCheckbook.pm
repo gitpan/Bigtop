@@ -1,3 +1,5 @@
+# NEVER EDIT this file.  It was generated and will be overwritten without
+# notice upon regeneration of this application.  You have been warned.
 package Apps::GENCheckbook;
 
 use strict;
@@ -6,10 +8,6 @@ use Gantry qw{ -Engine=MP20 -TemplateEngine=TT };
 
 our @ISA = qw( Gantry );
 
-use Apps::Checkbook::PayeeOr;
-use Apps::Checkbook::Trans;
-use Apps::Checkbook::Trans::Action;
-use Apps::Checkbook::NoOp;
 
 #-----------------------------------------------------------------
 # $self->init( $r )
@@ -42,14 +40,15 @@ sub DBName {
     return $self->{ __DBName__ };
 }
 
+
 #-----------------------------------------------------------------
-# $self->do_main( )
+# $self->do_main(  )
 #-----------------------------------------------------------------
 sub do_main {
-    my ( $self ) = shift;
+    my ( $self ) = @_;
 
     $self->stash->view->template( 'main.tt' );
-    $self->stash->view->title( 'Checkbook' );
+    $self->stash->view->title( 'Checkbook App' );
 
     $self->stash->view->data( {
         pages => [
@@ -57,19 +56,19 @@ sub do_main {
             { link => '/foreign/location', label => 'Transactions' },
         ],
     } );
-}
+} # END do_main
 
 #-----------------------------------------------------------------
-# $self->site_links( )
+# $self->site_links(  )
 #-----------------------------------------------------------------
 sub site_links {
-    my $self = shift;
+    my ( $self ) = @_;
 
     return [
         { link => $self->app_rootp() . 'payee', label => 'Payee/Payor' },
         { link => '/foreign/location', label => 'Transactions' },
     ];
-}
+} # END site_links
 
 1;
 
@@ -121,3 +120,4 @@ Copyright (C) 2006 Somebody Somewhere
 All rights reserved.
 
 =cut
+

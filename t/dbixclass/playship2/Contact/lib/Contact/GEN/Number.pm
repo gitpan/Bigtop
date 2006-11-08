@@ -19,6 +19,12 @@ sub do_main {
     $self->stash->view->template( 'results.tt' );
     $self->stash->view->title( 'Contacts' );
 
+    my $real_location = $self->location() || '';
+    if ( $real_location ) {
+        $real_location =~ s{/+$}{};
+        $real_location .= '/';
+    }
+
     my $retval = {
         headings       => [
             'Name',
@@ -27,19 +33,31 @@ sub do_main {
         header_options => [
             {
                 text => 'Add',
-                link => $self->location() . "/add",
+                link => $real_location . "add",
             },
             {
                 text => 'CSV',
-                link => $self->location() . "/csv",
+                link => $real_location . "csv",
             },
         ],
     };
 
-    my $schema = $self->get_schema();
-    my @rows   = $NUMBER->get_listing( { schema => $schema } );
+    my $query   = $self->get_arg_hash;
+    my $page    = $query->{ page } || 1;
 
-    foreach my $row ( @rows ) {
+    my $schema  = $self->get_schema();
+    my $results = $NUMBER->get_listing(
+        {
+            schema => $schema,
+            rows   => $self->number_rows,
+            page   => $page,
+        }
+    );
+
+    $retval->{ page } = $results->pager();
+    my $rows          = $results->page();
+
+    while ( my $row = $rows->next ) {
         my $id = $row->id;
         push(
             @{ $retval->{rows} }, {
@@ -50,11 +68,11 @@ sub do_main {
                 options => [
                     {
                         text => 'Edit',
-                        link => $self->location() . "/edit/$id",
+                        link => $real_location . "edit/$id",
                     },
                     {
                         text => 'Delete',
-                        link => $self->location() . "/delete/$id",
+                        link => $real_location . "delete/$id",
                     },
                 ],
             }

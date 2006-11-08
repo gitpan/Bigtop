@@ -47,6 +47,12 @@ app Address {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
+    controller is base_controller {
+        method do_main is base_links {
+        }
+        method site_links is links {
+        }
+    }
     table family {
         field id {
             is int4, primary_key, auto;
@@ -102,21 +108,22 @@ is_deeply( \@maker_deparse, \@correct_input, 'one table sanity check' );
 # option in each case.
 
 #$tent_maker->do_update_field_statement_text(
-#    'ident_4::date_select_text', 'Set Date'
+#    'ident_5::date_select_text', 'Set Date'
 #);
 
 $tent_maker->do_update_controller_statement_text(
-    'ident_7::uses', 'Missing][Module'
+    'ident_10::uses', 'Missing][Module'
 );
 
 #$tent_maker->do_update_method_statement_text(
-#    'ident_9::form_name', 'family_form'
+#    'ident_10::form_name', 'family_form'
 #);
 
 my $ajax = $tent_maker->do_update_field_statement_text(
-    'ident_4::is', 'date'
-) . "\n";
+    'ident_7::is', 'date'
+);
 
 my $expected_file = File::Spec->catfile( qw( t tentmaker ajax_07 todate ) );
 
 file_ok( $expected_file, $ajax, 'field is changed to date (todate)' );
+

@@ -17,6 +17,12 @@ my @correct_sql = split /\n/, <<'EO_CORRECT_SQL';
 CREATE TABLE payeepayor (
     id MEDIUMINT PRIMARY KEY AUTO_INCREMENT
 );
+
+CREATE TABLE multiplier (
+    id MEDIUMINT,
+    subid MEDIUMINT,
+    PRIMARY KEY( id, subid )
+);
 EO_CORRECT_SQL
 
 is_deeply( \@sql, \@correct_sql, 'tiny sql' );
@@ -26,7 +32,11 @@ config { }
 app Apps::Checkbook {
     sequence payeepayor_seq {}
     table payeepayor {
-        field id    { is int4, primary_key, assign_by_sequence; }
+        field id    { is int4, primary_key, auto; }
         sequence payeepayor_seq;
+    }
+    table multiplier {
+        field id    { is int4, primary_key; }
+        field subid { is int4, primary_key; }
     }
 }

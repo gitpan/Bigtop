@@ -10,7 +10,13 @@ use Bigtop::Keywords;
 my %controller_keywords;
 
 BEGIN {
-    my @controller_keywords = qw( controls_table uses text_description );
+    my @controller_keywords = qw(
+            controls_table
+            gen_uses
+            stub_uses
+            uses
+            text_description
+    );
 
     @controller_keywords{ @controller_keywords } = @controller_keywords;
     
@@ -19,10 +25,13 @@ BEGIN {
             'controller',
             qw(
                 controls_table
+                gen_uses
+                stub_uses
                 uses
                 text_description
                 location
                 rel_location
+                skip_test
             )
         )
     );

@@ -85,16 +85,23 @@
     id='tab-bigtop-config'>
 
     [% INCLUDE bigtop_config.ttc %]
+    <br />
 
     <div id="save_file">
     <button type='button'
-          onclick='javascript:saver()'> Save As: </button>
+          onclick='javascript:server_stop()'> Stop Server </button>
+
+    <button type='button'
+          onclick='javascript:saver()'>       Save As: </button>
 
     <input type='text'
          value="[% view.data.file_name || '' %]"
          id='save_file_name'
-         size='85' />
-      <div id="chatter"></div>
+         size='45' />
+
+      <div id="chatter">
+      </div>
+
     </div>
 
     <br />
@@ -156,6 +163,8 @@
 </form>
 
 <!-- Set the tab pane's scroll bar. -->
+<!-- I don't this think is used any more.
+     We never refresh, so we don't need it. -->
 <script type='text/javascript'>
 var tabs_div = document.getElementById( 'tabs' );
 tabs_div.scrollTop = [% view.data.tab_scroll %];

@@ -1,25 +1,25 @@
 [
-  { "keyword" : "ident_21::label", "value" : "Street Address" },
-  { "keyword" : "ident_1::foreign_display", "value" : "%street_address" },
-  { "keyword" : "ident_8::cols", "values" : [
+  { "keyword" : "ident_24::label", "value" : "Street Address" },
+  { "keyword" : "ident_4::foreign_display", "value" : "%street_address" },
+  { "keyword" : "ident_11::cols", "values" : [
       "ident",
       "street_address",
       "description"
     ]
   },
-  { "keyword" : "ident_9::all_fields_but", "values" : [
+  { "keyword" : "ident_12::all_fields_but", "values" : [
       "id",
       "created",
       "street_address",
       "modified"
     ]
   },
-  { "keyword" : "ident_9::fields", "values" : [
+  { "keyword" : "ident_12::fields", "values" : [
       "street_address"
     ]
   },
-  { "keyword" : "field_edit_option::ident_21", "text" : "street_address" },
-  { "keyword" : "quick_label_ident_21", "value" : "Street Address" }
+  { "keyword" : "field_edit_option::ident_24", "text" : "street_address" },
+  { "keyword" : "quick_label_ident_24", "value" : "Street Address" }
 ]
 config {
     engine CGI;
@@ -37,6 +37,12 @@ app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
+    }
+    controller is base_controller {
+        method do_main is base_links {
+        }
+        method site_links is links {
+        }
     }
     controller StreetAddress is AutoCRUD {
         controls_table address_tbl;

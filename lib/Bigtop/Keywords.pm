@@ -50,7 +50,8 @@ my %doc_for = (
         location => {
             keyword  => 'location',
             label    => 'Base Location',
-            descr    => 'Base Location of the app [defaults to /]',
+            descr    => 'Base Location of the app [defaults to /]'
+                        . '<br />Do not use if you have a Base Controller.',
             type     => 'text',
             multiple => 0,
             urgency  => 0,
@@ -106,7 +107,8 @@ my %doc_for = (
         uses => {
             keyword  => 'uses',
             label    => 'Modules Used',
-            descr    => 'List of modules used by base module',
+            descr    => 'List of modules used by base module'
+                        . '<br />Do not use if you have a Base Controller.',
             type     => 'text',
             multiple => 1,
             urgency  => 0,
@@ -276,6 +278,7 @@ my %doc_for = (
               { label => 'text',             value => 'text'      },
               { label => 'textarea',         value => 'textarea'  },
               { label => 'select',           value => 'select'    },
+              { label => 'display',          value => 'display'    },
             ],
             urgency   => 5,
             sort_order => 70,
@@ -346,6 +349,15 @@ my %doc_for = (
             pair_required => 1,
             sort_order    => 140,
         },
+        html_form_foreign => {
+            keyword    => 'html_form_foreign',
+            label      => 'Foreign',
+            descr      => 'Display field is foreign key',
+            type       => 'boolean',
+            field_type => 'display',
+            multiple   => 0,
+            sort_order => 145,
+        },
         date_select_text => {
             keyword    => 'date_select_text',
             label      => 'Date Popup Link Text',
@@ -398,45 +410,84 @@ my %doc_for = (
             type     => 'boolean',
             urgency  => 0,
             sort_order => 10,
+            controller_types => {
+                all => 1,
+            },
         },
         location => {
             keyword  => 'location',
             label    => 'Location',
             descr    => 'Absolute Location of this controller '
-                        .   '[You must choose either a location or '
-                        .   'a rel_location.]',
+                        .   '[non-base controllers must have either a '
+                        .   'location or a rel_location.]',
             type     => 'text',
             multiple => 0,
             urgency  => 5,
             sort_order => 20,
+            controller_types => {
+                all => 1,
+            },
         },
         rel_location => {
             keyword  => 'rel_location',
             label    => 'Relative Loc.',
             descr    => 'Location of this controller relative to app location'
-                        .   '[You must choose either a location or '
-                        .   'a rel_location.]',
+                        .   '[non-base controllers must have either a '
+                        .   'location or a rel_location.]',
             type     => 'text',
             multiple => 0,
             urgency  => 5,
             sort_order => 30,
+            controller_types => {
+                stub      => 1,
+                Auto_CRUD => 1,
+                CRUD      => 1,
+            },
         },
         controls_table => {
             keyword  => 'controls_table',
             label    => 'Controls Table',
-            descr    => 'Table this controller manages [REQUIRED]',
+            descr    => 'Table this controller manages',
             type     => 'text',
             multiple => 0,
-            urgency  => 10,
+            urgency  => 5,
             sort_order => 40,
+            controller_types => {
+                all => 1,
+            },
+        },
+        gen_uses => {
+            keyword  => 'gen_uses',
+            label    => 'Modules Used',
+            descr    => 'List of modules used gen module',
+            type     => 'text',
+            multiple => 1,
+            sort_order => 45,
+            controller_types => {
+                all => 1,
+            },
+        },
+        stub_uses => {
+            keyword  => 'stub_uses',
+            label    => 'Modules Used',
+            descr    => 'List of modules used stub module',
+            type     => 'text',
+            multiple => 1,
+            sort_order => 48,
+            controller_types => {
+                all => 1,
+            },
         },
         uses => {
             keyword  => 'uses',
             label    => 'Modules Used',
-            descr    => 'List of modules used by this controller',
+            descr    => 'List of modules used by gen and stub modules',
             type     => 'text',
             multiple => 1,
             sort_order => 50,
+            controller_types => {
+                all => 1,
+            },
         },
         text_description => {
             keyword  => 'text_description',
@@ -446,6 +497,10 @@ my %doc_for = (
             multiple => 0,
             urgency  => 3,
             sort_order => 60,
+            controller_types => {
+                AutoCRUD        => 1,
+                base_controller => 1,
+            },
         },
         page_link_label => {
             keyword  => 'page_link_label',
@@ -456,6 +511,9 @@ my %doc_for = (
             multiple => 0,
             urgency  => 1,
             sort_order => 70,
+            controller_types => {
+                all => 1,
+            },
         },
         autocrud_helper => {
             keyword  => 'autocrud_helper',
@@ -465,6 +523,21 @@ my %doc_for = (
             mulitple => 0,
             urgency  => 0,
             sort_order => 80,
+            controller_types => {
+                AutoCRUD        => 1,
+                base_controller => 1,
+            },
+        },
+        skip_test => {
+            keyword  => 'skip_test',
+            label    => 'No Test',
+            descr    => "Skip default page hit test of this controller",
+            type     => 'boolean',
+            urgency  => 0,
+            sort_order => 90,
+            controller_types => {
+                all => 1,
+            },
         },
     },
 
@@ -490,29 +563,59 @@ my %doc_for = (
             label      => 'No Gen',
             descr      => "Skip this method completely",
             type       => 'boolean',
-            applies_to => 'All',
             urgency    => 0,
             sort_order => 10,
+            method_types => {
+                all => 1,
+            },
         },
         extra_args => {
             keyword     => 'extra_args',
             label       => 'Extra Arguments',
             descr       => 'Extra args for any method',
             type        => 'text',
-            applies_to  => 'All',
             multiple    => 1,
             urgency     => 0,
             sort_order  => 20,
+            method_types => {
+                all => 1,
+            },
+        },
+        rows => {
+            keyword     => 'rows',
+            label       => 'Rows per Page',
+            descr       => 'How many rows should appear per listing page?',
+            type        => 'text',
+            multiple    => 0,
+            urgency     => 3,
+            sort_order  => 25,
+            method_types => {
+                main_listing => 1,
+            },
+        },
+        paged_conf => {
+            keyword     => 'paged_conf',
+            label       => 'Conf var for rows',
+            descr       => 'Take rows per page from this (conf var) accessor',
+            type        => 'text',
+            multiple    => 0,
+            urgency     => 0,
+            sort_order  => 26,
+            method_types => {
+                main_listing => 1,
+            },
         },
         cols => {
             keyword     => 'cols',
             label       => 'Include These Fields',
             descr       => 'Fields to include in main_listing',
             type        => 'text',
-            applies_to  => 'main_listing',
             multiple    => 1,
             urgency     => 5,
             sort_order  => 30,
+            method_types => {
+                main_listing => 1,
+            },
         },
         col_labels => {
             keyword     => 'col_labels',
@@ -520,10 +623,12 @@ my %doc_for = (
             descr       => 'Labels for fields on main_listing [optional '
                               .     'defaults to fields label]',
             type        => 'text',
-            applies_to  => 'main_listing',
             multiple    => 1,
             urgency     => 0,
             sort_order  => 40,
+            method_types => {
+                main_listing => 1,
+            },
         },
         header_options => {
             keyword       => 'header_options',
@@ -532,10 +637,12 @@ my %doc_for = (
             type          => 'pair',
             pair_labels   => [ 'Label', 'Location' ],
             pair_required => 0,
-            applies_to    => 'main_listing',
             multiple      => 1,
             urgency       => 5,
             sort_order    => 50,
+            method_types => {
+                main_listing => 1,
+            },
         },
         row_options => {
             keyword       => 'row_options',
@@ -544,31 +651,39 @@ my %doc_for = (
             type          => 'pair',
             pair_required => 0,
             pair_labels   => [ 'Label', 'Location' ],
-            applies_to    => 'main_listing',
             multiple      => 1,
             urgency       => 5,
             sort_order    => 60,
+            method_types => {
+                main_listing => 1,
+            },
         },
         title => {
             keyword     => 'title',
             label       => 'Browser Title',
             descr       => 'Browser title bar title for main_listing',
             type        => 'text',
-            applies_to  => 'main_listing',
             multiple    => 0,
             urgency     => 3,
             sort_order  => 70,
+            method_types => {
+                main_listing => 1,
+                base_links   => 1,
+            },
         },
         html_template => {
             keyword     => 'html_template',
             label       => 'Output Template',
             descr       => 'Template to use for main_listing [defaults '
-                              .     'to results.tt]',
+                              .     'to results.tt or main.tt]',
             type        => 'text',
-            applies_to  => 'main_listing',
             multiple    => 0,
             urgency     => 0,
             sort_order  => 80,
+            method_types => {
+                main_listing => 1,
+                base_links   => 1,
+            },
         },
         all_fields_but => {
             keyword     => 'all_fields_but',
@@ -576,10 +691,13 @@ my %doc_for = (
             descr       => 'Fields to exclude from a form '
                             .  '[either all_fields_but or fields is REQUIRED]',
             type        => 'text',
-            applies_to  => 'forms',
             multiple    => 1,
             urgency     => 5,
             sort_order  => 90,
+            method_types => {
+                AutoCRUD_form => 1,
+                CRUD_form     => 1,
+            },
         },
         fields => {
             keyword     => 'fields',
@@ -587,10 +705,13 @@ my %doc_for = (
             descr       => 'Fields to include on a form '
                             .  '[either all_fields_but or fields is REQUIRED]',
             type        => 'text',
-            applies_to  => 'forms',
             multiple    => 1,
             urgency     => 5,
             sort_order  => 100,
+            method_types => {
+                AutoCRUD_form => 1,
+                CRUD_form     => 1,
+            },
         },
         extra_keys => {
             keyword       => 'extra_keys',
@@ -599,20 +720,26 @@ my %doc_for = (
             type          => 'pair',
             pair_labels   => [ 'key', 'value' ],
             pair_required => 1,
-            applies_to    => 'forms',
             multiple      => 1,
             urgency       => 0,
             sort_order    => 110,
+            method_types => {
+                AutoCRUD_form => 1,
+                CRUD_form     => 1,
+            },
         },
         form_name => {
             keyword     => 'form_name',
             label       => 'Form Name',
             descr       => 'Form name [used with date selections]',
             type        => 'text',
-            applies_to  => 'forms',
             multiple    => 0,
             urgency     => 0,
             sort_order  => 120,
+            method_types => {
+                AutoCRUD_form => 1,
+                CRUD_form     => 1,
+            },
         },
     },
 );
@@ -778,13 +905,12 @@ up white on the screen.  tentmaker currently understands these urgency values:
 Note that only values from the above list are understood by tentmaker.
 If you use other values, they will be treated as zero.
 
-=item applies_to
+=item method_types
 
-This tells tentmaker that a method keyword is only for certain method types.
-Currently it just displays this on the screen and lets the user do as she may.
-Eventually, I would like to either remove keywords that don't apply to the
-selected type or at least reorder them so the applicable ones are at
-the top of the list.
+This tells tentmaker which method types understand a keyword.  It is
+a hash.  They keys are individual method types.  The values are 1.
+There is one special key 'all'.  If it has a true value, then the keyword
+is available to all methods regardless of type.
 
 =item field_type
 

@@ -59,9 +59,7 @@ on them (designed to print on a few of pages, if you cut everthing above):
         gantry_wrapper - file name of gantry's sample_wrapper.tt
 
     [Note: All config backend blocks can have a no_gen statement, which if true
-    will cause the parser to skip the whole backend.  Init Std has statements
-    for each file Build.PL, Changes, README, MANIFEST, use a value of no_gen
-    to skip that file ex: Changes no_gen; ]
+    will cause the parser to skip the whole backend. ]
     [Note: Most config backend blocks can have a template statement to
     change their generation TT template to one of your choice.]
 
@@ -172,12 +170,14 @@ on them (designed to print on a few of pages, if you cut everthing above):
         literal Location `...` - copied directly into Apache Location
                                  for this controller
 
-        There are two types with meaning (saying 'is stub' does nothing):
+        There are three types with meaning (saying 'is stub' does nothing):
             AutoCRUD - adds Gantry::Plugins::AutoCRUD to your uses list (even
                        if you don't have one)
             CRUD     - adds Gantry::Plugins::CRUD to your uses list (even if
                        you don't have one) and generates various helper code
                        for using CRUD.
+            base_controller - governs the app's main module (and its GEN
+                              partner)
 
         method name is type {}
         All types use:
@@ -187,6 +187,9 @@ on them (designed to print on a few of pages, if you cut everthing above):
         Types:
             stub         - empty except for arg capture
             main_listing - call this do_main
+                rows       - number of rows per main listing page, no default
+                             omit this to get all rows
+                paged_conf - call this accessor to get the number of rows
                 cols       - list of columns for the main listing table
                 col_labels - list of columns labels (optional). By
                              default the label is taken from the field in
@@ -216,6 +219,9 @@ on them (designed to print on a few of pages, if you cut everthing above):
                                  returned hash.  These are taken literally.
             CRUD_form - Just like AutoCRUD_form, but result works with
                         Gantry::Plugins::CRUD instead.
+            base_links - a do_main with nav links for the base module
+            links      - a site_links method (usually in the base_controller)
+                         providing a method for templates to get nav links from
 
 =head1 Author
 

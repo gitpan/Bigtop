@@ -69,6 +69,7 @@ app Contact {
         rel_location number;
         method do_main is main_listing {
             title             Contacts;
+            paged_conf        number_rows;
             cols              name, number;
             header_options    Add, CSV;
             row_options       Edit, Delete;
@@ -85,7 +86,11 @@ app Contact {
 EO_Bigtop_File
 
 Bigtop::Parser->gen_from_string(
-        $bigtop_string, undef, 'create', 'Control', 'Model'
+    {
+        bigtop_string => $bigtop_string,
+        create        => 'create',
+        build_list    => [ 'Control', 'Model', ],
+    }
 );
 
 compare_dirs_ok( $play_dir, $ship_dir, 'DBIxClass models' );

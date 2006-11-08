@@ -49,6 +49,12 @@ app Sample {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
     }
+    controller is base_controller {
+        method do_main is base_links {
+        }
+        method site_links is links {
+        }
+    }
 }
 EO_sample_input
 
@@ -75,7 +81,7 @@ is_deeply( \@maker_deparse, \@correct_input, 'simple sample deparse' );
 # Change App Name
 #--------------------------------------------------------------------
 
-$ajax = $tent_maker->do_update_std( 'appname', 'MySample' ) . "\n";
+$ajax = $tent_maker->do_update_std( 'appname', 'MySample' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cappname' );
 
@@ -89,7 +95,7 @@ $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_conf_text(
     'SiteLook::GantryDefault::gantry_wrapper', '/path/to/gantry/root'
-) . "\n";
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'abackword' );
 
@@ -103,7 +109,7 @@ $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_conf_text(
     'SiteLook::GantryDefault::gantry_wrapper', 'meaning_less_value'
-) . "\n";
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cbackword' );
 
@@ -118,7 +124,7 @@ $tent_maker->template_disable( 0 );
 $ajax = $tent_maker->do_update_conf_bool(
             'SiteLook::GantryDefault::no_gen',
             'true'
-) . "\n";
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'abackbool' );
 
@@ -133,7 +139,7 @@ $tent_maker->template_disable( 0 );
 $ajax = $tent_maker->do_update_conf_bool(
             'SiteLook::GantryDefault::no_gen',
             'false'
-) . "\n";
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cbackbool' );
 
@@ -145,8 +151,7 @@ file_ok( $expected_file, $ajax, 'change backend boolean (cbackbool)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_app_statement_text( 'location', '/site' )
-      . "\n";
+$ajax = $tent_maker->do_update_app_statement_text( 'location', '/site' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'aappst' );
 

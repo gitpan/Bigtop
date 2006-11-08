@@ -213,6 +213,7 @@ file_ok( $httpd_conf, $correct_conf, 'skip PerlSetVars' );
 
 #---------------------------------------------------------------------------
 # same as previous but with full use statement in the Perl block
+# AND base controller with non-default location
 #---------------------------------------------------------------------------
 
 $bigtop_string = << 'EO_full_use';
@@ -222,6 +223,9 @@ config {
     HttpdConf Gantry { skip_config 1; full_use 1; }
 }
 app Apps::Checkbook {
+    controller is base_controller {
+        location `/site`;
+    }
     config {
         DB     app_db => no_accessor;
         DBName some_user;
@@ -261,10 +265,14 @@ $correct_conf = <<'EO_CORRECT_CONF';
     use Some::OtherModule;
 </Perl>
 
-<Location />
+<Location /site>
+
+    SetHandler  perl-script
+    PerlHandler Apps::Checkbook
+
 </Location>
 
-<Location /payee>
+<Location /site/payee>
     SetHandler  perl-script
     PerlHandler Apps::Checkbook::PayeeOr
 </Location>

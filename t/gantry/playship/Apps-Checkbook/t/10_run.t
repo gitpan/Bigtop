@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 5;
+use Test::More tests => 4;
 
 use Apps::Checkbook qw{ -Engine=CGI -TemplateEngine=TT };
 
@@ -18,20 +18,18 @@ my $cgi = Gantry::Engine::CGI->new( {
         root => 'html',
     },
     locations => {
-        '/' => 'Apps::Checkbook',
         '/payee' => 'Apps::Checkbook::PayeeOr',
         '/foreign/location' => 'Apps::Checkbook::Trans',
         '/transaction' => 'Apps::Checkbook::Trans::Action',
-        '/none' => 'Apps::Checkbook::NoOp',
+        '/sch_tbl' => 'Apps::Checkbook::SchTbl',
     },
 } );
 
 my @tests = qw(
-    /
     /payee
     /foreign/location
     /transaction
-    /none
+    /sch_tbl
 );
 
 my $server = Gantry::Server->new();
@@ -42,10 +40,10 @@ SKIP: {
     eval {
         require DBD::SQLite;
     };
-    skip 'DBD::SQLite is required for run tests.', 5 if ( $@ );
+    skip 'DBD::SQLite is required for run tests.', 4 if ( $@ );
 
     unless ( -f 'app.db' ) {
-        skip 'app.db sqlite database required for run tests.', 5;
+        skip 'app.db sqlite database required for run tests.', 4;
     }
 
     foreach my $location ( @tests ) {

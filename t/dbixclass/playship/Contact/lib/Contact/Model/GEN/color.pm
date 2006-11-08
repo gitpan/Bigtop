@@ -8,8 +8,10 @@ __PACKAGE__->table( 'color' );
 __PACKAGE__->add_columns( qw/
     id
     ident
+    foreigner
 / );
 __PACKAGE__->set_primary_key( 'id' );
+__PACKAGE__->belongs_to( foreigner => 'Contact::Model::sch_name' );
 __PACKAGE__->base_model( 'Contact::Model' );
 __PACKAGE__->has_many(
     tshirts => 'Contact::Model::tshirt_color',
@@ -22,6 +24,7 @@ sub get_foreign_display_fields {
 
 sub get_foreign_tables {
     return qw(
+        Contact::Model::sch_name
     );
 }
 

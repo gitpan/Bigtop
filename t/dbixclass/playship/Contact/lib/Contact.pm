@@ -8,6 +8,13 @@ use base 'GENContact';
 
 use Contact::Number;
 
+
+
+#-----------------------------------------------------------------
+# $self->init( $r )
+#-----------------------------------------------------------------
+# This method supplied by GENContact
+
 1;
 
 =head1 NAME

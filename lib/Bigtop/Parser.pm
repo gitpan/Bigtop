@@ -290,18 +290,32 @@ sub gen_from_file {
 
     close $BIGTOP_FILE;
 
+    my $flags;
+    if ( $create ) {
+        $flags = "-c $bigtop_file @gen_list";
+    }
+
     $class->gen_from_string(
-        $bigtop_string, $bigtop_file, $create, @gen_list
+        {
+            bigtop_string => $bigtop_string,
+            bigtop_file   => $bigtop_file,
+            create        => $create,
+            build_list    => \@gen_list,
+            flags         => $flags,
+        }
     );
 }
 
 # This is the method that gen_from_file uses.
 sub gen_from_string {
     my $class         = shift;
-    my $bigtop_string = shift;
-    my $bigtop_file   = shift;
-    my $create        = shift;
-    my @args          = @_;
+    my $opts          = shift;
+
+    my $bigtop_string =    $opts->{ bigtop_string };
+    my $bigtop_file   =    $opts->{ bigtop_file   };
+    my $create        =    $opts->{ create        };
+    my $flags         =    $opts->{ flags         };
+    my @args          = @{ $opts->{ build_list    } };
 
     my $config        = $class->parse_config_string( $bigtop_string );
 
@@ -347,7 +361,7 @@ sub gen_from_string {
                 'Bigtop', 'Backend', $gen_type, $backend->{__NAME__}
             );
             my $method = "gen_$gen_type";
-            $module->$method( $build_dir, $bigtop_tree, $bigtop_file );
+            $module->$method( $build_dir, $bigtop_tree, $bigtop_file, $flags );
         }
     }
 }
@@ -791,6 +805,8 @@ sub change_statement {
     my $self   = shift;
     my $params = shift;
 
+    $params->{ app } = $self->get_app;
+
     my ( undef, $doc_hash ) = Bigtop::Keywords->get_docs_for(
         $params->{type}, $params->{keyword}
     );
@@ -1057,6 +1073,13 @@ sub set_config_statement {
                 $keyword, $value, $accessor
         );
     }
+}
+
+sub get_config_statement {
+    my $self    = shift;
+    my $keyword = shift;
+
+    return $self->walk_postorder( 'get_config_value', $keyword );
 }
 
 sub set_config_statement_status {
@@ -1415,6 +1438,7 @@ my %block_name_for = (
     controller => 'controller_block',
     literal    => 'literal_block',
     join_table => 'join_table',
+    schema     => 'schema_block',
 );
 
 sub new_block {
@@ -1444,30 +1468,21 @@ sub matches {
 
     my @ident_block_types = qw(
             controller_block
-            seq_block
-            table_block
+            sql_block
             literal_block
+            table_block
+            seq_block
+            schema_block
+            join_table
     );
+
+    my @keys = keys %{ $self };
 
     TYPE:
     foreach my $block_type_name ( @ident_block_types ) {
         next TYPE unless defined $self->{ $block_type_name };
         return 1 if ( $self->{ $block_type_name }{__IDENT__} eq $ident );
     }
-}
-
-sub old_matches {
-    my $self  = shift;
-    my $type  = shift;
-    my $ident = shift;
-
-    my $block_type_name = $block_name_for{ $type };
-
-    return unless defined $self->{ $block_type_name };
-
-    return unless ( $self->{ $block_type_name }{__IDENT__} eq $ident );
-
-    return 1;
 }
 
 sub get_ident {
@@ -1598,6 +1613,16 @@ sub get_statement {
 
     return $self->{__ARGS__}->get_unquoted_args;
 
+}
+
+sub output_location {
+    my $self = shift;
+
+    return unless $self->{__KEYWORD__} eq 'location';
+
+    my $location = $self->{__ARGS__}[0];
+
+    return [ $location ];
 }
 
 sub walk_postorder {
@@ -1953,6 +1978,45 @@ sub set_name {
     # update lookup hash?
 }
 
+sub find_primary_key {
+    my $self   = shift;
+    my $table  = shift;
+    my $lookup = shift;
+
+    my $fields = $lookup->{ tables }{ $table }{ fields };
+
+    my @primaries;
+
+    FIELD:
+    foreach my $field_name ( keys %{ $fields } ) {
+
+        my $field = $fields->{$field_name};
+
+        foreach my $statement_keyword ( keys %{ $field } ) {
+
+            next unless $statement_keyword eq 'is';
+
+            my $statement = $field->{ $statement_keyword };
+
+            foreach my $arg ( @{ $statement->{args} } ) {
+                if ( $arg eq 'primary_key' ) {
+                    push @primaries, $field_name;
+                }
+            } # end of foreach argument
+        } # end of foreach statement
+    } # end of foreach field
+
+    if ( @primaries > 1 ) {
+        return \@primaries;
+    }
+    elsif ( @primaries == 1 ) {
+        return $primaries[0];
+    }
+    else {
+        return;
+    }
+}
+
 sub show_idents {
     my $self = shift;
     my $child_output = shift;
@@ -2189,6 +2253,101 @@ sub show_idents {
     my $self = shift;
 
     return [ $self->{ __TYPE__ }, $self->{ __NAME__ }, $self->{ __IDENT__ } ];
+}
+
+package # schema_block
+    schema_block;
+use strict; use warnings;
+
+use base 'application_ancestor';
+
+sub new_block {
+    my $class  = shift;
+    my $parent = shift;
+    my $data   = shift;
+
+    my $self = {
+        __IDENT__  => Bigtop::Parser->get_ident(),
+        __NAME__   => $data->{name},
+        __PARENT__ => $parent,
+    };
+
+    return bless $self, $class;
+}
+
+sub app_block_hashes {
+    my $self         = shift;
+    my $child_output = shift;
+
+    return [ {
+        type  => 'schema',
+        body  => undef,
+        name  => $self->get_name,
+        ident => $self->get_ident,
+    } ];
+}
+
+sub get_ident {
+    my $self = shift;
+
+    return $self->{__IDENT__};
+}
+
+sub set_name {
+    my $self     = shift;
+    my $new_name = shift;
+
+    $self->{__NAME__} = $new_name;
+}
+
+sub get_name {
+    my $self = shift;
+
+    return $self->{__NAME__};
+}
+
+sub change_name_schema {
+    my $self   = shift;
+    shift;
+    my $params = shift;
+
+    return unless $self->get_ident  eq $params->{ident};
+
+    $self->set_name( $params->{new_value} );
+
+    return [ 1 ];
+}
+
+sub walk_postorder {
+    my $self   = shift;
+    my $action = shift;
+    my $data   = shift;
+    my $parent = shift;
+
+    my $output = [];
+
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
+
+    ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
+}
+
+sub build_lookup_hash {
+    my $self = shift;
+
+    return [
+        {
+            __TYPE__ => 'schema',
+            __DATA__ => [ $self->{__NAME__} => $self->{__IDENT__} ],
+        }
+    ];
+}
+
+sub show_idents {
+    my $self = shift;
+
+    return [ 'schema', $self->{__NAME__}, $self->{__IDENT__} ];
 }
 
 package # sequence_statement
@@ -2534,14 +2693,14 @@ sub change_name_field {
             { old_name => $old_name, new_name => $data->{ new_value } }
     );
 
-    push @retval, @{ $result };
+    push @retval, @{ $result } if ( ref( $result ) eq 'ARRAY' );
 
     $data->{ old_value } = $old_name;
     $result = $self->{ __PARENT__ }->walk_postorder(
             'update_foreign_display', $data
     );
 
-    push @retval, @{ $result };
+    push @retval, @{ $result } if ( ref( $result ) eq 'ARRAY' );
 
     my $tree = $data->{ __THE_TREE__ };
 
@@ -2553,7 +2712,7 @@ sub change_name_field {
         }
     );
 
-    push @retval, @{ $result };
+    push @retval, @{ $result } if ( ref( $result ) eq 'ARRAY' );
 
     return \@retval;
 }
@@ -3135,12 +3294,12 @@ sub new_block {
     if ( $data->{ table } ) {
         $self->add_controller_statement(
             { keyword   => 'controls_table',
-              new_value => $data->{ table }
+              new_value => $data->{ table },
             }
         );
         $self->add_controller_statement(
             { keyword   => 'rel_location',
-              new_value => $data->{ table }
+              new_value => $data->{ rel_loc } || $data->{ table },
             }
         );
         $self->add_controller_statement(
@@ -3156,7 +3315,10 @@ sub new_block {
     }
 
     # now add some clever defaults if we're a CRUD or AutoCRUD
-    unless ( $data->{ subtype } eq 'stub' ) {
+    if ( defined $data->{ subtype }
+            and
+         $data->{ subtype } =~ /CRUD/
+    ) {
         my $table_name = $data->{ table } || lc $data->{name};
 
         # make the do_main method
@@ -3225,6 +3387,45 @@ sub new_block {
                 values => q{$self->path_info =~ /edit/i ? 'Edit' : 'Add'}
             }
         } );
+    }
+    # base controllers get nav link methods by default
+    elsif ( defined $data->{ subtype }
+                and
+            $data->{ subtype } eq 'base_controller'
+    ) {
+        # first a do_main with nav links for default main page
+        my $main_arr = $self->add_subblock(
+            undef,
+            {
+                parent => {
+                    type => 'controller',
+                    ident => $self->get_ident,
+                },
+                new_child => {
+                    type     => 'method',
+                    sub_type => 'base_links',
+                    name     => 'do_main',
+                },
+            }
+        );
+
+        my $do_main = $main_arr->[0];
+
+        # then a site_links method for other controllers and their templates
+        $self->add_subblock(
+            undef,
+            {
+                parent => {
+                    type => 'controller',
+                    ident => $self->get_ident,
+                },
+                new_child => {
+                    type     => 'method',
+                    sub_type => 'links',
+                    name     => 'site_links',
+                },
+            }
+        );
     }
 
     return $self;
@@ -3301,6 +3502,25 @@ sub get_controller_type {
 sub set_type {
     my $self          = shift;
     $self->{__TYPE__} = shift;
+}
+
+sub is_base_controller {
+    my $self = shift;
+
+    return (
+        defined $self->{__TYPE__}
+            and
+        $self->{__TYPE__} eq 'base_controller'
+    );
+}
+
+sub output_location {
+    my $self         = shift;
+    my $child_output = shift;
+
+    return unless $self->is_base_controller;
+
+    return $child_output;
 }
 
 sub get_controlled_table {
@@ -3661,12 +3881,25 @@ sub change_method_statement {
 
     return unless ( $data->{ident} eq $self->get_ident() );
 
-    my $success = $self->walk_postorder(
+    my $old_value = $self->walk_postorder( 'get_method_keyword_value', $data );
+
+    my $success   = $self->walk_postorder(
             'change_method_keyword_value', $data
     );
 
-    unless ( defined $success->[0] ) { # make new statement
+    unless ( defined $success->[0] ) {
         $self->add_method_statement( $data );
+    }
+
+    if ( $data->{ keyword } eq 'paged_conf' ) {
+        my $current_value = $data->{ app }->get_config_statement(
+                $data->{ new_value }
+        );
+
+        unless ( defined $current_value->[0] and $current_value->[0] > 0 ) {
+            $data->{ app }->set_config_statement( $data->{ new_value }, 20 );
+            return [ [ $data->{ new_value }, 20 ] ];
+        }
     }
 
     return [ 1 ];
@@ -3960,6 +4193,16 @@ sub change_method_keyword_value {
     return [ 1 ];
 }
 
+sub get_method_keyword_value {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless ( $self->{__KEYWORD__}     eq $data->{keyword} );
+
+    return $self->{__ARGS__};
+}
+
 sub app_block_hashes {
     my $self         = shift;
 
@@ -4172,6 +4415,15 @@ sub do_I_control {
     else {
         return;
     }
+}
+
+sub output_location {
+    my $self         = shift;
+    my $child_output = shift;
+
+    return unless $self->{__KEYWORD__} eq 'location';
+
+    return $self->{__ARGS__};
 }
 
 sub walk_postorder {
@@ -4389,6 +4641,16 @@ sub update_config_statement {
     return [ 1 ];
 }
 
+sub get_config_value {
+    my $self    = shift;
+    shift;
+    my $keyword = shift;
+
+    return [] unless ( $keyword eq $self->{ __KEYWORD__ } );
+
+    return $self->{__ARGS__};
+}
+
 sub config_statement_status {
     my $self   = shift;
     shift;
@@ -4586,15 +4848,24 @@ sub get_quoted_args {
         }
         else {
             my $value = $arg;
-            unless ( $value =~ /^\w[\w\d_:]*$/ ) {
+            if ( $value !~ /^\w[\w\d_:]*$/ ) {
                 $value = "`$value`";
+            }
+            my @value_pieces = split /::/, $value;
+            # if any of the pieces has a colon, quote the value
+            VALUE_PIECE:
+            foreach my $piece ( @value_pieces ) {
+                if ( $piece =~ /:/ ) {
+                    $value = "`$value`";
+                    last VALUE_PIECE;
+                }
             }
 
             push @args, $value;
         }
     }
 
-    return join ', ', @args;
+    return ( wantarray ) ? @args : join ', ', @args;
 }
 
 sub get_unquoted_args {
@@ -4676,7 +4947,7 @@ In this section, the methods are grouped, so that similar ones appear together.
 The bigtop script calls this method.
 
 You can call this as a class method passing it the name of the bigtop
-file to read and a list of things to build.
+file to read and a list of the things to build.
 
 The method is actually quite simple.  It merely reads the file, then
 calls gen_from_string.
@@ -4686,12 +4957,22 @@ calls gen_from_string.
 The bigtop script calls this method when --new is used.
 
 This method orchestrates the build.  It is called internally by gen_from_file.
-Call it as a class method.  Pass it the bigtop string, the name of the
-file from which that string came (or undef), and the list of things to build.
+Call it as a class method.  Pass it a hash with these keys:
 
-The file name is used by Bigtop::Init::Std to copy the bigtop file from
+    bigtop_string => the bigtop source code
+    bigtop_file   => the name of the bigtop file, if you know it
+    create        => are you in create mode? if so make this true
+    build_list    => [ what to build ]
+    flags         => command line args given to your script
+
+bigtop_file is used by Bigtop::Init::Std to copy the bigtop file from
 its original location into the docs subdirectory of the build directory.
 If the file name is not defined, it skips that step.
+
+If you set create to any true value, you will be in create mode and bigtop
+will make the build directory as a subdirectory of the current directory.
+Otherwise, it will make sure you are in a directory which looks like a build
+directory before building.
 
 The list of things to build can include any backend type listed in the
 config block and/or the word 'all'.  'all' will be replaced with a list
@@ -4702,7 +4983,12 @@ It is legal to mention the same backend more than once.  For instance, you
 could call gen_from_string directly
 
     Bigtop::Parser->gen_from_string(
-            $bigtop_string, 'file.bigtop', $create, 'Init', 'Control', 'Init'
+        {
+            bigtop_string => $bigtop_string,
+            bigtop_file   => 'file.bigtop',
+            create        => $create,
+            build_list    => [ 'Init', 'Control', 'Init' ]
+        }
     );
 
 or equivalently, and more typically, you could call gen_from_file:
@@ -4715,6 +5001,9 @@ Either of these might be useful, if the first Init sets up directories that
 the Control backend needs, but the generated output from Control should
 influence the contents of file which Init finally builds.  Check your backends
 for details.
+
+The flags are given to Init Std as text, so they may be preserved for
+posterity in the Changes file.
 
 gen_from_string internals
 

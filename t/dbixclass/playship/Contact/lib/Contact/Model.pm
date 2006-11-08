@@ -31,6 +31,7 @@ In your base module:
     use Contact::Model::author qw( $AUTHOR );
     use Contact::Model::book qw( $BOOK );
     use Contact::Model::author_book qw( $AUTHOR_BOOK );
+    use Contact::Model::sch_name qw( $SCH_NAME );
 
 =head1 DESCRIPTION
 

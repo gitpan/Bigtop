@@ -100,6 +100,11 @@ app Apps::Checkbook {
         }
         foreign_display `%id`;
         sequence        trans_seq;
+        field foreigner {
+            is int4;
+            refers_to `sch.name`;
+            html_form_type select;
+        }
     }
     controller PayeeOr {
         uses            Gantry::Plugins::AutoCRUD;
@@ -129,6 +134,13 @@ app Apps::Checkbook {
             fields            status, trans_date, amount, payee_payor, descr;
         }
     }
+    sequence sch.name_seq {}
+    table sch.name {
+        sequence `sch.name_seq`;
+        field id { is int4, primary_key, auto; }
+        field name { is varchar; label Name; html_form_type text; }
+        field number { is varchar; label Name; html_form_type text; }
+    }
 }
 EO_Bigtop_File
 
@@ -140,7 +152,13 @@ EO_Bigtop_File
 # strip_decimal_point and insert_decimal_point would be functions in the
 # data model class.
 
-Bigtop::Parser->gen_from_string( $bigtop_string, undef, 'create', 'Model' );
+Bigtop::Parser->gen_from_string(
+    {
+        bigtop_string => $bigtop_string,
+        create        => 1,
+        build_list    => [ 'Model' ],
+    }
+);
 
 compare_dirs_ok( $play_dir, $ship_dir, 'CDBI models' );
 

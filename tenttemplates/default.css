@@ -46,6 +46,16 @@ div.app_block_element fieldset table {
     font-size: 1.1em;
 
 }
+.app_block_schema fieldset {
+    background: #d6d6d6;
+}
+.app_block_schema fieldset legend {
+    background: #fff;
+    border: 1px solid #777;
+    padding: 2px;
+    font-size: 1.1em;
+
+}
 .app_block_sequence fieldset {
     background: #d6d6d6;
 }

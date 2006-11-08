@@ -356,24 +356,27 @@ things into the lib or t directories.
 
 =head2 How can I regenerate some of those files but not others?
 
-As with all backends, you can prevent regeneration of all of the above:
+Once upon a time, Init Std was kind of stupid.  It would rewrite all of
+its files everytime, unless you asked it not to.  Now, it thinks of all
+of its files, except the MANIFEST, as stubs.  That means, it will no longer
+write README, Changes, Build.PL, or MANIFEST.SKIP, unless they are missing
+from the disk.
+
+Because of history, there are now two ways to turn off MANIFEST updating.
+As with all backends, you can prevent all regeneration:
 
     Init Std { no_gen 1; }
 
-If you use C<bigtop --new AppName>, it will do this for you.
+But you may also be explicit:
 
-But this backend has more fine tuned control:
+    Init Std { MANIFEST no_gen; }
 
-    Init Std {
-        Changes no_gen;
-        README  no_gen;
-    }
+When the MANIFEST is regenerated, Init Std uses the same method as both
+MakeMaker and Module::Build.  So, you could do it yourself with:
 
-This will not build Changes or README, but will make Build.PL,
-MANIFEST, and MANIFEST.SKIP.  List as many of the regular files as you
-like with no_gen as the value.  The others will be rebuilt.
-This is convenient for keeping the MANIFEST up to date while leaving
-the Changes file safe for hand editing.
+    ./Build manifest
+
+That is independent of whether bigtop updates MANIFEST.
 
 =head1 Stand Alone Server
 
@@ -1119,7 +1122,6 @@ running commentary interspersed.  It makes a CRUD object:
         form            => \&my_crud_form,
         redirect        => \&my_crud_redirect,
         text_descr      => 'Not So Simple Item',
-        use_clean_dates => 1,
     );
 
 It makes do_add, do_edit, and do_delete.  For example:

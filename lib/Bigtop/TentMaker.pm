@@ -237,6 +237,10 @@ sub do_save {
     my $self          = shift;
     my $new_file_name = unescape( shift );
 
+    return $self->stash->controller->data(
+            "Error: No file name given."
+    ) unless defined $new_file_name;
+
     if ( open my $BIGTOP_UPDATE, '>', $new_file_name ) {
 
         $file = $new_file_name;
@@ -257,6 +261,20 @@ sub do_save {
         return $self->stash->controller->data(
                 "Couldn't write $new_file_name: $!"
         );
+    }
+}
+
+sub do_server_stop {
+    my $pid = $$;
+
+    my $parent_of = fork();
+
+    if ( $parent_of ) {
+        return 1;
+    }
+    else {
+        kill 'TERM', $pid;
+        exit;
     }
 }
 
@@ -830,6 +848,29 @@ sub do_update_statement {
                 $self->template_disable( 1 );
                 $self->stash->controller->data( $json . $self->deparsed );
             }
+
+            if ( $type eq 'method'
+                    and
+                 $keyword eq 'paged_conf'
+                    and
+                 ref $success eq 'ARRAY'
+            ) {
+                my ( $json_center ) = _make_json_center(
+                    [
+                        "app_conf_value::$success->[0]",
+                        $success->[1]
+                    ]
+                );
+                my $json = "[\n" . join( ",\n", @{ $json_center } ) . "\n]\n";
+
+                $already_completed = 1;
+
+                $self->deparsed( Bigtop::Deparser->deparse( $tree ) );
+                $self->update_backends( $tree );
+
+                $self->template_disable( 1 );
+                $self->stash->controller->data( $json . $self->deparsed );
+            }
         }
     };
     if ( $@ ) {
@@ -1026,6 +1067,10 @@ sub _make_json_center {
             push @jsons,
                 qq/  { "keyword" : "$keyword", /
                 .   qq/"$result_type" : $result_values\n  }/;
+        }
+        elsif ( $keyword =~ s/^app_conf_value::// ) {
+            push @jsons,
+                qq/  { "keyword" : "$keyword", "config_value" : "$values" }/;
         }
         else {
             push @jsons,
@@ -1500,6 +1545,14 @@ abstract syntax tree being edited.
 Each routine is given a parameter (think keyword) and a new value.
 Some of them also receive additional data, see below.  Errors are
 trapped and reported as warnings on the server side.
+
+=head2 do_server_stop
+
+Kills the running tentmaker.
+
+Params: None
+
+Returns: undef
 
 =head2 do_update_std
 

@@ -189,14 +189,16 @@ ones listed here:
 package [% package_name %];
 use strict; use warnings;
 
-__PACKAGE__->load_components( qw/ PK::Auto Core / );
-__PACKAGE__->table( '[% table_name %]' );
+__PACKAGE__->load_components( qw/[% IF pk_auto %] PK::Auto[% END %] Core / );
+__PACKAGE__->table( '[% real_table_name %]' );
 __PACKAGE__->add_columns( qw/
 [% FOREACH column IN all_columns %]
     [% column +%]
 [% END %]
 / );
-__PACKAGE__->set_primary_key( '[% primary_key +%]' );
+[% IF primary_key.0.defined %]__PACKAGE__->set_primary_key( [ qw( [% FOREACH pk IN primary_key %][% pk %][% UNLESS loop.last %] [% END %]
+[% END %] ) ] );
+[% ELSIF primary_key %]__PACKAGE__->set_primary_key( '[% primary_key +%]' );[% END +%]
 [% FOREACH has_a IN has_a_list %]
 __PACKAGE__->belongs_to( [% has_a.column %] => '[% base_package_name %]::[% has_a.table %]' );
 [% END %]
@@ -553,6 +555,7 @@ sub output_dbix_model {
 
     # Gone Fishing.
     my $table           = $self->{__NAME__};
+    $table              =~ s/\./_/;
     my $module_name     = $data->{model_name} . '::' . $table;
     my $gen_pack_name   = $data->{model_name} . '::GEN::' . $table;
     my $alias           = uc $table;
@@ -565,7 +568,11 @@ sub output_dbix_model {
         $sequence_name = $sequence->{__ARGS__}[0];
     }
 
-    my $primary_key = _find_primary_key( $table_lookup->{fields} );
+    my $primary_key = $self->find_primary_key(
+            $self->{__NAME__},
+            $data->{ lookup },
+    );
+
 
     my $foreign_display_columns;
     my $foreign_display_body;
@@ -601,6 +608,11 @@ sub output_dbix_model {
         }
     );
 
+    my $pk_auto = 1;
+    if ( not defined $primary_key or ref( $primary_key ) eq 'ARRAY' ) {
+        $pk_auto = 0;
+    }
+
     my $gen_content =
         Bigtop::Backend::Model::GantryDBIxClass::gen_table_module(
         {
@@ -612,6 +624,7 @@ sub output_dbix_model {
             table_name              => $table,
             sequence_name           => $sequence_name,
             primary_key             => $primary_key,
+            pk_auto                 => $pk_auto,
             foreign_display_columns => $foreign_display_columns,
             foreign_display_body    => $foreign_display_body,
             all_columns             => $all,
@@ -620,6 +633,7 @@ sub output_dbix_model {
             three_ways              => $three_ways,
             foreign_tables          => \@foreign_table_names,
             app_name                => $data->{ app_name },
+            real_table_name         => $self->{__NAME__},
         }
     );
 
@@ -693,6 +707,7 @@ sub output_foreign_tables_dbix {
 
     if ( $field->{refers_to} ) {
         my $foreign_table_name = $field->{refers_to}{args}[0];
+        $foreign_table_name    =~ s/\./_/;
 
         return [
             [ column => $self->{__NAME__}, table => $foreign_table_name ]

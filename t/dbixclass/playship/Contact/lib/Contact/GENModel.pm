@@ -11,6 +11,7 @@ __PACKAGE__->load_classes( qw/
     author
     book
     author_book
+    sch_name
 / );
 
 1;
