@@ -12,7 +12,11 @@ __PACKAGE__->add_columns( qw/
 __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->base_model( 'Contact::Model' );
 __PACKAGE__->has_many(
-    writers => 'Contact::Model::author_book',
+    author_books => 'Contact::Model::author_book',
+    'book'
+);
+__PACKAGE__->many_to_many(
+    writers => 'author_books',
     'author'
 );
 

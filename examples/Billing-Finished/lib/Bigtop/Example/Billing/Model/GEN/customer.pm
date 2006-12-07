@@ -1,6 +1,6 @@
 # NEVER EDIT this file.  It was generated and will be overwritten without
 # notice upon regeneration of this application.  You have been warned.
-package Billing::Model::customer;
+package Bigtop::Example::Billing::Model::customer;
 use strict; use warnings;
 
 __PACKAGE__->load_components( qw/ PK::Auto Core / );
@@ -18,7 +18,7 @@ __PACKAGE__->add_columns( qw/
     contact_phone
 / );
 __PACKAGE__->set_primary_key( 'id' );
-__PACKAGE__->base_model( 'Billing::Model' );
+__PACKAGE__->base_model( 'Bigtop::Example::Billing::Model' );
 
 sub get_foreign_display_fields {
     return [ qw( name ) ];
@@ -45,7 +45,7 @@ sub table_name {
 
 =head1 NAME
 
-Billing::Model::GEN::customer - model for customer table (generated part)
+Bigtop::Example::Billing::Model::GEN::customer - model for customer table (generated part)
 
 =head1 DESCRIPTION
 

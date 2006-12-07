@@ -12,11 +12,19 @@ __PACKAGE__->add_columns( qw/
 __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->base_model( 'Contact::Model' );
 __PACKAGE__->has_many(
-    colors => 'Contact::Model::tshirt_color',
+    tshirt_colors => 'Contact::Model::tshirt_color',
+    'tshirt'
+);
+__PACKAGE__->many_to_many(
+    colors => 'tshirt_colors',
     'color'
 );
 __PACKAGE__->has_many(
-    authors => 'Contact::Model::tshirt_author',
+    tshirt_authors => 'Contact::Model::tshirt_author',
+    'tshirt'
+);
+__PACKAGE__->many_to_many(
+    authors => 'tshirt_authors',
     'author'
 );
 

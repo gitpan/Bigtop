@@ -1224,8 +1224,6 @@ function server_stop () {
         return;
     }
 
-    server_stopped = 1;
-
     if ( ! confirm(
                 "Are you sure you want to stop the server (did you save)?"
            )
@@ -1233,6 +1231,8 @@ function server_stop () {
         return false; 
     }
     
+    server_stopped = 1;
+
     var loader = new net.ContentLoader( '/server_stop', redraw_stopped );
 }
 

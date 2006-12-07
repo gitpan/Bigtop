@@ -28,6 +28,7 @@ config {
     template_engine TT;
     Init Std {  }
     SQL Postgres {  }
+    Model GantryDBIxClass {  }
     CGI Gantry { with_server 1; }
     Control Gantry {  }
     HttpdConf Gantry {  }
@@ -43,6 +44,7 @@ app Name {
     sequence names_seq {}
     table names {
         sequence names;
+        foreign_display `%last_name, %first_name: %user_name (%screen_name)`;
         field id {
             is int4, primary_key, auto;
         }
@@ -98,6 +100,7 @@ config {
     template_engine TT;
     Init Std {}
     SQL Postgres {  }
+    Model GantryDBIxClass {  }
     CGI  Gantry { with_server 1; }
     Control Gantry {}
     HttpdConf Gantry {}
@@ -113,6 +116,7 @@ app Name {
     sequence names_seq {}
     table names {
         sequence names;
+        foreign_display `%last_name, %first_name: %user_name (%screen_name)`;
         field id {
             is int4, primary_key, auto;
         }

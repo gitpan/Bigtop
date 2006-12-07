@@ -39,7 +39,7 @@ sub take_performance_hit {
     my $art          = shift;
     my $new_app_name = shift;
 
-    build_backend_list();
+    build_backend_list( @_ );
 
     $class->read_file( $new_app_name );
 
@@ -61,6 +61,17 @@ sub take_performance_hit {
 }
 
 sub build_backend_list {
+    my @incs           = @_;
+
+    if ( @incs < 1 ) {
+        require Bigtop;
+
+        my $bigtop_path = $INC{ 'Bigtop.pm' };
+
+        my ( undef, $dir, undef ) = File::Spec->splitpath( $bigtop_path );
+
+        @incs = ( $dir );
+    }
 
     %backends          = (); # in testing we call this repeatedly
     %engines           = ();
@@ -99,12 +110,12 @@ sub build_backend_list {
         push @modules, $module;
     };
 
-    my @real_inc;
-    foreach my $entry ( @INC ) {
-        push @real_inc, $entry if ( -d $entry );
-    }
+    #my @real_inc;
+    #foreach my $entry ( @INC ) {
+    #    push @real_inc, $entry if ( -d $entry );
+    #}
 
-    find( { wanted => $filter, chdir => 0 }, @real_inc );
+    find( { wanted => $filter, chdir => 0 }, @incs );
 
     foreach my $module ( sort @modules ) {
 

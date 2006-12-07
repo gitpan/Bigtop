@@ -1,9 +1,9 @@
-package Billing::Model;
+package Bigtop::Example::Billing::Model;
 use strict; use warnings;
 
 use base 'DBIx::Class::Schema';
 
-use Billing::GENModel;
+use Bigtop::Example::Billing::GENModel;
 
 sub get_db_options {
     return { AutoCommit => 1 };
@@ -13,20 +13,20 @@ sub get_db_options {
 
 =head1 NAME
 
-Billing::Model - schema class for Billing
+Bigtop::Example::Billing::Model - schema class for Billing
 
 =head1 SYNOPSIS
 
 In your base module:
 
-    use Billing::Model;
-    sub schema_base_class { return 'Billing::Model'; }
+    use Bigtop::Example::Billing::Model;
+    sub schema_base_class { return 'Bigtop::Example::Billing::Model'; }
     use Gantry::Plugins::DBIxClassConn qw( get_schema );
-    use Billing::Model::my_company qw( $MY_COMPANY );
-    use Billing::Model::customer qw( $CUSTOMER );
-    use Billing::Model::line_item qw( $LINE_ITEM );
-    use Billing::Model::invoice qw( $INVOICE );
-    use Billing::Model::status qw( $STATUS );
+    use Bigtop::Example::Billing::Model::my_company qw( $MY_COMPANY );
+    use Bigtop::Example::Billing::Model::customer qw( $CUSTOMER );
+    use Bigtop::Example::Billing::Model::line_item qw( $LINE_ITEM );
+    use Bigtop::Example::Billing::Model::invoice qw( $INVOICE );
+    use Bigtop::Example::Billing::Model::status qw( $STATUS );
 
 =head1 DESCRIPTION
 
@@ -45,7 +45,7 @@ do all transaction work via the DBIx::Class API.
 =head1 DEPENDENCIES
 
     Gantry::Utils::DBIxClass
-    Billing::GENModel
+    Bigtop::Example::Billing::GENModel
 
 =head1 AUTHOR
 

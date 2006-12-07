@@ -60,7 +60,7 @@ Bigtop::Backend::Conf::General->gen_Conf( $base_dir, $tree );
 $correct_conf = <<'EO_CORRECT_CONF';
 DB app_db
 DBName some_user
-root html
+root html/templates
 hello shane
 
 <GantryLocation /app_base/payee>
@@ -112,7 +112,7 @@ $correct_conf = <<'EO_CORRECT_CONF';
 <instance happy>
 DB app_db
 DBName some_user
-root html
+root html/templates
 hello shane
 
 <GantryLocation /app_base/payee>

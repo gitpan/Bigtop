@@ -1,8 +1,8 @@
-package Billing::Company;
+package Bigtop::Example::Billing::Status;
 
 use strict;
 
-use base 'Billing::GEN::Company';
+use base 'Bigtop::Example::Billing::GEN::Status';
 
 use Gantry::Plugins::AutoCRUD qw(
     do_add
@@ -11,29 +11,29 @@ use Gantry::Plugins::AutoCRUD qw(
     form_name
 );
 
-use Billing::Model::my_company qw(
-    $MY_COMPANY
+use Bigtop::Example::Billing::Model::status qw(
+    $STATUS
 );
-use Billing::Model;
-sub schema_base_class { return 'Billing::Model'; }
+use Bigtop::Example::Billing::Model;
+sub schema_base_class { return 'Bigtop::Example::Billing::Model'; }
 use Gantry::Plugins::DBIxClassConn qw( get_schema );
 
 #-----------------------------------------------------------------
 # $self->do_main(  )
 #-----------------------------------------------------------------
-# This method supplied by Billing::GEN::Company
+# This method supplied by Bigtop::Example::Billing::GEN::Status
 
 #-----------------------------------------------------------------
 # $self->form( $row )
 #-----------------------------------------------------------------
-# This method supplied by Billing::GEN::Company
+# This method supplied by Bigtop::Example::Billing::GEN::Status
 
 
 #-----------------------------------------------------------------
 # get_model_name( )
 #-----------------------------------------------------------------
 sub get_model_name {
-    return $MY_COMPANY;
+    return $STATUS;
 }
 
 #-----------------------------------------------------------------
@@ -47,14 +47,14 @@ sub get_orm_helper {
 # text_descr( )
 #-----------------------------------------------------------------
 sub text_descr     {
-    return 'company';
+    return 'status';
 }
 
 1;
 
 =head1 NAME
 
-Billing::Company - A controller in the Billing application
+Bigtop::Example::Billing::Status - A controller in the Billing application
 
 =head1 SYNOPSIS
 
@@ -63,14 +63,14 @@ Perl block of an httpd.conf file.
 
 Stand Alone Server or CGI script:
 
-    use Billing::Company;
+    use Bigtop::Example::Billing::Status;
 
     my $cgi = Gantry::Engine::CGI->new( {
         config => {
             #...
         },
         locations => {
-            '/someurl' => 'Billing::Company',
+            '/someurl' => 'Bigtop::Example::Billing::Status',
             #...
         },
     } );
@@ -79,12 +79,12 @@ httpd.conf:
 
     <Perl>
         # ...
-        use Billing::Company;
+        use Bigtop::Example::Billing::Status;
     </Perl>
 
     <Location /someurl>
         SetHandler  perl-script
-        PerlHandler Billing::Company
+        PerlHandler Bigtop::Example::Billing::Status
     </Location>
 
 If all went well, one of these was correctly written during app generation.
@@ -110,7 +110,7 @@ You might even want to describe the table this module controls here.
 =back
 
 
-=head1 METHODS MIXED IN FROM Billing::GEN::Company
+=head1 METHODS MIXED IN FROM Bigtop::Example::Billing::GEN::Status
 
 =over 4
 
@@ -124,9 +124,9 @@ You might even want to describe the table this module controls here.
 
 =head1 DEPENDENCIES
 
-    Billing
-    Billing::GEN::Company
-    Billing::Model::my_company
+    Bigtop::Example::Billing
+    Bigtop::Example::Billing::GEN::Status
+    Bigtop::Example::Billing::Model::status
     Gantry::Plugins::AutoCRUD
 
 =head1 AUTHOR

@@ -87,7 +87,8 @@ sub my_crud_delete {
 sub do_edit {
     my ( $self, $id ) = @_;
 
-    my $row = $PAYEE->retrieve( $id );
+    # This might work for DBIx::Class:
+    my $row = $PAYEE->gfind( $self, $id );
 
     $my_crud->edit( $self, { row => $row } );
 }
@@ -190,7 +191,8 @@ sub crud_delete {
 sub do_edit {
     my ( $self, $id ) = @_;
 
-    my $row = $PAYEE->retrieve( $id );
+    # This might work for DBIx::Class:
+    my $row = $PAYEE->gfind( $self, $id );
 
     $crud->edit( $self, { row => $row } );
 }

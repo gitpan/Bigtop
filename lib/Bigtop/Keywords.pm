@@ -440,7 +440,7 @@ my %doc_for = (
             sort_order => 30,
             controller_types => {
                 stub      => 1,
-                Auto_CRUD => 1,
+                AutoCRUD  => 1,
                 CRUD      => 1,
             },
         },

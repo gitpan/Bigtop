@@ -29,6 +29,7 @@ GetOptions(
     'port|p=s' => \$port,
     'new|n=s'  => \$new_app_name,
     'add|a=s'  => \$add_bigtop_file,
+    'help|h'   => \&help,
 );
 
 my $action_flags = 0;
@@ -81,6 +82,9 @@ eval {
 if ( $@ and $file =~ /^\d+$/ ) {
     die "usage: tentmaker [--port 8089] [options] [file]\n";
 }
+elsif ( $@ ) {
+    warn "$@\n";
+}
 
 $server->run();
 
@@ -103,6 +107,24 @@ sub trap_int {
 
         print STDERR "Saved $file\n";
     }
+    exit;
+}
+
+sub help {
+    print <<"EO_HELP";
+    If you already have a bigtop file and don't need new tables:
+        tentmaker filename.bigtop
+
+    If you already have a bigtop file but need new tables:
+        tentmaker -a filename.bigtop 'new_table->old_table'
+
+    If you are starting from scratch:
+        tentmaker -n AppName [ 'table_list->including_relationships' ]
+
+    If you don't want port 8080:
+    add -p your_port_number to any of the above (for example):
+        tentmaker -p 8192 filename.bigtop
+EO_HELP
     exit;
 }
 

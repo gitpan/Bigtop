@@ -55,6 +55,8 @@ sub gen_SiteLook {
     # make the html directory
     my $html_dir = File::Spec->catdir( $base_dir, 'html' );
     mkdir $html_dir;
+    $html_dir    = File::Spec->catdir( $html_dir, 'templates' );
+    mkdir $html_dir;
 
     # find the root location
     my $app_statements = $tree->{application}{lookup}{app_statements};

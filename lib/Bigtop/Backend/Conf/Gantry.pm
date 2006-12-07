@@ -207,7 +207,7 @@ sub output_configs_gantry {
         $output .= Bigtop::Backend::Conf::Gantry::config(
             {
                 var   => 'root',
-                value => 'html',
+                value => 'html/templates',
             }
         );
     }
@@ -252,6 +252,8 @@ sub output_glocations_gantry {
     my $child_output = shift;
     my $data         = shift;
     my $location     = $data->{ location };
+
+    return if $self->is_base_controller;
 
     my %child_loc    = @{ $child_output };
 

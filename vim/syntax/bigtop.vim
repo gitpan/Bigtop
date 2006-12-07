@@ -27,11 +27,11 @@ syn keyword bigtopValues         no_gen no_accessor fast_cgi instance conffile w
 
 syn keyword bigtopConfigKeywords base_dir app_dir conf_instance engine template_engine
 syn keyword bigtopAppKeywords    location authors email copyright_holder license_text
-syn keyword bigtopTableKeywords  sequence foreign_display data
-syn keyword bigtopFieldKeywords  is refers_to non_essential label html_form_type html_form_default_value html_form_optional html_form_options html_form_rows html_form_cols date_select_text html_form_constraint
+syn keyword bigtopTableKeywords  sequence foreign_display data not_for
+syn keyword bigtopFieldKeywords  is refers_to non_essential label html_form_type html_form_default_value html_form_optional html_form_options html_form_rows html_form_cols date_select_text html_form_constraint not_for
 syn keyword bigtopFieldValues    text textarea select
 syn keyword bigtopSQLKeywords    int4 varchar text boolean int primary_key assign_by_sequence auto
-syn keyword bigtopControlKeywords controls_table location rel_location uses text_description page_link_label
+syn keyword bigtopControlKeywords controls_table location rel_location gen_uses stub_uses uses text_description page_link_label
 syn keyword bigtopMethodTypes    main_listing stub AutoCRUD_form
 syn keyword bigtopMethodKeywords extra_args title html_template cols header_options row_options form_name fields all_fields_but extra_keys
 

@@ -1,22 +1,22 @@
-package Billing;
+package Bigtop::Example::Billing;
 
 use strict;
 
 our $VERSION = '0.01';
 
-use base 'GENBilling';
+use base 'Bigtop::Example::GENBilling';
 
-use Billing::Status;
-use Billing::Company;
-use Billing::Customer;
-use Billing::LineItem;
-use Billing::Invoice;
+use Bigtop::Example::Billing::Status;
+use Bigtop::Example::Billing::Company;
+use Bigtop::Example::Billing::Customer;
+use Bigtop::Example::Billing::LineItem;
+use Bigtop::Example::Billing::Invoice;
 
 1;
 
 =head1 NAME
 
-Billing - the base module of this web app
+Bigtop::Example::Billing - the base module of this web app
 
 =head1 SYNOPSIS
 
@@ -25,14 +25,14 @@ Perl block of an httpd.conf file.
 
 Stand Alone Server or CGI script:
 
-    use Billing;
+    use Bigtop::Example::Billing;
 
     my $cgi = Gantry::Engine::CGI->new( {
         config => {
             #...
         },
         locations => {
-            '/' => 'Billing',
+            '/' => 'Bigtop::Example::Billing',
             #...
         },
     } );
@@ -41,7 +41,7 @@ httpd.conf:
 
     <Perl>
         # ...
-        use Billing;
+        use Bigtop::Example::Billing;
     </Perl>
 
 If all went well, one of these was correctly written during app generation.
@@ -68,12 +68,12 @@ You might even want to describe the table this module controls here.
 =head1 SEE ALSO
 
     Gantry
-    GENBilling
-    Billing::Status
-    Billing::Company
-    Billing::Customer
-    Billing::LineItem
-    Billing::Invoice
+    Bigtop::Example::GENBilling
+    Bigtop::Example::Billing::Status
+    Bigtop::Example::Billing::Company
+    Bigtop::Example::Billing::Customer
+    Bigtop::Example::Billing::LineItem
+    Bigtop::Example::Billing::Invoice
 
 =head1 AUTHOR
 

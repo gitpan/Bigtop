@@ -1,51 +1,56 @@
 # NEVER EDIT this file.  It was generated and will be overwritten without
 # notice upon regeneration of this application.  You have been warned.
-package Billing::Model::line_item;
+package Bigtop::Example::Billing::Model::invoice;
 use strict; use warnings;
 
 __PACKAGE__->load_components( qw/ PK::Auto Core / );
-__PACKAGE__->table( 'line_item' );
+__PACKAGE__->table( 'invoice' );
 __PACKAGE__->add_columns( qw/
     id
-    due_date
-    name
-    invoice
-    hours
-    charge_per_hour
+    number
+    status
+    sent
+    paid
+    my_company
+    customer
     notes
     description
 / );
 __PACKAGE__->set_primary_key( 'id' );
-__PACKAGE__->belongs_to( invoice => 'Billing::Model::invoice' );
-__PACKAGE__->base_model( 'Billing::Model' );
+__PACKAGE__->belongs_to( status => 'Bigtop::Example::Billing::Model::status' );
+__PACKAGE__->belongs_to( my_company => 'Bigtop::Example::Billing::Model::my_company' );
+__PACKAGE__->belongs_to( customer => 'Bigtop::Example::Billing::Model::customer' );
+__PACKAGE__->base_model( 'Bigtop::Example::Billing::Model' );
 
 sub get_foreign_display_fields {
-    return [ qw( name ) ];
+    return [ qw( number ) ];
 }
 
 sub get_foreign_tables {
     return qw(
-        Billing::Model::invoice
+        Bigtop::Example::Billing::Model::status
+        Bigtop::Example::Billing::Model::my_company
+        Bigtop::Example::Billing::Model::customer
     );
 }
 
 sub foreign_display {
     my $self = shift;
 
-    my $name = $self->name() || '';
+    my $number = $self->number() || '';
 
-    return "$name";
+    return "$number";
 }
 
 sub table_name {
-    return 'line_item';
+    return 'invoice';
 }
 
 1;
 
 =head1 NAME
 
-Billing::Model::GEN::line_item - model for line_item table (generated part)
+Bigtop::Example::Billing::Model::GEN::invoice - model for invoice table (generated part)
 
 =head1 DESCRIPTION
 

@@ -3,21 +3,37 @@
 In the generated do_main, any calls to foreign display should be wrapped
 with evals and warnings issued with default blank.
 
+Why do controllers have to have locations?  Shouldn't the backends that
+assign locations just skip them?
+
+Boolean means nothing to bigtop.  If the field's type is select and
+it 'is' boolean, bigtop should make options (unless the source has them
+hard coded):
+    options => [
+        { value => 't', label => 'Yes' },
+        { value => 'f', label => 'No'  },
+    ],
+
+CRUD generation should make the do_add, do_edit and do_delete to do
+the most normal thing with DBIx::Class.  You can't use them with an
+arbitrary ORM anyway.  This might also apply to the callbacks.
+
+CRUD generation is making text_description, get_orm_helper, and
+get_model_name methods.
+
 You should be able to use data statements in a join_table.
 
-Remaing issues with base_controller blocks:
-    These errors could be reported:
-        using a rel_location in a base_controller block
-        using an app level location and a base_controller location
-        app level uses statements are ignored if you have a base_controller
-    tentmaker does not indicate which method statements apply to *links methods
-    tentmaker does not indicate which controller statements apply
-The last two are probabaly not in the spirit of tentmaker anyway, but some
-docs might be nice, like [does NOT apply to base_controllers].
+You should be able to add extra fields to a join table, perhaps it should
+really be a synonym for table which allows joins and name statements.
+Perhaps tables should have types like methods do and the types would start
+as regular (default) and threeway.
 
 When you change a method or controller type, tentmaker should completely
 refresh the statement edit div so the statements applying to the new type
 are the only ones visible.
+    Please figure out how to do the right thing with AJAX instead of
+    a refresh.  Asking the user to remember to refresh is better than
+    doing it for them.  At least then their sliders stay put.
 
 Could column name changes lead to the immediate construction of an alter table?
     I think tentmaker should print the alter table statements to stdout,
@@ -55,6 +71,16 @@ they show up on screen as they were selected and not as they are actually
 stored in the database.
 
 ---
+
+Remaing issues with base_controller blocks:
+    These errors could be reported:
+        using a rel_location in a base_controller block
+        using an app level location and a base_controller location
+        app level uses statements are ignored if you have a base_controller
+    tentmaker does not indicate which method statements apply to *links methods
+    tentmaker does not indicate which controller statements apply
+The last two are probabaly not in the spirit of tentmaker anyway, but some
+docs might be nice, like [does NOT apply to base_controllers].
 
 A stray semi-colon after a config block yield a crummy error, without even
 a line number.
@@ -256,6 +282,20 @@ Not to be Done:
 
 Bug fixes:
 
+    Generation of genwrapper.tt is putting it into the html subdir.  It
+    needs to go into the html/templates subsubdir so the generated Build.PL
+    can find it.
+
+    Deparser is doubling backquotes on this foreign_display:
+    foreign_display `%last_name, %first_name: %user_name (%screen_name)`;
+        This happens because of the colon in the value.
+
+    many-to-many generation is wrong:
+        job<->skill should have these in job:
+        __PACKAGE__->has_many( job_skills => 'JobAd::Model::job_skill',
+                               'job' );
+        __PACKAGE__->many_to_many( skills => 'job_skills', 'skill' );
+
     in ~/Bigtop/play/Address on ren:
     bigtop docs/address.bigtop all
     Use of uninitialized value in pattern match (m//) at
@@ -275,6 +315,35 @@ Bug fixes:
     When config values have colons in them, deparse is not quoting them.
 
 Done:
+
+    CRUD generation for do_edit is still assuming cdbi.  It should be neutral.
+
+    tentmaker is slow starting on systems with big @INC paths.  Make a new
+    method in Bigtop::TentMakerPath which returns the @INC path where the
+    backends were stored.  By default, look only there.  Provide a flag to
+    add dir and another to search all of @INC.
+        Example to get your started:
+        #!/usr/bin/perl
+        use strict; use warnings;
+
+        use Bigtop;
+
+        foreach my $key ( sort keys %INC ) {
+                print "$key : $INC{$key}\n";
+        }
+
+    tentmaker should have a --help and -h which give the three common starting
+    forms:
+        If you already have a bigtop file and don't need new tables:
+        tentmaker filename.bigtop
+
+        If you already have a bigtop file but need new tables:
+        tentmaker -a filename.bigtop 'new_table->old_table'
+
+        If you are starting from scratch:
+        tentmaker -n AppName [ 'table_list->including_relationships' ]
+
+    The dist includes examples which aren't in the Bigtop::Examples namespace.
 
     I want a way for tentmaker keywords to know what types they apply to.
     Then the statements should only appear if the type matches.  If you change

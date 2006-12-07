@@ -1,4 +1,4 @@
-package Billing::Model;
+package Bigtop::Example::Billing::Model;
 use strict; use warnings;
 
 __PACKAGE__->load_classes( qw/
@@ -13,14 +13,14 @@ __PACKAGE__->load_classes( qw/
 
 =head1 NAME
 
-Billing::GENModel - regenerating schema for Billing
+Bigtop::Example::Billing::GENModel - regenerating schema for Billing
 
 =head1 SYNOPSIS
 
 In your base schema:
 
     use base 'DBIx::Class::Schema';
-    use Billing::GENModel;
+    use Bigtop::Example::Billing::GENModel;
 
 =head1 DESCRIPTION
 

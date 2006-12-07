@@ -1,5 +1,22 @@
 Revision history for Perl extension Bigtop.
 
+0.20 Thu Dec  7 13:50:02 CST 2006
+    - Corrected bug in many-to-many generation for DBIx::Class.
+    - Corrected doubling of quotes on deparse when there are colons and
+      other unsafe characters (it worked if you only had colons).
+    - Corrected bug which prevented rel_location from showing for AutoCRUD
+      controllers.
+    - Corrected conflict between where genwrapper.tt was generated and
+      where Build.PL expected it to be during install.
+    - Moved Billing-Finished example under Bigtop::Example:: namespace
+      so the CPAN indexer knows who it belongs to.
+    - tentmaker got a -h help message.
+    - tentmaker no longer looks under every rock for backends, making it
+      start much faster.  It only looks under the path where Bigtop.pm lives.
+    - Corrected generated CRUD's do_edit so it doesn't expect you to be
+      using Class::DBI.
+    - tentmaker's Stop Server confirmation now respects Cancel.
+
 0.19 Wed Nov  8 12:31:31 CST 2006
     Highlights:
     * table names can now have schema prefixes: sch.tbl

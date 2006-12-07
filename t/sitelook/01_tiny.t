@@ -11,7 +11,9 @@ use lib 't';
 use Purge;
 
 my $play_dir = File::Spec->catdir( qw( t sitelook play ) );
-my $html_dir = File::Spec->catdir( $play_dir, 'Apps-Checkbook', 'html' );
+my $html_dir = File::Spec->catdir(
+        $play_dir, 'Apps-Checkbook', 'html', 'templates'
+);
 my $wrapper  = File::Spec->catfile( qw( t sitelook sample_wrapper.tt ) );
 
 #-------------------------------------------------------------------

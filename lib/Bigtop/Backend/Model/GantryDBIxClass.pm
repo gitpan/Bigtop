@@ -205,8 +205,12 @@ __PACKAGE__->belongs_to( [% has_a.column %] => '[% base_package_name %]::[% has_
 __PACKAGE__->base_model( '[% app_name %]::Model' );
 [% FOREACH has_many IN three_ways %]
 __PACKAGE__->has_many(
-    [% has_many.0 %] => '[% has_many.1 %]',
-    '[% has_many.2 %]'
+    [% has_many.join_name %] => '[% has_many.three_way_model %]',
+    '[% has_many.current_table %]'
+);
+__PACKAGE__->many_to_many(
+    [% has_many.foreign_name %] => '[% has_many.join_name %]',
+    '[% has_many.foreign_key %]'
 );
 [% END %]
 
@@ -820,11 +824,14 @@ sub output_has_manys_dbix {
             else {
                 $foreign_name = $foreign_key . 's';
             }
-            return [ [
-                $foreign_name,
-                "$data->{model}::$third_table",
-                $foreign_key
-            ] ];
+            return [ {
+                join_name       => $third_table . 's',
+                three_way_model => "$data->{ model }::$third_table",
+                current_table   => $data->{ table },
+
+                foreign_name    => $foreign_name,
+                foreign_key     => $foreign_key,
+            } ];
         }
     }
     return;

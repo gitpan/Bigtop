@@ -4851,13 +4851,15 @@ sub get_quoted_args {
             if ( $value !~ /^\w[\w\d_:]*$/ ) {
                 $value = "`$value`";
             }
-            my @value_pieces = split /::/, $value;
-            # if any of the pieces has a colon, quote the value
-            VALUE_PIECE:
-            foreach my $piece ( @value_pieces ) {
-                if ( $piece =~ /:/ ) {
-                    $value = "`$value`";
-                    last VALUE_PIECE;
+            else {
+                my @value_pieces = split /::/, $value;
+                # if any of the pieces has a colon, quote the value
+                VALUE_PIECE:
+                foreach my $piece ( @value_pieces ) {
+                    if ( $piece =~ /:/ ) {
+                        $value = "`$value`";
+                        last VALUE_PIECE;
+                    }
                 }
             }
 

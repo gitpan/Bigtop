@@ -4366,6 +4366,37 @@ auto</pre>
   
     
     
+    <tr>
+        <td> rel_location </td>
+        <td>
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_20::rel_location'
+            value="addresses"
+            class='urgency_5'
+            onblur='javascript:update_tree(
+                "controller_statement_text",
+                "ident_20::rel_location",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Location of this controller relative to app location[non-base controllers must have either a location or a rel_location.]
+        </td>
+    </tr>
+  
     
     
     <tr>

@@ -14,7 +14,11 @@ __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->belongs_to( foreigner => 'Contact::Model::sch_name' );
 __PACKAGE__->base_model( 'Contact::Model' );
 __PACKAGE__->has_many(
-    tshirts => 'Contact::Model::tshirt_color',
+    tshirt_colors => 'Contact::Model::tshirt_color',
+    'color'
+);
+__PACKAGE__->many_to_many(
+    tshirts => 'tshirt_colors',
     'tshirt'
 );
 

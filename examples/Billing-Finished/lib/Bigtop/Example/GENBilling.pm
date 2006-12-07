@@ -1,4 +1,4 @@
-package GENBilling;
+package Bigtop::Example::GENBilling;
 
 use strict;
 
@@ -6,11 +6,11 @@ use Gantry qw{ -TemplateEngine=TT };
 
 our @ISA = qw( Gantry );
 
-use Billing::Status;
-use Billing::Company;
-use Billing::Customer;
-use Billing::LineItem;
-use Billing::Invoice;
+use Bigtop::Example::Billing::Status;
+use Bigtop::Example::Billing::Company;
+use Bigtop::Example::Billing::Customer;
+use Bigtop::Example::Billing::LineItem;
+use Bigtop::Example::Billing::Invoice;
 
 ##-----------------------------------------------------------------
 ## $self->init( $r )
@@ -63,13 +63,13 @@ sub site_links {
 
 =head1 NAME
 
-GENBilling - generated support module for Billing
+Bigtop::Example::GENBilling - generated support module for Billing
 
 =head1 SYNOPSIS
 
 In Billing:
 
-    use base 'GENBilling';
+    use base 'Bigtop::Example::GENBilling';
 
 =head1 DESCRIPTION
 

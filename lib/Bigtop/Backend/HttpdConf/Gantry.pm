@@ -323,7 +323,7 @@ sub output_configs {
         $output .= Bigtop::Backend::HttpdConf::Gantry::config(
             {
                 var   => 'root',
-                value => 'html',
+                value => 'html/templates',
             }
         );
     }

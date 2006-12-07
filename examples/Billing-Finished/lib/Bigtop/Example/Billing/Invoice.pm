@@ -1,8 +1,8 @@
-package Billing::Invoice;
+package Bigtop::Example::Billing::Invoice;
 
 use strict;
 
-use base 'Billing::GEN::Invoice';
+use base 'Bigtop::Example::Billing::GEN::Invoice';
 
 use PDF::API2;
 
@@ -13,13 +13,13 @@ use Gantry::Plugins::AutoCRUD qw(
     form_name
 );
 
-use Billing::Model::invoice qw(
+use Bigtop::Example::Billing::Model::invoice qw(
     $INVOICE
 );
-use Billing::Model;
-use Billing::Model::line_item qw( $LINE_ITEM );
+use Bigtop::Example::Billing::Model;
+use Bigtop::Example::Billing::Model::line_item qw( $LINE_ITEM );
 
-sub schema_base_class { return 'Billing::Model'; }
+sub schema_base_class { return 'Bigtop::Example::Billing::Model'; }
 use Gantry::Plugins::DBIxClassConn qw( get_schema );
 use Gantry::Plugins::Calendar qw(
     do_calendar_month
@@ -31,7 +31,8 @@ use Gantry::Plugins::Calendar qw(
 #-----------------------------------------------------------------
 sub do_pdf {
     my $self = shift;
-    $self->do_fake_pdf( @_ );
+#    $self->do_fake_pdf( @_ );
+    $self->do_real_pdf( @_ );
 }
 
 #-----------------------------------------------------------------
@@ -296,7 +297,7 @@ sub do_main {
 #-----------------------------------------------------------------
 # $self->form( $row )
 #-----------------------------------------------------------------
-# This method supplied by Billing::GEN::Invoice
+# This method supplied by Bigtop::Example::Billing::GEN::Invoice
 
 
 #-----------------------------------------------------------------
@@ -324,7 +325,7 @@ sub text_descr     {
 
 =head1 NAME
 
-Billing::Invoice - A controller in the Billing application
+Bigtop::Example::Billing::Invoice - A controller in the Billing application
 
 =head1 SYNOPSIS
 
@@ -333,14 +334,14 @@ Perl block of an httpd.conf file.
 
 Stand Alone Server or CGI script:
 
-    use Billing::Invoice;
+    use Bigtop::Example::Billing::Invoice;
 
     my $cgi = Gantry::Engine::CGI->new( {
         config => {
             #...
         },
         locations => {
-            '/someurl' => 'Billing::Invoice',
+            '/someurl' => 'Bigtop::Example::Billing::Invoice',
             #...
         },
     } );
@@ -349,12 +350,12 @@ httpd.conf:
 
     <Perl>
         # ...
-        use Billing::Invoice;
+        use Bigtop::Example::Billing::Invoice;
     </Perl>
 
     <Location /someurl>
         SetHandler  perl-script
-        PerlHandler Billing::Invoice
+        PerlHandler Bigtop::Example::Billing::Invoice
     </Location>
 
 If all went well, one of these was correctly written during app generation.
@@ -382,7 +383,7 @@ You might even want to describe the table this module controls here.
 =back
 
 
-=head1 METHODS MIXED IN FROM Billing::GEN::Invoice
+=head1 METHODS MIXED IN FROM Bigtop::Example::Billing::GEN::Invoice
 
 =over 4
 
@@ -396,9 +397,9 @@ You might even want to describe the table this module controls here.
 
 =head1 DEPENDENCIES
 
-    Billing
-    Billing::GEN::Invoice
-    Billing::Model::invoice
+    Bigtop::Example::Billing
+    Bigtop::Example::Billing::GEN::Invoice
+    Bigtop::Example::Billing::Model::invoice
     Gantry::Plugins::Calendar
     Gantry::Plugins::AutoCRUD
 

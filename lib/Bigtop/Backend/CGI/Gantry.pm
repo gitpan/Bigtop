@@ -431,7 +431,7 @@ sub output_config {
             and
          $backend_block->{ gen_root }
     ) {
-        push @{ $child_output }, "        root => 'html',";
+        push @{ $child_output }, "        root => 'html/templates',";
     }
 
     my $output = Bigtop::Backend::CGI::Gantry::application_config(

@@ -4,7 +4,7 @@ use strict;
 
 use CGI::Carp qw( fatalsToBrowser );
 
-use Billing qw{ -Engine=CGI -TemplateEngine=TT };
+use Bigtop::Example::Billing qw{ -Engine=CGI -TemplateEngine=TT };
 
 use Gantry::Engine::CGI;
 
@@ -16,11 +16,11 @@ my $cgi = Gantry::Engine::CGI->new( {
     },
     locations => {
         '/' => 'Billing',
-        '/status' => 'Billing::Status',
-        '/company' => 'Billing::Company',
-        '/customer' => 'Billing::Customer',
-        '/lineitem' => 'Billing::LineItem',
-        '/invoice' => 'Billing::Invoice',
+        '/status' => 'Bigtop::Example::Billing::Status',
+        '/company' => 'Bigtop::Example::Billing::Company',
+        '/customer' => 'Bigtop::Example::Billing::Customer',
+        '/lineitem' => 'Bigtop::Example::Billing::LineItem',
+        '/invoice' => 'Bigtop::Example::Billing::Invoice',
     },
 } );
 

@@ -1318,7 +1318,8 @@ sub [% crud_name %]_delete {
 sub do_edit {
     my ( $self, $id ) = @_;
 
-    my $row = $[% model_alias %]->retrieve( $id );
+    # This might work for DBIx::Class:
+    my $row = $[% model_alias %]->gfind( $self, $id );
 
     $[% crud_name %]->edit( $self, { row => $row } );
 }

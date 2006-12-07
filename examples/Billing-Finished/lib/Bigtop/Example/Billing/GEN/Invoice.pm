@@ -1,13 +1,13 @@
 # NEVER EDIT this file.  It was generated and will be overwritten without
 # notice upon regeneration of this application.  You have been warned.
-package Billing::GEN::LineItem;
+package Bigtop::Example::Billing::GEN::Invoice;
 
 use strict;
 
-use base 'Billing';
+use base 'Bigtop::Example::Billing';
 
-use Billing::Model::line_item qw(
-    $LINE_ITEM
+use Bigtop::Example::Billing::Model::invoice qw(
+    $INVOICE
 );
 use Gantry::Plugins::Calendar qw(
     do_calendar_month
@@ -23,13 +23,13 @@ sub do_main {
     my ( $self ) = @_;
 
     $self->stash->view->template( 'results.tt' );
-    $self->stash->view->title( 'Line Items' );
+    $self->stash->view->title( 'Invoices' );
 
     my $retval = {
         headings       => [
-            'Name',
-            'Invoice Number',
-            'Due Date',
+            'Number',
+            'Customer',
+            'Status',
         ],
         header_options => [
             {
@@ -40,18 +40,26 @@ sub do_main {
     };
 
     my $schema = $self->get_schema();
-    my @rows   = $LINE_ITEM->get_listing( { schema => $schema } );
+    my @rows   = $INVOICE->get_listing( { schema => $schema } );
 
     foreach my $row ( @rows ) {
         my $id = $row->id;
         push(
             @{ $retval->{rows} }, {
                 data => [
-                    $row->name,
-                    $row->invoice->foreign_display(),
-                    $row->due_date,
+                    $row->number,
+                    $row->customer->foreign_display(),
+                    $row->status->foreign_display(),
                 ],
                 options => [
+                    {
+                        text => 'Tasks',
+                        link => "/lineitem/main/$id",
+                    },
+                    {
+                        text => 'PDF',
+                        link => $self->location() . "/pdf/$id",
+                    },
                     {
                         text => 'Edit',
                         link => $self->location() . "/edit/$id",
@@ -74,46 +82,57 @@ sub do_main {
 sub form {
     my ( $self, $row ) = @_;
 
-    my $selections = $LINE_ITEM->get_form_selections(
+    my $selections = $INVOICE->get_form_selections(
             { schema => $self->get_schema() }
     );
 
     return {
-        name       => 'line_item',
+        name       => 'invoice',
         row        => $row,
         legend => $self->path_info =~ /edit/i ? 'Edit' : 'Add',
-        javascript => $self->calendar_month_js( 'line_item' ),
+        javascript => $self->calendar_month_js( 'invoice' ),
         fields     => [
             {
-                date_select_text => 'Select',
-                name => 'due_date',
-                label => 'Due Date',
-                type => 'text',
-                is => 'date',
-            },
-            {
-                name => 'name',
-                label => 'Name',
+                name => 'number',
+                label => 'Number',
                 type => 'text',
                 is => 'varchar',
             },
             {
-                options => $selections->{invoice},
-                name => 'invoice',
-                label => 'Invoice Number',
+                options => $selections->{status},
+                name => 'status',
+                label => 'Status',
                 type => 'select',
                 is => 'int4',
             },
             {
-                name => 'hours',
-                label => 'Hours',
+                date_select_text => 'Popup Calendar',
+                name => 'sent',
+                optional => 1,
+                label => 'Sent On',
                 type => 'text',
+                is => 'date',
+            },
+            {
+                date_select_text => 'Popup Calendar',
+                name => 'paid',
+                optional => 1,
+                label => 'Paid On',
+                type => 'text',
+                is => 'date',
+            },
+            {
+                options => $selections->{my_company},
+                name => 'my_company',
+                label => 'My Company',
+                type => 'select',
                 is => 'int4',
             },
             {
-                name => 'charge_per_hour',
-                label => 'Rate',
-                type => 'text',
+                options => $selections->{customer},
+                name => 'customer',
+                label => 'Customer',
+                type => 'select',
                 is => 'int4',
             },
             {
@@ -143,13 +162,13 @@ sub form {
 
 =head1 NAME
 
-Billing::GEN::LineItem - generated support module for Billing::LineItem
+Bigtop::Example::Billing::GEN::Invoice - generated support module for Bigtop::Example::Billing::Invoice
 
 =head1 SYNOPSIS
 
-In Billing::LineItem:
+In Bigtop::Example::Billing::Invoice:
 
-    use Billing::GEN::LineItem qw(
+    use Bigtop::Example::Billing::GEN::Invoice qw(
         do_main
         form
     );
@@ -157,7 +176,7 @@ In Billing::LineItem:
 =head1 DESCRIPTION
 
 This module was generated by bigtop and IS subject to regeneration.
-Use it in Billing::LineItem to provide the methods below.
+Use it in Bigtop::Example::Billing::Invoice to provide the methods below.
 They are exported by default.
 
 =head1 METHODS

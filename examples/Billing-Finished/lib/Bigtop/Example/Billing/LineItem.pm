@@ -1,8 +1,8 @@
-package Billing::LineItem;
+package Bigtop::Example::Billing::LineItem;
 
 use strict;
 
-use base 'Billing::GEN::LineItem';
+use base 'Bigtop::Example::Billing::GEN::LineItem';
 
 use Gantry::Plugins::AutoCRUD qw(
     do_add
@@ -11,11 +11,11 @@ use Gantry::Plugins::AutoCRUD qw(
     form_name
 );
 
-use Billing::Model;
-use Billing::Model::line_item qw( $LINE_ITEM );
-use Billing::Model::invoice   qw( $INVOICE   );
+use Bigtop::Example::Billing::Model;
+use Bigtop::Example::Billing::Model::line_item qw( $LINE_ITEM );
+use Bigtop::Example::Billing::Model::invoice   qw( $INVOICE   );
 
-sub schema_base_class { return 'Billing::Model'; }
+sub schema_base_class { return 'Bigtop::Example::Billing::Model'; }
 use Gantry::Plugins::DBIxClassConn qw( get_schema );
 use Gantry::Plugins::Calendar qw(
     do_calendar_month
@@ -91,7 +91,7 @@ sub do_main {
 #-----------------------------------------------------------------
 # $self->form( $row )
 #-----------------------------------------------------------------
-# This method supplied by Billing::GEN::LineItem
+# This method supplied by Bigtop::Example::Billing::GEN::LineItem
 
 
 #-----------------------------------------------------------------
@@ -119,7 +119,7 @@ sub text_descr     {
 
 =head1 NAME
 
-Billing::LineItem - A controller in the Billing application
+Bigtop::Example::Billing::LineItem - A controller in the Billing application
 
 =head1 SYNOPSIS
 
@@ -128,14 +128,14 @@ Perl block of an httpd.conf file.
 
 Stand Alone Server or CGI script:
 
-    use Billing::LineItem;
+    use Bigtop::Example::Billing::LineItem;
 
     my $cgi = Gantry::Engine::CGI->new( {
         config => {
             #...
         },
         locations => {
-            '/someurl' => 'Billing::LineItem',
+            '/someurl' => 'Bigtop::Example::Billing::LineItem',
             #...
         },
     } );
@@ -144,12 +144,12 @@ httpd.conf:
 
     <Perl>
         # ...
-        use Billing::LineItem;
+        use Bigtop::Example::Billing::LineItem;
     </Perl>
 
     <Location /someurl>
         SetHandler  perl-script
-        PerlHandler Billing::LineItem
+        PerlHandler Bigtop::Example::Billing::LineItem
     </Location>
 
 If all went well, one of these was correctly written during app generation.
@@ -175,7 +175,7 @@ You might even want to describe the table this module controls here.
 =back
 
 
-=head1 METHODS MIXED IN FROM Billing::GEN::LineItem
+=head1 METHODS MIXED IN FROM Bigtop::Example::Billing::GEN::LineItem
 
 =over 4
 
@@ -189,9 +189,9 @@ You might even want to describe the table this module controls here.
 
 =head1 DEPENDENCIES
 
-    Billing
-    Billing::GEN::LineItem
-    Billing::Model::line_item
+    Bigtop::Example::Billing
+    Bigtop::Example::Billing::GEN::LineItem
+    Bigtop::Example::Billing::Model::line_item
     Gantry::Plugins::Calendar
     Gantry::Plugins::AutoCRUD
 
