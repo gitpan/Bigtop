@@ -74,7 +74,7 @@ or rel_location to specify the path relative to the app level location.
 
 =head1 AUTHOR
 
-Phil Crow <philcrow2000@yahoo.com>
+Phil Crow <crow.phil@gmail.com>
 
 =head1 COPYRIGHT and LICENSE
 

@@ -50,12 +50,7 @@ sub do_main {
     $self->stash->view->template( 'main.tt' );
     $self->stash->view->title( 'Checkbook App' );
 
-    $self->stash->view->data( {
-        pages => [
-            { link => 'payee', label => 'Payee/Payor' },
-            { link => '/foreign/location', label => 'Transactions' },
-        ],
-    } );
+    $self->stash->view->data( { pages => $self->site_links() } );
 } # END do_main
 
 #-----------------------------------------------------------------
@@ -65,7 +60,7 @@ sub site_links {
     my ( $self ) = @_;
 
     return [
-        { link => $self->app_rootp() . 'payee', label => 'Payee/Payor' },
+        { link => $self->app_rootp() . '/payee', label => 'Payee/Payor' },
         { link => '/foreign/location', label => 'Transactions' },
     ];
 } # END site_links

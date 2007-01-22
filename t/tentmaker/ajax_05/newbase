@@ -409,6 +409,10 @@
         </td>
     </tr>
   
+    
+    
+    
+    
   </table>
 
  
@@ -431,6 +435,7 @@
               <option value='CRUD_form'>     CRUD_form     </option>
               <option value='base_links'>    base_links    </option>
               <option value='links'>         links         </option>
+              <option value='SOAP'>          SOAP          </option>
             </select>
           </td>
           <td colspan='2'>
@@ -506,6 +511,10 @@
                       <option value='links'
      >
                         links
+                      </option>
+                      <option value='SOAP'
+     >
+                        SOAP
                       </option>
                     </select>
                 </td>
@@ -687,6 +696,9 @@
     
     
     
+    
+    
+    
   </table>
 
                   
@@ -763,6 +775,10 @@
                       <option value='links'
     selected='selected' >
                         links
+                      </option>
+                      <option value='SOAP'
+     >
+                        SOAP
                       </option>
                     </select>
                 </td>
@@ -866,6 +882,9 @@
         </td>
     </tr>
   
+    
+    
+    
     
     
     

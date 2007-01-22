@@ -82,8 +82,11 @@ INSERT INTO [% table %] ( [% columns.join( ', ' ) %] )
 CREATE TABLE [% table_name %] (
     id MEDIUMINT PRIMARY KEY AUTO_INCREMENT,
 [% FOREACH foreign_key IN foreign_keys %]
-    [% foreign_key %] MEDIUMINT[% UNLESS loop.last %],[% END +%]
+    [% foreign_key %] MEDIUMINT[% IF ! loop.last || other_fields.0 %],[% END +%]
 [% END %]
+[%- FOREACH other_field IN other_fields %]
+[% other_field %][% IF ! loop.last %],[% END +%]
+[% END -%]
 );
 [% END %]
 EO_TT_blocks
@@ -261,12 +264,35 @@ sub output_sql_mysql {
     my $self         = shift;
     my $child_output = shift;
 
+    my @foreign_keys;
+    my @other_fields;
+    my @inserts;
+
+    foreach my $child_bit ( @{ $child_output } ) {
+        if ( ref $child_bit eq 'ARRAY' ) {
+            my ( $type, $new_item ) = @{ $child_bit };
+
+            if ( $type eq 'table_body' ) {
+                push @other_fields, $new_item;
+            }
+            elsif ( $type eq 'insert_statements' ) {
+                push @inserts, $new_item;
+            }
+        }
+        else {
+            push @foreign_keys, $child_bit;
+        }
+    }
+
     my $three_way    = Bigtop::Backend::SQL::MySQL::three_way(
         {
             table_name   => $self->{__NAME__},
-            foreign_keys => $child_output,
+            foreign_keys => \@foreign_keys,
+            other_fields => \@other_fields,
         }
     );
+
+    $three_way .= "\n" . join( "\n", @inserts ) . "\n" if @inserts;
 
     return [ $three_way ];
 }
@@ -279,9 +305,36 @@ sub output_sql_mysql {
     my $self         = shift;
     my $child_output = shift;
 
-    my @tables = %{ $self->{__DEF__}->get_first_arg() };
+    if ( $self->{__KEYWORD__} eq 'joins' ) {
+        my @tables = %{ $self->{__DEF__}->get_first_arg() };
 
-    return \@tables;
+        return \@tables;
+    }
+    elsif ( $self->{__KEYWORD__} eq 'data' ) {
+        my @columns;
+        my @values;
+        foreach my $insertion ( @{ $self->{__DEF__} } ) {
+            my ( $column, $value ) = %{ $insertion };
+
+            $value = "'$value'" unless $value =~ /^\d+$/;
+
+            push @columns, $column;
+            push @values,  $value;
+        }
+
+        my $output = Bigtop::Backend::SQL::MySQL::insert_statement(
+            {
+                table   => $self->get_join_table_name,
+                columns => \@columns,
+                values  => \@values,
+            }
+        );
+        return [ [ insert_statements => $output ] ];
+    }
+    else {
+        return;
+    }
+
 }
 
 1;
@@ -384,7 +437,7 @@ for the hard coded one here.
 
 =head1 AUTHOR
 
-Phil Crow <philcrow2000@yahoo.com>
+Phil Crow <crow.phil@gmail.com>
 
 =head1 COPYRIGHT and LICENSE
 

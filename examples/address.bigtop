@@ -9,7 +9,7 @@ config {
     SiteLook        GantryDefault   {}
 }
 app Apps::AddressBook {
-    authors `Phil Crow` => `philcrow2000@yahoo.com`,
+    authors `Phil Crow` => `crow.phil@gmail.com`,
             `Joe Smith`;
     config {
         dbconn    `dbi:SQLite:dbname=app.db`       => no_accessor;

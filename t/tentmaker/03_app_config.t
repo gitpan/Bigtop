@@ -93,7 +93,11 @@ Bigtop::TentMaker->take_performance_hit( $empty_config );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_app_conf_statement( 'new_conf_st', 'value' );
+$ajax = $tent_maker->do_update_app_conf_statement(
+        'new_conf_st',
+        'value',
+        'false'
+);
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'aconfstempty' );
 
@@ -107,7 +111,8 @@ $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_app_conf_statement(
             'new_conf_st',
-            'other_value'
+            'other_value',
+            'false',
 );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cconfstempty' );

@@ -15,7 +15,9 @@ BEGIN {
     );
 
     Bigtop::Parser->add_valid_keywords(
-        Bigtop::Keywords->get_docs_for( 'join_table', 'joins', 'names' )
+        Bigtop::Keywords->get_docs_for(
+                'join_table', 'joins', 'names', 'data'
+        )
     );
 }
 
@@ -229,7 +231,7 @@ the tacit assumption that the primary key is the single column called id.
 
 =head1 AUTHOR
 
-Phil Crow <philcrow2000@yahoo.com>
+Phil Crow <crow.phil@gmail.com>
 
 =head1 COPYRIGHT and LICENSE
 

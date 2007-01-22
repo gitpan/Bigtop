@@ -53,7 +53,14 @@ else { # not new, use a file
 
     unless ( @ARGV ) { die $usage; }
 
-    Bigtop::Parser->gen_from_file( $bigtop_file, $create, @ARGV );
+    my ( $new_app_name, $bigtop_dir ) =
+            Bigtop::Parser->gen_from_file( $bigtop_file, $create, @ARGV );
+
+    if ( $create ) {
+        my $built_sqlite = build_sqlite( $new_app_name, $bigtop_dir );
+
+        print_instructions( $new_app_name, $bigtop_dir, $built_sqlite );
+    }
 }
 
 # Remove inline directory
@@ -140,25 +147,7 @@ sub make_new {
     }
 
     if ( $made_tables ) {
-        my $built_sqlite  = 0;
-        my $sqlite_db     = File::Spec->catfile( $bigtop_dir, 'app.db' );
-        my $sqlite_schema = File::Spec->catfile(
-                $bigtop_dir, 'docs', 'schema.sqlite'
-        );
-
-        my $version   = `sqlite -version`;
-
-        if ( substr( $version, 0, 1 ) >= 3 ) {
-            my $command   = `sqlite $sqlite_db < $sqlite_schema 2>&1`;
-            my $failure   = $?;
-
-            if ( $failure or $command ) {
-                warn "I tried to make your database, sqlite said:\n\n$command";
-            }
-            else {
-                $built_sqlite = 1;
-            }
-        }
+        my $built_sqlite = build_sqlite( $new, $bigtop_dir );
 
         print_instructions( $new, $bigtop_dir, $built_sqlite );
     }
@@ -185,6 +174,33 @@ sub make_addition {
 
     # do the build
     Bigtop::Parser->gen_from_file( $source_file, 0, 'all' );
+}
+
+sub build_sqlite {
+    my $app_name   = shift;
+    my $bigtop_dir = shift;
+
+    my $built_sqlite  = 0;
+    my $sqlite_db     = File::Spec->catfile( $bigtop_dir, 'app.db' );
+    my $sqlite_schema = File::Spec->catfile(
+            $bigtop_dir, 'docs', 'schema.sqlite'
+    );
+
+    my $version   = `sqlite -version`;
+
+    if ( -f $sqlite_schema and substr( $version, 0, 1 ) >= 3 ) {
+        my $command   = `sqlite $sqlite_db < $sqlite_schema 2>&1`;
+        my $failure   = $?;
+
+        if ( $failure or $command ) {
+            warn "I tried to make your database, sqlite said:\n\n$command";
+        }
+        else {
+            $built_sqlite = 1;
+        }
+    }
+
+    return $built_sqlite;
 }
 
 sub print_instructions {
@@ -235,12 +251,12 @@ From your build directory:
 
     createdb app.db -U postgres
     psql app.db -U regular_user < docs/schema.postgres
-
-Supply passwords as prompted when creating and building the database.
-
     ./app.server --dbd=Pg --dbuser=regular_user --dppass='secret'
 
+Supply passwords as prompted when creating and building the database.
 You may abbreviate --dbd as -d, --dbuser as -u, and --dbpass as -p.
+
+If you change the name from app.db, use --dbname (aka -n) on app.server.
 
 EO_pg_help
 
@@ -260,6 +276,8 @@ For MySQL:
 
 Supply passwords as prompted when creating and building the database.
 You may abbreviate --dbd as -d, --dbuser as -u, and --dbpass as -p.
+
+If you change the name from app.db, use --dbname (aka -n) on app.server.
 
 EO_mysql_help
 
@@ -544,7 +562,7 @@ a foreign key pointing to the other.
 
 =head1 AUTHOR
 
-Phil Crow <philcrow2000@yahoo.com>
+Phil Crow <crow.phil@gmail.com>
 
 =head1 COPYRIGHT and LICENSE
 

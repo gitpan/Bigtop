@@ -246,11 +246,20 @@ sub compile_app_configs {
 
 sub do_save {
     my $self          = shift;
-    my $new_file_name = unescape( shift );
+
+    # Some versions of HTTP::Server::Simple prematurely convert %2F to /,
+    # making these directory separators look like URL path elements.
+    # Here, I join them back together.
+    my @unescaped_path_els;
+    foreach my $path_el ( @_ ) {
+        push @unescaped_path_els, unescape( $path_el );
+    }
 
     return $self->stash->controller->data(
             "Error: No file name given."
-    ) unless defined $new_file_name;
+    ) unless ( @unescaped_path_els > 0 );
+
+    my $new_file_name = File::Spec->catfile( @unescaped_path_els );
 
     if ( open my $BIGTOP_UPDATE, '>', $new_file_name ) {
 
@@ -301,6 +310,19 @@ sub complete_update {
 }
 
 sub unescape {
+    my @args  = @_;
+    pop @args if ( @args != 1 and $args[-1] eq 'undefined' );
+    my $input = join '/', @args;
+
+    return unless defined $input;
+
+    $input    =~ s/\+/ /g;
+    $input    =~ s/%([0-9a-fA-F]{2})/chr( hex( $1 ) )/ge;
+
+    return $input;
+}
+
+sub _old_unescape {
     my $input = shift;
 
     return unless defined $input;
@@ -316,7 +338,7 @@ sub unescape {
 sub do_update_std {
     my $self      = shift;
     my $parameter = shift;
-    my $new_value = unescape( shift );
+    my $new_value = unescape( @_ );
 
     my $method    = "set_$parameter";
 
@@ -334,7 +356,7 @@ sub do_update_std {
 sub do_update_backend {
     my $self      = shift;
     my $parameter = shift;
-    my $new_value = unescape( shift );
+    my $new_value = unescape( @_ );
 
     if ( $parameter =~ /(.*)::(.*)/ ) {
         my ( $type, $backend ) = ( $1, $2 );
@@ -359,7 +381,10 @@ sub do_update_backend {
 sub do_update_conf_text {
     my $self      = shift;
     my $parameter = shift;
-    my $new_value = unescape( shift );
+
+    #pop @_ if ( $_[-1] eq 'undefined' );
+
+    my $new_value = unescape( @_ );
 
     if ( $parameter =~ /(.*)::(.*)::(.*)/ ) {
         my ( $type, $backend, $keyword ) = ( $1, $2, $3 );
@@ -423,7 +448,7 @@ sub do_update_conf_bool_controlled {
 sub do_update_app_statement_text {
     my $self      = shift;
     my $keyword   = shift;
-    my $new_value = unescape( shift );
+    my $new_value = unescape( @_ );
 
     $new_value    = 'undefined' unless defined $new_value;
 
@@ -615,14 +640,24 @@ sub do_delete_block {
     my $self         = shift;
     my $doomed_ident = shift;
 
+    my $instructions;
+
     eval {
-        $tree->delete_block( $doomed_ident );
+        $instructions = $tree->delete_block( $doomed_ident );
     };
     if ( $@ ) {
         warn "Error: $@\n";
     }
 
-    $self->complete_update();
+    my ( $jsons, $keywords_used ) = _make_json_center( $instructions );
+
+    my $json = "[\n" . join( ",\n", @{ $jsons } ) . "\n]\n";
+
+    $self->deparsed( Bigtop::Deparser->deparse( $tree ) );
+    $self->update_backends( $tree );
+
+    $self->template_disable( 1 );
+    return $self->stash->controller->data( $json . $self->deparsed );
 }
 
 sub do_move_block_after {
@@ -718,12 +753,14 @@ sub do_create_subblock {
                      : 'new_method_div.tt';
     my @new_divs;
     my $new_block_hashes;
+    my $table_block_hash;
 
     if ( defined $new_blocks[0] and defined $new_blocks[0]{__PARENT__} ) {
         my $parent_hashes = $new_blocks[0]{__PARENT__}->walk_postorder(
                 'app_block_hashes'
         );
         $new_block_hashes = $parent_hashes->[0]{ body }{ fields };
+        $table_block_hash = $parent_hashes->[0];
     }
 
     foreach my $new_block ( @new_blocks ) {
@@ -757,9 +794,11 @@ sub do_create_subblock {
 
     my $new_divs = join '<!-- BEGIN DIV -->', @new_divs;
 
-    # make quick table if needed
-    my $quick_table = '';
+    # make quick table and data statement table if needed
+    my $data_statement_table = '';
+    my $quick_table          = '';
     if ( $type eq 'field' ) {
+        # quick edit table
         $self->stash->view->template( 'new_quick_edit.ttc' );
         $self->stash->view->data(
             {
@@ -770,7 +809,6 @@ sub do_create_subblock {
         );
 
         eval {
-            my $code = $self->can( 'do_process' );
             $quick_table = $self->do_process();
 
             $quick_table =~ s/^\s+//;
@@ -780,12 +818,34 @@ sub do_create_subblock {
             warn "error: $@\n";
             return;
         }
+
+        # data statement table
+        $self->stash->view->template( 'new_data_div.ttc' );
+        $self->stash->view->data(
+            {
+                block       => $table_block_hash,
+            }
+        );
+
+        eval {
+            $data_statement_table = $self->do_process();
+
+            $data_statement_table =~ s/^\s+//;
+            $data_statement_table =~ s/\s+\Z//m;
+        };
+        if ( $@ ) {
+            warn "error: $@\n";
+            return;
+        }
+
     }
 
     $self->template_disable( 1 );
 
     return $self->stash->controller->data(
-        $quick_table
+        $data_statement_table
+        . '<!-- END DATA TABLE -->'
+        . $quick_table
         . '<!-- END QUICK TABLE -->'
         . $new_divs 
         . $self->deparsed 
@@ -797,7 +857,7 @@ sub do_update_statement {
     my $type      = shift;
     my $ancestors = shift;
     my $keyword   = shift;
-    my $new_value = unescape( shift );
+    my $new_value = unescape( @_ );
 
     my $already_completed;
 
@@ -900,7 +960,7 @@ sub do_update_block_statement_text {
     my $self      = shift;
     my $type      = shift;
     my $parameter = shift;
-    my $new_value = shift;
+    my $new_value = unescape( @_ );
 
     if ( $parameter =~ /(.*)::(.*)/ ) {
         my ( $ident, $keyword ) = ( $1, $2 );
@@ -919,7 +979,7 @@ sub do_update_subblock_statement_text {
     my $self      = shift;
     my $type      = shift;
     my $parameter = shift;
-    my $new_value = unescape( shift );
+    my $new_value = unescape( @_ );
 
     if ( $parameter =~ /(.*)::(.*)/ ) {
         my ( $parent, $keyword ) = ( $1, $2 );
@@ -983,6 +1043,59 @@ sub do_update_table_statement_text {
     my $self = shift;
 
     $self->do_update_block_statement_text( 'table', @_ );
+}
+
+sub do_update_data_statement {
+    my $self         = shift;
+    my $statement_id = shift;
+    my $new_value    = unescape( @_ );
+
+    my $new_block_hashes;
+
+    if ( $statement_id =~ /.*::(.*)::(.*)::(.*)/ ) {
+        my (  $table_ident, $field_ident, $data_statement_number ) =
+            ( $1,           $2,           $3 );
+
+        eval {
+            $new_block_hashes = $tree->data_statement_change(
+                {
+                    table     => $table_ident,
+                    field     => $field_ident,
+                    st_number => $data_statement_number,
+                    value     => $new_value,
+                }
+            );
+        };
+        if ( $@ ) {
+            warn "Error changing data statement: $@\n";
+        }
+    }
+    else {
+        warn "error: mal-formed do_update_data_statement request\n";
+        return;
+    }
+
+    $self->stash->view->template( 'new_data_div.ttc' );
+    delete $self->{__TEMPLATE_WRAPPER__}; # just in case
+
+    $self->stash->view->data(
+        { block      => $new_block_hashes->[0], }
+    );
+
+    my $new_div;
+    eval {
+        $new_div = $self->do_process( ) || '';
+    };
+    if ( $@ ) {
+        warn $@;
+    }
+
+    $self->deparsed( Bigtop::Deparser->deparse( $tree ) );
+    $self->update_backends( $tree );
+
+    $self->template_disable( 1 );
+
+    return $self->stash->controller->data( $new_div . $self->deparsed );
 }
 
 sub do_update_name {
@@ -1054,7 +1167,10 @@ sub _make_json_center {
 
         $keywords_used{ $keyword } = $values;
 
-        if ( ref( $values ) eq 'arg_list' ) {
+        if ( ref( $values ) eq 'arg_list'
+                    or
+             ref( $values ) eq 'ARRAY'
+        ) {
             my @result_values;
             my $result_type;
             foreach my $val ( @{ $values } ) {
@@ -1107,7 +1223,7 @@ sub do_update_field_statement_bool {
 sub do_update_field_statement_text {
     my $self      = shift;
     my $parameter = shift;
-    my $new_value = unescape( shift );
+    my $new_value = unescape( @_ );
 
     return $self->do_update_subblock_statement_text(
         'field', $parameter, $new_value
@@ -1181,7 +1297,7 @@ sub do_update_controller_statement_bool {
 sub do_update_method_statement_text {
     my $self      = shift;
     my $parameter = shift;
-    my $new_value = unescape( shift );
+    my $new_value = unescape( @_ );
 
     return $self->do_update_subblock_statement_text(
         'method',
@@ -1233,7 +1349,8 @@ sub do_type_change {
 sub do_update_literal {
     my $self      = shift;
     my $ident     = shift;
-    my $new_value = unescape( shift );
+    pop @_ while ( $_[-1] eq 'undefined' );
+    my $new_value = unescape( @_ );
 
     eval {
         $tree->walk_postorder(
@@ -1252,8 +1369,8 @@ sub do_update_literal {
 sub do_update_app_conf_statement {
     my $self    = shift;
     my $keyword = shift;
-    my $value   = unescape( shift );
-    my $checked = shift;
+    my $checked = pop; # it's always last, but value can be in several slots
+    my $value   = unescape( @_ );
     my $accessor;
 
     if ( $value eq 'undefined' or $value eq 'undef' ) {
@@ -1857,6 +1974,28 @@ I don't think this is called by the templates or their javascript.
 
 Directly calls do_update_block_statement_text specifying type table.
 
+=head2 do_update_data_statement
+
+Tells the tree to update or add a data statement to an existing table.
+Only one argument of the data statement is ever updated.  This corresponds
+to the single box the user updated in the front end.
+
+Params:
+    statement_id
+    new_value
+
+The statement id must be of the form:
+
+    data_value::ident_9::ident_4::2
+
+where data_value is literal (and is discarded), ident_9 is the table's
+ident, ident_4 is the ident of the field whose value should become new_value,
+and 2 is the number of the data statement.  The data statement number
+starts at 1 and is the order of appearance of the statement to change.
+
+If the new_value is false, the item will be removed from the data statement.
+Yes, this is a problem is you want a zero.
+
 =head2 do_table_reset_bool
 
 Tells the tree to set one keyword to true or false for all of its fields.
@@ -2036,7 +2175,9 @@ client.
 
 =head2 unescape
 
-Typical routine to turn %.. into a proper character.
+Typical routine to turn %.. into a proper character.  Takes a list which
+it will join with slashes to undo HTTP::Server::Simple's overly aggressive
+unescaping.
 
 =head2 change_conf
 
@@ -2091,7 +2232,7 @@ Returns 1 if there have been changes since the last save, 0 otherwise.
 
 =head1 AUTHOR
 
-Phil Crow, E<lt>philcrow2000@yahoo.comE<gt>
+Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

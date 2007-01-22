@@ -77,7 +77,7 @@ GantryLocation at the controller level to generate it.
 
 =head1 AUTHOR
 
-Phil Crow <philcrow2000@yahoo.com>
+Phil Crow <crow.phil@gmail.com>
 
 =head1 COPYRIGHT and LICENSE
 

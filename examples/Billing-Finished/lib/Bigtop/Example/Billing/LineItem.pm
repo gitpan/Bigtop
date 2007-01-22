@@ -30,8 +30,9 @@ use Gantry::Plugins::Calendar qw(
 sub do_main {
     my ( $self, $invoice_id ) = @_;
 
-    my $only_one_invoice = 0;
     my $title            = 'Line Items';
+
+    my $only_one_invoice = 0;
     if ( defined $invoice_id ) {
         $only_one_invoice = 1;
         my $invoice = $INVOICE->gfind( $self, $invoice_id );

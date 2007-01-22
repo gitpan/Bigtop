@@ -8,6 +8,7 @@ examples/address2.bigtop
 examples/billing.bigtop
 examples/billing_model.png
 examples/checking.bigtop
+examples/kids.bigtop
 examples/phonelist.bigtop
 examples/Billing-Finished/app.cgi
 examples/Billing-Finished/app.server
@@ -87,6 +88,7 @@ lib/Bigtop/Keywords.pm
 lib/Bigtop/Parser.pm
 lib/Bigtop/ScriptHelp.pm
 lib/Bigtop/TentMaker.pm
+lib/Bigtop/TentMakerPath.pm
 MANIFEST			This list of files
 MANIFEST.SKIP
 META.yml
@@ -140,12 +142,17 @@ t/cdbi/playpk/Contact/t/03_podcover.t
 t/cdbi/playpk/Contact/t/10_run.t
 t/dbixclass/01_dbixclass.t
 t/dbixclass/02_one_model_base.t
+t/dbixclass/playship/Contact/docs/schema.mysql
+t/dbixclass/playship/Contact/docs/schema.postgres
+t/dbixclass/playship/Contact/docs/schema.sqlite
 t/dbixclass/playship/Contact/lib/Contact.pm
 t/dbixclass/playship/Contact/lib/GENContact.pm
 t/dbixclass/playship/Contact/lib/Contact/Model.pm
 t/dbixclass/playship/Contact/lib/Contact/GENModel.pm
 t/dbixclass/playship/Contact/lib/Contact/Number.pm
 t/dbixclass/playship/Contact/lib/Contact/GEN/Number.pm
+t/dbixclass/playship/Contact/lib/Contact/BDay.pm
+t/dbixclass/playship/Contact/lib/Contact/GEN/BDay.pm
 t/dbixclass/playship/Contact/lib/Contact/Model/bday.pm
 t/dbixclass/playship/Contact/lib/Contact/Model/number.pm
 t/dbixclass/playship/Contact/lib/Contact/Model/GEN/bday.pm
@@ -191,6 +198,16 @@ t/gantry/03_parse_errors.t
 t/gantry/04_no_gen.t
 t/gantry/05_cgi.t
 t/gantry/06_conf.t
+t/gantry/07_base_cont.t
+t/gantry/08_soap.t
+t/gantry/playsoap/Apps-Checkbook/lib/Apps/Checkbook.pm
+t/gantry/playsoap/Apps-Checkbook/lib/Apps/GENCheckbook.pm
+t/gantry/playsoap/Apps-Checkbook/lib/Apps/Checkbook/GEN/SOAP.pm
+t/gantry/playsoap/Apps-Checkbook/lib/Apps/Checkbook/SOAP.pm
+t/gantry/playsoap/Apps-Checkbook/t/01_use.t
+t/gantry/playsoap/Apps-Checkbook/t/02_pod.t
+t/gantry/playsoap/Apps-Checkbook/t/03_podcover.t
+t/gantry/playsoap/Apps-Checkbook/t/10_run.t
 t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook.pm
 t/gantry/playship/Apps-Checkbook/lib/Apps/GENCheckbook.pm
 t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook/GEN/PayeeOr.pm
@@ -318,6 +335,7 @@ tenttemplates/app_config.ttc
 tenttemplates/app_statements.ttc
 tenttemplates/backends.ttc
 tenttemplates/bigtop_config.ttc
+tenttemplates/data_div.ttc
 tenttemplates/default.css
 tenttemplates/delete_button.ttc
 tenttemplates/delete_link.ttc
@@ -325,6 +343,7 @@ tenttemplates/field_block.ttc
 tenttemplates/input_boxes.ttc
 tenttemplates/method_block.ttc
 tenttemplates/new_app_body_div.tt
+tenttemplates/new_data_div.ttc
 tenttemplates/new_field_div.tt
 tenttemplates/new_method_div.tt
 tenttemplates/quick_edit.ttc

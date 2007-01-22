@@ -1,4 +1,38 @@
+When two fields from the same table are marked as dates, the javascript
+for calendar_month_js is being added twice by tentmaker support in the parser.
+
+tentmaker is not showing row option locations.  On mac book see:
+    ~/writing/linux-mag/gantry-one/take3/docs/billing.bigtop
+Worse, editing row options ends up loosing the location entirely.
+
+Have tentmaker trim leading and trailing whitespace from ASCII art before
+trying to use it.
+
+Add a file_filter_ok to Test::Files, so copyright year can be fully done.
+
+Do something for generation of AjaxCRUD users.
+
+Teach tentmaker about join table field blocks and table and join table
+data statements.
+    Repeat this for join tables (or make them more like tables)
+    Left for table data statements support:
+        x when a new field is added, add a row to data statements table
+        deleting fields does not remove them from the data statement table
+        x new data statements are not supported:
+            x replace warning with code in Parser (line 2254)
+            x add another column to the table when the empty one is used
+        x when the last column of a statement is blanked, remove the statement
+        x switch to testing for '' instead of truth for removing column keys
+    I think we need to regenerate the data edit box from a template whenever
+    an update occurs, or at least when a statement is added or removed,
+    or at very least when a statement is added.
+
+Teach tentmaker about controller level literals.
+
 ---
+
+Should a table name change cause a cascade of field name changes for
+all the foreign keys which point to it?
 
 In the generated do_main, any calls to foreign display should be wrapped
 with evals and warnings issued with default blank.
@@ -14,19 +48,10 @@ hard coded):
         { value => 'f', label => 'No'  },
     ],
 
-CRUD generation should make the do_add, do_edit and do_delete to do
-the most normal thing with DBIx::Class.  You can't use them with an
-arbitrary ORM anyway.  This might also apply to the callbacks.
-
 CRUD generation is making text_description, get_orm_helper, and
 get_model_name methods.
-
-You should be able to use data statements in a join_table.
-
-You should be able to add extra fields to a join table, perhaps it should
-really be a synonym for table which allows joins and name statements.
-Perhaps tables should have types like methods do and the types would start
-as regular (default) and threeway.
+    Investigate this, it doesn't always happen, see:
+        t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook/GEN/PayeeOr.pm
 
 When you change a method or controller type, tentmaker should completely
 refresh the statement edit div so the statements applying to the new type
@@ -50,29 +75,15 @@ checked, add a root var to conf with build dir html as an absolute path.
 In the other direction, do the opposite and always check generate root.
 Generate root should be superceded by an genuine root conf var?
 
---create does not try to make the sqlite database (if you are using
-that backend) nor does it give advice on how to start the app.
-
-When fields are deleted, the users of them are not updated.  This should
-include:
-    controller main_listing cols
-    controller form fields or all_fields_but
-    table foreign_displays
-
-Should a table name change cause a cascade of field name changes for
-all the foreign keys which point to it?
-
 Table field blocks should allow accessor which tells the ORM to use that
 name for the accessor.
 
-When a field has form_type select -- and it is not a foreign key -- appears
-in the main_listing, its values should be mapped via the options hash so
-they show up on screen as they were selected and not as they are actually
-stored in the database.
-
 ---
 
-Remaing issues with base_controller blocks:
+It might be nice if foreign displays in main listings linked to details
+for the other table.  (But then, not all controllers have details.)
+
+Remaining issues with base_controller blocks:
     These errors could be reported:
         using a rel_location in a base_controller block
         using an app level location and a base_controller location
@@ -282,6 +293,12 @@ Not to be Done:
 
 Bug fixes:
 
+    Fix site links and base controller default do main, so they get the slashes
+    right.  This also requires removing app_rootp from the genwrapper footer
+    nav links.
+
+    Finish fixing tests so they never care what year it is.
+
     Generation of genwrapper.tt is putting it into the html subdir.  It
     needs to go into the html/templates subsubdir so the generated Build.PL
     can find it.
@@ -315,6 +332,84 @@ Bug fixes:
     When config values have colons in them, deparse is not quoting them.
 
 Done:
+
+    Something is wrong with literal insertions in tentmaker.  This got cut
+    off after the first paren:
+        use lib qw( /home/phil/Bigtop/examples/Kids );
+    when I tried:
+        use lib '/home/phil/Bigtop/examples/Kids';
+    it got cut off after the first '.  Perhaps slashes are not being properly
+    encoded?  They were being prematurely decoded by some versions of
+    HTTP::Server::Simple.
+
+    Generated do_mains should allow control of which rows are included,
+    possibly based on extra_args to the sub.
+        there is a new keyword: limit_by for main_listings.  Use it to
+        specify a single foreign key to limit results by.  If a parameter
+        is passed to do_main, it will be the single foreign key value to
+        show in the listing.  If no parameter is passed, all rows are
+        shown as before.
+
+    Bigtop and tentmaker don't know how to add html_form_raw_html.
+
+    When a field has form_type select -- and it is not a foreign key -- appears
+    in the main_listing, its values should be mapped via the options hash so
+    they show up on screen as they were selected and not as they are actually
+    stored in the database.
+        The model should get a hash and a method:
+        my %select_map_for = (
+            NAME => {
+                dbval  => 'label',
+                dbval2 => 'label2',
+            },
+            NAME2 => {
+                dbval  => 'label',
+                dbval2 => 'label2',
+            },
+        );
+        sub NAME_display {
+            my $self = shift;
+            return $select_map_for{ NAME }{ $self->NAME };
+        }
+        Then the main listing can do something like what it does for
+        foreign keys:
+            data => [
+                #...
+                $row->NAME_display,
+            ]
+
+    When fields are deleted, the users of them are not updated.  This should
+    include:
+        controller main_listing cols
+        controller form fields or all_fields_but
+        table foreign_displays
+            call update_foreign_display with old_value equal to name removed
+            and new_value equal to ''.
+
+    --create does not try to make the sqlite database (if you are using
+    that backend) nor does it give advice on how to start the app.
+        Since SQLite is the only one which might work, it is the only one
+        that should be tried.  This should be in same manner as -n.
+
+    tentmaker needs to convert to query string parameter passing for method
+    parameters, not least because HTTP::Server::Simple version 0.22 forcebly
+    unescapes %xx in urls before Gantry can get hold of it making Save As
+    paths break (they look like multiple pieces instead of one path).
+        Actually, it just needs to join path pieces with OS path separator in
+        do_save.
+
+    You should be able to use data statements in a join_table.
+
+    You should be able to add extra fields to a join table, perhaps it should
+    really be a synonym for table which allows joins and name statements.
+    Perhaps tables should have types like methods do and the types would start
+    as regular (default) and threeway.
+        I just hacked these into the grammar, it wasn't too painful.
+
+    CRUD generation should make the do_add, do_edit and do_delete to do
+    the most normal thing with DBIx::Class.  You can't use them with an
+    arbitrary ORM anyway.  This might also apply to the callbacks.
+        This already happens, since the following item was fixed.
 
     CRUD generation for do_edit is still assuming cdbi.  It should be neutral.
 
@@ -952,7 +1047,7 @@ Done:
     These should be generated correctly on separate lines with line breaks
     so Module::Build does not become confused.
         Probably the email should just be a value for the name key:
-            authors `Phil Crow` => `philcrow2000@yahoo.com`,
+            authors `Phil Crow` => `crow.phil@gmail.com`,
                     `Tim Keefer` => `tkeefer@gmail.com`;
         Then the email link would be added below the authors list and could
         be a block of text inviting mailing list subscriptions or a simple

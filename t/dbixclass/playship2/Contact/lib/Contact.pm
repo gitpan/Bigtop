@@ -76,7 +76,7 @@ You might even want to describe the table this module controls here.
 
 =head1 AUTHOR
 
-Phil Crow, E<lt>philcrow2000@yahoo.comE<gt>
+Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

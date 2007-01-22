@@ -355,6 +355,8 @@
       
       
       
+      
+      
     </tr >
     
       
@@ -468,6 +470,8 @@
         />
           
       </td>
+        
+      
         
       
         
@@ -611,6 +615,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -738,6 +744,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -849,6 +857,8 @@
         />
           
       </td>
+        
+      
         
       
         
@@ -1567,6 +1577,39 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_raw_html </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_15::html_form_raw_html'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_15::html_form_raw_html",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            appears before this field's table row
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> non_essential </td>
         <td>
 
@@ -2207,6 +2250,39 @@ auto</pre>
         </td>
         <td>
             link text for date popup window
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_raw_html </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_16::html_form_raw_html'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_16::html_form_raw_html",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            appears before this field's table row
         </td>
     </tr>
   
@@ -2857,6 +2933,39 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_raw_html </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_17::html_form_raw_html'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_17::html_form_raw_html",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            appears before this field's table row
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> non_essential </td>
         <td>
 
@@ -3497,6 +3606,39 @@ auto</pre>
         </td>
         <td>
             link text for date popup window
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_raw_html </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_18::html_form_raw_html'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_18::html_form_raw_html",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            appears before this field's table row
         </td>
     </tr>
   
@@ -4147,6 +4289,39 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_raw_html </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_19::html_form_raw_html'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_19::html_form_raw_html",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            appears before this field's table row
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> non_essential </td>
         <td>
 
@@ -4195,6 +4370,108 @@ auto</pre>
     <!--<br />-->
   
       </div>
+  </fieldset>
+
+<br />
+
+  <fieldset>
+    <legend>
+      Data Statements ( <a href='javascript:show_or_hide( "hideable_data_ident_14" );'>
+                          edit</a> )
+    </legend>
+
+    
+<div id='hideable_data_ident_14'
+  
+    style='display: none'
+  
+>
+  
+        
+<table class='bordered' id='data_table::ident_14'>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <tr>
+    <th id='data_for_field::ident_15'> id </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_14::ident_15::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+  
+  <tr>
+    <th id='data_for_field::ident_16'> ident </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_14::ident_16::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+  
+  <tr>
+    <th id='data_for_field::ident_17'> description </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_14::ident_17::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+  
+  <tr>
+    <th id='data_for_field::ident_18'> created </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_14::ident_18::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+  
+  <tr>
+    <th id='data_for_field::ident_19'> modified </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_14::ident_19::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+</table>
+
+    
+</div>
+
   </fieldset>
 
 
@@ -4278,6 +4555,10 @@ auto</pre>
                           <option value='CRUD'
     
                           > CRUD     </option>
+
+                          <option value='SOAP'
+    
+                          > SOAP     </option>
                       </select>
                   </td>
               </tr>
@@ -4706,6 +4987,10 @@ auto</pre>
         </td>
     </tr>
   
+    
+    
+    
+    
   </table>
 
  
@@ -4728,6 +5013,7 @@ auto</pre>
               <option value='CRUD_form'>     CRUD_form     </option>
               <option value='base_links'>    base_links    </option>
               <option value='links'>         links         </option>
+              <option value='SOAP'>          SOAP          </option>
             </select>
           </td>
           <td colspan='2'>
@@ -4803,6 +5089,10 @@ auto</pre>
                       <option value='links'
      >
                         links
+                      </option>
+                      <option value='SOAP'
+     >
+                        SOAP
                       </option>
                     </select>
                 </td>
@@ -5391,6 +5681,42 @@ auto</pre>
   
     
     
+    <tr>
+        <td> limit_by </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_21::limit_by'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "method_statement_text",
+                "ident_21::limit_by",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            If an arg is supplied, show only matching rows
+        </td>
+    </tr>
+  
+    
+    
+    
+    
     
     
   </table>
@@ -5469,6 +5795,10 @@ auto</pre>
                       <option value='links'
      >
                         links
+                      </option>
+                      <option value='SOAP'
+     >
+                        SOAP
                       </option>
                     </select>
                 </td>
@@ -5572,6 +5902,7 @@ auto</pre>
         </td>
     </tr>
   
+    
     
     
     
@@ -5840,6 +6171,8 @@ auto</pre>
         </td>
     </tr>
   
+    
+    
   </table>
 
                   

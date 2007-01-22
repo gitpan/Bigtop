@@ -1,5 +1,33 @@
 Revision history for Perl extension Bigtop.
 
+0.21 Mon Jan 22 09:56:44 CST 2007
+    - Added data statements and field blocks as legal join table constructs.
+      tentmaker does not know about them.
+    - bigtop --create now gives the same advice that bigtop --new does.
+      Both also try to build your SQLite database if that makes sense.
+    - Corrected default generated tests so their root path is html/templates.
+    - Init Std's Build.PL uses the new Gantry::Build (minimum Gantry: 3.46).
+    - Deparser works as cleanly for join tables as for regular tables.
+    - tentmaker now does some magic when fields are deleted.  It removes
+      them from foreign_displays, fields or all_fields_but lists, and
+      main listing cols lists.
+    - Added model methods NAME_display for non-foreign key fields whose
+      values are selected from html_form_options.
+    - Taught generated do_mains to use NAME_display methods to show
+      the same labels users chose on forms for non-foreign select fields.
+    - Taught bigtop and tentmaker about Gantry Control's new
+      html_form_raw_html statement.
+    - There is a new main_listing method keyword: limit_by.  It is the name
+      of a foreign key column.  If a parameter is passed to do_main, only
+      rows associated with that foreign key value appear.  No paramater
+      yields old behavior.  See examples/kids.bigtop.
+    - tentmaker now allows data statement editing for regular tables
+    - Attempted to address HTTP::Server::Simple's new behavior of unencoding
+      slashes in URL elements.  More work is needed here (leading slashes
+      in values are still lost, for some versions of HTTP::Server::Simple).
+    - Added keywords and generation for Gantry's new (mod_perl 2 only)
+      SOAP plugin.
+
 0.20 Thu Dec  7 13:50:02 CST 2006
     - Corrected bug in many-to-many generation for DBIx::Class.
     - Corrected doubling of quotes on deparse when there are colons and

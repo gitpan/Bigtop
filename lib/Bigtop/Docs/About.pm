@@ -132,6 +132,6 @@ tent.  Oh, and it's meant to be fun (cue the circus music).
 
 =head1 AUTHOR
 
-Phil Crow <philcrow2000@yahoo.com>
+Phil Crow <crow.phil@gmail.com>
 
 =cut

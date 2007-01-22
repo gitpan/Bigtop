@@ -235,6 +235,30 @@ sub foreign_display {
 sub table_name {
     return '[% table_name %]';
 }
+[%- IF option_fields.0 +%]
+[% extra_methods = [] %]
+
+my %select_map_for = (
+[% FOREACH option_field IN option_fields %]
+[% meth_name = option_field.name;
+   extra_methods.push( "${meth_name}_display" ) %]
+    [% option_field.name %] => {
+[% FOREACH option IN option_field.options %]
+        [% option.db_value %] => '[% option.label %]',
+[% END %]
+    },
+[% END %]
+);
+[% FOREACH option_field IN option_fields %]
+
+sub [% option_field.name %]_display {
+    my $self = shift;
+    return $select_map_for{ [% option_field.name %] }{ $self->[% option_field.name %] }
+           || $self->[% option_field.name %];
+}
+[% END %]
+[% END %]
+
 
 1;
 
@@ -261,6 +285,10 @@ ones listed here:
 =item foreign_display
 
 =item table_name
+[% FOREACH extra_method IN extra_methods %]
+
+=item [% extra_method +%]
+[% END %]
 
 =back
 
@@ -331,6 +359,28 @@ sub foreign_display {
 sub table_name {
     return '[% table_name %]';
 }
+[% IF option_fields.0 +%]
+[% extra_methods = [] %]
+my %select_map_for = (
+[% FOREACH option_field IN option_fields %]
+    [% option_field.name %] => {
+[% FOREACH option IN option_field.options %]
+        [% option.db_value %] => '[% option.label %]',
+[% END %]
+    },
+[% END %]
+);
+[% FOREACH option_field IN option_fields %]
+[% meth_name = option_field.name;
+   extra_methods.push( "${meth_name}_display" ) %]
+
+sub [% option_field.name %]_display {
+    my $self = shift;
+    return $select_map_for{ [% option_field.name %] }{ $self->[% option_field.name %] }
+           || $self->[% option_field.name %];
+}
+[% END %]
+[% END %]
 
 1;
 
@@ -357,6 +407,10 @@ ones listed here:
 =item foreign_display
 
 =item table_name
+[% FOREACH extra_method IN extra_methods %]
+
+=item [% extra_method +%]
+[% END %]
 
 =back
 
@@ -511,6 +565,17 @@ sub output_dbix_model {
     my $child_output = shift;
     my $data         = shift;
 
+    my @option_fields;
+    while ( @{ $child_output } ) {
+        my $field_name = shift @{ $child_output };
+        my $options    = shift @{ $child_output };
+
+        push @option_fields, {
+            name    => $field_name,
+            options => $options,
+        };
+    }
+
     # Skip sequences, etc.
     return unless ( $self->{__TYPE__} =~ /tables/ );
 
@@ -638,6 +703,7 @@ sub output_dbix_model {
             foreign_tables          => \@foreign_table_names,
             app_name                => $data->{ app_name },
             real_table_name         => $self->{__NAME__},
+            option_fields           => \@option_fields,
         }
     );
 
@@ -734,11 +800,34 @@ sub output_dbix_model {
     return [ $self->{__NAME__} ];
 }
 
+#    warn "im a join table ($self->{__NAME__}) and i veto\n";
+#    use Data::Dumper; warn Dumper( $child_output );
+
 sub output_join_modules_dbix {
     my $self         = shift;
     my $child_output = shift;
     my $data         = shift;
     my $table        = $self->{__NAME__};
+
+    my @foreign_keys;
+    my @option_fields;
+
+    foreach my $tidbit ( @{ $child_output } ) {
+        if ( ref $tidbit eq 'ARRAY' ) {
+            while ( @{ $tidbit->[0] } ) {
+                my $field_name = shift @{ $tidbit->[0] };
+                my $options    = shift @{ $tidbit->[0] };
+
+                push @option_fields, {
+                    name    => $field_name,
+                    options => $options,
+                };
+            }
+        }
+        else {
+            push @foreign_keys, $tidbit;
+        }
+    }
 
     my $package      = join '::', $data->{model_name}, $self->{__NAME__};
     my $gen_package  = join '::',
@@ -775,7 +864,8 @@ sub output_join_modules_dbix {
                 table_name       => $table,
                 model_base_class => $data->{model_base_class},
                 package_alias    => uc $table,
-                joined_tables    => $child_output,
+                joined_tables    => \@foreign_keys,
+                option_fields    => \@option_fields,
             }
         );
 
@@ -847,6 +937,38 @@ sub output_join_modules_dbix {
     my @tables       = %{ $self->{__DEF__}->get_first_arg() };
 
     return \@tables;
+}
+
+package # field_statement
+    field_statement;
+use strict; use warnings;
+
+sub output_dbix_model {
+    my $self         = shift;
+
+    return unless $self->{__KEYWORD__} eq 'html_form_options';
+
+    my $name = $self->get_field_name;
+    my @tt_options;
+
+    foreach my $option ( @{ $self->{__DEF__}{__ARGS__} } ) {
+        my %tt_option;
+        ( $tt_option{ label }, $tt_option{ db_value } ) = %{ $option };
+
+        push @tt_options, \%tt_option;
+    }
+
+    return [ $name, \@tt_options ];
+}
+
+sub output_join_modules_dbix {
+    my $self = shift;
+
+    my $option_output = $self->output_dbix_model( );
+
+    return unless $option_output;
+
+    return [ [ $option_output ] ];
 }
 
 1;
@@ -926,7 +1048,7 @@ for the hard coded one here.
 
 =head1 AUTHOR
 
-Phil Crow <philcrow2000@yahoo.com>
+Phil Crow <crow.phil@gmail.com>
 
 =head1 COPYRIGHT and LICENSE
 

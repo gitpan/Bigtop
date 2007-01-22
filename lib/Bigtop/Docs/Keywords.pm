@@ -208,6 +208,8 @@ on them (designed to print on a few of pages, if you cut everthing above):
                                  of each row.  If you specify text => link
                                  pairs, remember to include $id.
                 title          - browser window title for page made by do_main
+                limit_by       - limit results to a single foreign key value
+                                 this is the name of the foriegn key's column
             AutoCRUD_form - call this _form, for use with Gantry AutoCRUD
                 fields         - which fields to include on the form
                 all_fields_but - which fields to exclude, all others appear in
@@ -225,7 +227,7 @@ on them (designed to print on a few of pages, if you cut everthing above):
 
 =head1 Author
 
-Phil Crow, E<lt>philcrow2000@yahoo.comE<gt>
+Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 Copyright and License
 

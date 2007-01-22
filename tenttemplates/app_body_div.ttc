@@ -176,6 +176,10 @@
                           <option value='CRUD'
     [% IF block.controller_type == 'CRUD' %]selected='selected'[% END %]
                           > CRUD     </option>
+
+                          <option value='SOAP'
+    [% IF block.controller_type == 'SOAP' %]selected='selected'[% END %]
+                          > SOAP     </option>
                       </select>
                   </td>
               </tr>
@@ -375,6 +379,24 @@
       </div>
   </fieldset>
 
+<br />
+
+  <fieldset>
+    <legend>
+      Data Statements ( <a href='javascript:show_or_hide( "[%-
+                          "hideable_data_$block.ident" %]" );'>
+                          edit</a> )
+    </legend>
+
+    [% WRAPPER show_or_hide.ttc
+       element_under_control = "hideable_data_$block.ident"
+       label                 = 'Close Edit'
+       heading_level         = 'none'
+    %]
+        [% INCLUDE data_div.ttc %]
+    [% END %]
+  </fieldset>
+
 [% END %][%# end table_block %]
 
 [% BLOCK table_statement_table %]
@@ -433,6 +455,7 @@
               <option value='CRUD_form'>     CRUD_form     </option>
               <option value='base_links'>    base_links    </option>
               <option value='links'>         links         </option>
+              <option value='SOAP'>          SOAP          </option>
             </select>
           </td>
           <td colspan='2'>
@@ -507,6 +530,7 @@
     </tr>
   [% FOREACH jt_statement IN view.data.statements.join_table.statements %]
     [% keyword = jt_statement.keyword %]
+    [% NEXT IF keyword == 'data' %]
     <tr>
         <td> [% keyword %] </td>
         <td>

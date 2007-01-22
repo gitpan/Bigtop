@@ -579,7 +579,7 @@ $correct_wrapper = << 'EO_New_Wrapper';
 	<div id="footer">
         <div id="site_links">
             [% FOREACH page IN self.site_links %]
-            <a href='[% self.app_rootp || '/' %][% page.link %]'> [% page.label %] </a>
+            <a href='[% page.link %]'> [% page.label %] </a>
             [% IF ! loop.last; ' | '; END; %]
             [% END %]
          </div>

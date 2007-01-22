@@ -1307,7 +1307,7 @@ examples of what to type and what you get as a result
 
 =head1 Author
 
-Phil Crow, E<lt>philcrow2000@yahoo.comE<gt>
+Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 Copyright and License
 

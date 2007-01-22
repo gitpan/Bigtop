@@ -9,6 +9,7 @@ use Gantry::Plugins::AutoCRUD qw(
     do_edit
     do_delete
     form_name
+    write_file
 );
 
 use SomePackage::SomeModule qw( a_method $b_scalar );
@@ -137,7 +138,7 @@ Somebody Else
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 Somebody Somewhere
+Copyright (C) 2007 Somebody Somewhere
 
 All rights reserved.
 

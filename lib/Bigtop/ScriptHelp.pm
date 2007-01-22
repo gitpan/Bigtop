@@ -625,7 +625,7 @@ regex is not perfect.  For instance, it will allow leading numbers.
 
 =head1 AUTHOR
 
-Phil Crow, E<lt>philcrow2000@yahoo.comE<gt>
+Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:    Bigtop (a language for describing database backed web apps)
-" Maintaner:   Phil Crow <philcrow2000@yahoo.com>
+" Maintaner:   Phil Crow <crow.phil@gmail.com>
 " Last Change: Sat Nov  5 09:15:53 CST 2005
 " Filenames:   *.bigtop
 "

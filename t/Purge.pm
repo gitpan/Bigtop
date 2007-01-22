@@ -4,7 +4,7 @@ use strict; use warnings;
 use base 'Exporter';
 use File::Find;
 
-our @EXPORT = ( 'purge_dir' );
+our @EXPORT = qw( purge_dir strip_copyright );
 
 sub purge_dir {
 }
@@ -24,3 +24,10 @@ sub real_purge_dir {
     finddepth( $purger, $doomed_dir );
     rmdir $doomed_dir;
 }
+
+sub strip_copyright {
+    my $line = shift;
+    $line    =~ s/\(C\)\s+\d+//;
+    return $line;
+}
+

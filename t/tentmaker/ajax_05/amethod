@@ -1,4 +1,4 @@
-<!-- END QUICK TABLE --><div class='app_block_element'
+<!-- END DATA TABLE --><!-- END QUICK TABLE --><div class='app_block_element'
          id='div_ident_7'>
         
          <fieldset>
@@ -57,6 +57,10 @@
                       <option value='links'
      >
                         links
+                      </option>
+                      <option value='SOAP'
+     >
+                        SOAP
                       </option>
                     </select>
                 </td>
@@ -514,6 +518,42 @@
         </td>
     </tr>
   
+    
+    
+    <tr>
+        <td> limit_by </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_7::limit_by'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "method_statement_text",
+                "ident_7::limit_by",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            If an arg is supplied, show only matching rows
+        </td>
+    </tr>
+  
+    
+    
     
     
     

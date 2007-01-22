@@ -368,12 +368,21 @@ my %doc_for = (
             refresh    => 1,
             sort_order => 150,
         },
-        non_essential => {
-             keyword  => 'non_essential',
-             label    => 'Non-essential',
-             descr    => 'Tells modeler: retrieve only when accessed',
-             type     => 'boolean',
+        html_form_raw_html => {
+            keyword    => 'html_form_raw_html',
+            label      => 'Raw HTML',
+            descr      => q!appears before this field's table row!,
+            type       => 'text',
+            field_type => 'text',
+            multiple   => 0,
             sort_order => 160,
+        },
+        non_essential => {
+            keyword  => 'non_essential',
+            label    => 'Non-essential',
+            descr    => 'Tells modeler: retrieve only when accessed',
+            type     => 'boolean',
+            sort_order => 170,
         },
     },
 
@@ -399,6 +408,15 @@ my %doc_for = (
             multiple      => 0,
             urgency       => 0,
             sort_order    => 20,
+        },
+        data => {
+            keyword    => 'data',
+            label      => 'Data',
+            descr      => 'What to INSERT INTO table upon initial creation',
+            type       => 'pair',
+            multiple   => 1,
+            repeatable => 1,
+            sort_order => 20000,
         },
     },
 
@@ -442,6 +460,7 @@ my %doc_for = (
                 stub      => 1,
                 AutoCRUD  => 1,
                 CRUD      => 1,
+                SOAP      => 1,
             },
         },
         controls_table => {
@@ -539,6 +558,28 @@ my %doc_for = (
                 all => 1,
             },
         },
+        soap_name => {
+            keyword  => 'soap_name',
+            label    => 'Soap Name',
+            descr    => 'Base of all WSDL names',
+            type     => 'text',
+            urgency  => 10,
+            sort_order => 100,
+            controller_types => {
+                SOAP => 1,
+            },
+        },
+        namespace_base => {
+            keyword  => 'namespace_base',
+            label    => 'Namespace Base',
+            descr    => 'Base URL of WSDL namespace including domain',
+            type     => 'text',
+            urgency  => 10,
+            sort_order => 110,
+            controller_types => {
+                SOAP => 1,
+            },
+        },
     },
 
     controller_literal => {
@@ -578,7 +619,11 @@ my %doc_for = (
             urgency     => 0,
             sort_order  => 20,
             method_types => {
-                all => 1,
+                main_listing  => 1,
+                base_links    => 1,
+                links         => 1,
+                AutoCRUD_form => 1,
+                CRUD_form     => 1,
             },
         },
         rows => {
@@ -685,6 +730,19 @@ my %doc_for = (
                 base_links   => 1,
             },
         },
+        limit_by => {
+            keyword       => 'limit_by',
+            label         => 'Limit by Foreign Key',
+            descr         => 'If an arg is supplied, show only matching rows',
+            type          => 'text',
+            pair_required => 0,
+            multiple      => 0,
+            urgency       => 0,
+            sort_order    => 85,
+            method_types => {
+                main_listing => 1,
+            },
+        },
         all_fields_but => {
             keyword     => 'all_fields_but',
             label       => 'Exclued These Fields',
@@ -739,6 +797,34 @@ my %doc_for = (
             method_types => {
                 AutoCRUD_form => 1,
                 CRUD_form     => 1,
+            },
+        },
+        expects => {
+            keyword       => 'expects',
+            label         => 'Input Parameters',
+            descr         => 'Things your SOAP method receives',
+            type          => 'pair',
+            pair_required => 0,
+            pair_labels   => [ 'Name', 'Type' ],
+            multiple      => 1,
+            urgency       => 10,
+            sort_order    => 130,
+            method_types  => {
+                SOAP => 1,
+            },
+        },
+        returns => {
+            keyword       => 'returns',
+            label         => 'Output Parameters',
+            descr         => 'Things your SOAP method returns',
+            type          => 'pair',
+            pair_required => 0,
+            pair_label    => [ 'Name', 'Type' ],
+            multiple      => 1,
+            urgency       => 10,
+            sort_order    => 140,
+            method_types  => {
+                SOAP => 1,
             },
         },
     },
@@ -1038,7 +1124,7 @@ method of Bigtop::Parser
 
 =head1 AUTHOR
 
-Phil Crow E<lt>philcrow2000@yahoo.comE<gt>
+Phil Crow E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT and LICENSE
 

@@ -11,6 +11,8 @@ use Purge;
 
 use Bigtop::Parser qw/Model=GantryDBIxClass Control=Gantry/;
 
+#$::RD_TRACE = 1;
+
 #---------------------------------------------------------------------------
 # Large scale DBIx::Class model generation test
 #---------------------------------------------------------------------------
@@ -32,13 +34,14 @@ config {
     Control         Gantry { dbix 1; full_use 1; }
     SQL             Postgres { }
     SQL             MySQL    { }
+    SQL             SQLite   { }
 }
 app Contact {
     config {
         dbconn `dbi:Pg:dbname=contact` => no_accessor;
         dbuser `apache` => no_accessor;
     }
-    authors `Phil Crow` => `philcrow2000\@yahoo.com`;
+    authors `Phil Crow` => `crow.phil\@gmail.com`;
     sequence number_seq {}
     table number {
         field id   { is int4, primary_key, assign_by_sequence; }
@@ -52,6 +55,12 @@ app Contact {
             label                  `Number`;
             html_form_type         text;
         }
+        field phone_type {
+            is varchar;
+            label `Phone Type`;
+            html_form_type select;
+            html_form_options Cell => cell, Home => home;
+        }
         sequence        number_seq;
         foreign_display `%name`;
     }
@@ -59,11 +68,13 @@ app Contact {
         field id      { is int4, primary_key, assign_by_sequence; }
         field contact {
             is               int4;
+            label            Contact;
             refers_to        number;
             html_form_type   select;
         }
         field bday    {
             is               date;
+            label            `Birth Day`;
             html_form_type   text;
         }
     }
@@ -97,6 +108,17 @@ app Contact {
     join_table author_book {
         joins author  => book;
         names writers => books;
+        field extra_field {
+            is varchar;
+            html_form_type select;
+            html_form_options Happy => happy, Sad => sad;
+        }
+        field second_extra {
+            is boolean;
+            html_form_type select;
+            html_form_options Yes => 1, No => 2;
+        }
+        data author => 1, book => 1, extra_field => hello;
     }
     controller Number is AutoCRUD {
         autocrud_helper  Gantry::Plugins::AutoCRUDHelper::NewHelper;
@@ -116,6 +138,17 @@ app Contact {
         }
         method do_csv is stub {
             extra_args `\$id`;
+        }
+    }
+    controller BDay is stub {
+        controls_table bday;
+        rel_location bday;
+        method do_main is main_listing {
+            title `Birth Days`;
+            cols contact, bday;
+            header_options Add;
+            row_options Edit, Delete;
+            limit_by contact;
         }
     }
     sequence sch.name_seq {}
@@ -140,11 +173,13 @@ Bigtop::Parser->gen_from_string(
     {
         bigtop_string => $bigtop_string,
         create        => 'create',
-        build_list    => [ 'Control', 'Model' ],
+        build_list    => [ 'SQL', 'Control', 'Model' ],
     }
 );
 
-compare_dirs_ok( $play_dir, $ship_dir, 'DBIxClass models' );
+compare_dirs_filter_ok(
+        $play_dir, $ship_dir, \&strip_copyright, 'DBIxClass models'
+);
 
 Purge::real_purge_dir( $play_dir );
 

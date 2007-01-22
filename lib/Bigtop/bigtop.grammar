@@ -8,9 +8,9 @@
 }
 <autotree>    # Used sparingly.  Most actions build a smaller element.
 
-config_only : configuration anything(s) { $item[1] }
+config_only : configuration anything { $item[1] }
 
-anything : /.*/
+anything : /.*/s
 
 bigtop_file : configuration application
 
@@ -276,7 +276,17 @@ field_statement_def : arg_list(?) {
 
 join_table_body : join_table_statement(s?)
 
-join_table_statement : keyword['join_table'] arg_list SEMI_COLON {
+join_table_statement : 'field' <commit> IDENT '{' field_body '}' {
+                           bless {
+                               __IDENT__ => Bigtop::Parser->get_ident(),
+                               __TYPE__  => 'field',
+                               __NAME__  => $item{IDENT},
+                               __BODY__  =>
+                                    $item{field_body}{'field_statement(s?)'},
+                           }, 'table_element_block'
+                       }
+
+                     | keyword['join_table'] arg_list SEMI_COLON {
                       bless {
                           __KEYWORD__ => $item[1], __DEF__ => $item[2]
                       }, 'join_table_statement'

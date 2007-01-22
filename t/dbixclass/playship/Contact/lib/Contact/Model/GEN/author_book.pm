@@ -33,6 +33,29 @@ sub table_name {
     return 'author_book';
 }
 
+my %select_map_for = (
+    extra_field => {
+        happy => 'Happy',
+        sad => 'Sad',
+    },
+    second_extra => {
+        1 => 'Yes',
+        2 => 'No',
+    },
+);
+
+sub extra_field_display {
+    my $self = shift;
+    return $select_map_for{ extra_field }{ $self->extra_field }
+           || $self->extra_field;
+}
+
+sub second_extra_display {
+    my $self = shift;
+    return $select_map_for{ second_extra }{ $self->second_extra }
+           || $self->second_extra;
+}
+
 1;
 
 =head1 NAME
@@ -58,6 +81,10 @@ ones listed here:
 =item foreign_display
 
 =item table_name
+
+=item extra_field_display
+
+=item second_extra_display
 
 =back
 

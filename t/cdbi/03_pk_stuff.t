@@ -37,7 +37,7 @@ app Contact {
         dbconn `dbi:Pg:dbname=contact` => no_accessor;
         dbuser `apache` => no_accessor;
     }
-    authors `Phil Crow` => `philcrow2000\@yahoo.com`;
+    authors `Phil Crow` => `crow.phil\@gmail.com`;
     table number {
         field id   { is int4; }
         field name {

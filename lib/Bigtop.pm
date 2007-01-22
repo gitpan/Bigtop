@@ -5,7 +5,7 @@ use warnings::register;
 use Carp;
 use File::Spec;
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 sub write_file {
     my $file_name    = shift;
@@ -220,7 +220,7 @@ Bigtop source is available for svn checkout:
 
 =head1 AUTHOR
 
-Phil Crow, E<lt>philcrow2000@yahoo.comE<gt>
+Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

@@ -9,7 +9,7 @@ config {
     SiteLook        GantryDefault   {}
 }
 app Apps::Phone {
-    authors `Phil Crow` =>   `philcrow2000@yahoo.com`;
+    authors `Phil Crow` =>   `crow.phil@gmail.com`;
     config {
         dbconn           `dbi:Pg:dbname=phone`     => no_accessor;
         dbuser            apache                   => no_accessor;

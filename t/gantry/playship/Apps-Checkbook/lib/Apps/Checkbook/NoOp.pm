@@ -70,7 +70,7 @@ Somebody Else
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 Somebody Somewhere
+Copyright (C) 2007 Somebody Somewhere
 
 All rights reserved.
 

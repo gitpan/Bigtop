@@ -10,7 +10,7 @@ use Cwd;
 use lib 't';
 
 use Bigtop::Parser qw/SQL=Postgres Control=Gantry/;
-use Purge;
+use Purge;  # exports real_purge_dir and strip_copyright;
 
 my $play_dir   = File::Spec->catdir( qw( t gantry play ) );
 my $ship_dir   = File::Spec->catdir( qw( t gantry playship ) );
@@ -77,6 +77,7 @@ app Apps::Checkbook {
             label                  Name;
             html_form_type         text;
             html_form_display_size 20;
+            html_form_raw_html     `<tr><td colspan="2">Hi</td></tr>`;
         }
     }
     table trans {
@@ -177,8 +178,9 @@ app Apps::Checkbook {
         }
         method do_main is main_listing {
             title             Transactions;
-            cols              status, trans_date, amount, payee_payor;
+            cols              status, cleared, trans_date, amount, payee_payor;
             col_labels        `Status 3`,
+                              Cleared,
                               Date => `\$site->location() . '/date_order'`;
             header_options    Add;
             row_options       Edit, Delete;
@@ -232,7 +234,9 @@ warning_like {
     );
 } qr/^form methods should have/, '_form CRUD form name warning';
 
-compare_dirs_ok( $play_dir, $ship_dir, 'gantry controls' );
+compare_dirs_filter_ok(
+        $play_dir, $ship_dir, \&strip_copyright, 'gantry controls'
+);
 
 #------------------------------------------------------------------------
 # Regen test - not in create mode
@@ -294,7 +298,9 @@ Bigtop::Parser->gen_from_string(
 
 chdir $old_cwd;
 
-compare_dirs_ok( $play_dir, $ship_dir_2, 'gantry controls - regen' );
+compare_dirs_filter_ok(
+        $play_dir, $ship_dir_2, \&strip_copyright, 'gantry controls - regen'
+);
 
 # Note that the regen did not overwrite the stub for PayeeOr, even though
 # the bigtop input was different.  Once a stub is written, it is not
@@ -490,10 +496,7 @@ sub do_main {
     $self->stash->view->template( 'main.tt' );
     $self->stash->view->title( 'Checkbook' );
 
-    $self->stash->view->data( {
-        pages => [
-        ],
-    } );
+    $self->stash->view->data( { pages => $self->site_links() } );
 } # END do_main
 
 #-----------------------------------------------------------------
@@ -545,7 +548,7 @@ Somebody Somewhere, E<lt>somebody@example.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 Somebody SomewhereElse
+Copyright (C) 2007 Somebody SomewhereElse
 
 All rights reserved.
 

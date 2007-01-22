@@ -360,7 +360,21 @@ file_ok(
 # Delete field.
 #--------------------------------------------------------------------
 
+my $tree = $tent_maker->get_tree;
+
 $tent_maker->template_disable( 0 );
+
+$tent_maker->do_update_method_statement_text(
+        'ident_11::cols', 'ident][street_address][description'
+);
+
+$tent_maker->do_update_method_statement_text(
+        'ident_12::all_fields_but', 'id][street_address][created][modified'
+);
+
+$tent_maker->do_update_table_statement_text(
+        'ident_4::foreign_display', '%ident %street_address'
+);
 
 $ajax = $tent_maker->do_delete_block( 'ident_24' );
 

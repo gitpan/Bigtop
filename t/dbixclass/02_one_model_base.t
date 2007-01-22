@@ -33,7 +33,7 @@ app Contact {
         dbconn `dbi:Pg:dbname=contact` => no_accessor;
         dbuser `apache` => no_accessor;
     }
-    authors `Phil Crow` => `philcrow2000\@yahoo.com`;
+    authors `Phil Crow` => `crow.phil\@gmail.com`;
     sequence number_seq {}
     table number {
         field id   { is int4, primary_key, assign_by_sequence; }
@@ -93,6 +93,8 @@ Bigtop::Parser->gen_from_string(
     }
 );
 
-compare_dirs_ok( $play_dir, $ship_dir, 'DBIxClass models' );
+compare_dirs_filter_ok(
+        $play_dir, $ship_dir, \&strip_copyright, 'DBIxClass models'
+);
 
 Purge::real_purge_dir( $play_dir );

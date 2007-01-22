@@ -32,6 +32,8 @@ BEGIN {
                 location
                 rel_location
                 skip_test
+                soap_name
+                namespace_base
             )
         )
     );
@@ -211,7 +213,7 @@ Returns: true if it is a controller keyword, false otherwise
 
 =head1 AUTHOR
 
-Phil Crow <philcrow2000@yahoo.com>
+Phil Crow <crow.phil@gmail.com>
 
 =head1 COPYRIGHT and LICENSE
 

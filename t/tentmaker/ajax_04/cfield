@@ -1,4 +1,98 @@
-<fieldset>
+<table class='bordered' id='data_table::ident_4'>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <tr>
+    <th id='data_for_field::ident_5'> id </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_4::ident_5::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+  
+  <tr>
+    <th id='data_for_field::ident_6'> ident </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_4::ident_6::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+  
+  <tr>
+    <th id='data_for_field::ident_7'> description </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_4::ident_7::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+  
+  <tr>
+    <th id='data_for_field::ident_8'> created </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_4::ident_8::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+  
+  <tr>
+    <th id='data_for_field::ident_9'> modified </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_4::ident_9::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+  
+  <tr>
+    <th id='data_for_field::ident_23'> name </th>
+    
+    
+        <td>
+            <input type='text'
+                   value=''
+                   id='data_value::ident_4::ident_23::1'
+                   onchange='javascript:change_data_statement( this )' />
+        </td>
+  </tr>
+    
+</table><!-- END DATA TABLE --><fieldset>
     <legend>Field Quick Edit</legend>
   <table class='bordered' >
     <tr>
@@ -92,6 +186,8 @@
             
             
         </th>
+      
+      
       
       
       
@@ -237,6 +333,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -348,6 +446,8 @@
         />
           
       </td>
+        
+      
         
       
         
@@ -491,6 +591,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -618,6 +720,8 @@
       
         
       
+        
+      
     </tr>
     
       
@@ -729,6 +833,8 @@
         />
           
       </td>
+        
+      
         
       
         
@@ -1340,6 +1446,39 @@ auto</pre>
         </td>
         <td>
             link text for date popup window
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_raw_html </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_23::html_form_raw_html'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_23::html_form_raw_html",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            appears before this field's table row
         </td>
     </tr>
   

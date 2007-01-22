@@ -121,7 +121,9 @@ function redraw_add_field() {
     var new_html_text = response.substring( 0, break_point - 1 );
     var new_input     = response.substring( break_point );
 
-    var new_html      = new_html_text.split( /<!-- END QUICK TABLE -->/ );
+    var new_pieces    = new_html_text.split( /<!-- END DATA TABLE -->/ );
+    var new_data_tbl  = new_pieces[0];
+    var new_html      = new_pieces[1].split( /<!-- END QUICK TABLE -->/ );
     var new_quick     = new_html[0];
     var new_divs      = new_html[1].split( /<!-- BEGIN DIV -->/ );
 
@@ -165,6 +167,45 @@ function redraw_add_field() {
             'quick_table::' + table_ident
     );
     quick_table.innerHTML = new_quick;
+
+    // replace the data statement table
+    var data_div = document.getElementById( 'hideable_data_' + table_ident );
+
+    data_div.innerHTML = new_data_tbl;
+}
+
+/*
+    redraw_data is the net.ContentLoader callback for data statement table
+    updates.
+
+    You must pass the id of one of the input fields in the data statement
+    table as the third (and final) argument to the
+    net.ContentLoader constructor.
+
+    The server needs to return two concatenated pieces:
+        the text of the html to replace the old data statement table
+        the deparsed tree output
+    These are split at the first line beginning 'config {'.
+*/
+function redraw_data() {
+    // break response into parts
+    var response     = this.req.responseText;
+    var break_point  = response.indexOf( "config {" );
+    var new_div_text = response.substring( 0, break_point - 1 );
+    var new_input    = response.substring( break_point );
+
+    // show the new input file as raw output
+    var output_area       = document.getElementById( 'raw_output'     );
+    output_area.innerHTML = new_input;
+
+    // replace the old table with the new one
+    // data is of this form: data_value::ident_10::ident_5::2
+    var pieces      = this.data.split( /::/ );
+    var table_ident = pieces[1];
+
+    var data_div = document.getElementById( 'hideable_data_' + table_ident );
+
+    data_div.innerHTML = new_div_text;
 }
 
 // Please don't cop out and use this ghostcode.
@@ -358,7 +399,7 @@ function follow_instructions( instructions ) {
         return;
     }
 
-    //chat( 'debug_chatter', 'about to follow instructions ' + instructions );
+    // chat( 'debug_chatter', 'about to follow instructions ' + instructions );
 
     var todo    = eval ( instructions );
 
@@ -370,11 +411,11 @@ function follow_instructions( instructions ) {
                 multis[j].value = todo[i].values[j];
             }
         }
-        else if ( todo[i].value ) { // single value update
+        else if ( todo[i].value != null ) { // single value update
             var changer   = document.getElementById( todo[i].keyword );
             changer.value = todo[i].value;
         }
-        else if ( todo[i].text ) {
+        else if ( todo[i].text != null ) {
             var changer  = document.getElementById( todo[i].keyword );
             changer.text = todo[i].text;
         }
@@ -398,6 +439,9 @@ function follow_instructions( instructions ) {
             // we know we need a new one, otherwise we wouldn't be here
             insert_app_config( todo[i].keyword, todo[i].config_value, 0 );
         }
+//        else {
+//            chat( 'debug_chatter', 'do not know what to do ' + todo );
+//        }
     }
 }
 
@@ -571,7 +615,8 @@ function create_app_block () {
 }
 
 /*
-    delete_app_block deletes blocks (including literals) at the app level.
+    delete_block deletes blocks (including literals).  These might be
+    tables, controllers, literals, fields, etc.
     Note that the config block has its own delete scheme.
 */
 function delete_block ( doomed_element ) {
@@ -594,7 +639,9 @@ function delete_block ( doomed_element ) {
     
     // Tell the backend
     var update_url   = '/delete_block/' + doomed_ident;
-    var loader       = new net.ContentLoader( update_url, redraw );
+    var loader;
+    
+    loader = new net.ContentLoader( update_url, redraw_name_change );
 
     // Remove it from the display?
     var doomed_div      = document.getElementById( 'div_' + doomed_ident );
@@ -736,6 +783,13 @@ function update_tree (
 
     if ( update_type == 'name' || parameter.indexOf( 'paged_conf' ) >= 0 ) {
         var loader = new net.ContentLoader( update_url, redraw_name_change );
+
+        // if its a field name change we want to update the data statement
+        // table
+        if ( update_type == 'name' && parameter.indexOf( 'field' ) >= 0 ) {
+            var th_el = document.getElementById( 'data_for_' + parameter );
+            th_el.innerHTML = new_value;
+        }
     }
     else if ( refresh_type == 'quick_edit' ) {
         var how_to_update = parameter + ';' + new_value + ';' + update_type;
@@ -752,6 +806,21 @@ function update_tree (
     else {
         var loader = new net.ContentLoader( update_url, redraw );
     }
+}
+
+/*
+    change_data_statement updates values in an existing data statement
+    or creates a new data statement.  Pass it:
+        the input box from the data statements table
+*/
+function change_data_statement ( changing_el ) {
+    var new_value  = changing_el.value;
+    var for_id     = changing_el.id;
+
+    var update_url = '/update_data_statement/' +
+                     for_id + '/' + new_value;
+
+    var loader     = new net.ContentLoader( update_url, redraw_data, for_id );
 }
 
 /*

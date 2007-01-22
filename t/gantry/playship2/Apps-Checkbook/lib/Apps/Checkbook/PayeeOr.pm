@@ -117,6 +117,7 @@ sub my_crud_form {
         row        => $data->{row},
         fields     => [
             {
+                raw_html => '<tr><td colspan="2">Hi</td></tr>',
                 display_size => 20,
                 name => 'name',
                 label => 'Name',
@@ -221,6 +222,7 @@ sub _form {
         row        => $data->{row},
         fields     => [
             {
+                raw_html => '<tr><td colspan="2">Hi</td></tr>',
                 display_size => 20,
                 name => 'name',
                 label => 'Name',

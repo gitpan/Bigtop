@@ -34,7 +34,7 @@ config {
     HttpdConf Gantry {  }
 }
 app Name {
-    authors `Phil Crow` => `philcrow2000\@yahoo.com`, `Tim Keefer`;
+    authors `Phil Crow` => `crow.phil\@gmail.com`, `Tim Keefer`;
     config {
         dbconn `dbi:Pg:dbname=sample` => no_accessor;
         odbcconn `dbi:ODBC:OddOS`;
@@ -89,6 +89,18 @@ app Name {
         method do_nothing is stub {
         }
     }
+    join_table a_b {
+        joins a => b;
+        names aes => bees;
+        field extra {
+            is int4;
+            html_form_type text;
+        }
+        data
+            a => 1,
+            b => 1,
+            extra => happy;
+    }
 }
 EO_CORRECT_REBUILD
 
@@ -106,7 +118,7 @@ config {
     HttpdConf Gantry {}
 }
 app Name {
-    authors `Phil Crow` => `philcrow2000@yahoo.com`, `Tim Keefer`;
+    authors `Phil Crow` => `crow.phil@gmail.com`, `Tim Keefer`;
     config {
         dbconn `dbi:Pg:dbname=sample` => no_accessor;
         odbcconn `dbi:ODBC:OddOS`;
@@ -160,5 +172,17 @@ app Name {
         method do_nothing is stub {
 
         }
+    }
+    join_table a_b {
+        joins a => b;
+        names aes => bees;
+        field extra {
+            is int4;
+            html_form_type text;
+        }
+        data
+            a => 1,
+            b => 1,
+            extra => happy;
     }
 }

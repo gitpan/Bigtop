@@ -9,6 +9,7 @@ __PACKAGE__->add_columns( qw/
     id
     name
     number
+    phone_type
 / );
 __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->base_model( 'Contact::Model' );
@@ -33,6 +34,20 @@ sub foreign_display {
 sub table_name {
     return 'number';
 }
+
+my %select_map_for = (
+    phone_type => {
+        cell => 'Cell',
+        home => 'Home',
+    },
+);
+
+sub phone_type_display {
+    my $self = shift;
+    return $select_map_for{ phone_type }{ $self->phone_type }
+           || $self->phone_type;
+}
+
 
 1;
 
@@ -59,6 +74,8 @@ ones listed here:
 =item foreign_display
 
 =item table_name
+
+=item phone_type_display
 
 =back
 

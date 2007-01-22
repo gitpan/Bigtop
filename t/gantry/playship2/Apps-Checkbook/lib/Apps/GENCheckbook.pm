@@ -30,10 +30,7 @@ sub do_main {
     $self->stash->view->template( 'main.tt' );
     $self->stash->view->title( 'Checkbook' );
 
-    $self->stash->view->data( {
-        pages => [
-        ],
-    } );
+    $self->stash->view->data( { pages => $self->site_links() } );
 } # END do_main
 
 #-----------------------------------------------------------------

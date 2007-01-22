@@ -600,6 +600,13 @@ This overrides the default results.tt with a template of your choice.
 Note that generation may be somewhat less than useful if your template
 expects data incompatable with results.tt.
 
+=item limit_by
+
+Adds an optional parameter to the generated do_main for a foreign key.
+If the parameter is supplied, only rows which have that foreign key value
+will appear in the listing.  The value for this statement must be a
+field name which is a foreign key (has a valid refers_to value).
+
 =back
 
 =item AutoCRUD_form

@@ -73,6 +73,10 @@
     [% IF item.method_type == 'links' %]selected='selected'[% END %] >
                         links
                       </option>
+                      <option value='SOAP'
+    [% IF item.method_type == 'SOAP' %]selected='selected'[% END %] >
+                        SOAP
+                      </option>
                     </select>
                 </td>
             </tr>

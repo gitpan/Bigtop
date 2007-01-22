@@ -84,7 +84,9 @@ use strict; use warnings;
 sub output_app_body {
     my $self = shift;
 
-    my $retval = "    $self->{__KEYWORD__} ";
+    my $indent = ' ' x 4;
+
+    my $retval = "$indent$self->{__KEYWORD__} ";
 
     $retval   .= $self->{__ARGS__}->get_quoted_args . ';';
 
@@ -114,7 +116,9 @@ use strict; use warnings;
 sub output_app_body {
     my $self    = shift;
 
-    my $retval  = "        $self->{__KEYWORD__} ";
+    my $indent  = ' ' x 8;
+
+    my $retval  = "$indent$self->{__KEYWORD__} ";
     $retval    .= $self->{__ARGS__}->get_quoted_args . ';';
 
     return [ $retval ];
@@ -128,11 +132,12 @@ sub output_app_body {
     my $self         = shift;
     my $child_output = shift;
 
+    my $indent       = ' ' x 4;
     my @retval;
 
-    push @retval, "    table $self->{__NAME__} {";
+    push @retval, "${indent}table $self->{__NAME__} {";
     push @retval, @{ $child_output };
-    push @retval, '    }';
+    push @retval, "${indent}}";
 
     return \@retval;
 }
@@ -143,9 +148,10 @@ use strict; use warnings;
 
 sub output_app_body {
     my $self         = shift;
-    my $child_output = shift;
 
-    return [ "    sequence $self->{__NAME__} {}" ];
+    my $indent       = ' ' x 4;
+
+    return [ "${indent}sequence $self->{__NAME__} {}" ];
 }
 
 package # schema_block
@@ -153,10 +159,10 @@ package # schema_block
 use strict; use warnings;
 
 sub output_app_body {
-    my $self         = shift;
-    my $child_output = shift;
+    my $self   = shift;
+    my $indent = ' ' x 4;
 
-    return [ "    schema $self->{__NAME__} {}" ];
+    return [ "${indent}schema $self->{__NAME__} {}" ];
 }
 
 package # table_element_block
@@ -169,7 +175,8 @@ sub output_app_body {
 
     my @retval;
 
-    my $indent = ' ' x 8;
+    my $indent       = ' ' x 8;
+    my $arg_indent   = ' ' x 12;
 
     if ( $self->{__TYPE__} eq 'field' ) {
         push @retval, "${indent}field $self->{__NAME__} {";
@@ -181,9 +188,9 @@ sub output_app_body {
             push @retval, "${indent}data";
 
             my @args = $self->{__ARGS__}->get_quoted_args;
-            my $args = join ",\n$indent    ", @args;
+            my $args = join ",\n$arg_indent", @args;
 
-            push @retval, "    $indent$args;";
+            push @retval, "$arg_indent$args;";
         }
         else {
             my $args = $self->{__ARGS__}->get_quoted_args;
@@ -202,7 +209,8 @@ sub output_app_body {
     my $self         = shift;
     my $child_output = shift;
 
-    my $indent = ' ' x 12;
+    my $indent       = ' ' x 12;
+    my $arg_indent   = ' ' x 16;
 
     my $retval;
     if ( $self->{__KEYWORD__} eq 'html_form_options' ) {
@@ -212,7 +220,7 @@ sub output_app_body {
 
         $child_output->[0] =~ s/, /,\n${indent}    /g;
 
-        push @retval, "${indent}    $child_output->[0];";
+        push @retval, "$arg_indent$child_output->[0];";
 
         $retval = join "\n", @retval;
     }
@@ -243,12 +251,13 @@ sub output_app_body {
     my $self          = shift;
     my $child_output  = shift;
 
-    my $type = '';
+    my $indent        = ' ' x 4;
+    my $type          = '';
 
     return [
-        "    join_table $self->{__NAME__} {",
+        "${indent}join_table $self->{__NAME__} {",
         @{ $child_output },
-        '    }'
+        "${indent}}"
     ];
 }
 
@@ -259,8 +268,26 @@ use strict; use warnings;
 sub output_app_body {
     my $self          = shift;
 
-    my $retval  = "        $self->{__KEYWORD__} ";
-    $retval    .= $self->{__DEF__}->get_quoted_args . ';';
+    my $retval;
+    my $indent        = ' ' x 8;
+    my $arg_indent    = ' ' x 12;
+
+    if ( $self->{__KEYWORD__} eq 'data' ) {
+        my @retval;
+
+        push @retval, "${indent}data";
+
+        my @args = $self->{__DEF__}->get_quoted_args;
+        my $args = join ",\n$arg_indent", @args;
+
+        push @retval, "$arg_indent$args;";
+
+        $retval = join "\n", @retval;
+    }
+    else {
+        $retval  = "$indent$self->{__KEYWORD__} ";
+        $retval .= $self->{__DEF__}->get_quoted_args . ';';
+    }
 
     return [ $retval ];
 }
@@ -274,19 +301,20 @@ sub output_app_body {
     my $child_output = shift;
 
     my @retval;
+    my $indent       = ' ' x 4;
 
     my $is_type = $self->get_controller_type;
     $is_type    = ( $is_type eq 'stub' ) ? ' ' : " is $is_type ";
 
     if ( $self->is_base_controller ) {
-        push @retval, "    controller is base_controller \{";
+        push @retval, "${indent}controller is base_controller \{";
         push @retval, @{ $child_output };
-        push @retval, '    }';
+        push @retval, "${indent}}";
     }
     else {
-        push @retval, "    controller $self->{__NAME__}$is_type\{";
+        push @retval, "${indent}controller $self->{__NAME__}$is_type\{";
         push @retval, @{ $child_output };
-        push @retval, '    }';
+        push @retval, "${indent}}";
     }
 
     return \@retval;
@@ -299,7 +327,9 @@ use strict; use warnings;
 sub output_app_body {
     my $self    = shift;
 
-    my $retval  = "        $self->{__KEYWORD__} ";
+    my $indent  = ' ' x 8;
+
+    my $retval  = "$indent$self->{__KEYWORD__} ";
     $retval    .= $self->{__ARGS__}->get_quoted_args . ';';
 
     return [ $retval ];
@@ -313,10 +343,12 @@ sub output_app_body {
     my $self          = shift;
     my $child_output  = shift;
 
+    my $indent        = ' ' x 8;
+
     return [
-        "        method $self->{__NAME__} is $self->{__TYPE__} {",
+        "${indent}method $self->{__NAME__} is $self->{__TYPE__} {",
         @{ $child_output },
-        '        }',
+        "${indent}}",
     ];
 }
 
@@ -327,7 +359,8 @@ use strict; use warnings;
 sub output_app_body {
     my $self          = shift;
 
-    my $indent = ' ' x 12;
+    my $indent        = ' ' x 12;
+    my $arg_indent    = ' ' x 16;
 
     my $retval;
     if ( $self->{__KEYWORD__} eq 'extra_keys' ) {
@@ -336,14 +369,14 @@ sub output_app_body {
         push @retval, "${indent}extra_keys";
 
         my $args = $self->{__ARGS__}->get_quoted_args;
-        $args    =~ s/, /,\n${indent}    /g;
+        $args    =~ s/, /,\n${arg_indent}/g;
 
-        push @retval, "${indent}    $args;";
+        push @retval, "${arg_indent}$args;";
 
         $retval  = join "\n", @retval;
     }
     else {
-        $retval  = "            $self->{__KEYWORD__} ";
+        $retval  = "$indent$self->{__KEYWORD__} ";
         $retval    .= $self->{__ARGS__}->get_quoted_args . ';';
     }
 
@@ -355,10 +388,14 @@ package # literal_block
 use strict; use warnings;
 
 sub output_app_body {
-    my $self = shift;
+    my $self          = shift;
 
-    my @retval = ( "    literal $self->{__BACKEND__}" );
-    push @retval, "      `$self->{__BODY__}`;";
+    my $indent        = ' ' x 4;
+    my $string_indent = ' ' x 6;
+
+    my @retval        = ( "${indent}literal $self->{__BACKEND__}" );
+
+    push @retval, "$string_indent`$self->{__BODY__}`;";
 
     return \@retval;
 }
@@ -370,9 +407,11 @@ use strict; use warnings;
 sub output_app_body {
     my $self = shift;
 
-    my $space  = ' ';
-    my @retval = ( $space x 8 . "literal $self->{__BACKEND__}" );
-    push @retval, $space x 12 . "`$self->{__BODY__}`;";
+    my $indent        = ' ' x 8;
+    my $string_indent = ' ' x 12;
+
+    my @retval        = ( $indent . "literal $self->{__BACKEND__}" );
+    push @retval, $string_indent . "`$self->{__BODY__}`;";
 
     return \@retval;
 }
@@ -385,12 +424,12 @@ sub output_app_body {
     my $self         = shift;
     my $child_output = shift;
 
-    my $space = ' ';
-    my @retval = ( $space x 8 . 'config {' );
+    my $indent       = ' ' x 8;
+    my @retval       = ( $indent . 'config {' );
 
     push @retval, @{ $child_output };
 
-    push @retval, $space x 8 . '}';
+    push @retval, $indent . '}';
 
     return \@retval;
 }
@@ -400,11 +439,11 @@ package # controller_config_statement
 use strict; use warnings;
 
 sub output_app_body {
-    my $self         = shift;
+    my $self   = shift;
 
-    my $space = ' ';
+    my $indent = ' ' x 12;
 
-    my $retval  = $space x 12 . "$self->{__KEYWORD__} ";
+    my $retval  = $indent . "$self->{__KEYWORD__} ";
     $retval    .= $self->{__ARGS__}->get_quoted_args . ';';
 
     return [ $retval ];
@@ -444,7 +483,7 @@ due to deletions from the tree or whitespace changes.
 
 =head1 AUTHOR
 
-Phil Crow, E<lt>philcrow2000@yahoo.comE<gt>
+Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

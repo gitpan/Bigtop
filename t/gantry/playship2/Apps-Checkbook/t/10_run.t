@@ -13,7 +13,7 @@ use Gantry::Engine::CGI;
 my $cgi = Gantry::Engine::CGI->new( {
     config => {
         dbconn => 'dbi:SQLite:dbname=app.db',
-        root => 'html',
+        root => 'html/templates',
     },
     locations => {
         '/' => 'Apps::Checkbook',

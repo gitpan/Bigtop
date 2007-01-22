@@ -10,8 +10,9 @@ use Bigtop::Grammar;
 use Bigtop::Keywords;
 use Bigtop::ScriptHelp;
 
-# $::RD_TRACE = 1;
-# $::RD_HINT = 1;
+# These don't work since we moved grammar to bigtop.grammar.
+        # $::RD_TRACE = 1;
+        # $::RD_HINT = 1;
 
 my $ident_counter = 0;
 my $parser;
@@ -295,7 +296,7 @@ sub gen_from_file {
         $flags = "-c $bigtop_file @gen_list";
     }
 
-    $class->gen_from_string(
+    return $class->gen_from_string(
         {
             bigtop_string => $bigtop_string,
             bigtop_file   => $bigtop_file,
@@ -364,6 +365,8 @@ sub gen_from_string {
             $module->$method( $build_dir, $bigtop_tree, $bigtop_file, $flags );
         }
     }
+
+    return ( $bigtop_tree->get_appname, $build_dir );
 }
 
 sub load_backends {
@@ -825,6 +828,13 @@ sub change_statement {
     return $result->[0];
 }
 
+sub data_statement_change {
+    my $self   = shift;
+    my $params = shift;
+
+    return $self->walk_postorder( 'change_data_statement', $params );
+}
+
 sub get_statement {
     my $self   = shift;
     my $params = shift;
@@ -860,7 +870,7 @@ sub change_name {
     $params->{__THE_TREE__} = $self;
     my $instructions = $self->walk_postorder( $method, $params );
 
-    if ( $instructions->[1] ) {
+    if ( $instructions->[1] ) { # Should this be 0?
         return $instructions;
     }
     else {
@@ -882,12 +892,23 @@ sub create_block {
 }
 
 sub delete_block {
-    my $self     = shift;
-    my $ident    = shift;
+    my $self         = shift;
+    my $ident        = shift;
 
-    my $result   = $self->walk_postorder( 'remove_block', $ident );
+    my $instructions = $self->walk_postorder(
+            'remove_block',
+            {
+                ident        => $ident,
+                __THE_TREE__ => $self,
+            }
+    );
 
-    return $result->[ 0 ];
+    if ( $instructions->[0] and defined $instructions->[1] ) {
+        return $instructions;
+    }
+    else {
+        return [];
+    }
 }
 
 sub move_block {
@@ -986,6 +1007,12 @@ sub table_reset_bool {
     my $params = shift;
 
     return $self->walk_postorder( 'table_reset_bool', $params );
+}
+
+sub show_idents {
+    my $self = shift;
+
+    $self->walk_postorder( 'show_idents' );
 }
 
 package # application
@@ -1172,12 +1199,14 @@ sub add_block {
 
 sub remove_block {
     my $self         = shift;
-    shift;
-    my $doomed_ident = shift;
+    my $child_output = shift;
+    my $data         = shift;
+    my $doomed_ident = $data->{ ident };
+
     my $blocks       = $self->{ 'block(s?)' };
     my $doomed_index = get_block_index( $blocks, $doomed_ident );
 
-    return if ( $doomed_index == -1 ); # must be for a subblock
+    return $child_output if ( $doomed_index == -1 ); # must be for a subblock
 
     splice @{ $blocks }, $doomed_index, 1;
 
@@ -1884,7 +1913,8 @@ sub add_subblock {
 sub remove_block {
     my $self         = shift;
     shift;
-    my $doomed_ident = shift;
+    my $data         = shift;
+    my $doomed_ident = $data->{ ident };
 
     my $doomed_index = -1;
     my $count        = 0;
@@ -1907,9 +1937,38 @@ sub remove_block {
 
     return if ( $doomed_index == -1 );
 
-    splice @{ $children }, $doomed_index, 1;
+    my $deceased = splice @{ $children }, $doomed_index, 1;
 
-    return [ 1 ];
+    # do things if the we get this far
+    my @retval;
+
+    # remove name from foreign_display as needed
+    my $result = $self->walk_postorder(
+            'update_foreign_display',
+            {
+                old_value => $deceased->{__NAME__},
+                new_value => '',
+                ident     => $self->{__IDENT__},
+            }
+    );
+
+    push @retval, @{ $result } if ( ref( $result ) eq 'ARRAY' );
+
+    # remove from controller form fields or all_fields_but
+    # remove from controller cols (and col_labels)
+
+    my $tree = $data->{ __THE_TREE__ };
+
+    $result = $tree->walk_postorder( 'field_removed', 
+        {
+            table_name      => $self->get_name(),
+            dead_field_name => $deceased->{__NAME__},
+        }
+    );
+
+    push @retval, @{ $result } if ( ref( $result ) eq 'ARRAY' );
+
+    return \@retval;
 }
 
 sub app_block_hashes {
@@ -1923,8 +1982,14 @@ sub app_block_hashes {
 
     foreach my $child_item ( @{ $child_output } ) {
         if ( $child_item->{ type } eq 'statement' ) {
-            $body->{ statements }{ $child_item->{ keyword } } =
-                    $child_item->{ value };
+            if ( $child_item->{ keyword } eq 'data' ) {
+                push @{ $body->{ statements }{ data } },
+                     $child_item->{ value };
+            }
+            else {
+                $body->{ statements }{ $child_item->{ keyword } } =
+                        $child_item->{ value };
+            }
         }
         else {
             push @{ $body->{ fields } }, $child_item;
@@ -2062,10 +2127,22 @@ sub build_lookup_hash {
 
         my $name                         = $element->{__DATA__}[0];
 
-        $output{ $output_type }{ $name } = $element->{__DATA__}[1];
+        if ( $output_type eq 'data' ) {
+            push @{ $output{ data }{ $name } }, $element->{__DATA__}[1];
+        }
+        else {
+            $output{ $output_type }{ $name } = $element->{__DATA__}[1];
+        }
     }
 
     $output{ __IDENT__ } = $self->{ __IDENT__ };
+
+    my $retval = [ 
+        {
+            __TYPE__ => $self->{__TYPE__},
+            __DATA__ => [ $self->get_name() => \%output ],
+        }
+    ];
 
     return [ 
         {
@@ -2086,18 +2163,24 @@ sub change_table_statement {
     my $success = $self->walk_postorder( 'change_table_keyword_value', $data );
 
     unless ( defined $success->[0] ) { # make new statement
-
-        my $new_statement = table_element_block->new_statement(
-            $self,
-            $data->{keyword},
-            $data->{new_value},
-        );
-
-        my $blocks = $self->{ __BODY__ };
-        push @{ $blocks }, $new_statement;
+        $self->add_table_statement( $data );
     }
 
     return [ 1 ];
+}
+
+sub add_table_statement {
+    my $self = shift;
+    my $data = shift;
+
+    my $new_statement = table_element_block->new_statement(
+        $self,
+        $data->{keyword},
+        $data->{new_value},
+    );
+
+    my $blocks = $self->{ __BODY__ };
+    push @{ $blocks }, $new_statement;
 }
 
 sub remove_table_statement {
@@ -2132,6 +2215,77 @@ sub remove_table_statement {
     # else, nothing to see here, move along quietly
 
     return [ 1 ];
+}
+
+sub change_data_statement {
+    my $self           = shift;
+    my $child_output   = shift;
+    my $data           = shift;
+
+    return unless ( $self->{__IDENT__} eq $data->{ table } );
+
+    my %field_names    = @{ $self->walk_postorder( 'get_field_names' ) };
+    my $name_to_change = $field_names{ $data->{ field } };
+
+    my $target         = $child_output->[ $data->{ st_number } - 1 ];
+
+    if ( defined $target ) {
+        my $found      = 0;
+        my $remove_it  = -1;
+        my $count      = -1;
+        ARG:
+        foreach my $arg ( @{ $target->{__ARGS__} } ) {
+            $count++;
+
+            next unless defined $arg->{ $name_to_change };
+
+            if ( defined $data->{ value } ) {
+                $arg->{ $name_to_change } = $data->{ value };
+                $found++;
+                last ARG;
+            }
+            else {
+                $remove_it = $count;
+            }
+        }
+        if ( $remove_it >= 0 ) {
+            splice @{ $target->{__ARGS__} }, $remove_it, 1;
+
+            if ( @{ $target->{__ARGS__} } == 0 ) { # no more keys, kill it
+                my $doomed_child = -1;
+                my $count        = -1;
+                CHILD:
+                foreach my $child ( @{ $self->{__BODY__} } ) {
+                    $count++;
+                    if ( $child eq $target ) {
+                        $doomed_child = $count;
+                        last CHILD;
+                    }
+                }
+                if ( $doomed_child >= 0 ) {
+                    splice @{ $self->{__BODY__} }, $doomed_child, 1;
+                }
+            }
+        }
+        elsif ( not $found ) {
+            push @{ $target->{__ARGS__} },
+                 { $name_to_change => $data->{ value } };
+        }
+    }
+    else {
+        $self->add_table_statement(
+            {
+                ident     => $self->get_ident,
+                keyword   => 'data',
+                new_value => {
+                    keys   => $name_to_change,
+                    values => $data->{value},
+                }
+            },
+        );
+    }
+
+    return $self->walk_postorder( 'app_block_hashes' );
 }
 
 sub table_reset_bool {
@@ -2473,6 +2627,7 @@ sub get_ident {
 sub get_table_name {
     my $self = shift;
 
+    # does this still work for join_tables?
     return $self->{__PARENT__}{__NAME__};
 }
 
@@ -2717,6 +2872,27 @@ sub change_name_field {
     return \@retval;
 }
 
+sub change_data_statement {
+    my $self         = shift;
+    shift;
+    my $data         = shift;
+
+    return if     ( defined $self->{__IDENT__}  );
+    return unless ( $self->{__TYPE__} eq 'data' );
+
+    return [ $self ];
+}
+
+sub get_field_names {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless ( defined $self->{__IDENT__} );
+
+    return [ $self->{__IDENT__} => $self->{__NAME__} ];
+}
+
 # if a renamed field is in foreign_display, update it
 sub update_foreign_display {
     my $self = shift;
@@ -2727,9 +2903,27 @@ sub update_foreign_display {
 
     my $display     = $self->{ __ARGS__ }->get_first_arg;
     my $old_display = $display;
-    $display        =~ s/%$data->{ old_value }/%$data->{ new_value }/g;
 
-    $self->{ __ARGS__ }->set_args_from( $display );
+    if ( $data->{ new_value } ) {
+        $display        =~ s/%$data->{ old_value }/%$data->{ new_value }/g;
+    }
+    else {
+        $display        =~ s/%$data->{ old_value }//g;
+    }
+
+    if ( $display =~ /^\s*$/ ) {
+        $display = '';
+        $self->{__PARENT__}->remove_table_statement(
+                undef,
+                {
+                    ident   => $data->{ ident },
+                    keyword => 'foreign_display',
+                }
+        );
+    }
+    else {
+        $self->{ __ARGS__ }->set_args_from( $display );
+    }
 
     if ( $display eq $old_display ) {
         return;
@@ -2815,6 +3009,12 @@ sub get_field_ident {
     my $self = shift;
 
     return $self->{__PARENT__}{__IDENT__};
+}
+
+sub get_field_name {
+    my $self = shift;
+
+    return $self->{__PARENT__}{__NAME__};
 }
 
 sub get_name {
@@ -3452,7 +3652,8 @@ sub add_subblock {
 sub remove_block {
     my $self         = shift;
     shift;
-    my $doomed_ident = shift;
+    my $data         = shift;
+    my $doomed_ident = $data->{ ident };
 
     my $doomed_index = -1;
     my $count        = 0;
@@ -3672,6 +3873,16 @@ sub field_name_changed {
     return $self->walk_postorder( 'update_field_name', $data );
 }
 
+sub field_removed {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    return unless defined $child_output->[0];
+
+    return $self->walk_postorder( 'remove_field', $data );
+}
+
 sub show_idents {
     my $self = shift;
     my $child_output = shift;
@@ -3802,6 +4013,7 @@ sub new {
         __NAME__   => $params->{new_child}{name},
         __BODY__   => method_body->new(),
         __TYPE__   => $type,
+        __PARENT__ => $parent,
     };
 
     $self->{__BODY__}{__PARENT__} = $self;
@@ -4040,6 +4252,24 @@ sub update_field_name {
     my $data         = shift;
 
     my $count = 0;
+    # remember that foreach aliases, this loop alters child output
+    foreach my $key_or_val ( @{ $child_output } ) {
+        if ( $count % 2 == 0 ) {
+            $key_or_val = $self->{__IDENT__} . '::' . $key_or_val;
+        }
+        $count++;
+    }
+
+    return $child_output;
+}
+
+sub remove_field {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    my $count = 0;
+    # remember that foreach aliases, this loop alters child output
     foreach my $key_or_val ( @{ $child_output } ) {
         if ( $count % 2 == 0 ) {
             $key_or_val = $self->{__IDENT__} . '::' . $key_or_val;
@@ -4054,8 +4284,12 @@ sub show_idents {
     my $self = shift;
     my $child_output = shift;
 
-    push @{ $child_output },
-            [ 'method', $self->{ __NAME__ }, $self->{ __IDENT__ } ];
+    push @{ $child_output }, [
+        'method',
+        $self->{ __NAME__ },
+        $self->{ __IDENT__ },
+        'controller: ' . $self->get_controller_ident,
+    ];
 
     return $child_output;
 }
@@ -4242,6 +4476,42 @@ sub update_field_name {
     }
 }
 
+sub remove_field {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    unless ( $self->{ __KEYWORD__ } eq 'cols'
+                or
+             $self->{ __KEYWORD__ } eq 'all_fields_but'
+                or
+             $self->{ __KEYWORD__ } eq 'fields' )
+    {
+        return;
+    }
+
+    # we need to remove the arg if it matches the name of the deceased field
+    my @new_args;
+
+    # first, build a list of remaining args
+    my $someone_died = 0;
+    ARG:
+    foreach my $arg ( @{ $self->{__ARGS__} } ) {
+        if ( $arg eq $data->{ dead_field_name } ) { $someone_died++; }
+        else                                      { push @new_args, $arg; }
+    }
+
+    return unless $someone_died;
+
+    # second, install them in the object
+    $self->{__ARGS__}->set_args_from( \@new_args );
+
+    push @new_args, '';
+
+    # third, return them as a full list for the statement
+    return [ $self->{ __KEYWORD__ }, \@new_args ];
+}
+
 sub walk_postorder {
     my $self   = shift;
     my $action = shift;
@@ -4389,6 +4659,24 @@ sub table_name_changed {
 sub field_name_changed {
     my $self         = shift;
     shift;
+    my $data         = shift;
+
+    return unless $self->{ __KEYWORD__ } eq 'controls_table';
+    return unless $self->{ __ARGS__ }->get_first_arg()
+                        eq
+                  $data->{ table_name };
+
+    # Leave this return value alone, an ancestor checks it to see if the
+    # name change is for this controller or not.
+    return [ 1 ];
+}
+
+# Yes, I know this is the same as the code above.  They are in different
+# walk stacks.
+
+sub field_removed {
+    my $self         = shift;
+    my $child_output = shift;
     my $data         = shift;
 
     return unless $self->{ __KEYWORD__ } eq 'controls_table';
@@ -4574,7 +4862,7 @@ sub build_lookup_hash {
     return $child_output;
 }
 
-package # app_config_statemen
+package # app_config_statement
     app_config_statement;
 use strict; use warnings;
 
@@ -4901,6 +5189,36 @@ sub set_args_from {
     push @{ $self }, @{ $paired_values };
 }
 
+sub one_hash {
+    my $self = shift;
+
+    my %args;
+
+    foreach my $arg ( @{ $self } ) {
+        if ( ref( $arg ) =~ /HASH/ ) {
+            my ( $key, $value ) = %{ $arg };
+            $args{ $key } = $value;
+        }
+        else {
+            $args{ $arg } = undef;
+        }
+    }
+
+    return \%args;
+}
+
+sub unbless_args {
+    my $self = shift;
+
+    my @args;
+
+    foreach my $arg ( @{ $self } ) {
+        push @args, $arg;
+    }
+
+    return \@args;
+}
+
 1;
 
 =head1 NAME
@@ -4948,6 +5266,8 @@ In this section, the methods are grouped, so that similar ones appear together.
 
 The bigtop script calls this method.
 
+Returns: the app name and the name of the build directory.
+
 You can call this as a class method passing it the name of the bigtop
 file to read and a list of the things to build.
 
@@ -4957,6 +5277,8 @@ calls gen_from_string.
 =item gen_from_string
 
 The bigtop script calls this method when --new is used.
+
+Returns: the app name and the name of the build directory.
 
 This method orchestrates the build.  It is called internally by gen_from_file.
 Call it as a class method.  Pass it a hash with these keys:
@@ -5545,7 +5867,7 @@ before it was stripped..
 
 =head1 AUTHOR
 
-Phil Crow <philcrow2000@yahoo.com>
+Phil Crow <crow.phil@gmail.com>
 
 =head1 COPYRIGHT and LICENSE
 

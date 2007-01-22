@@ -20,7 +20,7 @@ my $build = $subclass->new(
         'Template'        => 2.0,
         'Inline'          => 0.40,
         'Inline::TT'      => 0.06,
-        'Gantry'          => 3.38,
+        'Gantry'          => 3.46, # need Gantry::Build
         'IO::Prompt'      => 0,
     },
     build_requires      => {
@@ -121,7 +121,7 @@ Returns the path, specified by the installing user, to the tentmaker templates.
 
 =head1 AUTHOR
 
-Phil Crow, E<lt>philcrow2000\@yahoo.comE<gt>
+Phil Crow, E<lt>crow.phil\@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

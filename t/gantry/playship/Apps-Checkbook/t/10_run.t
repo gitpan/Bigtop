@@ -15,7 +15,7 @@ my $cgi = Gantry::Engine::CGI->new( {
         dbconn => 'dbi:SQLite:dbname=app.db',
         DB => 'app_db',
         DBName => 'someone',
-        root => 'html',
+        root => 'html/templates',
     },
     locations => {
         '/payee' => 'Apps::Checkbook::PayeeOr',

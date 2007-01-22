@@ -6,8 +6,13 @@ Bigtop::Docs::QuickRef - a quick reference guide to bigtop syntax
 
 =head1 An HTML Table
 
+As of about Oct. 2006, this file is no longer maintained.
+
+Run tentmaker to see most of the syntax of bigtop files and
+Bigtop::Docs::Syntax for the rest.
+
 This file is html only.  If you want a text version see Bigtop::Docs::Keywords.
-Note that this file is note complete.  Running tentmaker should give
+Note that this file is not complete.  Running tentmaker should give
 you complete and accurate information, since its docs come from the code.
 See Bigtop::Docs::TentTut for a tutorial on tentmaker use and
 Bigtop::Docs::TentRef or Bigtop::Docs::Syntax for full details.
@@ -926,7 +931,7 @@ they understand.
 
 =head1 Author
 
-Phil Crow, E<lt>philcrow2000@yahoo.comE<gt>
+Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 Copyright and License
 

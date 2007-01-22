@@ -308,7 +308,7 @@ A comma separated list of authors (use backquotes around these to
 protect spaces, etc.).  These authors will be put into the README
 file and into the AUTHORS section of the stub modules' POD.
 
-    authors `Phil Crow` => `philcrow2000@yahoo.com, `My Friend`;
+    authors `Phil Crow` => `crow.phil@gmail.com, `My Friend`;
 
 Each author item may be either a name or name => email pair.
 
@@ -1144,6 +1144,16 @@ To change the link location, use a pair (as shown above for header_options):
 
 The browser window title to display while do_main's page is displayed.
 
+=item limit_by
+
+(Optional) If present, this is the name of a foreign key field.  The
+generated do_main will take a value for that foreign key as an optional
+parameter.  If the paramter is supplied, only rows which match that
+foriegn key value will appear.
+
+Note that the parameter for this key is always last in the arg list
+(after any extra_args) and is named for the for the foreign key.
+
 =back
 
 =item AutoCRUD_form
@@ -1415,6 +1425,6 @@ this statement.
 
 =head1 AUTHOR
 
-Phil Crow <philcrow2000@yahoo.com>
+Phil Crow <crow.phil@gmail.com>
 
 =cut

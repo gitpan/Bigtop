@@ -30,10 +30,7 @@ sub do_main {
     $self->stash->view->template( 'main.tt' );
     $self->stash->view->title( 'Contact' );
 
-    $self->stash->view->data( {
-        pages => [
-        ],
-    } );
+    $self->stash->view->data( { pages => $self->site_links() } );
 } # END do_main
 
 #-----------------------------------------------------------------
@@ -81,11 +78,11 @@ Contact should inherit from this module.
 
 =head1 AUTHOR
 
-Phil Crow, E<lt>philcrow2000@yahoo.comE<gt>
+Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 Phil Crow
+Copyright (C) 2007 Phil Crow
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.6 or,
