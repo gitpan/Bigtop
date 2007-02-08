@@ -17,7 +17,7 @@ use Gantry::Plugins::SOAPMP20 qw(
     soap_out
     do_main
     do_wsdl
-    custom_error
+    return_error
 );
 
 

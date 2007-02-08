@@ -6,6 +6,7 @@ use Bigtop;
 use Bigtop::Parser;
 use Bigtop::Deparser;
 use Bigtop::ScriptHelp;
+use Bigtop::ScriptHelp::Style;
 
 # Standard Modules
 use Getopt::Long;
@@ -18,12 +19,14 @@ my $create;
 my $new;
 my $add;
 my $keeping_inline;
+my $style;
 
 GetOptions(
     'create|c'      => \$create,
     'new|n=s'       => \$new,
     'add|a=s'       => \$add,
     'keep_inline|k' => \$keeping_inline,
+    'style|s=s'     => \$style,
     'help|h'        => \&full_usage,
     'pg_help'       => \&help_pg,
     'mysql_help'    => \&help_mysql,
@@ -42,13 +45,15 @@ if ( defined $new and not Bigtop::ScriptHelp::valid_ident( $new ) ) {
     die "invalid name for new app: $new\n";
 }
 
+my $script_help_style = Bigtop::ScriptHelp::Style->get_style( $style );
+
 if ( $new ) {
-    make_new( @ARGV );
+    make_new( $script_help_style, @ARGV );
 }
 elsif ( $add ) {
-    make_addition( $add, @ARGV );
+    make_addition( $script_help_style, $add, @ARGV );
 }
-else { # not new, use a file
+else { # default, use a file
     my $bigtop_file = shift or die $usage;
 
     unless ( @ARGV ) { die $usage; }
@@ -79,6 +84,7 @@ if ( not $keeping_inline and -d '_Inline' ) {
 }
 
 sub make_new {
+    my $style  = shift;
     my @models = @_;
     my $bigtop_string;
     my $things_to_build = 'Init';
@@ -95,7 +101,7 @@ sub make_new {
 
     if ( @models ) {
         $bigtop_string   = Bigtop::ScriptHelp->get_big_default(
-                $new, @models
+                $style, $new, @models
         );
         $things_to_build = 'all';
         $made_tables     = 1;
@@ -154,6 +160,7 @@ sub make_new {
 }
 
 sub make_addition {
+    my $style       = shift;
     my $source_file = shift;
     my @models      = @_;
 
@@ -164,8 +171,10 @@ sub make_addition {
     my $ast   = Bigtop::Parser->parse_file( $source_file );
     my $space = ' ';
     my $art   = join $space, @models;
+    $art      =~ s/^\s+//;
+    $art      =~ s/\s+$//;
 
-    Bigtop::ScriptHelp->augment_tree( $ast, $art );
+    Bigtop::ScriptHelp->augment_tree( $style, $ast, $art );
 
     # write the file
     my $deparse = Bigtop::Deparser->deparse( $ast );
@@ -472,6 +481,15 @@ Note that the directory will only be removed if it is really _Inline
 in the current directory.  If you have a .Inline directory under
 home directory etc., the script will not affect it.
 
+=item --style (or -s)
+
+Defaults to Original.  This can be the name of any Bigtop::ScriptHelp::Style
+module.  These styles control how your command line args, and
+standard input, turn into bigtop descriptions.  See the docs for you
+style to see what input is legal and how it is treated.
+
+For historical reasons, there is POD below describing the Original style.
+
 =back
 
 =head1 HELP OPTIONS
@@ -494,6 +512,10 @@ reach that database.
 =back
 
 =head1 ASCII Art
+
+This section applies only to --style Original (which is the default).
+If you use some other style, see the docs in
+Bigtop::ScriptHelp::Style::ItsName.
 
 Both --new and --add allow you to specify a list of tables or ASCII
 art.  The ASCII art option allows you to quickly note relationships between
@@ -562,7 +584,7 @@ a foreign key pointing to the other.
 
 =head1 AUTHOR
 
-Phil Crow <crow.phil@gmail.com>
+Phil Crow E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT and LICENSE
 

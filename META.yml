@@ -1,6 +1,6 @@
 ---
 name: Bigtop
-version: 0.21
+version: 0.22
 author:
   - 'Phil Crow, E<lt>crow.phil@gmail.comE<gt>'
 abstract: A web application data language processor
@@ -25,7 +25,7 @@ meta-spec:
 provides:
   Bigtop:
     file: lib/Bigtop.pm
-    version: 0.21
+    version: 0.22
   Bigtop::Backend::CGI:
     file: lib/Bigtop/Backend/CGI.pm
   Bigtop::Backend::CGI::Gantry:
@@ -95,6 +95,12 @@ provides:
     file: lib/Bigtop/Parser.pm
   Bigtop::ScriptHelp:
     file: lib/Bigtop/ScriptHelp.pm
+  Bigtop::ScriptHelp::Style:
+    file: lib/Bigtop/ScriptHelp/Style.pm
+  Bigtop::ScriptHelp::Style::Original:
+    file: lib/Bigtop/ScriptHelp/Style/Original.pm
+  Bigtop::ScriptHelp::Style::Pg8Live:
+    file: lib/Bigtop/ScriptHelp/Style/Pg8Live.pm
   Bigtop::TentMaker:
     file: lib/Bigtop/TentMaker.pm
   Bigtop::TentMakerPath:

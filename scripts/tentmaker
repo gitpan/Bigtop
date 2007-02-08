@@ -18,18 +18,21 @@ use IO::Prompt;
 
 use Bigtop::TentMaker qw{ -Engine=CGI -TemplateEngine=TT };
 use Bigtop::TentMakerPath;
+use Bigtop::ScriptHelp::Style;
 
 $SIG{ INT } = \&trap_int;
 
 my $port = 8080;
 my $new_app_name;
 my $add_bigtop_file;
+my $style;
 
 GetOptions(
-    'port|p=s' => \$port,
-    'new|n=s'  => \$new_app_name,
-    'add|a=s'  => \$add_bigtop_file,
-    'help|h'   => \&help,
+    'port|p=s'  => \$port,
+    'new|n=s'   => \$new_app_name,
+    'add|a=s'   => \$add_bigtop_file,
+    'style|s=s' => \$style,
+    'help|h'    => \&help,
 );
 
 my $action_flags = 0;
@@ -38,6 +41,15 @@ $action_flags++ if $add_bigtop_file;
 
 if ( $action_flags > 1 ) {
     die "--new and --add are incompatible\n";
+}
+
+if ( $new_app_name and not Bigtop::ScriptHelp::valid_ident( $new_app_name ) ) {
+    die "--new requires valid package name, '$new_app_name' is invalid.\n";
+}
+
+if ( $add_bigtop_file and not -f $add_bigtop_file ) {
+    die "--add requires valid input file,\n"
+        .   "   couldn't read '$add_bigtop_file': $!\n";
 }
 
 # You could do this with a Damianism:
@@ -73,17 +85,21 @@ $server->set_engine_object( $cgi );
 
 my $space     = ' ';
 my $ascii_art = join $space, @ARGV;
+$ascii_art    =~ s/^\s+//;
+$ascii_art    =~ s/\s+$//;
+
+my $script_help_style = Bigtop::ScriptHelp::Style->get_style( $style );
 
 eval {
     Bigtop::TentMaker->take_performance_hit(
-            $file, $ascii_art, $new_app_name
+            $script_help_style, $file, $ascii_art, $new_app_name
     );
 };
 if ( $@ and $file =~ /^\d+$/ ) {
     die "usage: tentmaker [--port 8089] [options] [file]\n";
 }
 elsif ( $@ ) {
-    warn "$@\n";
+    die "$@\n";
 }
 
 $server->run();
@@ -172,6 +188,14 @@ Allows you to augment an existing bigtop file prior to editing it.
 Requires a bigtop file name.  Allows a list of tables to create or
 L<ASCII Art>.  Any relationships specified in ASCII art will be
 applied, even if they refer to existing tables.
+
+=item --style (or -s)
+
+Defaults to Original.  Specifies which Bigtop::ScriptHelp::Style:: module
+will handle extra command line arguements and standard input.  See your
+Style module's docs for details.  For historical reasons, the Original
+style is described below.
+standard in 
 
 =back
 

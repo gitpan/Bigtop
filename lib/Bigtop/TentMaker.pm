@@ -35,6 +35,7 @@ sub AUTOLOAD {
 
 sub take_performance_hit {
     my $class        = shift;
+    my $style        = shift;
     $file            = shift;   # this one is global, sorry Damian
     my $art          = shift;
     my $new_app_name = shift;
@@ -48,7 +49,7 @@ sub take_performance_hit {
     $tree      = Bigtop::Parser->parse_string( $class->input );
 
     # now that we have the initial tree, add the art
-    Bigtop::ScriptHelp->augment_tree( $tree, $art );
+    Bigtop::ScriptHelp->augment_tree( $style, $tree, $art );
 
     $class->deparsed( Bigtop::Deparser->deparse( $tree ) );
 

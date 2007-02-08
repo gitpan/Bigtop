@@ -1,6 +1,16 @@
 package Bigtop::ScriptHelp;
 use strict; use warnings;
 
+use base 'Exporter';
+
+our @EXPORT = qw( valid_ident );
+
+my %non_entry   = (
+    id       => 1,
+    created  => 1,
+    modified => 1,
+);
+
 sub _get_config_block {
     return << "EO_Config_Default";
 config {
@@ -42,15 +52,18 @@ EO_Little_Default
 }
 
 sub get_big_default {
-    my $class = shift;
+    my $class    = shift;
+    my $style    = shift;
     my $app_name = shift;
     my @models   = @_;
 
-    my $model_code = _make_model_code( @models );
+    my $model_code = _make_model_code( $style, @models );
     return _make_default_string( $app_name, $model_code );
 }
 
 sub _make_model_code {
+    my $style = shift;
+
     my $space = ' ';
     my $args  = join $space, @_;
 
@@ -59,12 +72,13 @@ sub _make_model_code {
     my %foreign_key_for;
     my @joiners;
 
-    my $parsed_art = parse_ascii_art( $args );
-    my ( $tables, $new_tables, $joiners, $foreign_key_for ) = (
+    my $parsed_art = $style->get_db_layout( $args );
+    my ( $tables, $new_tables, $joiners, $foreign_key_for, $columns ) = (
             $parsed_art->{ all_tables },
             $parsed_art->{ new_tables },
             $parsed_art->{ joiners },
             $parsed_art->{ foreigners },
+            $parsed_art->{ columns },
     );
 
     my $retval = '';
@@ -83,52 +97,16 @@ sub _make_model_code {
 
         my $model_label = Bigtop::ScriptHelp->default_label( $schema_free );
 
-        my @foreign_fields;
-        my $foreign_text = "\n";
-        if ( defined $foreign_key_for->{ $model } ) {
-            foreach my $foreign_key ( @{ $foreign_key_for->{ $model } } ) {
-                my $label = Bigtop::ScriptHelp->default_label(
-                        _strip_schema( $foreign_key )
-                );
-                my $name  = $foreign_key;
-                $name     =~ s/\./_/;
-                my $new_foreigner = <<"EO_Foreign_Field";
-        field $name {
-            is             int4;
-            label          `$label`;
-            refers_to      `$foreign_key`;
-            html_form_type select;
-        }
-EO_Foreign_Field
-                push @foreign_fields, $new_foreigner;
-            }
-            $foreign_text = join '', @foreign_fields;
-        }
+        my ( $native_text, $show_in_main, $those_excluded_from_form )
+                = _make_native_fields( $columns, $model );
 
-        chomp $foreign_text;
+        my $foreign_text = _make_foreign_key_fields(
+                $foreign_key_for, $model
+        );
 
         $retval .= << "EO_MODEL";
     table $model {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is             varchar;
-            label          Ident;
-            html_form_type text;
-        }
-        field description {
-            is             varchar;
-            label          Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        foreign_display `%ident`;
+$native_text
 $foreign_text
     }
     controller $controller is AutoCRUD {
@@ -137,13 +115,13 @@ $foreign_text
         text_description `$descr`;
         page_link_label `$model_label`;
         method do_main is main_listing {
-            cols ident, description;
+            cols $show_in_main;
             header_options Add;
             row_options Edit, Delete;
             title `$model_label`;
         }
         method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
+            all_fields_but $those_excluded_from_form;
             extra_keys
                 legend => `\$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
@@ -193,6 +171,96 @@ $model_code
 EO_Model_Bigtop
 }
 
+sub _make_native_fields {
+    my $columns_for = shift;
+    my $table       = shift;
+
+    my $columns     = $columns_for->{ $table };
+    my $foreign_display;
+    my $second_main_col;
+    my @exclude_from_form;
+
+    # first handle the columns
+    my $retval = '';
+    my $space  = ' ';
+    my $outer_indent = $space x 8;
+    my $is_spacing   = $space x 12;
+
+    foreach my $column ( @{ $columns } ) {
+
+        my $type_string = join ', ', @{ $column->{ types } };
+
+        my $decorations = '';
+        if ( $non_entry{ $column->{ name } } ) {
+            push @exclude_from_form, $column->{ name };
+        }
+        else {
+            $second_main_col = $column->{ name }
+                        if $foreign_display and not $second_main_col;
+
+            $foreign_display = $column->{ name } unless $foreign_display;
+
+            $type_string = "${is_spacing}$type_string";
+
+            die "invalid column name $column->{ name }\n"
+                    unless valid_ident( $column->{ name } );
+
+            my $label = Bigtop::ScriptHelp->default_label( $column->{ name } );
+
+            $label = "`$label`" if ( $label =~ /\s+/ );
+
+            $decorations = << "EO_DEC";
+            label          $label;
+            html_form_type text;
+EO_DEC
+        }
+
+        $retval .= "${outer_indent}field $column->{ name } {\n";
+        $retval .= "${outer_indent}    is $type_string;\n";
+        $retval .= $decorations if $decorations;
+        $retval .= "${outer_indent}}\n";
+    }
+
+    # finish by adding foreign_display
+    $retval .= "${outer_indent}foreign_display `%$foreign_display`;";
+
+    my $main_cols = $foreign_display;
+    $main_cols   .= ", $second_main_col" if $second_main_col;
+
+    return ( $retval, $main_cols, join( ', ', @exclude_from_form ) );
+}
+
+sub _make_foreign_key_fields {
+    my $foreign_key_for = shift;
+    my $model           = shift;
+
+    my @foreign_fields;
+    my $foreign_text = "\n";
+    if ( defined $foreign_key_for->{ $model } ) {
+        foreach my $foreign_key ( @{ $foreign_key_for->{ $model } } ) {
+            my $label = Bigtop::ScriptHelp->default_label(
+                    _strip_schema( $foreign_key )
+            );
+            my $name  = $foreign_key;
+            $name     =~ s/\./_/;
+            my $new_foreigner = <<"EO_Foreign_Field";
+        field $name {
+            is             int4;
+            label          `$label`;
+            refers_to      `$foreign_key`;
+            html_form_type select;
+        }
+EO_Foreign_Field
+            push @foreign_fields, $new_foreigner;
+        }
+        $foreign_text = join '', @foreign_fields;
+    }
+
+    chomp $foreign_text;
+
+    return $foreign_text;
+}
+
 sub _strip_schema {
     my $input = shift;
     $input    =~ s/^[^\.]*\.//;
@@ -202,6 +270,7 @@ sub _strip_schema {
 
 sub augment_tree {
     my $class = shift;
+    my $style = shift;
     my $ast   = shift;
     my $art   = shift;
 
@@ -220,12 +289,13 @@ sub augment_tree {
         }
     }
 
-    my $parsed_art = parse_ascii_art( $art, \%initial_tables );
-    my ( $tables, $new_tables, $joiners, $foreign_key_for ) = (
+    my $parsed_art = $style->get_db_layout( $art, \%initial_tables );
+    my ( $tables, $new_tables, $joiners, $foreign_key_for, $columns ) = (
         $parsed_art->{ all_tables },
         $parsed_art->{ new_tables },
         $parsed_art->{ joiners    },
         $parsed_art->{ foreigners },
+        $parsed_art->{ columns    },
     );
 
     # make new tables with tentmaker hooks
@@ -244,7 +314,12 @@ sub augment_tree {
         my $rel_loc     = $table;
         $rel_loc        =~ s/\./_/;
 
-        $new_table{ $table } = $ast->create_block( 'table', $table, {} );
+        $new_table{ $table } = $ast->create_block(
+                'table', $table, { columns => $columns->{ $table } }
+        );
+
+        my ( $foreign_display, $on_main_listing, $all_fields_but ) = 
+                _get_controller_fields( $columns->{ $table } );
 
         # set a foreign display
         $ast->change_statement(
@@ -252,7 +327,7 @@ sub augment_tree {
                 type      => 'table',
                 ident     => $new_table{ $table }->get_ident,
                 keyword   => 'foreign_display',
-                new_value => '%ident',
+                new_value => "%$foreign_display",
             }
         );
 
@@ -265,6 +340,8 @@ sub augment_tree {
                   text_description => $descr,
                   page_link_label  => $model_label,
                   rel_loc          => $rel_loc,
+                  on_main_listing  => $on_main_listing,
+                  all_fields_but   => $all_fields_but,
                 }
         );
     }
@@ -359,73 +436,29 @@ sub augment_tree {
     return; # This is an in place tree modifier.
 }
 
-sub parse_ascii_art {
-    my $art    = shift || '';
-    my $tables = shift || {};
+sub _get_controller_fields {
+    my $columns = shift;
 
-    my @new_tables;
-    my @joiners;
-    my %foreign_key_for;
+    my $foreign_display;
+    my $second_main_col;
+    my @exclude_from_form;
 
-    foreach my $art_element ( split /\s+/, $art ) {
-        if ( $art_element =~ /<|-|>/ ) {
-            # split tables from operator
-            my ( $table1, $op, $table2 ) = split /(<->|->|<-|-)/, $art_element;
-            unless ( defined $table1 and valid_ident( $table1 )
-                        and
-                     defined $table2 and valid_ident( $table2 )
-                        and
-                     defined $op
-            ) {
-                die "Invalid ASCII art: $art_element\n";
-            }
-
-            # make sure tables are in the list of all tables
-            unless ( defined $tables->{ $table1 } ) {
-                push @new_tables, $table1;
-                $tables->{ $table1 }++;
-            }
-
-            unless ( defined $tables->{ $table2 } ) {
-                push @new_tables, $table2;
-                $tables->{ $table2 }++;
-            }
-
-            # process based on operator
-            if ( $op eq '<-' ) {
-                push @{ $foreign_key_for{ $table2 } }, $table1;
-            }
-            elsif ( $op eq '->' ) {
-                push @{ $foreign_key_for{ $table1 } }, $table2;
-            }
-            elsif ( $op eq '-' ) {
-                push @{ $foreign_key_for{ $table2 } }, $table1;
-                push @{ $foreign_key_for{ $table1 } }, $table2;
-            }
-            elsif ( $op eq '<->' ) {
-                push @joiners, [ $table1, $table2 ];
-            }
-            else {
-                die "Invalid ASCII art: $art_element\n";
-            }
-        }
-        elsif ( valid_ident( $art_element ) ) {
-            unless ( defined $tables->{ $art_element } ) {
-                push @new_tables, $art_element;
-                $tables->{ $art_element }++;
-            }
+    foreach my $column ( @{ $columns } ) {
+        if ( $non_entry{ $column->{ name } } ) {
+            push @exclude_from_form, $column->{ name };
         }
         else {
-            die "Invalid ASCII art: $art_element\n";
+            $second_main_col = $column->{ name }
+                        if $foreign_display and not $second_main_col;
+
+            $foreign_display = $column->{ name } unless $foreign_display;
         }
     }
 
-    return {
-        all_tables => $tables,
-        new_tables => \@new_tables,
-        joiners    => \@joiners,
-        foreigners => \%foreign_key_for,
-    }
+    my $main_cols = $foreign_display;
+    $main_cols   .= ", $second_main_col" if $second_main_col;
+
+    return ( $foreign_display, $main_cols, join( ', ', @exclude_from_form ) );
 }
 
 sub valid_ident {
@@ -485,12 +518,14 @@ Bigtop::ScriptHelp - A helper modules for command line utilities
     my $tree    = Bigtop::Parser->parse_string( $default );
     # ...
 
+    my $style   = 'SomeStyle';  # must live in Bigtop::ScriptHelp::Style::
+
     my $better_default = Bigtop::ScriptHelp->get_big_default(
-            $name, $art
+            $style, $name, $art
     );
     my $better_tree    = Bigtop::Parser->parse_string( $better_default );
 
-    Bigtop::ScriptHelp->augment_tree( $bigtop_tree, $art );
+    Bigtop::ScriptHelp->augment_tree( $style, $bigtop_tree, $art );
 
     my $new_field_label = Bigtop::ScriptHelp->default_label( $name );
 
@@ -597,22 +632,6 @@ The following functions are meant for internal use, but you might like
 them too.  Don't call them through the class, call them as functions.
 
 =over 4
-
-=item parse_ascii_art
-
-Params: a single string (space delimited) of all the ASCII art relationships
-to be put into the bigtop file and a hash reference of existing tables
-you don't want to add (optional defaults to {}).
-
-Returns: a single hash reference with these keys:
-
-    all_tables - your hash reference updated with the tables in the art.
-    new_tables - an array reference of tables you need to add.
-    joiners    - an array reference of join_tables, each element is
-                 a two element array, each element is one of the
-                 many-to-many tables.
-    foreigners - a hash reference keyed by table name storing an array
-                 of the foreign tables it hold keys for.
 
 =item valid_ident
 

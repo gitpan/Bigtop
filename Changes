@@ -1,5 +1,22 @@
 Revision history for Perl extension Bigtop.
 
+0.22 Thu Feb  8 14:25:30 CST 2007
+    - Calling tentmaker with -a and a missing or unreadable file is now fatal.
+    - tentmaker now trims leading and trailing space from ASCII art before
+      using it.
+    - Extra fields in join tables now show up in the model, not just in SQL.
+    - ASCII art now supports field names and types, try:
+      bigtop -n Address 'child(name,birth_date:date)->family(names,email)'
+      works with -a and -n in bigtop and tentmaker.
+    - You can design your own ASCII art replacement.  See
+      Bigtop::ScriptHelp::Style for details.  Use -s YourStyle to access it.
+      Bigtop::ScriptHelp::Style::Pg8Live is an example.
+    - There is a -s style for postgres 8:
+        bigtop -n AppName -s Pg8Live 'dbi:Pg:dbname=adb' user pass [ schema ]
+      it supports column types, defaults, primary keys (including multi-col),
+      foreign keys (single col only).  Schema defaults to public.  All tables
+      must live in the same schema.  No join_tables are ever made.
+
 0.21 Mon Jan 22 09:56:44 CST 2007
     - Added data statements and field blocks as legal join table constructs.
       tentmaker does not know about them.

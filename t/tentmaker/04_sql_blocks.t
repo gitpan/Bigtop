@@ -27,8 +27,11 @@ BEGIN {
 use File::Spec;
 
 use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=TT /;
+use Bigtop::ScriptHelp::Style;
 
-Bigtop::TentMaker->take_performance_hit();
+my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
+
+Bigtop::TentMaker->take_performance_hit( $style );
 
 my $ajax_dir   = File::Spec->catdir( qw( t tentmaker ajax_04 ) );
 my $expected_file;
@@ -406,7 +409,7 @@ file_ok( $expected_file, $ajax, 'remove table (rtable)' );
 
 my $sql_config = File::Spec->catfile( 't', 'tentmaker', 'sql.bigtop' );
 
-Bigtop::TentMaker->take_performance_hit( $sql_config );
+Bigtop::TentMaker->take_performance_hit( $style, $sql_config );
 
 warning_like {
     $tent_maker->do_update_table_statement_text(

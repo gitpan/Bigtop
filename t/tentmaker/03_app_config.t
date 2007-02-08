@@ -19,18 +19,20 @@ BEGIN {
 use File::Spec;
 
 use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=TT /;
+use Bigtop::ScriptHelp::Style;
 
 my $tent_maker;
 my @maker_deparse;
 my $ajax_dir = File::Spec->catdir( qw( t tentmaker ajax_03 ) );
 my $expected_file;
 my $ajax;
+my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
 
 #--------------------------------------------------------------------
 # Sanity Check (repeated test from 02....t)
 #--------------------------------------------------------------------
 
-Bigtop::TentMaker->take_performance_hit();
+Bigtop::TentMaker->take_performance_hit( $style );
 
 my @correct_input = split /\n/, <<'EO_sample_input';
 config {
@@ -89,7 +91,7 @@ file_ok( $expected_file, $ajax, 'add conf statement (aconfst)' );
 
 my $empty_config = File::Spec->catfile( 't', 'tentmaker', 'sample' );
 
-Bigtop::TentMaker->take_performance_hit( $empty_config );
+Bigtop::TentMaker->take_performance_hit( $style, $empty_config );
 
 $tent_maker->template_disable( 0 );
 

@@ -34,6 +34,7 @@ my $build = $subclass->new(
     test_files          => [
 #        't/gantry/07_base_cont.t',
         't/*.t',
+        't/scripthelp/*.t',
         't/tentmaker/*.t',
         't/init/*.t',
         't/postgres/*.t',

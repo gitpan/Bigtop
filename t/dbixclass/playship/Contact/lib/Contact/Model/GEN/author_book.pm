@@ -9,6 +9,8 @@ __PACKAGE__->add_columns( qw/
     id
     author
     book
+    extra_field
+    second_extra
 / );
 __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->base_model( 'Contact::Model' );

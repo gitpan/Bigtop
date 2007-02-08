@@ -16,6 +16,7 @@ BEGIN {
 }
 
 use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=TT /;
+use Bigtop::ScriptHelp::Style;
 
 use File::Spec;
 
@@ -26,6 +27,7 @@ my @correct_input;
 my $ajax;
 my $ajax_dir = File::Spec->catdir( qw( t tentmaker ajax_02 ) );
 my $expected_file;
+my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
 
 #--------------------------------------------------------------------
 # Reading sample file from TentMaker __DATA__ block.
@@ -58,7 +60,7 @@ app Sample {
 }
 EO_sample_input
 
-Bigtop::TentMaker->take_performance_hit();
+Bigtop::TentMaker->take_performance_hit( $style );
 
 $tent_maker  = Bigtop::TentMaker->new();
 

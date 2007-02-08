@@ -1,12 +1,27 @@
-When two fields from the same table are marked as dates, the javascript
-for calendar_month_js is being added twice by tentmaker support in the parser.
+tentmaker parameters should be passed via query strings to avoid early
+unescaping by HTTP::Server::Simple which leads to broken URL params when
+slashes are part of the value.
+
+Tentmaker does not update the field name in the expanded box, even though it
+changes it everywhere else.
 
 tentmaker is not showing row option locations.  On mac book see:
     ~/writing/linux-mag/gantry-one/take3/docs/billing.bigtop
 Worse, editing row options ends up loosing the location entirely.
 
-Have tentmaker trim leading and trailing whitespace from ASCII art before
-trying to use it.
+I want to add a really_refers_to keyword for tables which would generate
+a genuine foreign key in SQL in addition to making the column behave that
+way in the model.
+
+Further, -> is model only foreign key => is both model and SQL.
+But the goal is to pull this from Postgres as well.
+
+When two fields from the same table are marked as dates, the javascript
+for calendar_month_js is being added twice by tentmaker support in the parser.
+This happens even when date select text is edited, even if it was already
+marked a date.
+    We might want to address this by moving to an entirely new approach to
+    pop-up date entry.
 
 Add a file_filter_ok to Test::Files, so copyright year can be fully done.
 
@@ -30,6 +45,11 @@ data statements.
 Teach tentmaker about controller level literals.
 
 ---
+
+Pg8Live script help style does not support join tables.
+
+In ascii art, if you ask for id without giving a type, you currently get
+varchar.  You should get the default int4, primary_key, auto.
 
 Should a table name change cause a cascade of field name changes for
 all the foreign keys which point to it?
@@ -293,6 +313,9 @@ Not to be Done:
 
 Bug fixes:
 
+    Apparently join table fields are not being added to the model, they only
+    appear in the SQL.
+
     Fix site links and base controller default do main, so they get the slashes
     right.  This also requires removing app_rootp from the genwrapper footer
     nav links.
@@ -332,6 +355,48 @@ Bug fixes:
     When config values have colons in them, deparse is not quoting them.
 
 Done:
+
+    I want to expand the ASCII art to this:
+    table1(col1:type;col2:type)->table2(col1:type;col2)
+
+    I want tentmaker and bigtop to admit new replacements for ASCII art.
+    Proposed syntax:
+        tentmaker -n App --style Original 'table1->table2'
+    Original would be the default style.  Each style would be a module in the
+        Bigtop::Tentmaker::Style::...
+    namespace.  The module would have to have a sub called get_db_layout,
+    which would receive all remaining command line arguments in one array ref
+    and the right to consume standard in.  It would return a structure or
+    structures yet to be designed.  For a start that structure could just be
+    what the current parse_ascii_art script from Bigtop::ScriptHelp returns.
+        Step 1.  migrate the existing code to depend on B::T::Style::Original
+        Step 2.  expand the returned structure to include optional column names
+        Step 3.  ... and types
+        Step 4.  add support for genuine foreign keys
+        Step 5.  make a Postgres parser
+
+    The new --style scheme should support specifying column names, types,
+    genuine foreign keys, and other valid SQL column declartion clauses.  The
+    thought is to bridge from existing databases to bigtop.  Doing this would
+    provide both controllers and models for the database tables.
+        Foreign keys are still never put into the generated schema files.
+
+    Current ascii art allows types, but they must not contain spaces, since
+    those are used earlier to split the relationships.  The bigger problem
+    is internal parens as in varchar(15).  If you need spaces, just use extra
+    colons.  It'll look funny but come out in the wash.
+        I should switch to Text::Balanced for extraction of column name/type
+        info.  This was of course in the back of my mind, but once again I
+        naively thought, "I'll never need to nest the parens."
+            I did switch to Text::Balanced.  There are still problems, but
+            it works more than 90% of the time include for varchar(12).
+
+    Have tentmaker trim leading and trailing whitespace from ASCII art before
+    trying to use it.
+
+    tentmaker should die if -a is used with no file instead of just warning
+    about it.
+        all errors during tentmaker startup are now fatal.
 
     Something is wrong with literal insertions in tentmaker.  This got cut
     off after the first paren:

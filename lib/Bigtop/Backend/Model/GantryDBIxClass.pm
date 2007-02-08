@@ -335,6 +335,9 @@ __PACKAGE__->add_columns( qw/
 [% FOREACH other_table IN joined_tables %]
     [% other_table +%]
 [% END %]
+[% FOREACH extra IN extra_fields %]
+    [% extra +%]
+[% END %]
 / );
 __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->base_model( '[% app_name %]::Model' );
@@ -726,8 +729,6 @@ sub output_dbix_model {
     return [ $table ];
 }
 
-# table_element_block
-
 package # table_element_block
     table_element_block;
 use strict; use warnings;
@@ -786,7 +787,14 @@ sub output_foreign_tables_dbix {
     return;
 }
 
-# join_table
+sub output_join_modules_dbix {
+    my $self         = shift;
+    my $child_output = shift;
+
+    push @{ $child_output }, { plain_field => $self->get_name };
+
+    return $child_output;
+}
 
 package # join_table
     join_table;
@@ -811,6 +819,7 @@ sub output_join_modules_dbix {
 
     my @foreign_keys;
     my @option_fields;
+    my @extra_fields;
 
     foreach my $tidbit ( @{ $child_output } ) {
         if ( ref $tidbit eq 'ARRAY' ) {
@@ -823,6 +832,10 @@ sub output_join_modules_dbix {
                     options => $options,
                 };
             }
+        }
+        elsif ( ref $tidbit eq 'HASH' ) {
+            my ( undef, $plain_field ) = %{ $tidbit };
+            push @extra_fields, $plain_field;
         }
         else {
             push @foreign_keys, $tidbit;
@@ -866,6 +879,7 @@ sub output_join_modules_dbix {
                 package_alias    => uc $table,
                 joined_tables    => \@foreign_keys,
                 option_fields    => \@option_fields,
+                extra_fields     => \@extra_fields,
             }
         );
 

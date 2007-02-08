@@ -6,6 +6,7 @@ use Test::Files;
 use File::Spec;
 
 use Bigtop::ScriptHelp;
+use Bigtop::ScriptHelp::Style;
 use Bigtop::Parser;
 use Bigtop::Deparser;
 
@@ -54,8 +55,13 @@ file_ok( $expected_file, $mini, 'minimal default (minimal)' );
 # Big default
 #-----------------------------------------------------------------
 
+my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
+
 my $max   = Bigtop::ScriptHelp->get_big_default(
-        'Address', 'family_address<-birth_date a<->b'
+        $style,
+        'Address',
+        'family_address(id:int4:primary_key,identifier:varchar(13),'
+        . 'full_description,created:date)<-birth_date a<->b'
 );
 
 $expected_file = File::Spec->catfile( $expected_dir, 'big_default' );
@@ -68,7 +74,11 @@ file_ok( $expected_file, $max, 'bigger default (big_default)' );
 
 my $ast = Bigtop::Parser->parse_string( $max );
 Bigtop::ScriptHelp->augment_tree(
-    $ast, 'anniversary_date->family_address a->family_address a->birth_date'
+    $style,
+    $ast,
+    'anniversary_date(id:int4:primary_key:auto,'
+    .   'anniversary_date:date)->family_address '
+    .   'a->family_address a->birth_date'
 );
 
 my $augmented = Bigtop::Deparser->deparse( $ast );
@@ -82,7 +92,7 @@ file_ok( $expected_file, $augmented, '(augmented)' );
 #-----------------------------------------------------------------
 
 my $schemer   = Bigtop::ScriptHelp->get_big_default(
-        'Address', 'fam.family_address<-fam.birth_date'
+        $style, 'Address', 'fam.family_address<-fam.birth_date'
 );
 
 $expected_file = File::Spec->catfile( $expected_dir, 'schema_default' );
@@ -96,7 +106,7 @@ file_ok(
 #-----------------------------------------------------------------
 
 $ast = Bigtop::Parser->parse_string( $mini );
-Bigtop::ScriptHelp->augment_tree( $ast, 'fam.address<-fam.bday' );
+Bigtop::ScriptHelp->augment_tree( $style, $ast, 'fam.address<-fam.bday' );
 
 $augmented = Bigtop::Deparser->deparse( $ast );
 

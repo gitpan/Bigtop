@@ -17,8 +17,11 @@ BEGIN {
 }
 
 use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=Default /;
+use Bigtop::ScriptHelp::Style;
 
-Bigtop::TentMaker->take_performance_hit( undef, 'family', 'Address' );
+my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
+
+Bigtop::TentMaker->take_performance_hit( $style, undef, 'family', 'Address' );
 
 my $tent_maker = Bigtop::TentMaker->new();
 

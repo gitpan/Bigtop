@@ -1811,19 +1811,45 @@ use strict; use warnings;
 
 use base 'application_ancestor';
 
+use Bigtop::ScriptHelp;
+
 sub new_block {
     my $class  = shift;
     my $parent = shift;
     my $data   = shift;
 
-    my $self;
-
-    $self = {
+    my $self = {
         __IDENT__ => Bigtop::Parser->get_ident(),
         __NAME__  => $data->{name},
         __TYPE__  => 'tables',
         __BODY__  => [],
     };
+
+    bless $self, $class;
+
+    if ( defined $data->{ columns } ) {
+        $self->_create_these_fields( $data->{ columns } );
+    }
+    else {
+        $self->_create_default_fields();
+    }
+
+    if ( defined $data->{sequence} ) {
+        my $seq_stmnt = table_element_block->new_statement(
+            $self,
+            'sequence',
+            $data->{sequence},
+        );
+        push @{ $self->{__BODY__} }, $seq_stmnt;
+    }
+
+    $self->{__PARENT__} = $parent;
+
+    return $self;
+}
+
+sub _create_default_fields {
+    my $self = shift;
 
     my $id_field = table_element_block->new_field(
         $self, 'id'
@@ -1846,7 +1872,7 @@ sub new_block {
 
     foreach my $field_name qw( ident description ) {
 
-        $values{ label } = ucfirst $field_name;
+        $values{ label } = Bigtop::ScriptHelp->default_label( $field_name );
 
         my $field = table_element_block->new_field(
             $self, $field_name
@@ -1877,19 +1903,58 @@ sub new_block {
         );
         push @{ $self->{__BODY__} }, $field;
     }
+}
 
-    if ( defined $data->{sequence} ) {
-        my $seq_stmnt = table_element_block->new_statement(
-            $self,
-            'sequence',
-            $data->{sequence},
+sub _create_these_fields {
+    my $self   = shift;
+    my $fields = shift;
+
+    my %non_entry = (
+        id       => 1,
+        created  => 1,
+        modified => 1,
+    );
+
+    foreach my $init_field ( @{ $fields } ) {
+        my $type_string = join '][', @{ $init_field->{ types } };
+
+        my $field = table_element_block->new_field(
+            $self, $init_field->{ name }
         );
-        push @{ $self->{__BODY__} }, $seq_stmnt;
+
+        $field->add_field_statement(
+            {
+                ident     => $field->get_ident,
+                keyword   => 'is',
+                new_value => $type_string,
+            },
+        );
+
+        unless ( $non_entry{ $init_field->{ name } } ) {
+
+            my $label = Bigtop::ScriptHelp->default_label(
+                    $init_field->{ name }
+            );
+
+            $field->add_field_statement(
+                {
+                    ident     => $field->get_ident,
+                    keyword   => 'label',
+                    new_value => $label,
+                },
+            );
+
+            $field->add_field_statement(
+                {
+                    ident     => $field->get_ident,
+                    keyword   => 'html_form_type',
+                    new_value => 'text',
+                },
+            );
+        }
+
+        push @{ $self->{__BODY__} }, $field;
     }
-
-    $self->{__PARENT__} = $parent;
-
-    return bless $self, $class;
 }
 
 sub add_subblock {
@@ -3522,6 +3587,9 @@ sub new_block {
         my $table_name = $data->{ table } || lc $data->{name};
 
         # make the do_main method
+        my $cols     = $data->{ on_main_listing } || 'ident, description';
+        $cols        =~ s/, /][/g;
+
         my $main_arr = $self->add_subblock(
             undef,
             {
@@ -3538,7 +3606,7 @@ sub new_block {
         );
         my $do_main = $main_arr->[0];
         my %values  = (
-            cols           => 'ident][description',
+            cols           => $cols,
             header_options => 'Add',
             row_options    => 'Edit][Delete',
             title          => $data->{ page_link_label } || $self->{__NAME__},
@@ -3575,9 +3643,13 @@ sub new_block {
         );
         my $form_method = $form_arr->[0];
 
+        my $all_fields_but = $data->{ all_fields_but }
+                          || 'id, created, modified';
+        $all_fields_but    =~ s/, /][/g;
+
         $form_method->add_method_statement( {
             keyword   => 'all_fields_but',
-            new_value => 'id][created][modified',
+            new_value => $all_fields_but,
         } );
 
         $form_method->add_method_statement( {

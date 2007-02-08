@@ -23,25 +23,22 @@ app Address {
     }
     table family_address {
         field id {
-            is int4, primary_key, auto;
+            is int4, primary_key;
         }
-        field ident {
-            is varchar;
-            label Ident;
+        field identifier {
+            is `varchar(13)`;
+            label Identifier;
             html_form_type text;
         }
-        field description {
+        field full_description {
             is varchar;
-            label Description;
+            label `Full Description`;
             html_form_type text;
         }
         field created {
-            is datetime;
+            is date;
         }
-        field modified {
-            is datetime;
-        }
-        foreign_display `%ident`;
+        foreign_display `%identifier`;
     }
     controller FamilyAddress is AutoCRUD {
         controls_table family_address;
@@ -49,13 +46,13 @@ app Address {
         text_description `family address`;
         page_link_label `Family Address`;
         method do_main is main_listing {
-            cols ident, description;
+            cols identifier, full_description;
             header_options Add;
             row_options Edit, Delete;
             title `Family Address`;
         }
         method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
+            all_fields_but id, created;
             extra_keys
                 legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
@@ -202,23 +199,12 @@ app Address {
         field id {
             is int4, primary_key, auto;
         }
-        field ident {
-            is varchar;
-            label Ident;
+        field anniversary_date {
+            is date;
+            label `Anniversary Date`;
             html_form_type text;
         }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        foreign_display `%ident`;
+        foreign_display `%anniversary_date`;
         field family_address {
             is int4;
             label `Family Address`;
@@ -232,13 +218,13 @@ app Address {
         text_description `anniversary date`;
         page_link_label `Anniversary Date`;
         method do_main is main_listing {
-            cols ident, description;
+            cols anniversary_date;
             header_options Add;
             row_options Edit, Delete;
             title `Anniversary Date`;
         }
         method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
+            all_fields_but id;
             extra_keys
                 legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }

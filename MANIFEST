@@ -4,6 +4,7 @@ docs/keywords.summary
 docs/quicktable.html
 docs/README
 examples/address.bigtop
+examples/address-new.bigtop
 examples/address2.bigtop
 examples/billing.bigtop
 examples/billing_model.png
@@ -87,6 +88,9 @@ lib/Bigtop/Grammar.pm
 lib/Bigtop/Keywords.pm
 lib/Bigtop/Parser.pm
 lib/Bigtop/ScriptHelp.pm
+lib/Bigtop/ScriptHelp/Style.pm
+lib/Bigtop/ScriptHelp/Style/Original.pm
+lib/Bigtop/ScriptHelp/Style/Pg8Live.pm
 lib/Bigtop/TentMaker.pm
 lib/Bigtop/TentMakerPath.pm
 MANIFEST			This list of files
@@ -109,7 +113,6 @@ t/04_parse_errors.t
 t/05_lookuphash.t
 t/06_create_die.t
 t/07_deparse.t
-t/08_script.t
 t/expected/augmented
 t/expected/big_default
 t/expected/minimal
@@ -265,6 +268,9 @@ t/mysql/ext.tt
 t/Purge.pm
 t/sitelook/01_tiny.t
 t/sitelook/sample_wrapper.tt
+t/scripthelp/01_shmodule.t
+t/scripthelp/02_originalstyle.t
+t/scripthelp/03_pglive.t
 t/tentmaker/01_use.t
 t/tentmaker/02_top_levels.t
 t/tentmaker/03_app_config.t

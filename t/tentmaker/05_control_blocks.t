@@ -17,8 +17,11 @@ BEGIN {
 }
 
 use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=TT /;
+use Bigtop::ScriptHelp::Style;
 
-Bigtop::TentMaker->take_performance_hit();
+my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
+
+Bigtop::TentMaker->take_performance_hit( $style );
 
 my $ajax_dir = File::Spec->catdir( qw( t tentmaker ajax_05 ) );
 my $expected_file;
