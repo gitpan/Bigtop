@@ -196,11 +196,11 @@
                     )'
                 />
             </td>
-            <td>
+            <td>[% quote_type = ( choice_parts.1.match( '"' ) ) ? "'" : '"' %]
                 <input
                     type='text'
                     name='[% full_name %]_value'
-                    value="[% choice_parts.1 %]"
+                    value=[% quote_type %][% choice_parts.1 %][% quote_type %]
                     class='urgency_[% pair_urgency %]'
                     onblur='javascript:update_pairs(
                         "[% method_group %]_pair",

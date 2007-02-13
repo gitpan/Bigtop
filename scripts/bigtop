@@ -165,7 +165,7 @@ sub make_addition {
     my @models      = @_;
 
     unless ( @models ) {
-        die "--add option requires a list of ASCII art table relations\n"
+        die "--add option requires additional data for the style backend\n";
     }
 
     my $ast   = Bigtop::Parser->parse_file( $source_file );
@@ -332,7 +332,12 @@ Or, to augment an existing app:
 
     bigtop --add app.bigtop 'ascii_art'
 
-See L<ASCII Art> below for what ascii_art can be.
+Or, to bring a postgres 8 databases into bigtop:
+
+    bigtop -n AppName -s Pg8Live 'dbi:Pg:dbname=yourdb' user pass [schema]
+
+See L<STYLES> below for how this script handles ASCII art or other
+extra command line args (and possibly standard in).
 
 =head1 DESCRIPTION
 
@@ -354,7 +359,7 @@ If you already have a bigtop file, you can add to it with the --add (or
 
     bigtop --add file.bigtop table3 table4
 
-But, see L<ASCII Art> below for more interesting options than a list of
+But, see L<STYLES> below for more interesting options than a list of
 table names.
 
 Both new and add options do an all build when they finish making/updating
@@ -362,7 +367,7 @@ the bigtop file.  If you don't want an immediate all build, try tentmaker
 with the same flags.
 
 The new option will also try to build a database for the app to use
-immediately using sqlite (if it can find it in your path).
+immediately, by invoking sqlite (if it can find it in your path).
 
 =head1 NON-HELP OPTIONS
 
@@ -416,9 +421,10 @@ then the default app_dir is:
 When create is not in effect, these config parameters are ignored WITH a
 warning.
 
-=item --new (or -n) App::Name [table_1...|ascii_art]
+=item --new (or -n) App::Name style_info...
 
-See L<ASCII Art> below for how to specify table relationships.
+See L<STYLES> below for what C<style_info> can be.  (Hint: it depends on
+which style you are using.)
 
 Use this option to create a working application from scratch.  If you only
 provide an app name, it will use a minimal bigtop specification.  The
@@ -426,17 +432,17 @@ resulting app will not run (or have any code in it).  You must then
 augment the bigtop file with tentmaker or a text editor and regenerate
 to get a running app.
 
-If you supply optional table names or ASCII art, enough additional items will
-be added to the bigtop file to make a running app (except that you might
-need to build the database).  Some of the extra items will be repeated for
-each model you request.
+If you supply optional table names or provide data for a style, enough
+additional items will be added to the bigtop file to make a running app
+(except that you might need to build the database).  Some of the extra
+items will be repeated for each model you request.
 
 In either case, when bigtop finishes, there will be an App-Name subdirectory
 of the current directory.  In it will be all the usual pieces describing an
 app.  The bigtop file will be in the docs directory.
 
 If you have a working sqlite in your path -- and you specified tables
-or ASCII art -- -n will also make an sqlite database called app.db in
+or used a style -- -n will also make an sqlite database called app.db in
 the build directory.  As it will tell you, you can change to that directory
 and start the app immediately.
 
@@ -450,16 +456,16 @@ flags for your database engine.
 If you have an existing bigtop file and want to add tables and their
 controllers to it, use this option like this:
 
-    bigtop --add file.bigtop table...|ascii_art
+    bigtop --add file.bigtop style_info...
 
-See L<ASCII Art> below for how to specify table relationships.
+See L<STYLES> below for how to specify table relationships.
 
 This option reads an existing file.bigtop and adds tables and controllers
 to it, before doing an all build.  (If you don't want an all build,
 use the same options with tentmaker.)
 
-Any new tables will be created.  All relationships in the ASCII art
-will be applied, even if they affect existing tables.
+Any new tables will be created.  Whether existing tables are updated
+depends on you style.
 
 Note that this option may disturb comments and whitespace in your original.
 It uses Bigtop::Deparser, which cannonicalizes the whitespace.  Basically
@@ -483,12 +489,10 @@ home directory etc., the script will not affect it.
 
 =item --style (or -s)
 
-Defaults to Original.  This can be the name of any Bigtop::ScriptHelp::Style
+Defaults to Original.  This can be the name of any Bigtop::ScriptHelp::Style::
 module.  These styles control how your command line args, and
 standard input, turn into bigtop descriptions.  See the docs for you
 style to see what input is legal and how it is treated.
-
-For historical reasons, there is POD below describing the Original style.
 
 =back
 
@@ -511,76 +515,26 @@ reach that database.
 
 =back
 
-=head1 ASCII Art
+=head1 STYLES
 
-This section applies only to --style Original (which is the default).
-If you use some other style, see the docs in
-Bigtop::ScriptHelp::Style::ItsName.
+This section used to explain ASCII art, which was the original style of
+command line input.  Since then, that code has been factored out.
+The original style, or more precisely
+C<Bigtop::ScriptHelp::Style::Orginal> is still the default.  See
+its docs for a description of ASCII art.
 
-Both --new and --add allow you to specify a list of tables or ASCII
-art.  The ASCII art option allows you to quickly note relationships between
-tables with simple operators.
+You may explicitly choose the original style:
 
-Note well: Since the relationship operators use punctuation that your
-shell probably loves, you must surround the art with single quotes.
+    bigtop -n|-a -s Original 'ascii_art'
 
-It is easiest to understand the options by seeing an example.  So, suppose
-we have a four table data model describing a bit of our personnel process:
+But, you may omit -s to get Original by default.  Further, you can
+replace Original with any module in the Bigtop::ScriptHelp::Style::
+namespace.  For example:
 
-    +-----------+       +----------+
-    |    job    |<------| position |
-    +-----------+       +----------+
-          ^
-          |
-    +-----------+       +----------+
-    | job_skill |------>|  skill   |
-    +-----------+       +----------+
+    bigtop -n|-a -s Pg8Live 'dbi:Pg:dbname=yourdb' user pass [schema]
 
-First, you'll be happy to know that bigtop's ASCII art is simpler to draw
-than the above.
-
-What our data model shows is that each position refers to a job (description),
-each job could require many skills, and each skill could be associated with
-many jobs.  The last two mean that job and skill share a many-to-many
-relationship.
-
-Here's how to specify this data model in bigtop ASCII art:
-
-    bigtop --new HR 'job<-position job<->skill'
-
-This indicates a foreign key from position to job and an implied
-table, called job_skill, to hold the many-to-many relationship between
-job and skill.
-
-There are four art operators:
-
-=over 4
-
-=item <->
-
-Many-to-many.  A new table will be made with foreign keys to each operand
-table.  Each operand table will have a has_many relationship.  Note
-that your Model backend may not understand these relationships.  At the
-time of this writing only Model GantryDBIxClass did, by luck it happens
-to be the default.
-
-=item ->
-
-The first table has a foreign key pointing to the second.
-
-=item <-
-
-The second table has a foreign key pointing to the first.  This is really
-a convenience synonymn for ->, but the tables are put into generated SQL
-in their overall order of appearance.  So, there is a slight differnce
-between them.
-
-=item -
-
-The two tables have a one-to-one relationship.  Each of them will have
-a foreign key pointing to the other.
-
-=back
+Again, see the docs for your style to see what command line parameters
+to use.
 
 =head1 AUTHOR
 
@@ -588,7 +542,7 @@ Phil Crow E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT and LICENSE
 
-Copyright (C) 2005-6 by Phil Crow
+Copyright (C) 2005-7 by Phil Crow
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.6 or,

@@ -1,5 +1,3 @@
-package Bigtop::Docs::Syntax;
-
 =head1 NAME
 
 Bigtop::Docs::Syntax - A (mostly) complete Bigtop syntax description
@@ -1425,6 +1423,6 @@ this statement.
 
 =head1 AUTHOR
 
-Phil Crow <crow.phil@gmail.com>
+Phil Crow E<lt>crow.phil@gmail.comE<gt>
 
 =cut

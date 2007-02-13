@@ -19,6 +19,7 @@
     ]
   },
   { "keyword" : "field_edit_option::ident_24", "text" : "street_address" },
+  { "keyword" : "field_name::ident_24", "value" : "street_address" },
   { "keyword" : "quick_label_ident_24", "value" : "Street Address" }
 ]
 config {

@@ -87,7 +87,7 @@ app Address {
         field fam_family_address {
             is             int4;
             label          `Family Address`;
-            refers_to      `fam.family_address`;
+            refers_to      `fam.family_address` => id;
             html_form_type select;
         }
     }

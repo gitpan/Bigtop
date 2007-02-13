@@ -1,20 +1,7 @@
-tentmaker parameters should be passed via query strings to avoid early
-unescaping by HTTP::Server::Simple which leads to broken URL params when
-slashes are part of the value.
-
-Tentmaker does not update the field name in the expanded box, even though it
-changes it everywhere else.
-
-tentmaker is not showing row option locations.  On mac book see:
-    ~/writing/linux-mag/gantry-one/take3/docs/billing.bigtop
-Worse, editing row options ends up loosing the location entirely.
-
-I want to add a really_refers_to keyword for tables which would generate
-a genuine foreign key in SQL in addition to making the column behave that
-way in the model.
-
-Further, -> is model only foreign key => is both model and SQL.
-But the goal is to pull this from Postgres as well.
+I don't think database defaults are working from forms.  The problem
+is probably that the autocrud form handler is setting empty fields to '',
+so the default is not taking.  Perhaps there should be special cleanup
+for add only which would remove blank fields?
 
 When two fields from the same table are marked as dates, the javascript
 for calendar_month_js is being added twice by tentmaker support in the parser.
@@ -24,6 +11,8 @@ marked a date.
     pop-up date entry.
 
 Add a file_filter_ok to Test::Files, so copyright year can be fully done.
+
+---
 
 Do something for generation of AjaxCRUD users.
 
@@ -43,8 +32,6 @@ data statements.
     or at very least when a statement is added.
 
 Teach tentmaker about controller level literals.
-
----
 
 Pg8Live script help style does not support join tables.
 
@@ -202,6 +189,12 @@ controls_table statement?
 
 Not to be Done:
 
+    Further, -> is model only foreign key => is both model and SQL.
+    But the goal is to pull this from Postgres as well.
+        I decided that -> will just give you a genuine foreign key.  If you
+        don't want that, edit the result.  Same goes for Postgres.  If the
+        database you are loading has foreign keys, so will the generated SQL.
+
     bigtop -n AppName
     without a table list is generating, but not generating everything.
     In particular, it does not make app.cgi, app.server, or anything in
@@ -313,6 +306,20 @@ Not to be Done:
 
 Bug fixes:
 
+    tentmaker is not showing row option locations.  On mac book see:
+        ~/writing/linux-mag/gantry-one/take3/docs/billing.bigtop
+    Worse, editing row options ends up loosing the location entirely.
+        This was caused by HTML quote confusion.
+
+    tentmaker parameters should be passed via query strings to avoid early
+    unescaping by HTTP::Server::Simple which leads to broken URL params when
+    slashes are part of the value.
+        May not be a problem in the current H::S::S version.
+        This is not a problem with 0.27, so I made that the minimum req.
+
+    Tentmaker does not update the field name in the expanded box, even though
+    it changes it everywhere else.
+
     Apparently join table fields are not being added to the model, they only
     appear in the SQL.
 
@@ -355,6 +362,37 @@ Bug fixes:
     When config values have colons in them, deparse is not quoting them.
 
 Done:
+
+    Perhaps we should add on_delete and on_update which would be
+    honored when using refers_to's pair form.
+
+    I want to add a really_refers_to keyword for tables which would generate
+    a genuine foreign key in SQL in addition to making the column behave that
+    way in the model.
+        I opted for making refers_to take an optional pair:
+            refers_to table_name;
+        gives old behavior, while:
+            refers_to table_name => col_name;
+        adds REFERENCES table_name(col_name) to SQL column definition.
+        The pair form is the form used for all command line table creation.
+
+    When bigtop is invoked with a backend type name which is mispelled,
+    it quietly does nothing.  If it doesn't find anything to do, it should
+    tell you with a warning and offer a list of choices.
+
+    Make sure new ascii art is documented.  Do it in only one place (the
+    Original script help style).  Replace other sections with references
+    to the one true place.
+
+    More ascii art:
+        'table1(req_field,+optional_field,field_with_default=value)
+    so leading + makes a field optional.  Independently = gives a default.
+    get_db_layout should report default and optional as new keys in the
+    columns subhash (along with the existing keys name and types).  This
+    also affects Pg8Live.  It should clean the default so it can become
+    an HTML form default in addition to a database default.
+
+    Move all modules in docs from .pm to .pod.
 
     I want to expand the ASCII art to this:
     table1(col1:type;col2:type)->table2(col1:type;col2)

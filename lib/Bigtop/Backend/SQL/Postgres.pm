@@ -209,7 +209,32 @@ sub output_sql {
 
     if ( defined $child_output) {
 
-        my $child_out_str = join "\n", @{ $child_output };
+        my %output_pieces;
+        foreach my $child_item ( @{ $child_output } ) {
+            my ( $type, $output )   = %{ $child_item };
+            $output_pieces{ $type } = $output;
+        }
+
+        my $child_out_str = $output_pieces{ base_col_def };
+        if ( $output_pieces{ foreign_key_col } ) {
+            unless ( $output_pieces{ foreign_table } ) {
+                die "field '" . $self->get_name . "' in table '"
+                    .   $self->get_table_name
+                    .   "' has a foreign_key_col, but no refers_to\n"
+            }
+            $child_out_str  .= ' REFERENCES '
+                            .   $output_pieces{ foreign_table }
+                            . "($output_pieces{ foreign_key_col })";
+
+            if ( $output_pieces{ on_delete } ) {
+                $child_out_str .=
+                    "\n        ON DELETE $output_pieces{ on_delete }";
+            }
+            if ( $output_pieces{ on_update } ) {
+                $child_out_str .=
+                    "\n        ON UPDATE $output_pieces{ on_update }";
+            }
+        }
 
         my $output = Bigtop::Backend::SQL::Postgres::table_element_block(
             { name => $self->get_name(), child_output => $child_out_str }
@@ -292,33 +317,52 @@ sub output_sql {
     shift;  # there is no child output
     my $lookup = shift;
 
-    return unless $self->get_name() eq 'is';
+    my $keyword = $self->get_name();
 
-    my @keywords;
-    foreach my $arg ( @{ $self->{__DEF__}{__ARGS__} } ) {
-        my $code = $code_for{$arg};
+    if ( $keyword eq 'is' ) {
+        my @keywords;
+        foreach my $arg ( @{ $self->{__DEF__}{__ARGS__} } ) {
+            my $code = $code_for{$arg};
 
-        if ( defined $code ) {
-            my $new_keyword = $code->( $self, $lookup );
-            if ( $new_keyword eq 'SERIAL' ) {
-                shift @keywords if ( $keywords[0] =~ /int4/ );
-                unshift @keywords, $new_keyword;
+            if ( defined $code ) {
+                my $new_keyword = $code->( $self, $lookup );
+                if ( $new_keyword eq 'SERIAL' ) {
+                    shift @keywords if ( $keywords[0] =~ /int4/ );
+                    unshift @keywords, $new_keyword;
+                }
+                else {
+                    push @keywords, $new_keyword if ( $new_keyword );
+                }
             }
             else {
-                push @keywords, $new_keyword if ( $new_keyword );
+                push @keywords, $arg;
             }
         }
-        else {
-            push @keywords, $arg;
-        }
+        my $output = Bigtop::Backend::SQL::Postgres::field_statement(
+            { keywords => \@keywords }
+        );
+
+        return [ { base_col_def => $output } ];
     }
-    my $output = Bigtop::Backend::SQL::Postgres::field_statement(
-        { keywords => \@keywords }
-    );
+    elsif ( $keyword eq 'refers_to' ) {
+        my $foreign_info = $self->{__DEF__}{__ARGS__}[0];
 
-    return [ $output ];
+        return unless ( ref( $foreign_info ) eq 'HASH' );
+
+        my ( $table, $col ) = %{ $foreign_info };
+
+        return [
+            { foreign_table   => $table },
+            { foreign_key_col => $col   },
+        ];
+    }
+    elsif ( $keyword eq 'on_delete' ) {
+        return [ { on_delete => $self->{__DEF__}{__ARGS__}[0] } ];
+    }
+    elsif ( $keyword eq 'on_update' ) {
+        return [ { on_update => $self->{__DEF__}{__ARGS__}[0] } ];
+    }
 }
-
 
 package # literal_block
     literal_block;

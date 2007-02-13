@@ -1,6 +1,6 @@
 ---
 name: Bigtop
-version: 0.22
+version: 0.23
 author:
   - 'Phil Crow, E<lt>crow.phil@gmail.comE<gt>'
 abstract: A web application data language processor
@@ -8,6 +8,7 @@ license: perl
 requires:
   Config::General: 0
   Gantry: 3.46
+  HTTP::Server::Simple: 0.27
   IO::Prompt: 0
   Inline: 0.4
   Inline::TT: 0.06
@@ -25,7 +26,7 @@ meta-spec:
 provides:
   Bigtop:
     file: lib/Bigtop.pm
-    version: 0.22
+    version: 0.23
   Bigtop::Backend::CGI:
     file: lib/Bigtop/Backend/CGI.pm
   Bigtop::Backend::CGI::Gantry:
@@ -65,28 +66,6 @@ provides:
     file: lib/Bigtop/Backend/SiteLook/GantryDefault.pm
   Bigtop::Deparser:
     file: lib/Bigtop/Deparser.pm
-  Bigtop::Docs::About:
-    file: lib/Bigtop/Docs/About.pm
-  Bigtop::Docs::Cookbook:
-    file: lib/Bigtop/Docs/Cookbook.pm
-  Bigtop::Docs::Keywords:
-    file: lib/Bigtop/Docs/Keywords.pm
-  Bigtop::Docs::Modules:
-    file: lib/Bigtop/Docs/Modules.pm
-  Bigtop::Docs::QuickRef:
-    file: lib/Bigtop/Docs/QuickRef.pm
-  Bigtop::Docs::Syntax:
-    file: lib/Bigtop/Docs/Syntax.pm
-  Bigtop::Docs::TOC:
-    file: lib/Bigtop/Docs/TOC.pm
-  Bigtop::Docs::TentRef:
-    file: lib/Bigtop/Docs/TentRef.pm
-  Bigtop::Docs::TentTut:
-    file: lib/Bigtop/Docs/TentTut.pm
-  Bigtop::Docs::Tutorial:
-    file: lib/Bigtop/Docs/Tutorial.pm
-  Bigtop::Docs::Vim:
-    file: lib/Bigtop/Docs/Vim.pm
   Bigtop::Grammar:
     file: lib/Bigtop/Grammar.pm
   Bigtop::Keywords:

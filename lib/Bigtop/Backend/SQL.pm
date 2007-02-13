@@ -3,7 +3,9 @@ use strict; use warnings;
 
 BEGIN {
     Bigtop::Parser->add_valid_keywords(
-        Bigtop::Keywords->get_docs_for( 'field', 'is', 'refers_to' )
+        Bigtop::Keywords->get_docs_for(
+                'field', 'is', 'refers_to', 'on_delete', 'on_update'
+        )
     );
 
     Bigtop::Parser->add_valid_keywords(

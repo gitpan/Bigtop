@@ -1,5 +1,26 @@
 Revision history for Perl extension Bigtop.
 
+0.23 Tue Feb 13 16:10:32 CST 2007
+    - Finally moved all Docs modules from .pm to .pod so the PAUSE indexer
+      will know they are docs and not code files.
+    - tentmaker now updates field names in the expanded edit box when they
+      are changed in the quick edit table.
+    - ASCII art now supports declaring a column optional in HTML forms and/or
+      giving it a default value:  tbl(+optional_col,col_with_default=12).
+      These may be combined: tbl(+opt_w_def=value).  Note: All defaults must
+      be strings or numbers and cannot contain spaces, colons, commas, equals,
+      etc.
+    - SQL backends now make genuine foreign keys from the new pair form of
+      refers_to: refers_to table_name => col_name.
+    - There are two new keywords for REFERENCES clauses: on_delete and
+      on_update.  Using them will add ON DELETE and or ON UPDATE clause(s)
+      to the end of generated REFERENCES statements.  These do not apply
+      to SQLite, since it doesn't honor them.
+    - Both bigtop and tentmaker now use SQL foreign keys for all script help
+      styles.
+    - Fixed bug which prevented tentmaker from displaying paired values
+      containing double quotes.  Tried not to make things worse in the process.
+
 0.22 Thu Feb  8 14:25:30 CST 2007
     - Calling tentmaker with -a and a missing or unreadable file is now fatal.
     - tentmaker now trims leading and trailing space from ASCII art before

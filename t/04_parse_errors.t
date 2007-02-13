@@ -84,7 +84,7 @@ EO_Bigtop_label_error
 @correct_error_output = split /\n/, <<'EO_keyword_error';
 Error: invalid keyword 'lable' (line 11) near:
  `Payee or Payor`;
-I was expecting one of these: is, label, not_for, refers_to, update_with.
+I was expecting one of these: is, label, not_for, on_delete, on_update, refers_to, update_with.
 EO_keyword_error
 
 Bigtop::Parser->add_valid_keywords(

@@ -350,6 +350,9 @@ sub gen_from_string {
     }
 
     # generate the files
+    my @available_backends = sort keys %{ $config->{ __BACKENDS__ } };
+    unshift @available_backends, 'all';
+    my $backends_called    = 0;
     foreach my $gen_type ( @gen_list ) {
 
         BACKEND:
@@ -363,7 +366,15 @@ sub gen_from_string {
             );
             my $method = "gen_$gen_type";
             $module->$method( $build_dir, $bigtop_tree, $bigtop_file, $flags );
+
+            $backends_called++;
         }
+    }
+
+    if ( $backends_called == 0 ) {
+        warn "I didn't build anything, please check for no_gen in\n"
+            .   "$bigtop_file and choose from:\n"
+            .   "   @available_backends\n";
     }
 
     return ( $bigtop_tree->get_appname, $build_dir );
@@ -631,6 +642,12 @@ sub set_comments {
     my $comments = shift;
 
     $self->{comments} = $comments;
+}
+
+sub get_lookup {
+    my $self = shift;
+
+    return $self->{application}{lookup};
 }
 
 sub get_authors {
@@ -1916,6 +1933,12 @@ sub _create_these_fields {
     );
 
     foreach my $init_field ( @{ $fields } ) {
+
+        if ( $init_field->{ default } ) {
+            push @{ $init_field->{ types } },
+                 "DEFAULT '$init_field->{ default }'";
+        }
+
         my $type_string = join '][', @{ $init_field->{ types } };
 
         my $field = table_element_block->new_field(
@@ -1951,6 +1974,25 @@ sub _create_these_fields {
                     new_value => 'text',
                 },
             );
+
+            if ( defined $init_field->{ optional } ) {
+                $field->add_field_statement(
+                    {
+                        ident     => $field->get_ident,
+                        keyword   => 'html_form_optional',
+                        new_value => $init_field->{ optional },
+                    },
+                );
+            }
+            if ( $init_field->{ default } ) {
+                $field->add_field_statement(
+                    {
+                        ident     => $field->get_ident,
+                        keyword   => 'html_form_default_value',
+                        new_value => $init_field->{ default },
+                    },
+                );
+            }
         }
 
         push @{ $self->{__BODY__} }, $field;
@@ -2097,6 +2139,12 @@ sub get_name {
     my $self = shift;
 
     return $self->{__NAME__};
+}
+
+sub all_table_names {
+    my $self = shift;
+
+    return [ $self->{__NAME__} ];
 }
 
 sub set_name {
@@ -2674,6 +2722,16 @@ sub get_name {
     my $self = shift;
 
     return $self->{__NAME__};
+}
+
+sub all_field_names {
+    my $self          = shift;
+    shift;
+    my $desired_table = shift;
+
+    return unless ( $self->get_table_name eq $desired_table );
+
+    return [ $self->get_name ];
 }
 
 sub set_name {

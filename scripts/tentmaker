@@ -154,13 +154,13 @@ tentmaker - browser based bigtop file editor
 
 Or, to name a new app with optional table layout:
 
-    tentmaker --new AppName [table...|ascii_art]
+    tentmaker --new AppName style_info
 
 Or, to augment an existing bigtop file:
 
-    tentmaker --add file.bigtop table...|ascii_art
+    tentmaker --add file.bigtop style_info
 
-See L<ASCII ART> below for what ascii art can be.
+See L<SYTLES> below for what style_info can be.
 
 =head1 DESCRIPTION
 
@@ -179,91 +179,35 @@ Specifies a port for the server.  Defaults to 8080.
 =item --new (or -n)
 
 Allows you to specify the name of the app and optionally its table
-relationships.  Requires a name for the app.  Allows a list of tables
-to create or L<ASCII Art>.
+relationships.  Requires a name for the app.  The rest of the command
+line arguments are depend on what style you use, see L<STYLES>.
 
 =item --add (or -a)
 
 Allows you to augment an existing bigtop file prior to editing it.
-Requires a bigtop file name.  Allows a list of tables to create or
-L<ASCII Art>.  Any relationships specified in ASCII art will be
-applied, even if they refer to existing tables.
+Requires a bigtop file name.  The rest of the command line arguments
+as the same as for -n, see L<STYLES>.
 
 =item --style (or -s)
 
 Defaults to Original.  Specifies which Bigtop::ScriptHelp::Style:: module
 will handle extra command line arguements and standard input.  See your
-Style module's docs for details.  For historical reasons, the Original
-style is described below.
-standard in 
+Style module's docs for details.
 
 =back
 
-=head1 ASCII Art
+=head1 STYLES
 
-Both --new and --add allow you to specify a list of tables or ASCII
-art.  The ASCII art option allows you to quickly note relationships between
-tables with simple operators.
+Any command line arguments not consumed by the options above are passed
+to your style backend.  If you don't use -s, the Original style
+is used.  If you do use -s, whatever style you choose is used.
+All styles live in the Bigtop::ScriptHelp::Style:: namespace.
+See their individual docs for what they know how to do.
 
-Note well: Since the relationship operators use punctuation that your
-shell probably loves, you must surround the art with single quotes.
-
-It is easiest to understand the options by seeing an example.  So, suppose
-we have a four table data model describing a bit of our personnel process:
-
-    +-----------+       +----------+
-    |    job    |<------| position |
-    +-----------+       +----------+
-          ^
-          |
-    +-----------+       +----------+
-    | job_skill |------>|  skill   |
-    +-----------+       +----------+
-
-First, you'll be happy to know that bigtop's ASCII art is simpler to draw
-than the above.
-
-What our data model shows is that each position refers to a job (description),
-each job could require many skills, and each skill could be associated with
-many jobs.  The last two mean that job and skill share a many-to-many
-relationship.
-
-Here's how to specify this data model in bigtop ASCII art:
-
-    bigtop --new HR 'job<-position job<->skill'
-
-This indicates a foreign key from position to job and an implied
-table, called job_skill, to hold the many-to-many relationship between
-job and skill.
-
-There are four art operators:
-
-=over 4
-
-=item <->
-
-Many-to-many.  A new table will be made with foreign keys to each operand
-table.  Each operand table will have a has_many relationship.  Note
-that your Model backend may not understand these relationships.  At the
-time of this writing only Model GantryDBIxClass did, by luck it happens
-to be the default.
-
-=item ->
-
-The first table has a foreign key pointing to the second.
-
-=item <-
-
-The second table has a foreign key pointing to the first.  This is really
-a convenience synonymn for ->, but the tables are put into generated SQL
-in their overall order of appearance.
-
-=item -
-
-The two tables have a one-to-one relationship.  Each of them will have
-a foreign key pointing to the other.
-
-=back
+This section used to be called "ASCII ART," the code which supported
+that got factored out and became the default style
+C<Bigtop::ScriptHelp::Style::Original>.  See it for details on
+ASCII art.
 
 =head1 AUTHOR
 

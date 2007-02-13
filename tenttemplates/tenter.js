@@ -399,7 +399,7 @@ function follow_instructions( instructions ) {
         return;
     }
 
-    // chat( 'debug_chatter', 'about to follow instructions ' + instructions );
+    //chat( 'debug_chatter', 'about to follow instructions ' + instructions );
 
     var todo    = eval ( instructions );
 

@@ -34,6 +34,13 @@ app Address {
             is varchar;
             label `Full Description`;
             html_form_type text;
+            html_form_optional 1;
+        }
+        field state {
+            is varchar, `DEFAULT 'KS'`;
+            label State;
+            html_form_type text;
+            html_form_default_value KS;
         }
         field created {
             is date;
@@ -81,7 +88,7 @@ app Address {
         field family_address {
             is int4;
             label `Family Address`;
-            refers_to family_address;
+            refers_to family_address => id;
             html_form_type select;
         }
     }
@@ -126,13 +133,13 @@ app Address {
         field family_address {
             is int4;
             label `Family Address`;
-            refers_to family_address;
+            refers_to family_address => id;
             html_form_type select;
         }
         field birth_date {
             is int4;
             label `Birth Date`;
-            refers_to birth_date;
+            refers_to birth_date => id;
             html_form_type select;
         }
     }
@@ -204,11 +211,18 @@ app Address {
             label `Anniversary Date`;
             html_form_type text;
         }
+        field gift_pref {
+            is varchar, `DEFAULT 'money'`;
+            label `Gift Pref`;
+            html_form_type text;
+            html_form_optional 1;
+            html_form_default_value money;
+        }
         foreign_display `%anniversary_date`;
         field family_address {
             is int4;
             label `Family Address`;
-            refers_to family_address;
+            refers_to family_address => id;
             html_form_type select;
         }
     }
@@ -218,7 +232,7 @@ app Address {
         text_description `anniversary date`;
         page_link_label `Anniversary Date`;
         method do_main is main_listing {
-            cols anniversary_date;
+            cols anniversary_date, gift_pref;
             header_options Add;
             row_options Edit, Delete;
             title `Anniversary Date`;

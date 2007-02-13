@@ -3,7 +3,7 @@ use strict;
 use Test::More;
 
 BEGIN {
-    plan skip_all => 'set BIGTOP_PGLIVE to enable test, must have kids db'
+    plan skip_all => 'set BIGTOP_PGLIVE to enable test, must have kids2 db'
             unless $ENV{BIGTOP_PGLIVE};
     plan tests => 1;
 }
@@ -17,7 +17,7 @@ my $correct_layout = {
     all_tables => { parent => 1, child => 1, },
     new_tables => [ 'child', 'parent' ],
     foreigners => {
-        child => [ 'parent' ],
+        child => [ { table => 'parent', col => 1 } ],
     },
     columns => {
         parent => [
@@ -27,9 +27,8 @@ my $correct_layout = {
           { name => 'created',   types => [ 'datetime' ] },
           { name => 'modified',  types => [ 'datetime' ] },
           { name => 'city',      types => [ 'varchar'  ] },
-          { name => 'state',     types => [ 'varchar',
-                                            'DEFAULT',
-                                            "`'KS'::character varying`" ] },
+          { name => 'state',     types => [ 'varchar'  ],
+                               default => 'KS' },
           { name => 'zip',       types => [ 'varchar' ] },
           { name => 'phone',     types => [ 'varchar' ] },
         ],

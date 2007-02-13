@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 
 use Bigtop::ScriptHelp::Style;
 
@@ -26,8 +26,8 @@ my $correct_struct = {
         },
         'new_tables' => [ 'job', 'skill', 'res', 'stray' ],
         'foreigners' => {
-            'pos' => [ 'job' ],
-            'res' => [ 'pos' ],
+            'pos' => [ { table => 'job', col => 1 } ],
+            'res' => [ { table => 'pos', col => 1 } ],
         },
         'columns' => {
             'job'   => [
@@ -68,12 +68,37 @@ my $correct_struct = {
 is_deeply( $struct, $correct_struct, 'original ascii art' );
 
 #--------------------------------------------------------------------
+# specifying some columns for one table
+#--------------------------------------------------------------------
+
+$struct = $style->get_db_layout( 'job(ident,descr)' );
+
+$correct_struct = {
+    joiners => [],
+    new_tables => [],
+    all_tables => { job => 1 },
+    foreigners => {},
+    columns => {
+        job => [
+            { name => 'id',
+              types => [ 'int4', 'primary_key', 'auto'     ], },
+            { name => 'ident', types => [ 'varchar' ] },
+            { name => 'descr', types => [ 'varchar' ] },
+            { name => 'created',     types => [ 'datetime' ], },
+            { name => 'modified',    types => [ 'datetime' ], },
+        ],
+    },
+};
+
+is_deeply( $struct, $correct_struct, 'one table with columns' );
+
+#--------------------------------------------------------------------
 # specifying some columns
 #--------------------------------------------------------------------
 
 $struct = $style->get_db_layout(
         '  job(ident,descr)<->skill pos->job '
-            .   'res(id:integer:pk:auto,name,body:text)->pos ',
+            .   'res(id:integer:pk:auto,name=Phil,+body:text)->pos ',
         { pos => 1 }
 );
 
@@ -87,8 +112,8 @@ $correct_struct = {
     },
     'new_tables' => [ 'job', 'skill', 'res' ],
     'foreigners' => {
-        'pos' => [ 'job' ],
-        'res' => [ 'pos' ]
+        'pos' => [ { table => 'job', col => 1 } ],
+        'res' => [ { table => 'pos', col => 1 } ]
     },
     'columns' => {
         'skill' => [
@@ -102,8 +127,8 @@ $correct_struct = {
         'res'   => [
             { name => 'id',
               types => [ 'integer', 'pk', 'auto'    ], },
-            { name => 'name', types => [ 'varchar'  ], },
-            { name => 'body', types => [ 'text'     ], },
+            { name => 'name', types => [ 'varchar'  ], default => 'Phil' },
+            { name => 'body', types => [ 'text'     ], optional => 1 },
         ],
         'job'   => [
             { name => 'id',
@@ -116,5 +141,5 @@ $correct_struct = {
     }
 };
 
-is_deeply( $struct, $correct_struct, 'ascii art /w column names' );
+is_deeply( $struct, $correct_struct, 'ascii art /w full column info' );
 

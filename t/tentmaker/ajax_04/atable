@@ -218,6 +218,10 @@
       
       
       
+      
+      
+      
+      
         <th>
             Label
             <br />
@@ -341,6 +345,10 @@
         />
           
       </td>
+        
+      
+        
+      
         
       
         
@@ -475,6 +483,10 @@
         
       
         
+      
+        
+      
+        
       <td style='text-align: center' >
           
         <input type='text'
@@ -604,6 +616,10 @@
         
       
         
+      
+        
+      
+        
       <td style='text-align: center' >
           
         <input type='text'
@@ -728,6 +744,10 @@
         />
           
       </td>
+        
+      
+        
+      
         
       
         
@@ -1094,14 +1114,72 @@ auto</pre>
 
 
 
+      <table id='ident_5::refers_to_input_table'>
+        <tr><th> Table </th>
+            <th> Column
+                 
+                    [optional]
+                 
+            </th></tr>
+    
+            <tr><td>
+                <input
+                    type='text'
+                    name='ident_5::refers_to_key'
+                    class='urgency_1'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_5::refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_5::refers_to_value'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_5::refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            Where this foreign key points
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> on_delete </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
     
         <input type='text'
-            id='ident_5::refers_to'
+            id='ident_5::on_delete'
             value=""
-            class='urgency_1'
+            class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_5::refers_to",
+                "ident_5::on_delete",
                 this.value
             )'
         />
@@ -1110,7 +1188,40 @@ auto</pre>
 
         </td>
         <td>
-            Table this foreign key points to
+            What to do when foreign key column's row dies
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> on_update </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_5::on_update'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_5::on_update",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            What to do when foreign key column's row changes
         </td>
     </tr>
   
@@ -1772,14 +1883,72 @@ auto</pre>
 
 
 
+      <table id='ident_6::refers_to_input_table'>
+        <tr><th> Table </th>
+            <th> Column
+                 
+                    [optional]
+                 
+            </th></tr>
+    
+            <tr><td>
+                <input
+                    type='text'
+                    name='ident_6::refers_to_key'
+                    class='urgency_1'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_6::refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_6::refers_to_value'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_6::refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            Where this foreign key points
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> on_delete </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
     
         <input type='text'
-            id='ident_6::refers_to'
+            id='ident_6::on_delete'
             value=""
-            class='urgency_1'
+            class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_6::refers_to",
+                "ident_6::on_delete",
                 this.value
             )'
         />
@@ -1788,7 +1957,40 @@ auto</pre>
 
         </td>
         <td>
-            Table this foreign key points to
+            What to do when foreign key column's row dies
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> on_update </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_6::on_update'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_6::on_update",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            What to do when foreign key column's row changes
         </td>
     </tr>
   
@@ -2450,14 +2652,72 @@ auto</pre>
 
 
 
+      <table id='ident_7::refers_to_input_table'>
+        <tr><th> Table </th>
+            <th> Column
+                 
+                    [optional]
+                 
+            </th></tr>
+    
+            <tr><td>
+                <input
+                    type='text'
+                    name='ident_7::refers_to_key'
+                    class='urgency_1'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_7::refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_7::refers_to_value'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_7::refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            Where this foreign key points
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> on_delete </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
     
         <input type='text'
-            id='ident_7::refers_to'
+            id='ident_7::on_delete'
             value=""
-            class='urgency_1'
+            class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_7::refers_to",
+                "ident_7::on_delete",
                 this.value
             )'
         />
@@ -2466,7 +2726,40 @@ auto</pre>
 
         </td>
         <td>
-            Table this foreign key points to
+            What to do when foreign key column's row dies
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> on_update </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_7::on_update'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_7::on_update",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            What to do when foreign key column's row changes
         </td>
     </tr>
   
@@ -3128,14 +3421,72 @@ auto</pre>
 
 
 
+      <table id='ident_8::refers_to_input_table'>
+        <tr><th> Table </th>
+            <th> Column
+                 
+                    [optional]
+                 
+            </th></tr>
+    
+            <tr><td>
+                <input
+                    type='text'
+                    name='ident_8::refers_to_key'
+                    class='urgency_1'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_8::refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_8::refers_to_value'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_8::refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            Where this foreign key points
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> on_delete </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
     
         <input type='text'
-            id='ident_8::refers_to'
+            id='ident_8::on_delete'
             value=""
-            class='urgency_1'
+            class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_8::refers_to",
+                "ident_8::on_delete",
                 this.value
             )'
         />
@@ -3144,7 +3495,40 @@ auto</pre>
 
         </td>
         <td>
-            Table this foreign key points to
+            What to do when foreign key column's row dies
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> on_update </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_8::on_update'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_8::on_update",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            What to do when foreign key column's row changes
         </td>
     </tr>
   
@@ -3806,14 +4190,72 @@ auto</pre>
 
 
 
+      <table id='ident_9::refers_to_input_table'>
+        <tr><th> Table </th>
+            <th> Column
+                 
+                    [optional]
+                 
+            </th></tr>
+    
+            <tr><td>
+                <input
+                    type='text'
+                    name='ident_9::refers_to_key'
+                    class='urgency_1'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_9::refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_9::refers_to_value'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_9::refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            Where this foreign key points
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> on_delete </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
     
         <input type='text'
-            id='ident_9::refers_to'
+            id='ident_9::on_delete'
             value=""
-            class='urgency_1'
+            class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_9::refers_to",
+                "ident_9::on_delete",
                 this.value
             )'
         />
@@ -3822,7 +4264,40 @@ auto</pre>
 
         </td>
         <td>
-            Table this foreign key points to
+            What to do when foreign key column's row dies
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> on_update </td>
+        <td>
+
+            
+            
+<!-- values are double qouted to prevent clashes with single
+     quotes in the values -->
+
+
+
+
+    
+        <input type='text'
+            id='ident_9::on_update'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_9::on_update",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            What to do when foreign key column's row changes
         </td>
     </tr>
   

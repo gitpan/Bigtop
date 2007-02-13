@@ -22,6 +22,7 @@ my $build = $subclass->new(
         'Inline::TT'      => 0.06,
         'Gantry'          => 3.46, # need Gantry::Build
         'IO::Prompt'      => 0,
+        'HTTP::Server::Simple' => 0.27, # for tentmaker
     },
     build_requires      => {
         'Test'        => 0,

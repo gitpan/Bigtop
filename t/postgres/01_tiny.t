@@ -24,6 +24,19 @@ CREATE TABLE multiplier (
     subid int4,
     PRIMARY KEY( id, subid )
 );
+
+CREATE TABLE pointer (
+    id int4 PRIMARY KEY,
+    refer_to int4 REFERENCES payeepayor(id)
+        ON DELETE CASCADE
+        ON UPDATE NO ACTION,
+    other varchar
+);
+
+CREATE TABLE pointer2 (
+    id int4 PRIMARY KEY,
+    refer_to int4
+);
 EO_CORRECT_SQL
 
 is_deeply( \@sql, \@correct_sql, 'tiny sql' );
@@ -40,5 +53,19 @@ app Apps::Checkbook {
     table multiplier {
         field id    { is int4, primary_key; }
         field subid { is int4, primary_key; }
+    }
+    table pointer {
+        field id { is int4, primary_key; }
+        field refer_to {
+            is int4;
+            refers_to payeepayor => id;
+            on_delete CASCADE;
+            on_update `NO ACTION`;
+        }
+        field other { is varchar; }
+    }
+    table pointer2 {
+        field id { is int4, primary_key; }
+        field refer_to { is int4; refers_to payeepayor; }
     }
 }

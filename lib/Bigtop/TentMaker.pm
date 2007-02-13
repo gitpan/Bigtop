@@ -1140,6 +1140,10 @@ sub do_update_name {
              qq/  { "keyword" : "field_edit_option\::$ident", /
                 .   qq/"text" : "$new_value" }/;
 
+        push @{ $jsons },
+             qq/  { "keyword" : "field_name\::$ident", /
+                .   qq/"value" : "$new_value" }/;
+
         if ( $keywords_used->{ $ident . '::label' } ) { # quick edit too
             push @{ $jsons },
                  qq/  { "keyword" : "quick_label_$ident", /

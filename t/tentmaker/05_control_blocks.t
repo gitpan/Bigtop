@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 13;
+use Test::More tests => 14;
 use Test::Files;
 use File::Spec;
 
@@ -179,6 +179,27 @@ $ajax = $tent_maker->do_update_method_statement_text(
 $expected_file = File::Spec->catfile( $ajax_dir, 'apagedst' );
 
 file_ok( $expected_file, $ajax, 'add paged_conf method statement (apagedst)' );
+
+#--------------------------------------------------------------------
+# Add pair statement with quoted value
+#--------------------------------------------------------------------
+$tent_maker->params(
+    {
+        keys   => 'Edit][Tasks][Delete',
+        values => 'undefined]["/tasks/$id"][',
+    }
+);
+
+$tent_maker->template_disable( 0 );
+
+$ajax = $tent_maker->do_update_method_statement_pair( 'ident_7::row_options' );
+
+$expected_file = File::Spec->catfile( $ajax_dir, 'arowopts' );
+
+file_ok( $expected_file, $ajax, 'add paired method statement (arowopts)' );
+
+$tent_maker->params( { keys   => '', values => '', } );
+$tent_maker->do_update_method_statement_pair( 'ident_7::row_options' );
 
 #--------------------------------------------------------------------
 # Remove method.

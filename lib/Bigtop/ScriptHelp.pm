@@ -81,6 +81,10 @@ sub _make_model_code {
             $parsed_art->{ columns },
     );
 
+    my $col_num_2_name = _correlate_columns( $columns );
+
+    $new_tables = _safely_order( $new_tables, $foreign_key_for );
+
     my $retval = '';
 
     foreach my $model ( @{ $new_tables } ) {
@@ -101,7 +105,7 @@ sub _make_model_code {
                 = _make_native_fields( $columns, $model );
 
         my $foreign_text = _make_foreign_key_fields(
-                $foreign_key_for, $model
+                $foreign_key_for, $model, $col_num_2_name
         );
 
         $retval .= << "EO_MODEL";
@@ -171,6 +175,92 @@ $model_code
 EO_Model_Bigtop
 }
 
+sub _correlate_columns {
+    my $columns = shift;
+    my $ast     = shift;
+
+    my %correlation;
+
+    # first walk existing tables in the tree
+    if ( defined $ast ) {
+        my $tables = $ast->walk_postorder( 'all_table_names' );
+
+        foreach my $table ( @{ $tables } ) {
+
+            my $columns = $ast->walk_postorder( 'all_field_names', $table );
+
+            $correlation{ $table } = $columns;
+        }
+    }
+
+    # then walk new columns
+    foreach my $table ( keys %{ $columns } ) {
+        my @table_columns;
+        foreach my $col ( @{ $columns->{ $table } } ) {
+            push @table_columns, $col->{ name };
+        }
+        $correlation{ $table } = \@table_columns;
+    }
+
+    return \%correlation;
+}
+
+sub _safely_order {
+    my $requested_tables = shift;
+    my $foreign_key_for  = shift;
+
+    my @ordered_tables;
+    my %requests = map { $_ => 1 } @{ $requested_tables };
+
+    my %fk_tree;
+    foreach my $fk ( keys %{ $foreign_key_for } ) {
+        foreach my $f_table ( @{ $foreign_key_for->{ $fk } } ) {
+            push @{ $fk_tree{ $fk } }, $f_table->{ table };
+        }
+    }
+
+    my @chains;
+    foreach my $chain_leaf ( keys %fk_tree ) {
+        push @chains, [ _build_chain( $chain_leaf, \%fk_tree ) ];
+    }
+
+    my %handled;
+
+    foreach my $chain ( @chains ) {
+        LINK:
+        foreach my $link ( @{ $chain } ) {
+            next LINK unless $requests{ $link };
+            next LINK if $handled{ $link }++;
+
+            push @ordered_tables, $link;
+        }
+    }
+
+    STRAY:
+    foreach my $table ( @{ $requested_tables } ) {
+        next STRAY unless $requests{ $table };
+        next STRAY if $handled{ $table }++;
+        push @ordered_tables, $table;
+    }
+
+    return \@ordered_tables;
+}
+
+sub _build_chain {
+    my $chain_leaf = shift;
+    my $fk_tree    = shift;
+
+    my @retval = ( $chain_leaf );
+
+    return @retval unless ( defined $fk_tree->{ $chain_leaf } );
+
+    foreach my $parent ( @{ $fk_tree->{ $chain_leaf } } ) {
+        unshift @retval, _build_chain( $parent, $fk_tree );
+    }
+
+    return @retval;
+}
+
 sub _make_native_fields {
     my $columns_for = shift;
     my $table       = shift;
@@ -187,6 +277,10 @@ sub _make_native_fields {
     my $is_spacing   = $space x 12;
 
     foreach my $column ( @{ $columns } ) {
+
+        if ( $column->{ default } ) {
+            push @{ $column->{ types } }, "`DEFAULT '$column->{ default }'`";
+        }
 
         my $type_string = join ', ', @{ $column->{ types } };
 
@@ -213,6 +307,16 @@ sub _make_native_fields {
             label          $label;
             html_form_type text;
 EO_DEC
+            if ( $column->{ optional } ) {
+                $decorations .= << "EO_OPTIONAL";
+            html_form_optional 1;
+EO_OPTIONAL
+            }
+            if ( $column->{ default } ) {
+                $decorations .= << "EO_DEFAULT";
+            html_form_default_value `$column->{ default }`;
+EO_DEFAULT
+            }
         }
 
         $retval .= "${outer_indent}field $column->{ name } {\n";
@@ -233,21 +337,33 @@ EO_DEC
 sub _make_foreign_key_fields {
     my $foreign_key_for = shift;
     my $model           = shift;
+    my $col_num_2_name  = shift;
 
     my @foreign_fields;
     my $foreign_text = "\n";
     if ( defined $foreign_key_for->{ $model } ) {
         foreach my $foreign_key ( @{ $foreign_key_for->{ $model } } ) {
+
             my $label = Bigtop::ScriptHelp->default_label(
-                    _strip_schema( $foreign_key )
+                    _strip_schema( $foreign_key->{ table } )
             );
-            my $name  = $foreign_key;
+
+            my $name  = $foreign_key->{ table };
             $name     =~ s/\./_/;
+
+            my $reference_str = "`$foreign_key->{ table }`";
+            if ( defined $foreign_key->{ col } ) {
+                my $col_name = $col_num_2_name->{ $foreign_key->{ table } }
+                                                [ $foreign_key->{ col } - 1 ];
+
+                $reference_str .= " => $col_name" if $col_name;
+            }
+
             my $new_foreigner = <<"EO_Foreign_Field";
         field $name {
             is             int4;
             label          `$label`;
-            refers_to      `$foreign_key`;
+            refers_to      $reference_str;
             html_form_type select;
         }
 EO_Foreign_Field
@@ -297,6 +413,10 @@ sub augment_tree {
         $parsed_art->{ foreigners },
         $parsed_art->{ columns    },
     );
+
+    my $col_num_2_name = _correlate_columns( $columns, $ast );
+
+    $new_tables = _safely_order( $new_tables, $foreign_key_for );
 
     # make new tables with tentmaker hooks
     my %new_table;
@@ -359,13 +479,24 @@ sub augment_tree {
 
         foreach my $foreign_key ( @{ $foreign_key_for->{ $point_from } } ) {
 
-            my $name  = $foreign_key;
+            my $name  = $foreign_key->{ table };
             $name     =~ s/\./_/;
 
             my $label =
                     Bigtop::ScriptHelp->default_label(
-                            _strip_schema( $foreign_key )
+                            _strip_schema( $foreign_key->{ table } )
                     );
+
+            my $foreign_key_ref_str = $foreign_key->{ table };
+            if ( defined $foreign_key->{ col } ) {
+                my $col_name = $col_num_2_name->{ $foreign_key->{ table } }
+                                                [ $foreign_key->{ col } - 1 ];
+
+                $foreign_key_ref_str = {
+                        keys   => $foreign_key->{ table },
+                        values => $col_name
+                } if $col_name;
+            }
 
             my $refers_to_field = $ast->create_subblock(
                 {
@@ -400,7 +531,7 @@ sub augment_tree {
                     type => 'field',
                     ident => $refers_to_field->{__IDENT__},
                     keyword => 'refers_to',
-                    new_value => $foreign_key,
+                    new_value => $foreign_key_ref_str,
                 }
             );
             $ast->change_statement(

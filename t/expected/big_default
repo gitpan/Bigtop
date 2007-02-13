@@ -36,6 +36,13 @@ app Address {
             is             varchar;
             label          `Full Description`;
             html_form_type text;
+            html_form_optional 1;
+        }
+        field state {
+            is             varchar, `DEFAULT 'KS'`;
+            label          State;
+            html_form_type text;
+            html_form_default_value `KS`;
         }
         field created {
             is date;
@@ -84,7 +91,7 @@ app Address {
         field family_address {
             is             int4;
             label          `Family Address`;
-            refers_to      `family_address`;
+            refers_to      `family_address` => id;
             html_form_type select;
         }
     }

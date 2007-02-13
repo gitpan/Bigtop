@@ -162,7 +162,23 @@ sub output_sql_lite {
 
     if ( defined $child_output) {
 
-        my $child_out_str = join "\n", @{ $child_output };
+        my %output_pieces;
+        foreach my $child_item ( @{ $child_output } ) {
+            my ( $type, $output )   = %{ $child_item };
+            $output_pieces{ $type } = $output;
+        }
+
+        my $child_out_str = $output_pieces{ base_col_def };
+        if ( $output_pieces{ foreign_key_col } ) {
+            unless ( $output_pieces{ foreign_table } ) {
+                die "field '" . $self->get_name . "' in table '"
+                    .   $self->get_table_name
+                    .   "' has a foreign_key_col, but no refers_to\n"
+            }
+            $child_out_str  .= ' REFERENCES '
+                            .   $output_pieces{ foreign_table }
+                            . "($output_pieces{ foreign_key_col })";
+        }
 
         my $output = Bigtop::Backend::SQL::SQLite::table_element_block(
             { name => $self->get_name(), child_output => $child_out_str }
@@ -220,28 +236,42 @@ sub output_sql_lite {
     shift;  # there is no child output
     my $lookup = shift;
 
-    return unless $self->get_name() eq 'is';
+    my $keyword = $self->get_name();
 
-    my @keywords;
-    foreach my $arg ( @{ $self->{__DEF__}{__ARGS__} } ) {
-        my $expanded_form = $expansion_for{$arg};
+    if ( $keyword eq 'is' ) {
+        my @keywords;
+        foreach my $arg ( @{ $self->{__DEF__}{__ARGS__} } ) {
+            my $expanded_form = $expansion_for{$arg};
 
-        if ( $arg eq 'primary_key' ) {
-            my $pk_text = $self->sqlite_pk_text( $lookup );
-            push @keywords, $pk_text if $pk_text;
+            if ( $arg eq 'primary_key' ) {
+                my $pk_text = $self->sqlite_pk_text( $lookup );
+                push @keywords, $pk_text if $pk_text;
+            }
+            elsif ( defined $expanded_form ) {
+                push @keywords, $expanded_form;
+            }
+            else {
+                push @keywords, $arg;
+            }
         }
-        elsif ( defined $expanded_form ) {
-            push @keywords, $expanded_form;
-        }
-        else {
-            push @keywords, $arg;
-        }
+        my $output = Bigtop::Backend::SQL::SQLite::field_statement(
+            { keywords => \@keywords }
+        );
+
+        return [ { base_col_def => $output } ];
     }
-    my $output = Bigtop::Backend::SQL::SQLite::field_statement(
-        { keywords => \@keywords }
-    );
+    elsif ( $keyword eq 'refers_to' ) {
+        my $foreign_info = $self->{__DEF__}{__ARGS__}[0];
 
-    return [ $output ];
+        return unless ( ref( $foreign_info ) eq 'HASH' );
+
+        my ( $table, $col ) = %{ $foreign_info };
+
+        return [
+            { foreign_table   => $table },
+            { foreign_key_col => $col   },
+        ];
+    }
 }
 
 package # literal_block

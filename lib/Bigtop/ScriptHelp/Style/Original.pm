@@ -33,16 +33,6 @@ sub get_db_layout {
             ( $table1, $cols1 ) = _get_columns( $table1 );
             ( $table2, $cols2 ) = _get_columns( $table2 );
 
-#            my ( $raw_cols1, $raw_cols2 );
-#            if ( $table1 =~ s/$column_rx// ) { $raw_cols1 = $1;               }
-#            else                             { $raw_cols1 = $default_columns; }
-#
-#            if ( $table2 =~ s/$column_rx// ) { $raw_cols2 = $1;               }
-#            else                             { $raw_cols2 = $default_columns; }
-#
-#            my $cols1 = _parse_columns( $raw_cols1 );
-#            my $cols2 = _parse_columns( $raw_cols2 );
-
             unless ( defined $table1 and valid_ident( $table1 )
                         and
                      defined $table2 and valid_ident( $table2 )
@@ -67,14 +57,18 @@ sub get_db_layout {
 
             # process based on operator
             if ( $op eq '<-' ) {
-                push @{ $foreign_key_for{ $table2 } }, $table1;
+                push @{ $foreign_key_for{ $table2 } },
+                     { table => $table1, col => 1};
             }
             elsif ( $op eq '->' ) {
-                push @{ $foreign_key_for{ $table1 } }, $table2;
+                push @{ $foreign_key_for{ $table1 } },
+                     { table => $table2, col => 1};
             }
             elsif ( $op eq '-' ) {
-                push @{ $foreign_key_for{ $table2 } }, $table1;
-                push @{ $foreign_key_for{ $table1 } }, $table2;
+                push @{ $foreign_key_for{ $table2 } },
+                     { table => $table1, col => 1 };
+                push @{ $foreign_key_for{ $table1 } },
+                     { table => $table2, col => 1 };
             }
             elsif ( $op eq '<->' ) {
                 push @joiners, [ $table1, $table2 ];
@@ -92,8 +86,14 @@ sub get_db_layout {
             }
         }
         else {
-            # look for columns
-            die "Invalid ASCII art (3): $art_element\n";
+            my ( $table, $cols ) = _get_columns( $art_element );
+
+            unless ( valid_ident( $table ) ) {
+                die "Invalid ASCII art (3): $art_element\n";
+            }
+
+            $tables->{ $table }++;
+            $columns{ $table } = $cols;
         }
     }
 
@@ -141,15 +141,28 @@ sub _parse_columns {
 
     my @columns;
     foreach my $piece ( @pieces ) {
-        my ( $name, @types ) = split /:/, $piece;
+        my ( $name_type, $default ) = split /=/, $piece;
+        my ( $name, @types ) = split /:/, $name_type;
 
+        # pull optional plus from name
+        my $optional;
+        $optional = 1 if ( $name =~ s/^\+// );
+
+        # set type
         foreach my $type ( @types ) {
             $type = "`$type`" unless valid_ident( $type );
         }
 
         @types = ( 'varchar' ) unless ( @types > 0 );
 
-        push @columns, { name => $name, types => \@types };
+        # begin building columns sub hash with required keys
+        my %col_hash = ( name => $name, types => \@types );
+
+        # fill in other keys if we need them
+        $col_hash{ default  } = $default  if $default;
+        $col_hash{ optional } = $optional if $optional;
+
+        push @columns, \%col_hash;
 
         $you_dont_want_em++ if defined $is_normal_default{ $name };
     }
@@ -230,7 +243,7 @@ Here's how to specify this data model in bigtop ASCII art:
 
     bigtop --new HR 'job<-position job<->skill'
 
-This will indicate a foreign key from position to job and an implied
+This indicates a foreign key from position to job and an implied
 table, called job_skill, to hold the many-to-many relationship between
 job and skill.
 
@@ -265,6 +278,67 @@ The two tables have a one-to-one relationship.  Each of them will have
 a foreign key pointing to the other.
 
 =back
+
+=head2 COLUMN DEFINITIONS
+
+As of Bigtop 0.23, you may use the syntax below to specify information
+about the columns in your tables, in addition to the table relationships
+above.
+
+Note Well:  When following the instructions below, never be tempted to
+use spaces inside column definitions.  If you need spaces, colons might
+work.  If not, you'll need to edit the generated bigtop file, just like
+old times.
+
+Column definitions must be placed inside parnetheses immediatly after the
+table name and immediately before any table relationship operator.  Separate
+columns with commas.  Specify type definitions with colons.  Use equals
+for defaults and leading plus signs for optional fields.  For example:
+
+    bigtop -n App 'family(name,+phone)<-child(name,birth_day:date)'
+
+By default all columns will have type varchar.  If you need something else
+use a colon, as I did for birth_day.  If you type definition needs multiple
+words use colons instead of spaces.
+
+The phone column in the family table has a leading plus sign, and will
+therefore be optional on the HTML form.
+
+You can still augment the bigtop file later.  Existing tables in the bigtop
+file will have foreign keys added as specified by relation operators, but
+you parenthetical column lists will be silently ignored.  For example:
+
+    bigtop -a docs/app.bigtop '
+        anniversary(anniversary:date,gift_pref=money)<-family'
+
+This will add a new table called anniversary with anniversary (a date) and
+gift_pref columns.  The later will have a default value in the database
+and on HTML forms of 'money.'  Finally, a new foreign key will be added
+to the existing family table pointing to the anniversary table.
+
+=head2 FORMAL SUMMARY
+
+Here is the formal syntax for each table definition:
+
+    name(COL_DEF[,COL_DEF...])
+
+Where name is a valid SQL table name and COL_DEF is as follows:
+
+    [+]col_name[:TYPE_INFO][=default]
+
+Where plus makes the HTML form field for the column optional,
+col_name is a valid SQL column name, and
+all defaults are literal (they will be quoted in SQL).  If you need
+more interesting defaults, edit the bigtop file after it is updated.
+TYPE_INFO is a colon separated list of column declaration words.
+
+Suppose you want this column definition:
+
+    state int4 NOT NULL DEFAULT 4,
+
+Say this:
+
+    state:int4:NOT:NULL=4
 
 =head1 AUTHOR
 

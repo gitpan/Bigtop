@@ -1,5 +1,3 @@
-package Bigtop::Docs::TentRef;
-
 =head1 Name
 
 Bigtop::Docs::TentRef - tentmaker reference (best viewed in html)

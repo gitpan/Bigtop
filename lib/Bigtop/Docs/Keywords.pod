@@ -1,5 +1,3 @@
-package Bigtop::Docs::Keywords;
-
 =head1 Name
 
 Bigtop::Docs::Keywords - a bigtop keyword quick reference in monospace font

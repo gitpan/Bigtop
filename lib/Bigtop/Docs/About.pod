@@ -1,5 +1,3 @@
-package Bigtop::Docs::About;
-
 =head1 Name
 
 Bigtop::Docs::About - A document explaining Bigtop's features and history

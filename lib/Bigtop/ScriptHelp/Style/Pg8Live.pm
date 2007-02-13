@@ -63,7 +63,7 @@ sub get_db_layout {
     # we could also get the columns in the other table: confkey
     # but we assume it is the id
     my $foreign_sth = $dbh->prepare(
-            'SELECT conkey, relname FROM pg_constraint '
+            'SELECT conkey, relname, confkey FROM pg_constraint '
             .   'JOIN pg_class ON pg_class.oid = confrelid '
             .   q!WHERE conrelid = ? AND contype = 'f'!
     );
@@ -110,7 +110,7 @@ sub get_db_layout {
 
         # defaults
         $defaults_sth->execute( $oid );
-        COL_W_DEFAULT:
+        COL_WITH_DEFAULT:
         while ( my ( $col_num, $default_text ) =
                     $defaults_sth->fetchrow_array()
         ) {
@@ -119,12 +119,14 @@ sub get_db_layout {
                 push @{ $columns{ $new_table }[ $col_num - 1 ]{ types } },
                      'auto';
 
-                next COL_W_DEFAULT;
+                next COL_WITH_DEFAULT;
             }
 
-            push @{ $columns{ $new_table }[ $col_num - 1 ]{ types } },
-                 'DEFAULT',
-                 "`$default_text`";
+            $default_text =~ s/::.*//; # strip type
+            $default_text =~ s/^'//;
+            $default_text =~ s/'$//;
+
+            $columns{ $new_table }[ $col_num - 1 ]{ default } = $default_text;
         }
 
         $defaults_sth->finish();
@@ -134,14 +136,16 @@ sub get_db_layout {
         # foreign keys
         my @doomed_cols;
         $foreign_sth->execute( $oid );
-        while ( my ( $this_col, $foreign_table ) =
+        while ( my ( $this_col, $foreign_table, $foreign_col ) =
                     $foreign_sth->fetchrow_array()
         ) {
-            $this_col =~ s/\{|\}//g;
+            $this_col    =~ s/\{|\}//g;
+            $foreign_col =~ s/\{|\}//g;
 
             push @doomed_cols, $this_col - 1;
 
-            push @{ $foreigners{ $new_table } }, $foreign_table;
+            push @{ $foreigners{ $new_table } },
+                 { table => $foreign_table, col => $foreign_col }
         }
         $foreign_sth->finish();
 
@@ -151,10 +155,10 @@ sub get_db_layout {
     }
 
     return {
-        all_tables => $all_tables,
-        new_tables => \@new_tables,
-        foreigners => \%foreigners,
-        columns    => \%columns,
+        all_tables    => $all_tables,
+        new_tables    => \@new_tables,
+        foreigners    => \%foreigners,
+        columns       => \%columns,
     };
 }
 
@@ -165,6 +169,19 @@ sub get_db_layout {
 Bigtop::ScriptHelp::Style::PgLive - gets its descriptions from Postgresql
 
 =head1 SYNOPSIS
+
+For normal use:
+
+    bigtop -n AppName -s Pg8Live 'dbi:Pg:dbname=yourdb' user pass [schema]
+
+Do the same for tentmaker.  It also works for -a:
+
+    bigtop -a docs/app.bigtop \
+        -s Pg8Live 'dbi:Pg:dbname=yourdb' user pass [schema]
+
+Only tables not in docs/app.bigtop will be affected.
+
+For use in scripts:
 
     use Bigtop::ScriptHelp::Style;
 
@@ -178,15 +195,39 @@ See C<Bigtop::ScriptHelp::Style> for a description of what this module
 must do in general.
 
 This module pulls the database layout from the supplied database.  It
-uses a subset of the techniques in C<DBIx::Class::Schema::Loader> and
-its Postgres support modules C<DBIx::Class::Schema::Loader::DBI> and
-C<DBIx::Class::Schema::Loader::DBI::Pg>.
+makes queries on internal postgres tables to retrieve its data.
+The queries are probably specific to postgres 8.x.  They may work for
+earlier versions, but I wouldn't want to put any money down on that.
 
-Basically, this means that it uses standard DBI or SQL features to extract
-the structure whenever possible.  Some contortions are required.
+This module pulls these things from the database whose dsn you supply:
 
-This module currently only pulls table names (not columns and their
-types).  This is severely limiting and I hope it changes in the near future.
+=over 4
+
+=item *
+
+table names
+
+=item *
+
+column names
+
+=item *
+
+SQL type of each column
+
+=item *
+
+primary keys
+
+=item *
+
+column default values
+
+=item *
+
+foreign keys
+
+=back
 
 =head1 METHODS
 
@@ -212,7 +253,9 @@ Suitable for handing to DBI->connect.  Example:
 =item (optional) schema
 
 Defaults to 'public.'  Use this if you need to bring in tables from one
-schema.  There is no support for handling multiple schemas
+schema.  There is no support for handling multiple schemas with a single
+invocation, but there is no rule against rerunning with the -a flag to
+bring in others.
 
 =back
 

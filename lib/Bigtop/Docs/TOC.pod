@@ -1,5 +1,3 @@
-package Bigtop::Docs::TOC;
-
 =head1 NAME
 
 Bigtop::Docs::TOC - Table of Contents for Bigtop::Docs::* documentation modules

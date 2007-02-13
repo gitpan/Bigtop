@@ -66,4 +66,4 @@ compare_dirs_filter_ok(
     $play_dir, $ship_dir, \&strip_copyright, 'SOAP'
 );
 
-#Purge::real_purge_dir( $play_dir );
+Purge::real_purge_dir( $play_dir );
