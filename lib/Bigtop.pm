@@ -5,7 +5,7 @@ use warnings::register;
 use Carp;
 use File::Spec;
 
-our $VERSION = '0.23';
+our $VERSION = '0.24';
 
 sub write_file {
     my $file_name    = shift;
@@ -91,8 +91,9 @@ Bigtop - A web application data language processor
 
 =head1 SYNOPSIS
 
-See Bigtop::Docs::TentTut or Bigtop::Docs::Tutorial for how to create
-a Bigtop file.
+See L<Bigtop::Docs::TentTut> or L<Bigtop::Docs::Tutorial> for how to create
+a Bigtop file.  L<Bigtop::Docs::TOC> is a guide to all of the
+documentation modules.
 
 The real synopsis:
 
@@ -182,25 +183,72 @@ None.
 
 The work of Bigtop is handled by its pieces:
 
-    Bigtop::Parser
+=over 4
 
-    Bigtop::Init
-    Bigtop::Init::Std
-    Bigtop::SQL
-    Bigtop::SQL::Postgres
-    Bigtop::CGI
-    Bigtop::CGI::Gantry
-    Bigtop::Control
-    Bigtop::Control::Gantry
-    Bigtop::HttpdConf
-    Bigtop::HttpdConf::Gantry
-    Bigtop::Model
-    Bigtop::Model::GantryCDBI
-    Bigtop::Model::Gantry
-    Bigtop::SiteLook::GantryDefault
+=item 
+
+L<Bigtop::Parser>
+
+=item 
+
+L<Bigtop::Backend::Init>
+
+=item 
+
+L<Bigtop::Backend::Init::Std>
+
+=item 
+
+L<Bigtop::Backend::SQL>
+
+=item 
+
+L<Bigtop::Backend::SQL::Postgres>
+
+=item 
+
+L<Bigtop::Backend::CGI>
+
+=item 
+
+L<Bigtop::Backend::CGI::Gantry>
+
+=item 
+
+L<Bigtop::Backend::Control>
+
+=item 
+
+L<Bigtop::Backend::Control::Gantry>
+
+=item 
+
+L<Bigtop::Backend::HttpdConf>
+
+=item 
+
+L<Bigtop::Backend::HttpdConf::Gantry>
+
+=item 
+
+L<Bigtop::Backend::Model>
+
+=item 
+
+L<Bigtop::Backend::Model::GantryCDBI>
+
+=item 
+
+L<Bigtop::Backend::Model::Gantry>
+
+=item 
+
+L<Bigtop::Backend::SiteLook::GantryDefault>
+
+=back
 
 The backends come in types.  Ideally, these types all share a set of
-keywords which are defined in the type's module.  So C<Bigtop::SQL>
+keywords which are defined in the type's module.  So L<Bigtop::SQL>
 is meant to define the KEYWORDS that all Bigtop::SQL::* modules use.
 They may define others, but only if they are specific to the generated
 target.  For example, there might be some Postgres specific keyword

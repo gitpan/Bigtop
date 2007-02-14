@@ -10,8 +10,6 @@ marked a date.
     We might want to address this by moving to an entirely new approach to
     pop-up date entry.
 
-Add a file_filter_ok to Test::Files, so copyright year can be fully done.
-
 ---
 
 Do something for generation of AjaxCRUD users.
@@ -34,9 +32,11 @@ data statements.
 Teach tentmaker about controller level literals.
 
 Pg8Live script help style does not support join tables.
+    It probably won't, since join tables don't get to have controllers.
 
 In ascii art, if you ask for id without giving a type, you currently get
 varchar.  You should get the default int4, primary_key, auto.
+    You should just take the id given to you, smile and ask for another.
 
 Should a table name change cause a cascade of field name changes for
 all the foreign keys which point to it?
@@ -97,8 +97,8 @@ Remaining issues with base_controller blocks:
         app level uses statements are ignored if you have a base_controller
     tentmaker does not indicate which method statements apply to *links methods
     tentmaker does not indicate which controller statements apply
-The last two are probabaly not in the spirit of tentmaker anyway, but some
-docs might be nice, like [does NOT apply to base_controllers].
+        The last two are now solved by tentmaker showing only appropriate
+        controller and method keywords based on types.
 
 A stray semi-colon after a config block yield a crummy error, without even
 a line number.
@@ -362,6 +362,8 @@ Bug fixes:
     When config values have colons in them, deparse is not quoting them.
 
 Done:
+
+    Add a file_filter_ok to Test::Files, so copyright year can be fully done.
 
     Perhaps we should add on_delete and on_update which would be
     honored when using refers_to's pair form.

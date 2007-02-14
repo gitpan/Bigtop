@@ -36,6 +36,7 @@ my $build = $subclass->new(
 #        't/gantry/07_base_cont.t',
         't/*.t',
         't/scripthelp/*.t',
+        't/bigtop/*.t',
         't/tentmaker/*.t',
         't/init/*.t',
         't/postgres/*.t',

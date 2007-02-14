@@ -1,5 +1,11 @@
 Revision history for Perl extension Bigtop.
 
+0.24 Wed Feb 14 12:50:24 CST 2007
+    - Taking advantage of Test::Files new (as of 0.13) file_filter_ok, I
+      removed that last year dependent test.
+    - Fixed Control and Model backends so they can handle new refers_to
+      values.  This was fatal to any bigtop file with refers_to table => col.
+
 0.23 Tue Feb 13 16:10:32 CST 2007
     - Finally moved all Docs modules from .pm to .pod so the PAUSE indexer
       will know they are docs and not code files.

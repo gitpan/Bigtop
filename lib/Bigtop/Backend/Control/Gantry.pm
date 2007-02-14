@@ -3389,6 +3389,10 @@ sub _crud_form_outputer {
             # translate foreign key into select list
             if ( $clean_key eq 'refers_to' ) {
                 $clean_key   = 'options_string';
+
+                if ( ref( $clean_value ) eq 'HASH' ) {
+                    ( $clean_value ) = %{ $clean_value };
+                }
                 $clean_value =~ s/\./_/; # might have schema prefix
                 $clean_value = '$selections->{' . $clean_value . '}';
             }

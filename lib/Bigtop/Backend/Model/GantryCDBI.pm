@@ -402,6 +402,10 @@ sub output_foreign_tables_cdbi {
     if ( $field->{refers_to} ) {
         my $foreign_table_name = $field->{refers_to}{args}[0];
 
+        if ( ref( $foreign_table_name ) eq 'HASH' ) {
+            ( $foreign_table_name ) = %{ $foreign_table_name };
+        }
+
         return [
             [ column => $self->{__NAME__}, table => $foreign_table_name ]
         ];

@@ -548,7 +548,7 @@ Somebody Somewhere, E<lt>somebody@example.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2007 Somebody SomewhereElse
+Copyright  Somebody SomewhereElse
 
 All rights reserved.
 
@@ -556,9 +556,10 @@ All rights reserved.
 
 EO_Correct_Simple_Use
 
-file_ok(
+file_filter_ok(
     $gen_base_module,
     $correct,
+    \&strip_copyright,
     'controller with simple use Gantry statement'
 );
 
