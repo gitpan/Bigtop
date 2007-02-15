@@ -77,6 +77,7 @@ lib/Bigtop/Docs/Cookbook.pod
 lib/Bigtop/Docs/Keywords.pod
 lib/Bigtop/Docs/Modules.pod
 lib/Bigtop/Docs/QuickRef.pod
+lib/Bigtop/Docs/QuickStart.pod
 lib/Bigtop/Docs/Syntax.pod
 lib/Bigtop/Docs/TentRef.pod
 lib/Bigtop/Docs/TentTut.pod

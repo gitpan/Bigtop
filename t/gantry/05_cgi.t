@@ -62,7 +62,7 @@ my $cgi = Gantry::Engine::CGI->new( {
         DB => 'app_db',
         DBName => 'some_user',
         dbconn => 'dbi:SQLite:dbname=app.db',
-        root => 'html/templates',
+        root => 'html:html/templates',
     },
     locations => {
         '/app_base' => 'Apps::Checkbook',
@@ -124,7 +124,7 @@ my $cgi = Gantry::Engine::CGI->new( {
         dbpass => $dbpass,
         DB => 'app_db',
         DBName => 'some_user',
-        root => 'html/templates',
+        root => 'html:html/templates',
     },
     locations => {
         '/app_base' => 'Apps::Checkbook',

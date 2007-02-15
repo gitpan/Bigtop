@@ -1,5 +1,14 @@
 Revision history for Perl extension Bigtop.
 
+0.25 Thu Feb 15 11:12:12 CST 2007
+    - Increased Test::Files build requires version number to 0.13 in Build.PL.
+      Without that some tests fail for lack of file_filter_ok.
+    - Made the bigtop test's file test stripper more aggressive.  It now
+      eats author lines since they are rarely the same.  (Are you Phil Crow?)
+    - Updated lots of docs.
+    - Changed generated root path to html:html/templates to facilitate use
+      of Gantry's Static plugin with generated stand alone servers.
+
 0.24 Wed Feb 14 12:50:24 CST 2007
     - Taking advantage of Test::Files new (as of 0.13) file_filter_ok, I
       removed that last year dependent test.

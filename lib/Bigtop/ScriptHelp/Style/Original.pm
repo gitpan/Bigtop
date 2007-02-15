@@ -269,13 +269,15 @@ The first table has a foreign key pointing to the second.
 =item <-
 
 The second table has a foreign key pointing to the first.  This is really
-a convenience synonymn for ->, but the tables are put into generated SQL
-in their overall order of appearance.
+a convenience synonymn for ->.  Tables will appear in the generated
+SQL so that tables with foreign keys appear after the tables they refer
+to (at least that is the goal).
 
 =item -
 
 The two tables have a one-to-one relationship.  Each of them will have
-a foreign key pointing to the other.
+a foreign key pointing to the other.  Note that this will create SQL which
+is unlikely to load well due to foreign key forward references.
 
 =back
 
@@ -298,15 +300,18 @@ for defaults and leading plus signs for optional fields.  For example:
     bigtop -n App 'family(name,+phone)<-child(name,birth_day:date)'
 
 By default all columns will have type varchar.  If you need something else
-use a colon, as I did for birth_day.  If you type definition needs multiple
+use a colon, as I did for birth_day.  If your type definition needs multiple
 words use colons instead of spaces.
+
+Do not include foreign key columns in the list.  They will be generated
+based on the relationship punctuation between the tables.
 
 The phone column in the family table has a leading plus sign, and will
 therefore be optional on the HTML form.
 
 You can still augment the bigtop file later.  Existing tables in the bigtop
 file will have foreign keys added as specified by relation operators, but
-you parenthetical column lists will be silently ignored.  For example:
+parenthetical column lists will be used only for new tables.  For example:
 
     bigtop -a docs/app.bigtop '
         anniversary(anniversary:date,gift_pref=money)<-family'
@@ -315,6 +320,18 @@ This will add a new table called anniversary with anniversary (a date) and
 gift_pref columns.  The later will have a default value in the database
 and on HTML forms of 'money.'  Finally, a new foreign key will be added
 to the existing family table pointing to the anniversary table.
+
+You may find it easier to supply the ASCII art by first specifying the
+relationships without including the columns, then defining the columns later:
+
+    tentmaker -n App \
+    'child->family anniversary->family
+        child(name,birth_day:date)
+        family(name,+phone)
+        anniversary(anniversary:date,gift_pref=money)'
+
+You may mention a table as many times as you like, but only define its
+columns once.
 
 =head2 FORMAL SUMMARY
 
@@ -328,7 +345,7 @@ Where name is a valid SQL table name and COL_DEF is as follows:
 
 Where plus makes the HTML form field for the column optional,
 col_name is a valid SQL column name, and
-all defaults are literal (they will be quoted in SQL).  If you need
+all defaults are literal strings (they will be quoted in SQL).  If you need
 more interesting defaults, edit the bigtop file after it is updated.
 TYPE_INFO is a colon separated list of column declaration words.
 

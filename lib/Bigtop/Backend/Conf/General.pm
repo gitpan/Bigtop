@@ -190,7 +190,7 @@ sub output_conf_general {
         $output .= Bigtop::Backend::Conf::General::config(
             {
                 var   => 'root',
-                value => 'html/templates',
+                value => 'html:html/templates',
             }
         );
     }

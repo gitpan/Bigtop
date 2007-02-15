@@ -14,12 +14,13 @@ editor (it was written before tentmaker).  You may also choose to
 maintain your bigtop file with tentmaker.  Generally, the advice here
 governs what values you put in the boxes at the far right side of the
 Backends tab in tentmaker.  Some of the other advice must be applied
-on the App Body tab.  See Bigtop::Docs::TentTut to get started with
-tentmaker or Bigtop::Docs::TentRef for full details on using it.
+on the App Body tab.  See L<Bigtop::Docs::TentTut> to get started with
+tentmaker or L<Bigtop::Docs::TentRef> for full details on using it.
 
-For quick syntax reference consult Bigtop::Docs::Keywords for more
-complete information consult Bigtop::Docs::Syntax or Bigtop::Keywords
-from which tentmaker draws its on-screen information.
+For quick syntax reference consult L<Bigtop::Docs::Keywords> for more
+complete information consult L<Bigtop::Docs::Syntax> or the
+source code of C<Bigtop::Keywords> from which tentmaker draws its
+on-screen information.
 
 The questions are in sections.  Here is a complete list of sections and
 questions:
@@ -267,37 +268,46 @@ and the bigtop script itself -- with the proper command line parameters.
 
 Suppose you have a little data model:
 
-    +--------+      +--------+      +------------+
-    | dancer |----->| resume |<-----| perfomance |
-    +--------+      +--------+      +------------+
+    +--------+      +--------+      +-------------+
+    | child  |----->| family |<-----| anniversary |
+    +--------+      +--------+      +-------------+
 
 You could start your app like this:
 
-    bigtop --new Dancers 'dancer->resume resume->performance'
+    bigtop --new Contacts \
+    'child(name,birth_day:date)->family(name,phone,+email)
+    anniversary(anniv_date:date,preferred_gift=money)->family'
 
-While the fields in the generated tables won't be of much use (unless
-you want to refer to your dance cast members by their idents), the tables
-and their relationships will be there.  Follow the instructions bigtop
-prints (which mainly give advice about building your database for
-SQLite, Postgres, and MySQL).
+Column names go in parentheses.  Types default to strings, if you need
+something else use a colon as for C<birth_day> in the child table.  Indicate
+optional fields with a leading plus sign.  Specify literal defaults with
+an equal sign as for anniversary C<preferred_gift>.
+
+In addition to the columns listed, each table will have an integer
+primary key called id and two dates fields: created and modified.
+
+For slightly different discussion and instructions for on building an
+app directly from an existing postgres 8 database, see
+C<Bigtop::Docs::QuickStart>.
 
 =head2 How can I just as easily add to an existing bigtop file?
 
 Suppose that you want to add some tables to the app from the previous
 question, here's all you need to do (from the Dancers directory):
 
-    bigtop --add docs/dancers.bigtop 'boss<->dancer'
+    bigtop --add docs/contacts.bigtop 'family<->job(title,description)'
 
 This will add a new table for supervisors and a many-to-many relationship
 between it and the existing dancer table.  It will also rebuild the
-app.
+app.  Specify columns for new table as in the previous question.  Existing
+tables will get new foreign keys, but can't be changed in any other way
+from the command line.
 
 =head2 I don't like the bigtop defaults how can I change them before building?
 
-Using the command line bigtop approach of the previous two questions
-leaves you with tables full of columns which don't usually make much
-sense.  If you want to change them before even building the app, try
-using tentmaker:
+You don't have to list column information on the command line, if you
+don't bigtop will create your app with default columns you probably won't
+like.  To avoid that, try using tentmaker:
 
     tentmaker --new Dancers 'dancer->resume resume->performance'
 
@@ -323,6 +333,12 @@ saving, this time type:
     bigtop docs/dancers.bigtop all
 
 to regenerate the app.
+
+Note that tentmaker also understands column specifications, so feel free
+to include those when starting it.  But, it allows you to edit many things
+that you can't specify at the command line.  For example, tentmaker
+lets you specify a data validation constraint for each column.  There
+are many other things it can help with.
 
 =head1 Init
 

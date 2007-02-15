@@ -1640,8 +1640,8 @@ browser.
 
 Unless you need to work on tentmaker internals, you probably want to read
 the POD for the tentmaker script instead of the rest of this documentation.
-You might also want to look at Bigtop::Docs::TentTut and/or
-Bigtop::Docs::TentRef.
+You might also want to look at C<Bigtop::Docs::TentTut> and/or
+C<Bigtop::Docs::TentRef>.
 
 =head1 HANDLERS
 
@@ -1686,6 +1686,9 @@ Kills the running tentmaker.
 Params: None
 
 Returns: undef
+
+Note that the script usually dies before it can return a good AJAX response
+to the browser, which results in one Javascript error in the browser.
 
 =head2 do_update_std
 
@@ -2125,19 +2128,16 @@ It uses move_block on the AST.
 This method allows the server to take the hit of compiling Bigtop::Parser
 and initially parsing the input file with it, before declaring that the
 server is up and available.  I no longer think this is a good idea,
-but for now it is reality.
+but for now it is reality.  In any case, since I learned to compile
+the grammar into a module, the times involved are no longer significant.
 
 It builds a list of all the backends available on the system (by walking
 @INC looking for things in the Bigtop::Backend:: namespace).  It also
 reads the file given to it and parses that into a bigtop AST.  Then
-it deparses that to produce the initial presented in the browser.
+it deparses that to produce the initial raw input presented in the browser.
 Think of this as canonicallizing the input file for presentation.  Finally,
 it builds the statements hash, filling it with docs from all the
 keywords that all of the backends register.
-
-This method takes at least 5 seconds, even though I haven't profiled it,
-I believe most of that is spent compiling the grammar.  Subsequent operations
-on the tree are subsecond.
 
 =head2 build_backend_list
 
@@ -2147,22 +2147,24 @@ whether they are in use, and what statements they support.
 =head2 read_file
 
 Reads the input file.  If the user didn't supply a file, asks
-Bigtop::ScriptHelp to generate a minimal starting point.
+Bigtop::ScriptHelp to generate a starting point using the requested (or
+default) style.
 
 =head1 HELPER METHODS
 
 =head2 new
 
 Used by tests to gain a pseudo-instance through which to call helper methods.
-They could call them through the class, but naming an instance saves typing.
+For instance, some tests call methods on this instance to turn templating
+on an off.  See t/tentmaker/*.t for examples.
 
 =head2 show_idents
 
-Used by tests to get a dump of all the idents in the current tree.  You get
-Data::Dumper output of an array of the idents.  Each element is an array
-listing the type, name, and ident for one tree node.  All nodes with idents
-appear in the output, but the order is a bit odd (it is depth first traversal
-order).
+Used during test development to get a dump of all the idents in the current
+tree.  You get Data::Dumper output of an array of the idents.  Each element
+is an array listing the type, name, and ident for one tree node.  All nodes
+with idents appear in the output, but the order is a bit odd (it is depth
+first traversal order).  This saves counting created items on your fingers.
 
 =head2 init
 
@@ -2175,8 +2177,8 @@ in the app level config block.
 
 =head2 complete_update
 
-Used by all AJAX handlers to deparse the updated tree and return it to the
-client.
+Used by almost all AJAX handlers to deparse the updated tree and return it
+to the client.
 
 =head2 unescape
 
@@ -2201,10 +2203,6 @@ Used by do_update_backend to add a backend from the AST.
 
 Keeps the backends hash up to date.
 
-=head2 _get_backend_block_statements
-
-Helps update_backends.
-
 =head2 file
 
 Accessor to get/set the name of the input file.  Setting it blows the
@@ -2217,7 +2215,8 @@ Returns the name of the input file given on the command line.
 =head2 set_file
 
 Stores the input file name during startup.  Calling this blows the cashed
-deparsed bigtop source code and abstarct syntax tree.
+deparsed bigtop source code and abstarct syntax tree.  Any future request
+for the tree or input text will trigger reading of the file.
 
 =head2 get_tree
 
@@ -2241,7 +2240,7 @@ Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006, Phil Crow
+Copyright (C) 2006-7, Phil Crow
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.6 or,

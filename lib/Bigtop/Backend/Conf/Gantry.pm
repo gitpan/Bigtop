@@ -207,7 +207,7 @@ sub output_configs_gantry {
         $output .= Bigtop::Backend::Conf::Gantry::config(
             {
                 var   => 'root',
-                value => 'html/templates',
+                value => 'html:html/templates',
             }
         );
     }

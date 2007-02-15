@@ -50,7 +50,7 @@ scripts and ScriptHelp.  It is a simple factory.  Call C<get_style>
 with the name of a style module, to receive a style suitable for passing
 to C<<Bigtop::ScriptHelp->get_big_default>> and
 C<<Bigtop::ScriptHelp->augment_tree>>.  All styles live in the
-C<Bigtop::ScriptHelp::Style> namespace.
+Bigtop::ScriptHelp::Style:: namespace.
 
 Each stye must implement C<get_db_layout> which is the only method called by
 C<Bigtop::ScriptHelp> methods.  See below for what it receives and returns.
@@ -119,9 +119,13 @@ an array reference of new tables names
 
 =item joiners
 
+( Optional )
+
 an array reference of new three way join tables
 
 =item foreigners
+
+( Optional )
 
 a hash reference keyed by table name storing an array reference of
 the table's new foreign keys
@@ -129,7 +133,6 @@ the table's new foreign keys
 =back
 
 =back
-
 
 =head1 AUTHOR
 

@@ -28,9 +28,13 @@ Purge::real_purge_dir( $play_dir );
 
 sub stripper {
     my $line = shift;
-    $line    =~ s/\(C\)\s+\d+//;
+    $line    =~ s/\(C\)\s+\d+//;  # no copyrights
+    $line    =~ s/^0\.01 .*//;    # no version lines
+                                  # (the one in Changes has time stamp)
 
-    $line    =~ s/^0\.01 .*//;
+    if ( $line =~ /E<lt>/ ) {     # remove author lines (emails won't match)
+        return '';
+    }
 
     return $line;
 }

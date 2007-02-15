@@ -5,7 +5,7 @@ use warnings::register;
 use Carp;
 use File::Spec;
 
-our $VERSION = '0.24';
+our $VERSION = '0.25';
 
 sub write_file {
     my $file_name    = shift;
@@ -132,17 +132,19 @@ routines (which are not exported):
     use Bigtop;
     Bigtop::write_file( $file_name, $file_content, $no_overwrite )
 
-This attempts to write $file_content to $file_name and dies on failures
+This attempts to write C<$file_content> to C<$file_name> and dies on failures
 of open or close.  Further, if you pass a true no_overwrite flag, it
 will check to see if the file exists and refuse to overwrite it.  In that
 case, the user gets a warning that the file has been skipped because it
-already exists.
+already exists.  If you don't want the user to see the warning, turn off
+the Bigtop warning.  To avoid fatal errors on write failures, wrap in an
+eval.  Putting these together, we come to my typcial usage:
 
-Since write_file dies on failures, you should wrap it in an eval if you
-don't want its errors to be fatal.
-
-You may also say no warnings in the eval block to prevent skipped messages
-when you ask for no overwrite.
+    eval {
+        no warnings qw( Bigtop );
+        Bigtop::write_file( $some_output_file, $content, 'no_overwrite' );
+    }
+    warn $@ if $@;
 
 =item make_module_path
 
@@ -181,13 +183,20 @@ None.
 
 =head1 SEE ALSO
 
-The work of Bigtop is handled by its pieces:
+L<Bigtop::Docs::TOC>
+
+If you are interested in Bigtop's inner workings, consider delving into
+some of these:
 
 =over 4
 
 =item 
 
 L<Bigtop::Parser>
+
+=item 
+
+L<Bigtop::Keywords>
 
 =item 
 
@@ -235,11 +244,7 @@ L<Bigtop::Backend::Model>
 
 =item 
 
-L<Bigtop::Backend::Model::GantryCDBI>
-
-=item 
-
-L<Bigtop::Backend::Model::Gantry>
+L<Bigtop::Backend::Model::GantryDBIxClass>
 
 =item 
 
@@ -248,13 +253,14 @@ L<Bigtop::Backend::SiteLook::GantryDefault>
 =back
 
 The backends come in types.  Ideally, these types all share a set of
-keywords which are defined in the type's module.  So L<Bigtop::SQL>
-is meant to define the KEYWORDS that all Bigtop::SQL::* modules use.
-They may define others, but only if they are specific to the generated
-target.  For example, there might be some Postgres specific keyword
-which doesn't apply to other databases.  It should be defined in
-Bigtop::SQL::Postgres.  (But currently only on Bigtop::Control::Gantry,
-of the backend implementations, actually defines target specifc keywords).
+keywords which are requested from L<Bigtop::Keywords> in the type's module.
+So L<Bigtop::Backend::SQL> is meant to request the KEYWORDS that all
+Bigtop::SQL::* modules use.  They may request others, but only if they are
+specific to the generated target.  For example, there might be some Postgres
+specific keyword which doesn't apply to other databases.  It should be
+requested in C<Bigtop::Backend::SQL::Postgres>.  Even if you need backend
+specific keywords, you should put them in C<Bigtop::Keywords> so tentmaker
+can display them.
 
 =head1 JOIN US
 
@@ -272,7 +278,7 @@ Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2005-6, Phil Crow
+Copyright (C) 2005-7, Phil Crow
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.6 or,

@@ -14,7 +14,7 @@ my $cgi = Gantry::Engine::CGI->new( {
     config => {
         dbconn => 'dbi:SQLite:dbname=app.db',
         dbuser => 'apache',
-        root => 'html/templates',
+        root => 'html:html/templates',
     },
     locations => {
         '/' => 'Contact',

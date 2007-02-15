@@ -115,10 +115,16 @@ for a complete attractive app.
 
 =head1 Further Reading
 
-To start using Bigtop, see Bigtop::Docs::TentTut or Bigtop::Docs::Tutorial.
-If those go too fast, try the Bigtop section of Gantry::Docs::Tutorial,
-which builds a smaller app.  After those, try Bigtop::Docs::Cookbook.
-For a complete doc list, see Bigtop::Docs::TOC.
+With the development of ASCII art input, you can now build a complete
+CRUD app from the command line alone.  Similarly, if you have a postgres 8
+database, you can build a CRUD app for it from the command line.  See
+C<Bigtop::Docs::QuickStart> for details.
+
+To start using Bigtop, see C<Bigtop::Docs::TentTut> or
+C<Bigtop::Docs::Tutorial>.
+If those go too fast, try the Bigtop section of C<Gantry::Docs::Tutorial>,
+which builds a smaller app.  After those, try C<Bigtop::Docs::Cookbook>.
+For a complete doc list, see C<Bigtop::Docs::TOC>.
 
 =head1 Why the Name
 

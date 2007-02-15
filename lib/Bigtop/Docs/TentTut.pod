@@ -57,6 +57,8 @@ to think about tentmaker as a server (except to realize that it is listening
 on a port, so be careful of who is allowed to talk to it, think firewall).
 You need to know how to use it as an app, read on.
 
+(Note that you may use -p instead of --port.)
+
 If you already have a bigtop file, you can put that directly on the command
 line, tentmaker will open it for editing:
 
@@ -75,6 +77,16 @@ above.  This time, we'll actually start using it.
 
 The command line flags can be abbreviated with a single dash and their
 first letter (e.g. --new is also -n).
+
+You can even specify the columns and their types for tables like address:
+
+    tentmaker --new Contact 'address(name,street,city,state,zip)'
+
+Note that single quotes are probably necessary to keep the shell from
+interpretting the punctuation.
+
+See C<Bigtop::Docs::ScriptHelp::Style::Original> for a complete description
+of how to define tables from the command line.
 
 =head1 Building an App
 
@@ -254,6 +266,14 @@ restart the tentmaker like so:
 
     tentmaker --add docs/contact.bigtop 'bday->address'
 
+As with the --new flag, --add allows you to define columns for the new
+tables.  Existing tables will receive new foreign keys as specified, but
+can't be modified in other ways from the command line.  See
+C<Bigtop::ScriptHelp::Style::Original> for how to specify columns, their
+types and a few other things from the command line.  Note that both tentmaker
+and bigtop share command line handling code, so all examples for bigtop
+work equally well for tentmaker.
+
 Provide a port if you need it (with --port).
 
 We could have said:
@@ -271,6 +291,14 @@ See tentmaker's perldoc for a complete description of ASCII art.
 
 Now there are two main things we want to do: make most of the address table
 fields optional and pick better names for the generated bday table.
+Both of these could also be acheived by careful command line column
+specifications when we built the tables above,
+see C<Bigtop::ScriptHelp::Style::Original>.
+
+Even if you do supply better names during initial table generation, this
+section still offers good advice should ever need to make changes to
+what you specified on the command line.  Further, tentmaker allows you
+to edit far more than you can control from the command line.
 
 Before we start with our changes -- and this is always a good first step
 when you've already created the app -- go to the 'Backends' tab and check
@@ -341,14 +369,16 @@ only piece that is difficult to manage is the database once it is built.
 
 =head1 Further Reading
 
-See Bigtop::Docs::TentRef for more details on what tentmaker can control.
-Try Bigtop::Docs::Cookbook for small problems and answers,
-Bigtop::Docs::Tutorial for a more complete example, with discussion,
-Bigtop::Docs::Keywords for a list of valid keywords and their meanings,
-and Bigtop::Docs::Sytnax for full details.  If you need to write your
-own backends, see Bigtop::Docs::Modules.
+See C<Bigtop::Docs::TentRef> for more details on what tentmaker can control.
+For more command line options, including firing up tentmaker to build an
+app based on an existing postgres database, see C<Bigtop::ScriptHelp::Style>.
+Try C<Bigtop::Docs::Cookbook> for small problems and answers,
+C<Bigtop::Docs::Tutorial> for a more complete example, with discussion,
+C<Bigtop::Docs::Keywords> for a list of valid keywords and their meanings,
+and C<Bigtop::Docs::Sytnax> for full details.  If you need to write your
+own backends, see C<Bigtop::Docs::Modules>.
 
-All of the doc modules are described briefly in Bigtop::Docs::TOC.
+All of the doc modules are described briefly in C<Bigtop::Docs::TOC>.
 
 =head1 Author
 

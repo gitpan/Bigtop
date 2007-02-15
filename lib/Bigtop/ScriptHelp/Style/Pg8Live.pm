@@ -172,7 +172,8 @@ Bigtop::ScriptHelp::Style::PgLive - gets its descriptions from Postgresql
 
 For normal use:
 
-    bigtop -n AppName -s Pg8Live 'dbi:Pg:dbname=yourdb' user pass [schema]
+    bigtop -n AppName -s Pg8Live \
+        'dbi:Pg:dbname=yourdb' user pass [schema]
 
 Do the same for tentmaker.  It also works for -a:
 

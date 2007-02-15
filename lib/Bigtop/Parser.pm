@@ -5376,10 +5376,13 @@ Then run this command:
 
 =head1 DESCRIPTION
 
-This module is really only designed to be used by bigtop.  It provides
-the grammar which understands bigtop files and turns them into syntax
-trees.  It provides various utility functions for bigtop (or similar
-tools you might write) and for backends.
+This module is really only designed to be used by the bigtop and tentmaker
+scripts.  It provides access to the grammar which understands bigtop files
+and turns them into syntax trees.  It provides various utility functions
+for bigtop, tentmaker, backends, and similar tools you might write.
+
+If you just want to use bigtop, you should look in C<Bigtop::Docs::TOC>
+where all the docs are outlined.
 
 Reading further is an indication that you are interested in working on Bigtop
 and not just in using it to serve your needs.
@@ -5534,10 +5537,15 @@ The grammar of a bigtop file is structured, but the legal keywords in
 its simple statements are defined by the backends (excepts that the config
 keywords are defined by this module, see Config Keywords below for those).
 
+Acutally, all the keywords that any module will use should be defined
+in C<Bigtop::Keywords> so tentmaker can display them.  Then the backend
+(or its type) should pull the keyword definitions it wants from
+C<Bigtop::Keywords>.
+
 If you are writing a backend, you should use the base module for your
 backend type.  This will register the standard keywords for that type.
-For example, suppose you are writing Bigtop::SQL::neWdB.  It should be
-enough to say:
+For example, suppose you are writing Bigtop::Backend::SQL::neWdB.  It
+should be enough to say:
 
     use Bigtop::SQL;
 
@@ -5548,8 +5556,10 @@ put them in a begin block like this:
 
     BEGIN {
         Bigtop::Parser->add_valid_keywords(
-            $type,
-            qw( your keywords here),
+            Bigtop::Keywords->get_docs_for(
+                $type,
+                qw( your keywords here),
+            )
         );
     }
 
@@ -5565,21 +5575,31 @@ The type must be one of these levels:
 
 =over 4
 
+=item config
+
 =item app
 
-=item config
+=item app_literal
+
+=item table
+
+=item join_table
+
+=item field
 
 =item controller
 
-=item field
+=item controller_literal
 
 =item method
 
 =back
 
-These correspond exactly to the block types in the grammar (except that
-sequence blocks must currently be empty, in the future sequence will be
-added to the above list).
+These correspond to the block types in the grammar.  Note, that there
+are also sequence blocks, but they are deprecated and never allowed statements.
+Further, the various literals are blocks in the grammar (they have block
+idents and can have defined keywords), but they don't have brace delimiters.
+Instead, they have a single backquoted string.
 
 =item is_valid_keyword
 
@@ -5600,6 +5620,10 @@ The two preceding methogs are really for internal use in the grammar.
 =back
 
 =head2 METHODS which work on the AST
+
+There are quite a few other methods not documented here (shame on me).
+Most of those support tentmaker manipulations of the tree, but there
+are also some convenience accessors.
 
 =over 4
 
@@ -5638,14 +5662,17 @@ With this module walking the tree, all you must do is provide the appropriate
 callbacks.  Put one at each level of the tree that interests you.
 
 For example, if you are generating SQL, you need to put callbacks in
-the following packages:
+at least the following packages:
 
     table_block
     table_element_block
     field_statement
 
-This does require some knowledge of the tree.  Please consult the grammar
+This does require some knowledge of the tree.  Please consult bigtop.grammar,
+in the lib/Bigtop subdirectory of Bigtop's build directory,
 for the possible packages (or grep for package on this file).
+There are also several chapters of the Gantry book devoted to explaining
+how to use the AST to build backends.
 
 The callbacks are called as methods on the current tree node.  They receive
 the output array reference from their children and the data scalar that
@@ -5726,7 +5753,8 @@ Use this method instead of directly calling Data::Dumper::Dump.
 While you could dump $self, that's rather messy.  The problem is the parent
 nodes.  Their presence means a simple dump will always show the whole app
 AST.  This method carefully removes the parent, dumps the node, and restores
-the parent, reducing clutter and leaving everything in tact.
+the parent, reducing clutter and leaving everything in tact.  The closer
+to a leaf you get, the better it works.
 
 =item get_appname
 
@@ -5796,8 +5824,8 @@ them in an ugly fashion).
 
 =head1 Config KEYWORDS
 
-For simplicity, all config keywords are defined in this module.  This is
-not necessarily ideal and is subject to change.
+For simplicity, all config keywords are requested from C<Bigtop::Keywords>
+in this module.  This is not necessarily ideal and is subject to change.
 
 =over 4
 
@@ -5949,7 +5977,7 @@ worked.
 =item get_keyword_docs
 
 Called by TentMaker, so it can display the backend comments to the user
-through their brawer.
+through their browser.
 
 Returns: a hash reference of keyword docs understood by tentmaker's
 templates.
@@ -6001,7 +6029,7 @@ Phil Crow <crow.phil@gmail.com>
 
 =head1 COPYRIGHT and LICENSE
 
-Copyright (C) 2005 by Phil Crow
+Copyright (C) 2005-7 by Phil Crow
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.6 or,

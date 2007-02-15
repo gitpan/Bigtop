@@ -1755,7 +1755,7 @@ sub gen_Control {
             $saw_root++ if $var eq 'root';
         }
         unshift @configs, [ 'dbconn', 'dbi:SQLite:dbname=app.db' ];
-        push @configs, [ 'root', 'html/templates' ] unless $saw_root;
+        push @configs, [ 'root', 'html:html/templates' ] unless $saw_root;
 
         # ...then, the locations
         my $locations = $bigtop_tree->walk_postorder(

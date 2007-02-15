@@ -1,3 +1,13 @@
+Expand the generated root to html:html/templates not just html/templates.
+
+The error message for a regular bigtop invocation when the file can't
+be found seemed wrong to Tim.
+    I think this was actually a version mismatch.  He had the new
+    bigtop but not the ScriptHelp::Style modules that went with it.
+
+The mysql SQL backend should have a config block param called engine.
+Use of it would add ENGINE=value after each create table statement.
+
 I don't think database defaults are working from forms.  The problem
 is probably that the autocrud form handler is setting empty fields to '',
 so the default is not taking.  Perhaps there should be special cleanup

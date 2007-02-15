@@ -665,55 +665,50 @@ Bigtop::ScriptHelp - A helper modules for command line utilities
 This module is used by the bigtop and tentmaker scripts.  It provides
 convenience functions for them.
 
-=head1 ASCII art
+=head1 Styles
 
-Whenever users are allowed to supply tables, they could just name the
-tables, but they will probably want to use ASCII art to show their
-relationships.  This section explains those.
+Whenever a user is building or augmenting a bigtop file, they can
+specify new tables and their relationships via a script help style of their
+choice.  All the styles are modules in the Bigtop::ScriptHelp::Style::
+namespace.  See C<Bigtop::ScriptHelp::Style> for general information about
+styles and individual modules under its namespace for how each style
+works.  That said, here is a list of the styles available when this was
+written.
 
-Note well: for these to work well, your SQL and Model backends have
-to understand what to do with them.  For instance, the only Model
-that understands what to do with a many-to-many relationship is
-GantryDBIxClass.
+=head2 Original
 
-Each relationship is between a pair of tables.  These tables must appear
-with their relational operator in between them without whitespace.
-There are four operators which specify three relations:
+This is the default style.
 
-=over 4
+The original style allows ASCII art pictures of database relationships.
+For example:
 
-=item a->b
+    bigtop -n App 'contact<-birth_day'
 
-Table a has a foreign key pointing to table b, this is a many-to-one
-relationship from a to b.
+But recent versions allow you to specify column names, their types, whether
+they are optional, and to give them literal default values.  See
+C<Bigtop::ScriptHelp::Style::Original> for details.  This is my favorite
+style (so it's no surprise that it is the default).
 
-=item b<-a
+=head2 Pg8Live
 
-Table a has a foreign key pointing to table b, this is a one-to-many
-relationship from b to a.
+This style must be requested:
 
-This is a synonymn, for a->b, except that if the tables have not
-already been created, the first one listed is created first.  This might
-matter if your SQL backend makes genuine foreign keys and your database won't
-allow forward references.
+    bigtop -n App -s Pg8Live dsninfo username password
 
-=item a-b
+It will connect to the database described by the dsninfo with the supplied
+username and password and create a bigtop file from it.  This will create
+a full AutoCRUD app for the database.  The bigtop file will have all the
+tables, their columns including types and defaults.  It will also know about
+all primary and foreign keys in the original database.  Depending on how
+exotic the input database is, it will also know to autoincrement the primary
+key.
 
-Table a and table b have a one-to-one relationship, each will have
-columns pointing to the other.
-
-=item a<->b
-
-Tables a and b have a many-to-many relationship.  A third table called
-a_b will be created for you to join them.  The has many relationship in
-table a will be called bs (not to be taken literally), whilc the has many
-relationship in table b will be called as.  You may use the tentmaker or a
-text editor to add a names statement to the generated join_table block,
-to provide alternate names.
-
-=back
+Writing your own style is easy.  See C<Bigtop::ScriptHelp::Style> for
+the requirements and the two existing styles for examples.
 
 =head1 METHODS
+
+All methods are class methods.
 
 =over 4
 
@@ -726,15 +721,22 @@ It has everything you need for your app except tables and controllers.
 
 =item get_big_default
 
-Params: an app name and a list of ascii art table relationships.
+Params:
+
+    script help style
+    app name
+    a list of data for the style
 
 Returns: a bigtop file suitable for immediately creating an app and
 starting it.
 
 =item augment_tree
 
-Params: a Bigtop::Parser syntax tree (what you got from a parse_* method)
-and a list of ascii art table relationships
+Params:
+
+    script help style
+    a Bigtop::Parser syntax tree (what you got from a parse_* method)
+    a string of data for the style (join all elements with spaces)
 
 Returns: nothing, but the tree you passed will be updated.
 
@@ -766,10 +768,14 @@ them too.  Don't call them through the class, call them as functions.
 
 =item valid_ident
 
+Exported by default.
+
 Params: a proposed ident
 
 Returns: true if the ident looks good, false otherwise.  Note that the
 regex is not perfect.  For instance, it will allow leading numbers.
+Further it absolutely will not notice if a table or controller name is
+reserved.
 
 =back
 
@@ -779,7 +785,7 @@ Phil Crow, E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006, Phil Crow
+Copyright (C) 2006-7, Phil Crow
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.6 or,

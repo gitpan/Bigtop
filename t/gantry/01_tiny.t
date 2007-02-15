@@ -107,7 +107,7 @@ $correct_conf = <<'EO_CORRECT_CONF';
 <Location /app_base>
     PerlSetVar DB app_db
     PerlSetVar DBName some_user
-    PerlSetVar root html/templates
+    PerlSetVar root html:html/templates
     PerlSetVar Trivia 0
 </Location>
 

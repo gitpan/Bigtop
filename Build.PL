@@ -28,7 +28,7 @@ my $build = $subclass->new(
         'Test'        => 0,
         'Test::More'  => 0,
         'Test::Warn'  => 0,
-        'Test::Files' => 0,
+        'Test::Files' => 0.13,
     },
     script_files        => [ glob( 'scripts/*' ) ],
     tentmaker_files     => [ glob( 'tenttemplates/*' ) ],

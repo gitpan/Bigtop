@@ -34,13 +34,13 @@ It will give the best defaults.  Supply at least an app name:
 
     tentmaker -n AppName some tables here
 
-But, for greater effect use L<ASCII Art>.
+But, for greater effect supply L<STYLE INFO>.
 
 =item --add (or -a)
 
 If you have a bigtop file, but want to augment it with additional tables,
 use the --add flag.  Supply the bigtop file name and a list of tables or
-L<ASCII Art>:
+L<STYLE INFO>:
 
     tentmaker -a docs/appname.bigtop more tables
 
@@ -61,44 +61,15 @@ server, so you need to be somewhat careful of what user runs it (never
 use root) and where the server sits in your network topography (behind
 a firewall is a good place).
 
-=head2 ASCII Art
+=head2 STYLE INFO
 
 When in new or add modes, you can specify more than just table names.  You
-can show their relationships.  There are three relationships you can show:
-one-to-one, one-to-many, and many-to-many.  Each relationship is shown with
-a binary operator between two table names.  Here's the notation:
-
-=over 4
-
-=item a-b one-to-one
-
-Both tables receive a foreign key pointing to each other.
-
-=item a->b or b<-a one-to-many
-
-The table on the tail of the arrow receives a foreign key to the table on
-the point.  The only difference is that tables are created in their overall
-order of appearance.
-
-=item <-> many-to-many
-
-A joining table will be created with two foreign keys, one for each named
-table.  The named tables each receive a many-to-many relationship through
-the joining table.  (This only works if your backend and ORM understand
-how to handle many-to-many relationships.  Only Model GantryDBIxClass does.)
-
-=back
-
-Note Well:  Your shell might want to aggressively steal the table relationship
-operators shown above.  Therefore, you should put all ASCII art in single
-quotes.
-
-Any tables that don't already exist will be created in the order of their
-appearance in the list of tables or ASCII art.  The relationships will
-be applied to all tables, including the existing ones.  Keep in mind that
-the system is not all that smart.  If you list the same relationship
-repeatedly, don't be surprised if you end up with multiple foreign keys
-from one table to another.  But, it won't recreate whole tables.
+can also control their relationships and columns.  Do this by picking a
+style.  Currently there are two styles: Original and Pg8Live (yes, I've
+thought having an ExtraCrispy).  See C<Bigtop::ScriptHelp::Style::Original>
+and C<Bigtop::ScriptHelp::Style::Pg8Live> for details.  Hint: with them
+you get not only tables, but can control the columns in those tables including
+their column names, SQL types, foreign keys, and default values.
 
 =head1 The Tabs in Detail
 
