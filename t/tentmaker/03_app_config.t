@@ -26,7 +26,7 @@ my @maker_deparse;
 my $ajax_dir = File::Spec->catdir( qw( t tentmaker ajax_03 ) );
 my $expected_file;
 my $ajax;
-my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
+my $style = Bigtop::ScriptHelp::Style->get_style();
 
 #--------------------------------------------------------------------
 # Sanity Check (repeated test from 02....t)

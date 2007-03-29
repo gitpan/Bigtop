@@ -27,6 +27,7 @@ sub backend_block_keywords {
           label   => 'Alternate Template',
           descr   => 'A custom TT template.',
           type    => 'text' },
+
     ];
 }
 

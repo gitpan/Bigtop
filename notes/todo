@@ -1,9 +1,79 @@
-Expand the generated root to html:html/templates not just html/templates.
+Off topic:
+    Presentation advice:
+        a2ps will convert code to postscript, try:
+             a2ps -o vim.ps --pretty-print=perl --prolog=color code_file
+        see man a2ps for details
 
-The error message for a regular bigtop invocation when the file can't
-be found seemed wrong to Tim.
-    I think this was actually a version mismatch.  He had the new
-    bigtop but not the ScriptHelp::Style modules that went with it.
+        spod5 takes plain pod and makes an S5 slideshow (browser delivered)
+        http://search.cpan.org/~book/spod5-0.02/
+        http://meyerweb.com/eric/tools/s5/
+
+        a LaTeX method: beamer
+        http://www.ctan.org/tex-archive/macros/latex/contrib/beamer/
+        http://sourceforge.net/projects/latex-beamer/
+
+        perrin says that perltidy can make color-coded HTML
+
+Generated bigtop values which include Perl code should always use q or qq
+quoters.  This includes at least the default legend extra key in form methods.
+
+The tent tut and tent ref pods need new screen shots.  The old ones
+got lost in a web site move and they were out of date anyway.
+
+Stas says deleting fields does not remove them from the data statements
+table.  But adding data statements always sends a clean and correct table.
+
+Stas wants better tabbing order in the data statements table (so tab
+moves down).  This may not be so easy as the tabbing order is now default.
+
+---
+
+We should also load all the backends one at a time and see what keywords
+they register.  And document the backends.
+    This is two separate issues.  First, who registers which keyword.
+    The solution to that might be to pass the registering class to
+    Bigtop::Parser and have it provide the accessor to the all docs hash.
+    Or it might be to simply put an array or hash called 'registered_by'
+    in the keywords file.
+    Or, we could have the registration code moved to a method called in
+    the BEGIN block which the doc script could also call.
+    Second is what backends are available and what conf vars do they
+    understand.  That information is available by loading them and
+    calling what_do_you_make and backend_block_keywords.
+        The second one is done by skip/backends
+
+Tentmaker ought to allow import list control for used modules.
+
+Provide some mechanism for generating useful join table row insertions
+(select many).
+
+Allow a field to be marked html_form_type file, then in the template
+present a file upload browse button and in the gen module, autocreate
+add and edit post actions.
+
+We should generate more for table1<->table2...
+    Tag row option
+    inherit do_tag from plugin? or implement one
+
+When in limit by...
+    all row option links should have the limiter's id as a trailing arg
+    the form should be made aware of the limiter's id (if present) and
+    switch to a display only field in that case
+
+*> should generate limit_by for the many table?
+
+*> should generate a pseudo-field (not for Model or SQL) of type
+has_many, it would lead to the cool new Django like has many sub form.
+
+AutoCRUD should pass all extra args through to all of the callbacks.
+    This is a gantry issue, which I think Tim solved.
+
+The genwrapper has a body tag with an id that has a blank value, which is
+not allowed by xhtml.  It also follows that with a <br /> that doesn't
+validate.
+    I don't know what to do about the <br /> we need the spacing.
+    And, this is a Gantry issue, since the genwrapper is just a straight
+    copy of sample_wrapper.tt from Gantry's root dir.
 
 The mysql SQL backend should have a config block param called engine.
 Use of it would add ENGINE=value after each create table statement.
@@ -21,6 +91,12 @@ marked a date.
     pop-up date entry.
 
 ---
+
+I should probably change tentmaker to jquery.  Among other things this
+would facilitate changing the text from edit to done on show/hide hrefs.
+
+app.server could get a GEN module of gen conf and gen locations which
+users could augment.
 
 Do something for generation of AjaxCRUD users.
 
@@ -50,9 +126,6 @@ varchar.  You should get the default int4, primary_key, auto.
 
 Should a table name change cause a cascade of field name changes for
 all the foreign keys which point to it?
-
-In the generated do_main, any calls to foreign display should be wrapped
-with evals and warnings issued with default blank.
 
 Why do controllers have to have locations?  Shouldn't the backends that
 assign locations just skip them?
@@ -199,6 +272,10 @@ controls_table statement?
 
 Not to be Done:
 
+    Tentmaker should discourage people from creating fields with
+    duplicate names.
+        Warnings of this type are not really in tentmaker's nature.
+
     Further, -> is model only foreign key => is both model and SQL.
     But the goal is to pull this from Postgres as well.
         I decided that -> will just give you a genuine foreign key.  If you
@@ -316,6 +393,34 @@ Not to be Done:
 
 Bug fixes:
 
+    Stas noticed that attempting to change the engine immediately after saving
+    results in:
+    error: Can't call method "set_engine" on an undefined value
+    at /usr/lib/perl5/site_perl/5.8.8/Bigtop/TentMaker.pm line 352.
+        In fact, tentmaker pretty much collapses like a cheap tent after save.
+        Fixed by no longer trying to read the just written file.
+
+    Stas noticed that when you inadvertantly click in a text area like
+    contact_us, tentmaker makes the statement, but leaves out the value
+    entirely.  It should at least make a `` value for it.  Better, it
+    should remove statements with blank text values.
+
+    The following were all symtpoms of the same problem:
+    Stas got Error changing statement: Couldn't change field statement from
+    tentmaker when he tried to remove a constraint previously added to a field.
+    Stas said: adding a new field to an existing table in tentmaker and then
+    setting it to searchable gave uninit value warning TentMaker line 320.
+        Removed work around that dealt with HTTP::Server::Simple bug
+        (since corrected in that module) which prematurely unescaped percent
+        encoded slashes.
+
+    ASCII art is not properly applying default columns.  Here is the needed
+    change:
+        When a table is mentioned without columns, never put anything in the
+        columns hash.
+        When all is finished, add default columns for all new tables which
+        are not already represented in the columns hash.
+
     tentmaker is not showing row option locations.  On mac book see:
         ~/writing/linux-mag/gantry-one/take3/docs/billing.bigtop
     Worse, editing row options ends up loosing the location entirely.
@@ -372,6 +477,123 @@ Bug fixes:
     When config values have colons in them, deparse is not quoting them.
 
 Done:
+
+    Stas thinks tentmaker backends tab could be clearer if the center column
+    was narrower and the right column had name, input element, descr on one
+    line.  Or perhaps the description could be in the second column to move
+    it out from under the names.  Or perhaps there could be a miny hr under
+    between the keywords.
+
+    We need to have config for TYPE { } blocks which make seperate files.
+    There would be a governing config block (the existing one).  It would
+    fix the accessors and init work.  All other config blocks would get
+    the values from the controlling config block, unless they supplied
+    the same name to override it.  This should apply to controller level
+    config blocks as well, but that could wait.  It would only work for Gantry
+    conf, all others would still get only what is in the main config.
+        All of these backends handle conf:
+            Xx CGI       Gantry
+            x Conf      Gantry
+            - Conf      General (deprecated, not updated)
+            Xx HttpdConf Gantry
+        Each of them should write additional files for each additional conf
+        block, using the conf block name in the generated file name.
+    We need to revise this so it works for controller level literals as well.
+    What I really want is for Parser.pm to build a structure that has all
+    the conf by location and type.  Then every backend can call that and use
+    it without having to separately walk the tree for it.
+
+    Stas suggests that re-clicking edit when finished edit (to conceal the edit
+    box) is counter-intuitive.  When a show_or_hide is revealed, the text on
+    the href trigger should probably change from 'edit' to 'done' or 'hide'.
+    Alternatively, an ever present done link would work too.
+        I just changed the link to read 'edit or hide'.
+
+    Stas points out that app.cgi and app.server should complain (probably
+    during generation) if the engine selected is not CGI, without which they
+    cannot function.  Do two things:
+        1. warn during generation that CGI backend must use CGI engine not MP??
+        2. generate app.cgi and app.server with CGI engine regardless
+        The warning:
+        You have requested engine MP20 and CGI Gantry.
+        app.cgi [and app.server] must use CGI engine not MP20.
+            No warning.  You couldn't really want that and you might want
+            to keep the stand alone server for faster dev restarts after
+            selecting mod_perl for deployment.
+
+    Stas renewed an old request: have Bigtop's build reinstall to the existing
+    template directory if there was one.
+
+    Stas wants the browser to pop to the top of the first tab whenever you move
+    to it.  Perhaps it is time to hide the bigtop source dump.  He also wants
+    more save buttons littered around on other pages (perhaps next to the last
+    tab).  Save as would still be on the first page.
+
+    Stas suggests that when generated app.server, the #! line should use
+    the current perl path ($^X) and not just slam /usr/bin/perl in it.
+        I also did this for app.cgi.
+
+    The auto documenters should definitely use templates, probably inline ones.
+        I take that back.  It's really six to one, half a dozen to the other.
+        See the current /skip subdirectories for examples of each.
+
+    Bring vim file up to date.  Add docs for all new keywords to relavent
+    places.  These include:
+        doc_rootp           \______ conf vars (in gantry docs)
+        show_dev_navigation /
+        html_...
+        order_by \_____ main listing
+        limit_by /
+    This is done in vim file.  But the docs still need updating.  See the
+    svn log for the vim file for a list of new keywords.
+
+    Write an automated documenter that will pull the information from
+    Bigtop::Keywords and display it in a reasonable way, say an
+    expanding/collapsing javascript widget of some sort.  Or perhaps
+    just a pod that is updated with sections for each keyword type and
+    an =over/=back set for all the keywords there.
+        Perhaps a doc should just explain that Keywords.pm is definitive
+        and let programmer read for themselves.  This might require adding
+        a 'long_descr' to the Keywords hash keys and possibly 'examples'
+        as well.
+    It still might be nice to add long_descr.
+
+    There should also be a script which uses Bigtop::Keywords and makes the
+    vim syntax file.
+
+    Bigtop should put its own version number into the changes file for the
+    initial build.
+
+    Provide a better way of sharing a form between AutoCRUD and CRUD or
+    at least provide some help for public vs. private forms.
+        Forms should always go in the gen module.  You can override them
+        as needed.  Gantry::Utils::FormMunger works wonders.
+
+    Foreign keys should lead to has_many statements in the foreign key table's
+    model.
+        There is a new refered_to_by keyword for tables.
+        Command line tools generate this for all foreign keys in -n and
+        -a modes.
+
+    Main listings should have order_by.
+
+    In the generated do_main, any calls to foreign display should be wrapped
+    with evals and warnings issued with default blank.
+
+    Tim wants *> as a synonym for <- in ASCII art.
+
+    You should be able to type your ASCII art into a file and feed it to the
+    program.
+        If there is only one parameter to -s Original, and -f for it is true,
+        that file is used.  If there are no args?  (see if there is anything
+        on stdin?)
+        I decided against taking standard in since these scripts cannot be
+        meaningfully used as filters.
+
+    The generated app.server should have static in it by default, including
+    the conf needed to make it work (doc_rootp => '/static').
+
+    Expand the generated root to html:html/templates not just html/templates.
 
     Add a file_filter_ok to Test::Files, so copyright year can be fully done.
 

@@ -1,5 +1,7 @@
 package Bigtop::Backend::HttpdConf::Gantry;
 
+use strict;
+
 use Bigtop::Backend::HttpdConf;
 use Bigtop;
 use Inline;
@@ -51,7 +53,10 @@ sub gen_HttpdConf {
     my $base_dir      = shift;
     my $tree          = shift;
 
-    my $conf_content  = $class->output_httpd_conf( $tree );
+    # write main file
+    my $configs      = $tree->get_app_configs();
+    my $controller_configs = $tree->get_controller_configs();
+    my $conf_content = $class->output_httpd_conf( $tree, $configs, 'base' );
 
     my $docs_dir      = File::Spec->catdir( $base_dir, 'docs' );
     mkdir $docs_dir;
@@ -59,11 +64,27 @@ sub gen_HttpdConf {
     my $conf_file     = File::Spec->catfile( $docs_dir, 'httpd.conf' );
 
     Bigtop::write_file( $conf_file, $conf_content );
+
+    # write other files
+    ALT_CONF:
+    foreach my $alt_conf ( keys %{ $configs } ) {
+        next ALT_CONF if $alt_conf eq 'base';
+        $conf_content = $class->output_httpd_conf(
+                $tree, $configs, $alt_conf, $controller_configs
+        );
+
+        $conf_file = File::Spec->catfile( $docs_dir, "httpd.$alt_conf.conf" );
+
+        Bigtop::write_file( $conf_file, $conf_content );
+    }
 }
 
 sub output_httpd_conf {
-    my $class = shift;
-    my $tree  = shift;
+    my $class       = shift;
+    my $tree        = shift;
+    my $configs     = shift;
+    my $config_type = shift; # the name of the config we want
+    my $controller_configs = shift;
 
     my $config      = $tree->get_config->{HttpdConf};
 
@@ -85,6 +106,10 @@ sub output_httpd_conf {
     $instance    ||= $config->{instance   } || 0;
     $conffile    ||= $config->{conffile   } || 0;
 
+    if ( $instance and defined $config_type and $config_type ne 'base' ) {
+        $instance .= "_$config_type";
+    }
+
     # first find the base location
     my $location_output = $tree->walk_postorder( 'output_location' );
     my $location        = $location_output->[0] || ''; # default to host root
@@ -99,7 +124,7 @@ sub output_httpd_conf {
             'output_perl_block',
             $tree->get_config()
     );
-    my $locations        = $tree->walk_postorder(
+    my $httpd_walk_output = $tree->walk_postorder(
             'output_httpd_conf_locations',
             {
                 location     => $location,
@@ -108,15 +133,48 @@ sub output_httpd_conf {
                 conffile     => $conffile,
                 gen_root     => $gen_root,
                 base_handler => $base_handler,
+                configs      => $configs,
+                config_type  => $config_type,
+                controller_configs => $controller_configs,
             }
     );
 
-    return Bigtop::Backend::HttpdConf::Gantry::conf_file(
+    my %divided_output;
+    foreach my $output_el ( @{ $httpd_walk_output } ) {
+        my ( $type, $value ) = %{ $output_el };
+        push @{ $divided_output{ $type } }, $value;
+    }
+
+    my $conf_file = Bigtop::Backend::HttpdConf::Gantry::conf_file(
         {
             perl_block_lines => $perl_block_lines,
-            locations        => $locations,
+            locations        => $divided_output{ locations },
         }
     );
+
+    my %config_pairs;
+    CONFIG_PAIR:
+    foreach my $config_wrapper ( @{ $divided_output{ configs } } ) {
+        if ( ref( $config_wrapper ) eq 'ARRAY' ) {
+            foreach my $config_set ( @{ $config_wrapper } ) {
+                foreach my $config_item ( split /\n/, $config_set ) {
+                    my ( undef, undef, $name, $value ) =
+                            split /\s+/, $config_item;
+                    $config_pairs{ $name } = $value;
+                }
+            }
+        }
+        else {
+            next CONFIG_PAIR unless defined $config_wrapper;
+            foreach my $config_item ( split /\n/, $config_wrapper ) {
+                my ( undef, undef, $name, $value ) =
+                        split /\s+/, $config_item;
+                $config_pairs{ $name } = $value;
+            }
+        }
+    }
+
+    return $conf_file;
 }
 
 our $template_is_setup = 0;
@@ -139,7 +197,16 @@ our $default_template_text = <<'EO_TT_BLOCKS';
 [% line %]
 [% END %]
 [% IF full_base_use %]
-    use [% base_module %] qw{[% IF engine %] -Engine=[% engine %][% END %][% IF template_engine %] -TemplateEngine=[% template_engine %][% END %] };
+    use [% base_module %] qw{[% IF engine %]
+
+        -Engine=[% engine %][% END %][% IF template_engine %]
+
+        -TemplateEngine=[% template_engine %][% END %][% IF plugins %]
+
+        -PluginNamespace=[% base_module +%]
+        [% plugins +%]
+[% END %][%# end of IF plugins %]
+    };
 [% ELSE %]
     use [% base_module %];
 [% END %]
@@ -254,19 +321,21 @@ sub output_httpd_conf_locations {
     my $location      = $data->{location};
     my $skip_config   = $data->{skip_config};
     my $gen_root      = $data->{gen_root};
+    my $configs       = $data->{configs};
+    my $config_type   = $data->{config_type};
 
     # handle configs at root location
-    my $configs;
+    my $config_output;
     if ( $skip_config ) {
         if ( $data->{ instance } ) {
-            $configs .= Bigtop::Backend::HttpdConf::Gantry::config(
+            $config_output .= Bigtop::Backend::HttpdConf::Gantry::config(
                 {
                     var   => 'GantryConfInstance',
                     value => $data->{ instance },
                 }
             );
             if ( $data->{ conffile } ) {
-                $configs .= Bigtop::Backend::HttpdConf::Gantry::config(
+                $config_output .= Bigtop::Backend::HttpdConf::Gantry::config(
                     {
                         var   => 'GantryConfFile',
                         value => $data->{ conffile },
@@ -276,45 +345,86 @@ sub output_httpd_conf_locations {
         }
     }
     else {
-        $configs  = $self->walk_postorder( 'output_configs', $gen_root );
+        $config_output  = $self->walk_postorder(
+                'output_configs', {
+                    gen_root    => $gen_root,
+                    configs     => $configs,
+                    config_type => $config_type,
+                }
+        );
     }
     my $literals = $self->walk_postorder( 'output_root_literal' );
 
     my $output   = Bigtop::Backend::HttpdConf::Gantry::all_locations(
         {
             root_loc     => $location || '/',
-            configs      => $configs,
+            configs      => $config_output,
             literals     => $literals,
             child_output => $child_output,
             base_handler => $data->{base_handler},
         }
     );
 
-    return [ $output ];
+    return [ { locations => $output, }, { configs => $config_output } ];
 }
-
-package # app_statement
-    app_statement;
-use strict; use warnings;
 
 package # app_config_block
     app_config_block;
 use strict; use warnings;
 
+sub get_conf_names {
+    my $self = shift;
+
+    return unless defined $self->{__TYPE__};
+
+    return [ $self->{__TYPE__} ];
+}
+
 sub output_configs {
     my $self         = shift;
     my $child_output = shift;
-    my $gen_root     = shift;
+    my $data         = shift;
+    my $gen_root     = $data->{ gen_root };
+    my $configs      = $data->{ configs };
+    my $desired_type = $data->{ config_type } || 'base';
 
     return unless $child_output;
 
+    # you can stay if:
+    # A. desired config_type is base and self type is undef or base
+    # B. desired config_type is self type
+    #my $own_type = ( defined $self->{__TYPE__} ) ? $self->{__TYPE__} : 'base';
+    my $own_type = $self->{__TYPE__} || 'base';
+
+    return unless ( $own_type eq $desired_type );
+
     my $output;
 
+    my %configs_set;
     foreach my $config ( @{ $child_output } ) {
         $output .= Bigtop::Backend::HttpdConf::Gantry::config(
             {
                 var   => $config->{__KEYWORD__},
                 value => $config->{__ARGS__},
+            }
+        );
+        $configs_set{ $config->{__KEYWORD__} }++;
+    }
+
+    # fill in missing values from base config
+    BASE_KEY:
+    foreach my $base_key ( keys %{ $configs->{ base } } ) {
+        next BASE_KEY if $configs_set{ $base_key };
+        next BASE_KEY if ( $base_key eq 'root'
+                                and
+                            defined $gen_root
+                                and
+                            $gen_root );
+
+        $output .= Bigtop::Backend::HttpdConf::Gantry::config(
+            {
+                var   => $base_key,
+                value => $configs->{ base }{ $base_key },
             }
         );
     }
@@ -337,7 +447,8 @@ use strict; use warnings;
 
 sub output_configs {
     my $self         = shift;
-
+    shift;                      # no children => no child output
+    my $data         = shift;
     my $output_vals = $self->{__ARGS__}->get_args();
 
     return [ {
@@ -395,11 +506,13 @@ sub output_perl_block {
 }
 
 sub output_httpd_conf_locations {
-    my $self         = shift;
-    my $child_output = shift;
+    my $self          = shift;
+    my $child_output  = shift;
     my $data          = shift;
     my $location      = $data->{location};
     my $skip_config   = $data->{skip_config};
+    my $base_config   = $data->{base_config};
+    my $config_type   = $data->{config_type};
 
     return if ( $self->is_base_controller );
 
@@ -414,7 +527,7 @@ sub output_httpd_conf_locations {
     my $full_name    = $app->get_name() . '::' . $self->get_name();
 
     my $loc_configs  = $self->walk_postorder(
-            'output_controller_configs', $skip_config
+            'output_controller_configs', $data
     );
 
     my $literals     = $self->walk_postorder( 'output_location_literal' );
@@ -465,18 +578,40 @@ use strict; use warnings;
 sub output_controller_configs {
     my $self          = shift;
     my $child_output  = shift;
-    my $skip_config   = shift;
+    my $data          = shift;
+
+    my $controller    = $self->get_controller_name();
+    my $skip_config   = $data->{ skip_config };
+    my $config_type   = $data->{ config_type };
+    my $configs       = $data->{ controller_configs }{ $controller };
+    my $own_type      = $self->{__TYPE__} || 'base';
 
     return unless $child_output;
     return if     $skip_config;
+    return unless $own_type eq $config_type;
 
     my $output;
+    my %config_set_for;
 
     foreach my $config ( @{ $child_output } ) {
         $output .= Bigtop::Backend::HttpdConf::Gantry::config(
             {
                 var   => $config->{__KEYWORD__},
                 value => $config->{__ARGS__},
+            }
+        );
+        $config_set_for{ $config->{__KEYWORD__} }++;
+    }
+
+    # fill in omitted keys from the base block
+    CONTROLLER_BASE_KEY:
+    foreach my $base_key ( keys %{ $configs->{ base } } ) {
+        next CONTROLLER_BASE_KEY if $config_set_for{ $base_key };
+
+        $output .= Bigtop::Backend::HttpdConf::Gantry::config(
+            {
+                var   => $base_key,
+                value => $configs->{ base }{ $base_key },
             }
         );
     }

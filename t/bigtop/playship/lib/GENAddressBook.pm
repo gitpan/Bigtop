@@ -6,8 +6,16 @@ use strict;
 
 use Gantry qw{ -TemplateEngine=TT };
 
+use JSON;
+
 our @ISA = qw( Gantry );
 
+#-----------------------------------------------------------------
+# $self->namespace() or AddressBook->namespace()
+#-----------------------------------------------------------------
+sub namespace {
+    return 'AddressBook';
+}
 
 ##-----------------------------------------------------------------
 ## $self->init( $r )

@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 4;
+use Test::More tests => 6;
 use Test::Files;
 
 use File::Spec;
@@ -16,6 +16,8 @@ my @correct_dollar_at;
 my $base_dir   = File::Spec->catdir( 't', 'gantry' );
 my $docs_dir   = File::Spec->catdir( $base_dir, 'docs' );
 my $httpd_conf = File::Spec->catfile( $docs_dir, 'httpd.conf' );
+
+my $prod_httpd_conf = File::Spec->catfile( $docs_dir, 'httpd.prod.conf' );
 
 #---------------------------------------------------------------------------
 # controller with no location
@@ -67,6 +69,9 @@ app Apps::Checkbook {
         DB     app_db => no_accessor;
         DBName some_user;
     }
+    config prod {
+        DB     prod_db;
+    }
     literal PerlTop `    use lib '/home/user/lib';`;
     controller PayeeOr {
         rel_location   payee;
@@ -74,6 +79,9 @@ app Apps::Checkbook {
         config {
             importance     3 => no_accessor;
             lines_per_page 3;
+        }
+        config prod {
+            lines_per_page 25;
         }
     }
     literal HttpdConf `Include /some/file.conf
@@ -132,7 +140,48 @@ EO_CORRECT_CONF
 
 file_ok( $httpd_conf, $correct_conf, 'generated output' );
 
+$correct_conf = <<'EO_CORRECT_PROD_CONF';
+<Perl>
+    #!/usr/bin/perl
+
+    use lib '/home/user/lib';
+    use Apps::Checkbook;
+    use Apps::Checkbook::PayeeOr;
+    use Apps::Checkbook::Trans;
+    use Some::Module;
+    use Some::OtherModule;
+</Perl>
+
+<Location /app_base>
+    PerlSetVar DB prod_db
+    PerlSetVar DBName some_user
+    PerlSetVar root html:html/templates
+    PerlSetVar Trivia 0
+</Location>
+
+<Location /app_base/payee>
+    SetHandler  perl-script
+    PerlHandler Apps::Checkbook::PayeeOr
+    PerlSetVar lines_per_page 25
+    PerlSetVar importance 3
+
+    PerlSetVar Trivia 1
+
+</Location>
+
+Include /some/file.conf
+
+<Location /foreign_loc/trans>
+    SetHandler  perl-script
+    PerlHandler Apps::Checkbook::Trans
+</Location>
+
+EO_CORRECT_PROD_CONF
+
+file_ok( $prod_httpd_conf, $correct_conf, 'generated prod conf' );
+
 unlink $httpd_conf;
+unlink $prod_httpd_conf;
 
 #---------------------------------------------------------------------------
 # same as previous but with no PerlSetVars and default base location
@@ -154,6 +203,9 @@ app Apps::Checkbook {
     config {
         DB     app_db => no_accessor;
         DBName some_user;
+    }
+    config prod {
+        DBName real_user;
     }
     controller PayeeOr {
         rel_location   payee;
@@ -209,7 +261,14 @@ Include /some/file.conf
 
 EO_CORRECT_CONF
 
-file_ok( $httpd_conf, $correct_conf, 'skip PerlSetVars' );
+my $correct_prod_conf = $correct_conf;
+$correct_prod_conf    =~ s/GantryConfInstance app/GantryConfInstance app_prod/;
+
+file_ok( $httpd_conf,      $correct_conf,      'skip PerlSetVars' );
+file_ok( $prod_httpd_conf, $correct_prod_conf, 'skip PerlSetVars named conf' );
+
+unlink $httpd_conf;
+unlink $prod_httpd_conf;
 
 #---------------------------------------------------------------------------
 # same as previous but with full use statement in the Perl block
@@ -220,6 +279,7 @@ $bigtop_string = << 'EO_full_use';
 config {
     engine          MP13;
     template_engine TT;
+    plugins `PluginA PluginB`;
     HttpdConf Gantry { skip_config 1; full_use 1; }
 }
 app Apps::Checkbook {
@@ -258,7 +318,12 @@ $correct_conf = <<'EO_CORRECT_CONF';
 <Perl>
     #!/usr/bin/perl
 
-    use Apps::Checkbook qw{ -Engine=MP13 -TemplateEngine=TT };
+    use Apps::Checkbook qw{
+        -Engine=MP13
+        -TemplateEngine=TT
+        -PluginNamespace=Apps::Checkbook
+        PluginA PluginB
+    };
     use Apps::Checkbook::PayeeOr;
     use Apps::Checkbook::Trans;
     use Some::Module;

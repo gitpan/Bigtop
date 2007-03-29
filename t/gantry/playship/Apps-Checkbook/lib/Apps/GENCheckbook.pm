@@ -6,8 +6,16 @@ use strict;
 
 use Gantry qw{ -Engine=MP20 -TemplateEngine=TT };
 
+use JSON;
+
 our @ISA = qw( Gantry );
 
+#-----------------------------------------------------------------
+# $self->namespace() or Apps::Checkbook->namespace()
+#-----------------------------------------------------------------
+sub namespace {
+    return 'Apps::Checkbook';
+}
 
 #-----------------------------------------------------------------
 # $self->init( $r )

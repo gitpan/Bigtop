@@ -115,9 +115,9 @@ for a complete attractive app.
 
 =head1 Further Reading
 
-With the development of ASCII art input, you can now build a complete
-CRUD app from the command line alone.  Similarly, if you have a postgres 8
-database, you can build a CRUD app for it from the command line.  See
+With Bigtop's kickstart syntax, you can now build a complete CRUD app from
+the command line alone.  Similarly, if you have a postgres 8 database, you
+can build a CRUD app for it from the command line.  See
 C<Bigtop::Docs::QuickStart> for details.
 
 To start using Bigtop, see C<Bigtop::Docs::TentTut> or

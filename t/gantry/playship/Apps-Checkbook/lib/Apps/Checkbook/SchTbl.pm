@@ -19,7 +19,7 @@ use Apps::Checkbook::Model::sch_tbl qw(
 #-----------------------------------------------------------------
 # $self->form( $row )
 #-----------------------------------------------------------------
-# This method supplied by Apps::Checkbook::GEN::SchTbl
+# This method inherited from Apps::Checkbook::GEN::SchTbl
 
 
 #-----------------------------------------------------------------

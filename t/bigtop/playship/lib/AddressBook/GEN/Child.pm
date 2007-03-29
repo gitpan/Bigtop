@@ -5,6 +5,7 @@ package AddressBook::GEN::Child;
 use strict;
 
 use base 'AddressBook';
+use JSON;
 
 use AddressBook::Model::child qw(
     $CHILD
@@ -38,8 +39,33 @@ sub do_main {
         ],
     };
 
+    my %param = $self->get_param_hash;
+
+    my $search = {};
+    if ( $param{ search } ) {
+        my $form = $self->form();
+
+        my @searches;
+        foreach my $field ( @{ $form->{ fields } } ) {
+            if ( $field->{ searchable } ) {
+                push( @searches,
+                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                );
+            }
+        }
+
+        $search = {
+            -or => \@searches
+        } if scalar( @searches ) > 0;
+    }
+
     my $schema = $self->get_schema();
-    my @rows   = $CHILD->get_listing( { schema => $schema } );
+    my @rows   = $CHILD->get_listing(
+        {
+            schema   => $schema,
+            where    => $search,
+        }
+    );
 
     foreach my $row ( @rows ) {
         my $id = $row->id;
@@ -61,6 +87,19 @@ sub do_main {
                 ],
             }
         );
+    }
+
+    if ( $param{ json } ) {
+        $self->template_disable( 1 );
+
+        my $obj = {
+            headings        => $retval->{ headings },
+            header_options  => $retval->{ header_options },
+            rows            => $retval->{ rows },
+        };
+
+        my $json = objToJson( $obj );
+        return( $json );
     }
 
     $self->stash->view->data( $retval );

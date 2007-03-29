@@ -19,7 +19,7 @@
          <fieldset>
          <legend>Method 
             ( <a href='javascript:show_or_hide( "[%-
-                "hideable_$item.ident" %]" );'>edit</a> |  
+                "hideable_$item.ident" %]" );'>edit or hide</a> |  
                 [%- INCLUDE delete_link.ttc
                     name  = "app_body_delete::$item.ident" %]
             )

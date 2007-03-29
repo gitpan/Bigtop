@@ -20,6 +20,17 @@ Here are the highlights:
 
 Describes the features and motivations of Bigtop.
 
+=item C<Bigtop::Docs::AutoBackends>
+
+Documentation on each available backend and how to configure it.  This
+one is auto-generated, and is therefore more likely to be up to date.
+
+=item C<Bigtop::Docs::AutoKeywords>
+
+Documents all the valid keywords Bigtop understands by the block in
+which they appear.  This one is auto-generated and shows exactly the
+same information as tentmaker.
+
 =item C<Bigtop::Docs::Cookbook>
 
 Modeled after the Perl Cookbook, this provides a list of things you might
@@ -29,11 +40,7 @@ than on tentmaker.
 
 =item C<Bigtop::Docs::Keywords>
 
-A (fairly) complete list of keywords Bigtop understands in a compact text
-file.  See Bigtop::Docs::QuickRef for most of the same information in
-html tabular formatting or run tentmaker which shows complete information
-in your browser.  Or look in Bigtop::Keywords where all the words should
-be listed.
+Abandoned.  See C<Bigtop::Docs::AutoKeywords> or run tentmaker.
 
 =item C<Bigtop::Docs::Modules>
 
@@ -46,36 +53,35 @@ of the grammar is not the reason.)
 
 =item C<Bigtop::Docs::QuickRef>
 
-This provides a somewhat complete list of all the keywords Bigtop understands
-along with some examples in html form.  The depth of the tables involved
-makes it somewhat difficult to use.  For a more compact version in plain
-text, see Bigtop::Docs::Keywords or run tentmaker for complete information
-in a different web format.  Or just look directly in Bigtop::Keywords where
-all the keywords are defined.
+Abandoned.  Run tentmaker.
 
 =item C<Bigtop::Docs::QuickStart>
 
 Guide for the truly impatient.  Explains how to build a complete auto-CRUD
-app from the command line alone using either cheesy ASCII art or connection
-information for a postgres 8 database.
+app from the command line alone using either kickstart syntax or connection
+information for a PostgreSQL 8 database.
 
 =item C<Bigtop::Docs::Syntax>
 
 This is meant to fully describe all of the syntax (including deprecations)
 in the Bigtop language.  It is the encyclopedic version of
 Bigtop::Docs::Keywords and is meant as complete documentation of
-Bigtop::Keywords..
+Bigtop::Keywords.
+
+Much of the information here is also in C<Bigtop::Docs::AutoBackends>
+and C<Bigtop::Docs::AutoKeywords>.  But, there is more discussion in this
+one.  The others are more up-to-date on actual keyword availability, etc.
+
+=item C<Bigtop::Docs::TentRef>
+
+A comprehensive tour of tentmaker which assumes you understand the material
+from C<Bigtop::Docs::TentTut>.
 
 =item C<Bigtop::Docs::TentTut>
 
 The tentmaker tutorial.  Explains in detail how to use tentmaker to edit
 Bigtop files.  Filled with beautiful screen shots (sometimes, they are even
-up to date).
-
-=item C<Bigtop::Docs::TentRef>
-
-A comprehensive tour of tentmaker which assumes you understand the material
-from Bigtop::Docs::TentTut.
+up to date and available to your browser).
 
 =item C<Bigtop::Docs::Tutorial>
 

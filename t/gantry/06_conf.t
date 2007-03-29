@@ -89,12 +89,18 @@ app Apps::Checkbook {
         DB     app_db => no_accessor;
         DBName some_user;
     }
+    config prod {
+        DB prod_db;
+    }
     literal Conf `hello shane`;
     controller PayeeOr {
         rel_location   payee;
         config {
             importance     3 => no_accessor;
             lines_per_page 3;
+        }
+        config prod {
+            lines_per_page 25;
         }
         literal GantryLocation `    hello savine`;
     }
@@ -118,6 +124,19 @@ hello shane
 <GantryLocation /app_base/payee>
     importance 3
     lines_per_page 3
+    hello savine
+</GantryLocation>
+
+</instance>
+<instance happy_prod>
+DB prod_db
+root html:html/templates
+DBName some_user
+hello shane
+
+<GantryLocation /app_base/payee>
+    lines_per_page 25
+    importance 3
     hello savine
 </GantryLocation>
 

@@ -1,6 +1,6 @@
 [
-  { "keyword" : "ident_24::refers_to", "value" : "new_table_name" },
-  { "keyword" : "ident_20::controls_table", "value" : "new_table_name" }
+  { "keyword" : "ident_14::refers_to", "value" : "new_table_name" },
+  { "keyword" : "ident_21::controls_table", "value" : "new_table_name" }
 ]
 config {
     engine CGI;
@@ -74,7 +74,6 @@ app Sample {
             refers_to new_table_name;
         }
     }
-    sequence addresses_seq {}
     table new_table_name {
         field id {
             is int4, primary_key, auto;
@@ -95,7 +94,6 @@ app Sample {
         field modified {
             is datetime;
         }
-        sequence addresses_seq;
         foreign_display `%ident`;
     }
     controller Addresses is AutoCRUD {

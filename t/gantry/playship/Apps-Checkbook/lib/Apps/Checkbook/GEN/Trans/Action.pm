@@ -5,6 +5,7 @@ package Apps::Checkbook::GEN::Trans::Action;
 use strict;
 
 use base 'Apps::Checkbook';
+use JSON;
 
 use Apps::Checkbook::Model::trans qw(
     $TRANS

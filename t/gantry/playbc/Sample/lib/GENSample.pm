@@ -6,8 +6,16 @@ use strict;
 
 use Gantry qw{ -TemplateEngine=TT };
 
+use JSON;
+
 our @ISA = qw( Gantry );
 
+#-----------------------------------------------------------------
+# $self->namespace() or Sample->namespace()
+#-----------------------------------------------------------------
+sub namespace {
+    return 'Sample';
+}
 
 ##-----------------------------------------------------------------
 ## $self->init( $r )
@@ -59,8 +67,33 @@ sub do_main {
         ],
     };
 
+    my %param = $self->get_param_hash;
+
+    my $search = {};
+    if ( $param{ search } ) {
+        my $form = $self->form();
+
+        my @searches;
+        foreach my $field ( @{ $form->{ fields } } ) {
+            if ( $field->{ searchable } ) {
+                push( @searches,
+                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                );
+            }
+        }
+
+        $search = {
+            -or => \@searches
+        } if scalar( @searches ) > 0;
+    }
+
     my $schema = $self->get_schema();
-    my @rows   = $TBL1->get_listing( { schema => $schema } );
+    my @rows   = $TBL1->get_listing(
+        {
+            schema   => $schema,
+            where    => $search,
+        }
+    );
 
     foreach my $row ( @rows ) {
         my $id = $row->id;
@@ -82,6 +115,19 @@ sub do_main {
                 ],
             }
         );
+    }
+
+    if ( $param{ json } ) {
+        $self->template_disable( 1 );
+
+        my $obj = {
+            headings        => $retval->{ headings },
+            header_options  => $retval->{ header_options },
+            rows            => $retval->{ rows },
+        };
+
+        my $json = objToJson( $obj );
+        return( $json );
     }
 
     $self->stash->view->data( $retval );

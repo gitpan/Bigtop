@@ -1,5 +1,7 @@
 package Bigtop::Backend::Conf::Gantry;
 
+use strict;
+
 use Bigtop::Backend::Conf;
 use Bigtop;
 use Inline;
@@ -37,6 +39,7 @@ sub backend_block_keywords {
           label   => 'Alternate Template',
           descr   => 'A custom TT template.',
           type    => 'text' },
+        
     ];
 }
 
@@ -64,9 +67,12 @@ sub output_conf {
     my $class = shift;
     my $tree  = shift;
 
-    my $config   = $tree->get_config->{Conf};
-    my $gen_root = $config->{gen_root} || 0;
-    my $instance = $config->{instance} || 'missing_instance';
+    my $app_config_blocks = $tree->get_app_configs();
+    my $bigtop_config     = $tree->get_config->{Conf};
+    my $gen_root          = $bigtop_config->{gen_root} || 0;
+    my $instance          = $bigtop_config->{instance} || 'missing_instance';
+
+    my $controller_configs = $tree->get_controller_configs();
 
     # first find the base location
     my $location_output = $tree->walk_postorder(
@@ -74,19 +80,28 @@ sub output_conf {
     );
     my $location        = $location_output->[0] || '';
 
-    # now build the <GantryLocation> blocks
-    my $locations        = $tree->walk_postorder(
-            'output_glocations_gantry',
-            {
-                location => $location,
-                gen_root => $gen_root,
-            }
-    );
+    # now build the intances including their <GantryLocation> blocks
+    my @instances;
+
+    foreach my $conf_type ( @{ $tree->get_app_config_types } ) {
+        my $locations        = $tree->walk_postorder(
+                'output_glocations_gantry',
+                {
+                    location  => $location,
+                    gen_root  => $gen_root,
+                    configs   => $app_config_blocks,
+                    conf_type => $conf_type,
+                    controller_configs => $controller_configs,
+                }
+        );
+        my $name = $instance;
+        $name   .= "_$conf_type" unless $conf_type eq 'base';
+        push @instances, { name => $name, locations => $locations };
+    }
 
     return Bigtop::Backend::Conf::Gantry::conf_file(
         {
-            instance         => $instance,
-            locations        => $locations,
+            instances        => \@instances,
         }
     );
 }
@@ -94,11 +109,13 @@ sub output_conf {
 our $template_is_setup = 0;
 our $default_template_text = <<'EO_TT_BLOCKS';
 [% BLOCK conf_file %]
-<instance [% instance %]>
-[% FOREACH line IN locations %]
+[% FOREACH instance IN instances %]
+<instance [% instance.name %]>
+[% FOREACH line IN instance.locations %]
 [% line %]
 [% END %][%# end of foreach line in locations %]
 </instance>
+[% END %]
 [% END %]
 
 [% BLOCK all_locations %]
@@ -148,10 +165,11 @@ sub output_glocations_gantry {
     my $child_output = shift;
     my $data         = shift;
     my $location     = $data->{ location } || '/';
-    my $gen_root     = $data->{ gen_root };
 
     # handle set vars at root location
-    my $configs  = $self->walk_postorder( 'output_configs_gantry', $gen_root );
+    my $configs  = $self->walk_postorder(
+            'output_configs_gantry', $data
+    );
     my $literals = $self->walk_postorder( 'output_top_level_literal_gantry' );
 
     my $output   = Bigtop::Backend::Conf::Gantry::all_locations(
@@ -180,7 +198,6 @@ sub output_base_location_gantry {
     return [ $location ];
 }
 
-# app_config_block
 package # app_config_block
     app_config_block;
 use strict; use warnings;
@@ -188,11 +205,17 @@ use strict; use warnings;
 sub output_configs_gantry {
     my $self         = shift;
     my $child_output = shift;
-    my $gen_root     = shift;
+    my $data         = shift;
+    my $gen_root     = $data->{ gen_root };
+    my $conf_type    = $data->{ conf_type };
+    my $configs      = $data->{ configs };
+    my $own_type     = $self->{__TYPE__} || 'base';
 
     return unless $child_output;
+    return unless $own_type eq $conf_type;
 
     my $output;
+    my %config_set_for;
 
     foreach my $config ( @{ $child_output } ) {
         $output .= Bigtop::Backend::Conf::Gantry::config(
@@ -201,6 +224,7 @@ sub output_configs_gantry {
                 value => $config->{__ARGS__},
             }
         );
+        $config_set_for{ $config->{__KEYWORD__} }++;
     }
 
     if ( $gen_root ) {
@@ -210,12 +234,25 @@ sub output_configs_gantry {
                 value => 'html:html/templates',
             }
         );
+        $config_set_for{ root }++;
+    }
+
+    # fill in omitted keys from the base block
+    BASE_KEY:
+    foreach my $base_key ( keys %{ $configs->{ base } } ) {
+        next BASE_KEY if $config_set_for{ $base_key };
+
+        $output .= Bigtop::Backend::Conf::Gantry::config(
+            {
+                var   => $base_key,
+                value => $configs->{ base }{ $base_key },
+            }
+        );
     }
 
     return [ $output ];
 }
 
-# app_config_statement
 package # app_config_statement
     app_config_statement;
 use strict; use warnings;
@@ -265,8 +302,9 @@ sub output_glocations_gantry {
     my $app          = $self->{__PARENT__}{__PARENT__}{__PARENT__};
     my $full_name    = $app->get_name() . '::' . $self->get_name();
 
-    my $loc_configs
-            = $self->walk_postorder( 'output_glocation_configs_gantry' );
+    my $loc_configs  = $self->walk_postorder(
+            'output_glocation_configs_gantry', $data
+    );
 
     my $literals     = $self->walk_postorder(
                             'output_glocation_literal_gantry'
@@ -295,7 +333,6 @@ sub output_glocations_gantry {
     return [ $output ];
 }
 
-# controller_statement
 package # controller_statement
     controller_statement;
 use strict; use warnings;
@@ -314,7 +351,6 @@ sub output_glocations_gantry {
     }
 }
 
-# controller_config_block
 package # controller_config_block
     controller_config_block;
 use strict; use warnings;
@@ -322,10 +358,18 @@ use strict; use warnings;
 sub output_glocation_configs_gantry {
     my $self         = shift;
     my $child_output = shift;
+    my $data         = shift;
+
+    my $controller   = $self->get_controller_name();
+    my $conf_type    = $data->{ conf_type };
+    my $configs      = $data->{ controller_configs }{ $controller };
+    my $own_type     = $self->{__TYPE__} || 'base';
 
     return unless $child_output;
+    return unless $own_type eq $conf_type;
 
     my $output;
+    my %config_set_for;
 
     foreach my $config ( @{ $child_output } ) {
         $output .= Bigtop::Backend::Conf::Gantry::config(
@@ -335,12 +379,26 @@ sub output_glocation_configs_gantry {
                 indent => 1,
             }
         );
+        $config_set_for{ $config->{__KEYWORD__} }++;
+    }
+
+    # fill in omitted keys from the base block
+    CONTROLLER_BASE_KEY:
+    foreach my $base_key ( keys %{ $configs->{ base } } ) {
+        next CONTROLLER_BASE_KEY if $config_set_for{ $base_key };
+
+        $output .= Bigtop::Backend::Conf::Gantry::config(
+            {
+                var   => $base_key,
+                value => $configs->{ base }{ $base_key },
+                indent => 1,
+            }
+        );
     }
 
     return [ $output ];
 }
 
-# controller_config_statement
 package # controller_config_statement
     controller_config_statement;
 use strict; use warnings;

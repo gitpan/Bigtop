@@ -19,7 +19,7 @@ use Apps::Checkbook::Model::trans qw(
 #-----------------------------------------------------------------
 # $self->form( $row )
 #-----------------------------------------------------------------
-# This method supplied by Apps::Checkbook::GEN::Trans::Action
+# This method inherited from Apps::Checkbook::GEN::Trans::Action
 
 
 #-----------------------------------------------------------------

@@ -21,13 +21,13 @@ use Apps::Checkbook::Model::payee qw(
 #-----------------------------------------------------------------
 # $self->do_main(  )
 #-----------------------------------------------------------------
-# This method supplied by Apps::Checkbook::GEN::PayeeOr
+# This method inherited from Apps::Checkbook::GEN::PayeeOr
 
 my $my_crud = Gantry::Plugins::CRUD->new(
     add_action      => \&my_crud_add,
     edit_action     => \&my_crud_edit,
     delete_action   => \&my_crud_delete,
-    form            => \&my_crud_form,
+    form            => __PACKAGE__->can( 'my_crud_form' ),
     redirect        => \&my_crud_redirect,
     text_descr      => 'Payee/Payor',
 );
@@ -59,7 +59,9 @@ sub my_crud_add {
     my ( $self, $params, $data ) = @_;
 
     # make a new row in the $PAYEE table using data from $params
-    # remember to commit
+    # remember to add commit if needed
+
+    $PAYEE->gupdate_or_create( $self, $params );
 }
 
 #-------------------------------------------------
@@ -78,7 +80,10 @@ sub my_crud_delete {
 
     # fish the id (or the actual row) from the data hash
     # delete it
-    # remember to commit
+    # remember to add commit if needed
+
+    my $row = $PAYEE->gfind( $self, $data->{id} );
+    $row->delete;
 }
 
 #-------------------------------------------------
@@ -101,38 +106,21 @@ sub my_crud_edit {
 
     # retrieve the row from the data hash
     # update the row
-    # remember to commit
+    # remember to add commit if needed
+
+    $data->{row}->update( $params );
 }
 
 #-----------------------------------------------------------------
 # $self->my_crud_form( $data )
 #-----------------------------------------------------------------
-sub my_crud_form {
-    my ( $self, $data ) = @_;
-
-    my $selections = $PAYEE->get_form_selections();
-
-    return {
-        name       => 'payee_crud',
-        row        => $data->{row},
-        fields     => [
-            {
-                raw_html => '<tr><td colspan="2">Hi</td></tr>',
-                display_size => 20,
-                name => 'name',
-                label => 'Name',
-                type => 'text',
-                is => 'varchar',
-            },
-        ],
-    };
-} # END my_crud_form
+# This method inherited from Apps::Checkbook::GEN::PayeeOr
 
 my $crud = Gantry::Plugins::CRUD->new(
     add_action      => \&crud_add,
     edit_action     => \&crud_edit,
     delete_action   => \&crud_delete,
-    form            => \&_form,
+    form            => __PACKAGE__->can( '_form' ),
     redirect        => \&crud_redirect,
     text_descr      => 'Payee/Payor',
 );
@@ -164,7 +152,9 @@ sub crud_add {
     my ( $self, $params, $data ) = @_;
 
     # make a new row in the $PAYEE table using data from $params
-    # remember to commit
+    # remember to add commit if needed
+
+    $PAYEE->gupdate_or_create( $self, $params );
 }
 
 #-------------------------------------------------
@@ -183,7 +173,10 @@ sub crud_delete {
 
     # fish the id (or the actual row) from the data hash
     # delete it
-    # remember to commit
+    # remember to add commit if needed
+
+    my $row = $PAYEE->gfind( $self, $data->{id} );
+    $row->delete;
 }
 
 #-------------------------------------------------
@@ -206,37 +199,20 @@ sub crud_edit {
 
     # retrieve the row from the data hash
     # update the row
-    # remember to commit
+    # remember to add commit if needed
+
+    $data->{row}->update( $params );
 }
 
 #-----------------------------------------------------------------
 # $self->_form( $data )
 #-----------------------------------------------------------------
-sub _form {
-    my ( $self, $data ) = @_;
-
-    my $selections = $PAYEE->get_form_selections();
-
-    return {
-        name       => 'default_form',
-        row        => $data->{row},
-        fields     => [
-            {
-                raw_html => '<tr><td colspan="2">Hi</td></tr>',
-                display_size => 20,
-                name => 'name',
-                label => 'Name',
-                type => 'text',
-                is => 'varchar',
-            },
-        ],
-    };
-} # END _form
+# This method inherited from Apps::Checkbook::GEN::PayeeOr
 
 #-----------------------------------------------------------------
 # $self->form( $row )
 #-----------------------------------------------------------------
-# This method supplied by Apps::Checkbook::GEN::PayeeOr
+# This method inherited from Apps::Checkbook::GEN::PayeeOr
 
 #-----------------------------------------------------------------
 # $self->do_members(  )
@@ -340,6 +316,10 @@ You might even want to describe the table this module controls here.
 =over 4
 
 =item do_main
+
+=item my_crud_form
+
+=item _form
 
 =item form
 

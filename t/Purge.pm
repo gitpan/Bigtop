@@ -4,7 +4,7 @@ use strict; use warnings;
 use base 'Exporter';
 use File::Find;
 
-our @EXPORT = qw( purge_dir strip_copyright );
+our @EXPORT = qw( purge_dir strip_copyright strip_shebang );
 
 sub purge_dir {
 }
@@ -28,6 +28,12 @@ sub real_purge_dir {
 sub strip_copyright {
     my $line = shift;
     $line    =~ s/\(C\)\s+\d+//;
+    return $line;
+}
+
+sub strip_shebang {
+    my $line = shift;
+    $line    =~ s/^#!.*//;
     return $line;
 }
 

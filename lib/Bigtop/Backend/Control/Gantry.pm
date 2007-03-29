@@ -468,11 +468,13 @@ BEGIN {
             'method',
             qw(
                 extra_args
+                order_by
                 rows
                 paged_conf
                 cols
                 col_labels
                 header_options
+                livesearch
                 row_options
                 title
                 html_template
@@ -492,6 +494,7 @@ BEGIN {
             'field',
             qw(
                 label
+                searchable
                 html_form_type
                 html_form_optional
                 html_form_constraint
@@ -499,8 +502,11 @@ BEGIN {
                 html_form_cols
                 html_form_rows
                 html_form_display_size
+                html_form_hint
+                html_form_class
                 html_form_options
                 html_form_foreign
+                html_form_onchange
                 date_select_text
                 html_form_raw_html
             )
@@ -541,7 +547,7 @@ use [% module %];
 #-----------------------------------------------------------------
 # $self->init( $r )
 #-----------------------------------------------------------------
-# This method supplied by [% gen_package_name +%]
+# This method inherited from [% gen_package_name +%]
 [% END %]
 [% IF config_accessor_comments %]
 [% config_accessor_comments %]
@@ -565,11 +571,19 @@ use Gantry qw{[% IF engine %] -Engine=[% engine %][% END %][% IF template_engine
 use Gantry[% IF template_engine %] qw{ -TemplateEngine=[% template_engine %] }[% END %];
 [% END %]
 
+use JSON;
+
 our @ISA = qw( Gantry );
 
 [% FOREACH module IN external_modules %]
 use [% module %];
 [% END %]
+#-----------------------------------------------------------------
+# $self->namespace() or [% app_name %]->namespace()
+#-----------------------------------------------------------------
+sub namespace {
+    return '[% app_name %]';
+}
 
 [% init_sub %]
 
@@ -970,6 +984,7 @@ use [% app_name %] qw(
 our @ISA = qw( [% app_name %] );
 [% ELSE %]
 use base '[% app_name %]';
+use JSON;
 [% END %]
 
 [% child_output %]
@@ -1044,7 +1059,7 @@ sub text_descr     {
 #-----------------------------------------------------------------
 # $self->[% method_name %]( [% child_output.doc_args.join( ', ' ) %] )
 #-----------------------------------------------------------------
-# This method supplied by [% gen_package_name %]
+# This method inherited from [% gen_package_name %]
 
 [% END %]
 
@@ -1150,18 +1165,47 @@ sub [% config %] {
 [% END %]
 
 [% BLOCK main_table %]
-[%- IF dbix AND rows AND limit_by -%]
-    my $query   = $self->get_arg_hash;
-    my $page    = $query->{ page } || 1;
 
+    [%- IF livesearch %]
+    $retval->{ livesearch } = 1;
+
+    [% END -%]
+    my %param = $self->get_param_hash;
+
+    my $search = {};
+    if ( $param{ search } ) {
+        my $form = $self->form();
+
+        my @searches;
+        foreach my $field ( @{ $form->{ fields } } ) {
+            if ( $field->{ searchable } ) {
+                push( @searches,
+                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                );
+            }
+        }
+
+        $search = {
+            -or => \@searches
+        } if scalar( @searches ) > 0;
+    }
+
+[% IF dbix AND rows AND limit_by -%]
+    my $page    = $param{ page } || 1;
+
+    if ( $[% limit_by %] ) {
+        $search->{ [% limit_by %] } = $[% limit_by %];
+    }
+    
     my $schema  = $self->get_schema();
-    my $where   = ( $[% limit_by %] ) ? { [% limit_by %] => $[% limit_by %] } : undef;
     my $results = $[% model %]->get_listing(
         {
-            schema => $schema,
-            rows   => [% rows %],
-            page   => $page,
-            where  => $where,
+            schema   => $schema,
+            rows     => [% rows %],
+            page     => $page,
+            where    => $search,[% IF order_by %]
+
+            order_by => '[% order_by %]',[% END +%]
         }
     );
 
@@ -1170,15 +1214,17 @@ sub [% config %] {
 
     while ( my $row = $rows->next ) {
 [%- ELSIF dbix AND rows -%]
-    my $query   = $self->get_arg_hash;
-    my $page    = $query->{ page } || 1;
+    my $page    = $param{ page } || 1;
 
     my $schema  = $self->get_schema();
     my $results = $[% model %]->get_listing(
         {
-            schema => $schema,
-            rows   => [% rows %],
-            page   => $page,
+            schema   => $schema,
+            rows     => [% rows %],
+            page     => $page,
+            where    => $search,[% IF order_by %]
+
+            order_by => '[% order_by %]',[% END +%]
         }
     );
 
@@ -1187,33 +1233,48 @@ sub [% config %] {
 
     while ( my $row = $rows->next ) {
 [%- ELSIF dbix AND limit_by -%]
+    if ( $[% limit_by %] ) {
+        $search->{ [% limit_by %] } = $[% limit_by %];
+    }
+
     my $schema = $self->get_schema();
-    my $where  = ( $[% limit_by %] ) ? { [% limit_by %] => $[% limit_by %] } : undef;
     my @rows   = $[% model %]->get_listing(
         {
-            schema => $schema,
-            where  => $where,
+            schema   => $schema,
+            where    => $search,[% IF order_by %]
+            order_by => '[% order_by %]',[% END +%]
         }
     );
 
     foreach my $row ( @rows ) {
 [%- ELSIF dbix -%]
     my $schema = $self->get_schema();
-    my @rows   = $[% model %]->get_listing( { schema => $schema } );
+    my @rows   = $[% model %]->get_listing(
+        {
+            schema   => $schema,
+            where    => $search,[% IF order_by %]
+            order_by => '[% order_by %]',[% END +%]
+        }
+    );
 
     foreach my $row ( @rows ) {
 [%- ELSE -%]
-    my @rows = $[% model %]->get_listing();
+    my @rows = $[% model %]->get_listing([% IF order_by %] { order_by => '[% order_by %]', } [% END %]);
 
     foreach my $row ( @rows ) {
 [%- END -%]
 
         my $id = $row->id;
+[% FOREACH foreigner IN foreigners %]
+        my $[% foreigner %] = ( $row->[% foreigner %] )
+                ? $row->[% foreigner %]->foreign_display()
+                : '';
+[% END %]
         push(
             @{ $retval->{rows} }, {
                 data => [
 [% FOREACH data_col IN data_cols %]
-                    $row->[% data_col %],
+                    [% data_col %],
 [% END %]
                 ],
                 options => [
@@ -1226,6 +1287,19 @@ sub [% config %] {
                 ],
             }
         );
+    }
+
+    if ( $param{ json } ) {
+        $self->template_disable( 1 );
+
+        my $obj = {
+            headings        => $retval->{ headings },
+            header_options  => $retval->{ header_options },
+            rows            => $retval->{ rows },
+        };
+
+        my $json = objToJson( $obj );
+        return( $json );
     }
 
     $self->stash->view->data( $retval );
@@ -1285,7 +1359,7 @@ my $[% crud_name %] = Gantry::Plugins::CRUD->new(
     add_action      => \&[% crud_name %]_add,
     edit_action     => \&[% crud_name %]_edit,
     delete_action   => \&[% crud_name %]_delete,
-    form            => \&[% form_method_name %],
+    form            => __PACKAGE__->can( '[% form_method_name %]' ),
     redirect        => \&[% crud_name %]_redirect,
     text_descr      => '[% text_descr %]',
 );
@@ -1317,7 +1391,9 @@ sub [% crud_name %]_add {
     my ( $self, $params, $data ) = @_;
 
     # make a new row in the $[% model_alias %] table using data from $params
-    # remember to commit
+    # remember to add commit if needed
+
+    $[% model_alias %]->gupdate_or_create( $self, $params );
 }
 
 #-------------------------------------------------
@@ -1336,7 +1412,10 @@ sub [% crud_name %]_delete {
 
     # fish the id (or the actual row) from the data hash
     # delete it
-    # remember to commit
+    # remember to add commit if needed
+
+    my $row = $[% model_alias %]->gfind( $self, $data->{id} );
+    $row->delete;
 }
 
 #-------------------------------------------------
@@ -1359,7 +1438,9 @@ sub [% crud_name %]_edit {
 
     # retrieve the row from the data hash
     # update the row
-    # remember to commit
+    # remember to add commit if needed
+
+    $data->{row}->update( $params );
 }
 [% END %]
 
@@ -2064,6 +2145,7 @@ sub output_controllers {
 
     my $stub_method_names = $output_hash->{stub_method_name};
     my $gen_method_names  = $output_hash->{gen_method_name};
+
     # gen_method_names is an array ref of names or undef if there are none
 
     # build beginning of dependencies section (the base app and the GEN
@@ -2892,7 +2974,18 @@ sub output_controller {
                 }
             );
 
-        $output = $crud_helpers . $form_method;
+        $output      = $crud_helpers;
+        $gen_output .= $form_method;
+
+        $output     .= Bigtop::Backend::Control::Gantry::controller_method(
+            {
+                method_name      => $self->{__NAME__},
+                gen_package_name => $gen_package_name,
+                child_output     => { doc_args => '$data' },
+            }
+        );
+
+        $gen_method_name = $self->{__NAME__};
     }
 
     return [
@@ -3101,6 +3194,7 @@ sub output_main_listing {
     # set up headings
     my @col_labels;
     my @cols;
+    my @foreigners;
     my %name_of;
 
     $name_of{method}     = $self->get_method_name();
@@ -3141,25 +3235,36 @@ sub output_main_listing {
 
         # see if it's foreigner or has a special display method
         if ( defined $fields->{$col}{refers_to} ) {
-            push @cols, $col . '->foreign_display()';
+            push @cols, "\$$col";
+            push @foreigners, $col;
         }
         elsif ( defined $fields->{ $col }{ html_form_options } ) {
-            push @cols, "${col}_display()";
+            push @cols, "\$row->${col}_display()";
         }
         else {
-            push @cols, $col;
+            push @cols, "\$row->$col";
         }
     }
 
     # put options in the heading bar
     my $header_options = [];
     if ( $choices->{header_options} ) {
-        $header_options = _build_options( $choices->{header_options} );
+        my $urlsuffix = ( defined $limit_by ) ? '/$' . $limit_by : '';
+
+        $header_options = _build_options( 
+            $choices->{header_options}, 
+            $urlsuffix 
+        );
     }
 
     my $heading = Bigtop::Backend::Control::Gantry::main_heading(
         { headings => \@col_labels, header_options => $header_options }
     );
+
+    my $order_by;
+    if ( $choices->{order_by} ) {
+        $order_by = $choices->{order_by}[0];
+    }
 
     # generate database retrieval
     my $row_options = [];
@@ -3175,6 +3280,9 @@ sub output_main_listing {
             row_options => $row_options,
             dbix        => $self->is_dbix_class( $data ),
             limit_by    => $limit_by,
+            foreigners  => \@foreigners,
+            livesearch  => $choices->{livesearch}[0],
+            order_by    => $order_by,
         }
     );
 

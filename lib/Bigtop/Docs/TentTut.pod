@@ -7,7 +7,7 @@ Bigtop::Docs::TentTut - tentmaker tutorial (best viewed in html)
 =head1 Intro
 
 If you don't know what Bigtop is, you might want to start by reading
-Bigtop::Docs::About.  It will give you a little background and some
+C<Bigtop::Docs::About>.  It will give you a little background and some
 advice on which other docs to read.
 
 Bigtop is a language of simple structure, but with many keywords.  In an
@@ -17,8 +17,8 @@ bigtop syntax, allowing you to conentrate on what you want rather than
 on proper bigtop spelling and punctuation.
 
 This document is a tutorial to get you started.  It is not complete.
-If you need more details consult Bigtop::Docs::TentRef or
-Bigtop::Docs::Syntax (or even Bigtop::Keywords).
+If you need more details consult C<Bigtop::Docs::TentRef> or
+C<Bigtop::Docs::Syntax> (or even C<Bigtop::Keywords>).
 
 Here, I will walk you through using tentmaker to generate a bigtop file.
 Then, I will show how to use bigtop to turn that into a web app.  Finally,
@@ -35,8 +35,8 @@ The ostensible purpose is to put my wife's address book on-line.
 
 Before using tentmaker, you must install Gantry (and the Template Toolkit).
 Then you must install Bigtop, answering yes when asked if you want to
-install tentmaker's templates (you must also provide a writeable directory in
-which to place them).
+install tentmaker's templates (you must also provide a writeable directory
+for them).
 
 Once Bigtop installation is complete, you may start tentmaker
 by typing:
@@ -70,10 +70,12 @@ more like this (adding the --port flag as needed):
 
     tentmaker --new Contact address
 
-This will not only start the tentmaker, it will generate a new bigtop file
+This is how I started tentmaker for the discussion that follows.
+
+This will not only start tentmaker, it will generate a new bigtop file
 for building the Contact application with a single table called address.
 When you type this, tentmaker will start with the same message it showed
-above.  This time, we'll actually start using it.
+above.
 
 The command line flags can be abbreviated with a single dash and their
 first letter (e.g. --new is also -n).
@@ -82,11 +84,14 @@ You can even specify the columns and their types for tables like address:
 
     tentmaker --new Contact 'address(name,street,city,state,zip)'
 
+This is how I would have started tentmaker, if I were doing this project
+on my own.  You need to see a few things that this method would have skipped.
+
 Note that single quotes are probably necessary to keep the shell from
 interpretting the punctuation.
 
-See C<Bigtop::Docs::ScriptHelp::Style::Original> for a complete description
-of how to define tables from the command line.
+See C<Bigtop::Docs::ScriptHelp::Style::Kickstart> for a complete description
+of how to define tables and their relationships from the command line.
 
 =head1 Building an App
 
@@ -102,15 +107,22 @@ You should see something like this:
 
 The page is composed of a set of tabbed panes.  The first pane allows you
 to change the app name, the web server engine which will run it, and the
-templating system which will generate its output.  Below those choices
-is a Save As button and the file name.  If you started without providing
-a file (as I suggested above) the file name box will be blank.
+templating system which will generate its output.  You can also enter
+a space separated list of framework plugins you want to use.
 
-At the bottom of the pane is a section called 'Current bigtop file.'
-It shows the text of the bigtop file you are editing.  I included it
-mostly for debugging, but enquiring minds might want to look at it from
-time to time as we move through our examples.  There are definitely times
-when its compact form makes spotting errors easier.
+Above the tabbed pane is a Save As button and the file name.  If you started
+without providing a file (as I suggested above) the file name box will
+be blank.  Next to 'Save As' is a 'Stop tentmaker' button.  This is the best
+way to stop tentmaker.  If you kill it at the command line with control-C,
+your browser will not know that.  Caching pages which no longer function
+will ensue and confusion is inevitable.
+
+At the bottom of the pane is a section called 'Current bigtop file,' which
+is initially concealed.  If you click the link, it will show the text of
+the bigtop file you are editing.  I included it mostly for debugging, but
+enquiring minds might want to look at it from time to time as we move
+through our examples.  There are definitely times when its compact form
+makes spotting errors easier.
 
 In total, there are five tabs:
 
@@ -118,14 +130,14 @@ In total, there are five tabs:
 
 =item Bigtop Config
 
-We just walked through this.  It controls only three things: the app name,
-what engine will serve it, and what type of templates it will use.
-But it also provides a snapshot of the bigtop file and a way to save it.
+We just walked through this.  It controls only four things: the app name,
+what engine will serve it, what type of templates it will use, and what
+plugins you want.  But it also provides a snapshot of the bigtop file.
 
 =item App Body
 
-The heart of the matter.  This pane allows you to define your tables and
-controllers.  More on this below.
+The heart of the matter.  This pane allows you to define and edit your
+tables and controllers.  More on this below.
 
 =item Backends
 
@@ -165,12 +177,16 @@ fix them so they will really work for an address book.
 The main problem with tentmaker's efforts is the column names.  We told
 it the table name, so it used that to infer a variety of other names --
 like the controller name.  But we didn't give any hints about the columns.
-To fix that click 'edit' at the top of the address table's box.
+To fix that click 'edit or hide' at the top of the address table's box.
+This will expand to show all the editable features of the table.  To
+collapse the box, click 'edit or hide' again.
 
-Scroll down until you see the Field Quick Edit table.  There will be five
-fields at the outset.  The first one is a unique integer primary key called
--- cleverly enough -- id.  The last two are created and modified dates.
-Those can all stay as they are.  But we need to change ident and description
+Scroll down until you see the Field Quick Edit table.  There will be four
+fields at the outset.  (There is also a unique integer primary key called
+-- cleverly enough -- id, but it doesn't appear in the quick edit box.
+I rarely want to change it, and it is more complex than the other fields.)
+The last two default fields are created and modified dates.  Those can all
+stay as they are.  But we need to change ident and description
 to something more meaningful for our address book example.  Let's use 'name'
 and 'number.'
 
@@ -191,12 +207,13 @@ names with separating spaces in the the 'Name(s)' box under Create Field.
 Their labels will be set to their names split on underscore with the first
 letter of each word capitalized.
 
-Now go back to the first pane ('Bigtop Config'), enter a file name in
+Now scroll to the top of the page, enter a file name in
 the save as box and press the button.  You should see a short message below
 the button which reads, 'Saved contact.bigtop' -- presuming you called
 your contact.bigtop.  If anything goes wrong with the saving, the error
 will be reported instead.  At this point we are ready to build
-and start the app.
+and start the app.  This is a good time to press the 'Stop tentmaker'
+button (presuming the saving went well).
 
 =head1 Building and Starting
 
@@ -224,14 +241,14 @@ The name app.db was one of the defaults tentmaker chose for us, we could
 change it in tentmaker (it is part of the dbconn string which appears on the
 App Config tab).
 
-If you use Postgres or MySQL, you'll need to create the database first,
+If you use PostgreSQL or MySQL, you'll need to create the database first,
 then use your command line tool to populate it.  Note that there are
 three schema files in the docs directory, pick the one that ends with
 your database name.
 
 Finally, start the server:
 
-    ./app.server [ -d Pg|myslq -u dbuser -p dbpassword ] [ port ]
+    ./app.server [ -d Pg|mysql -u dbuser -p dbpassword ] [ port ]
 
 By default app.server runs on port 8080 and uses the sqlite app.db database.
 To change the port, type the number directly on the command line
@@ -251,8 +268,8 @@ serve.  Point your browser to them to play with the application.
 =head1 Iteration Number Two
 
 Now that we have built the app, the inevitable change requests have arrived.
-While our user likes the basic data we are collecting, she don't always have
-enough of it to completely satify our form.  Sometimes she has only a phone
+While our user likes the basic data we are collecting, she doesn't always have
+enough of it to completely satisfy our form.  Sometimes she has only a phone
 number or email address.  Other times, her friends don't even have email.
 We need to make most of the fields optional.
 
@@ -269,7 +286,7 @@ restart the tentmaker like so:
 As with the --new flag, --add allows you to define columns for the new
 tables.  Existing tables will receive new foreign keys as specified, but
 can't be modified in other ways from the command line.  See
-C<Bigtop::ScriptHelp::Style::Original> for how to specify columns, their
+C<Bigtop::ScriptHelp::Style::Kickstart> for how to specify columns, their
 types and a few other things from the command line.  Note that both tentmaker
 and bigtop share command line handling code, so all examples for bigtop
 work equally well for tentmaker.
@@ -282,10 +299,6 @@ We could have said:
 
 But then we would have had to do all the work.  By telling tentmaker that
 we want to add to the bigtop file, it can do some more work for us.
-In this case I used a bit of ASCII art to indicate that I want a table
-called bday with a foreign key to the existing address table.
-
-See tentmaker's perldoc for a complete description of ASCII art.
 
 =head2 Core Goals
 
@@ -293,29 +306,15 @@ Now there are two main things we want to do: make most of the address table
 fields optional and pick better names for the generated bday table.
 Both of these could also be acheived by careful command line column
 specifications when we built the tables above,
-see C<Bigtop::ScriptHelp::Style::Original>.
+see C<Bigtop::ScriptHelp::Style::Kickstart>.
 
 Even if you do supply better names during initial table generation, this
 section still offers good advice should ever need to make changes to
 what you specified on the command line.  Further, tentmaker allows you
 to edit far more than you can control from the command line.
 
-Before we start with our changes -- and this is always a good first step
-when you've already created the app -- go to the 'Backends' tab and check
-the 'No Gen' box for Init Std.  We don't need it any more and it tends to
-overwrite things we need (like our Changes file).  Alternatively, you could
-check the boxes next to the things you don't want updated.  For example,
-you could tell Bigtop to keep its hands off the README and Changes files
-while allowing it regenerate the others when it feels like it.
-
-By checking 'No Gen' instead of deselecting the backend, you allow it to
-keep registering its keywords, so you don't have to alter the rest of the
-file.  This doesn't really matter for Init Std, since all the keywords
-it registers are also registered by others.  It is a real issue
-for the other backends.
-
-With that bit of housekeeping out of the way, we can begin to make our
-changes to the app.  Click on the 'App Body' tab.  Then click on edit
+Ask your browser for a full page refresh (hold shift and press the refresh
+button.  Then, click on the 'App Body' tab.  Then click on edit
 for the C<address> table.  Go back to the Field Quick Edit box and begin
 checking the optional box for all the fields which should be optional.
 Or, as a better alternative in this case, click the optional box in title
@@ -330,8 +329,8 @@ Make sure that bdate's SQL type is date.
 
 =head2 Regeneration
 
-Now press 'Save As:' (the name should already be correct) on the Bigtop
-Config tab.  Then, at a command line in the build directory (the one with
+Now press 'Save As:' (the name should already be correct).
+Then, at a command line in the build directory (the one with
 Build.PL) type:
 
     bigtop docs/contact.bigtop all
@@ -348,7 +347,7 @@ These are the steps for sqlite:
     rm contact
     sqlite contact < docs/schema.sqlite
 
-For Postgres or MySQL it takes a bit more work:
+For PostgreSQL or MySQL it takes a bit more work:
 
     remove the old contact database
     create a new contact database
@@ -371,12 +370,13 @@ only piece that is difficult to manage is the database once it is built.
 
 See C<Bigtop::Docs::TentRef> for more details on what tentmaker can control.
 For more command line options, including firing up tentmaker to build an
-app based on an existing postgres database, see C<Bigtop::ScriptHelp::Style>.
+app based on an existing PostgreSQL 8 database, see
+C<Bigtop::ScriptHelp::Style::Pg8Live>.
 Try C<Bigtop::Docs::Cookbook> for small problems and answers,
 C<Bigtop::Docs::Tutorial> for a more complete example, with discussion,
-C<Bigtop::Docs::Keywords> for a list of valid keywords and their meanings,
-and C<Bigtop::Docs::Sytnax> for full details.  If you need to write your
-own backends, see C<Bigtop::Docs::Modules>.
+C<Bigtop::Docs::AutoKeywords> for details on all bigtop keywords
+and C<Bigtop::Docs::Sytnax> for an explanation of bigtop file structure.
+If you need to write your own backends, see C<Bigtop::Docs::Modules>.
 
 All of the doc modules are described briefly in C<Bigtop::Docs::TOC>.
 

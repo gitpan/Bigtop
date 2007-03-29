@@ -13,18 +13,18 @@ use AddressBook::Child;
 #-----------------------------------------------------------------
 # $self->do_main(  )
 #-----------------------------------------------------------------
-# This method supplied by GENAddressBook
+# This method inherited from GENAddressBook
 
 #-----------------------------------------------------------------
 # $self->site_links(  )
 #-----------------------------------------------------------------
-# This method supplied by GENAddressBook
+# This method inherited from GENAddressBook
 
 
 #-----------------------------------------------------------------
 # $self->init( $r )
 #-----------------------------------------------------------------
-# This method supplied by GENAddressBook
+# This method inherited from GENAddressBook
 
 1;
 

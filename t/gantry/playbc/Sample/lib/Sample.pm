@@ -23,12 +23,12 @@ use Missing::Module;
 #-----------------------------------------------------------------
 # $self->do_main(  )
 #-----------------------------------------------------------------
-# This method supplied by GENSample
+# This method inherited from GENSample
 
 #-----------------------------------------------------------------
 # $self->form( $row )
 #-----------------------------------------------------------------
-# This method supplied by GENSample
+# This method inherited from GENSample
 
 #-----------------------------------------------------------------
 # text_descr( )
@@ -54,7 +54,7 @@ sub get_orm_helper {
 #-----------------------------------------------------------------
 # $self->init( $r )
 #-----------------------------------------------------------------
-# This method supplied by GENSample
+# This method inherited from GENSample
 
 1;
 

@@ -19,7 +19,7 @@ BEGIN {
 use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=TT /;
 use Bigtop::ScriptHelp::Style;
 
-my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
+my $style = Bigtop::ScriptHelp::Style->get_style();
 
 Bigtop::TentMaker->take_performance_hit( $style );
 

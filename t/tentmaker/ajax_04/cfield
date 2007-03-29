@@ -81,13 +81,13 @@
     
   
   <tr>
-    <th id='data_for_field::ident_23'> name </th>
+    <th id='data_for_field::ident_13'> name </th>
     
     
         <td>
             <input type='text'
                    value=''
-                   id='data_value::ident_4::ident_23::1'
+                   id='data_value::ident_4::ident_13::1'
                    onchange='javascript:change_data_statement( this )' />
         </td>
   </tr>
@@ -120,6 +120,54 @@
             Label
             <br />
             
+            
+        </th>
+      
+      
+      
+        <th>
+            Searchable
+            <br />
+            
+            
+                
+                
+                  
+                  
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+            <input type='checkbox'
+                   name='quick_all_searchable_ident_4'
+                   
+                   onchange='javascript:quick_all(
+                        "ident_4",
+                        "searchable",
+                        this.checked
+                   )'
+            />
             
         </th>
       
@@ -208,6 +256,12 @@
       
       
       
+      
+      
+      
+      
+      
+      
     </tr >
     
       
@@ -262,6 +316,25 @@
                     "field_statement_text",
                     "ident_6::label",
                     this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_searchable_ident_6'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_6::searchable",
+                    this.checked,
                     "",
                     "quick_edit"
                )'
@@ -343,6 +416,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     </tr>
     
       
@@ -395,6 +474,25 @@
                     "field_statement_text",
                     "ident_7::label",
                     this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_searchable_ident_7'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_7::searchable",
+                    this.checked,
                     "",
                     "quick_edit"
                )'
@@ -476,6 +574,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     </tr>
     
       
@@ -528,6 +632,25 @@
                     "field_statement_text",
                     "ident_8::label",
                     this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_searchable_ident_8'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_8::searchable",
+                    this.checked,
                     "",
                     "quick_edit"
                )'
@@ -609,6 +732,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     </tr>
     
       
@@ -661,6 +790,25 @@
                     "field_statement_text",
                     "ident_9::label",
                     this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_searchable_ident_9'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_9::searchable",
+                    this.checked,
                     "",
                     "quick_edit"
                )'
@@ -742,17 +890,23 @@
       
         
       
+        
+      
+        
+      
+        
+      
     </tr>
     
       
       
-    <tr id='quick_row::ident_23'>
+    <tr id='quick_row::ident_13'>
       <td>
-        <input type='text' id='field_name_quick::ident_23'
+        <input type='text' id='field_name_quick::ident_13'
                value='name'
                onblur='javascript:update_tree(
                     "name",
-                    "field::ident_23",
+                    "field::ident_13",
                     this.value
                )'
         />
@@ -764,11 +918,11 @@
       <td style='text-align: center' >
           
         <input type='text'
-               id='quick_is_ident_23'
+               id='quick_is_ident_13'
                value='varchar'
                onblur='javascript:update_tree(
                     "field_statement_text",
-                    "ident_23::is",
+                    "ident_13::is",
                     this.value,
                     "",
                     "quick_edit"
@@ -788,12 +942,31 @@
       <td style='text-align: center' >
           
         <input type='text'
-               id='quick_label_ident_23'
+               id='quick_label_ident_13'
                value='Name'
                onblur='javascript:update_tree(
                     "field_statement_text",
-                    "ident_23::label",
+                    "ident_13::label",
                     this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_searchable_ident_13'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_13::searchable",
+                    this.checked,
                     "",
                     "quick_edit"
                )'
@@ -808,12 +981,12 @@
       <td style='text-align: center' >
           
         <input type='checkbox'
-               id='quick_html_form_optional_ident_23'
+               id='quick_html_form_optional_ident_13'
                value=''
                
                onchange='javascript:update_tree(
                     "field_statement_bool",
-                    "ident_23::html_form_optional",
+                    "ident_13::html_form_optional",
                     this.checked,
                     "",
                     "quick_edit"
@@ -827,11 +1000,11 @@
       <td style='text-align: center' >
           
         <input type='text'
-               id='quick_html_form_constraint_ident_23'
+               id='quick_html_form_constraint_ident_13'
                value=''
                onblur='javascript:update_tree(
                     "field_statement_text",
-                    "ident_23::html_form_constraint",
+                    "ident_13::html_form_constraint",
                     this.value,
                     "",
                     "quick_edit"
@@ -845,11 +1018,11 @@
       <td style='text-align: center' >
           
         <input type='text'
-               id='quick_html_form_default_value_ident_23'
+               id='quick_html_form_default_value_ident_13'
                value=''
                onblur='javascript:update_tree(
                     "field_statement_text",
-                    "ident_23::html_form_default_value",
+                    "ident_13::html_form_default_value",
                     this.value,
                     "",
                     "quick_edit"
@@ -857,6 +1030,12 @@
         />
           
       </td>
+        
+      
+        
+      
+        
+      
         
       
         
@@ -881,12 +1060,12 @@
   <br />
   <button type='button' > Apply Quick Edit </button>
   </fieldset><!-- END QUICK TABLE --><div class='app_block_element'
-         id='div_ident_23'>
+         id='div_ident_13'>
         
          <fieldset>
          <legend>Field
-            ( <a href='javascript:show_or_hide( "hideable_ident_23" );'>edit</a> |
-<a href="#" name='field_block_delete::ident_23' onclick='javascript:delete_block( this )'>delete</a>
+            ( <a href='javascript:show_or_hide( "hideable_ident_13" );'>edit or hide</a> |
+<a href="#" name='field_block_delete::ident_13' onclick='javascript:delete_block( this )'>delete</a>
        
 
             )
@@ -896,11 +1075,11 @@
                 <td> Name: </td>
                 <td>
                   <input type='text'
-                         id='field_name::ident_23'
+                         id='field_name::ident_13'
                          value='name'
                          onblur='javascript:update_tree(
                              "name",
-                             "field::ident_23",
+                             "field::ident_13",
                              this.value
                          )'
                   />
@@ -909,7 +1088,7 @@
             <tr>
                 <td colspan='2'>
                   
-<div id='hideable_ident_23'
+<div id='hideable_ident_13'
   
     style='display: none'
   
@@ -930,19 +1109,14 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select multiple
-            name='ident_23::not_for'            class='urgency_0'
+            name='ident_13::not_for'            class='urgency_0'
             onchange='javascript:
               myvalue = walk_selections( this );
               update_tree(
                 "field_statement_text",
-                "ident_23::not_for",
+                "ident_13::not_for",
                 myvalue
               )'
     >
@@ -971,21 +1145,16 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
             <input type='text'
-                name='ident_23::is'
+                name='ident_13::is'
                 value="varchar"
                 class='urgency_10'
                 onblur='javascript:update_multivalue(
                     "field_statement_text",
-                    "ident_23::is",
+                    "ident_13::is",
                     this,
                     "full_edit"
                 )'
@@ -994,12 +1163,12 @@
         
         
         <input type='text'
-            name='ident_23::is'
+            name='ident_13::is'
             value=''
             class='urgency_10'
             onblur='javascript:update_multivalue(
                 "field_statement_text",
-                "ident_23::is",
+                "ident_13::is",
                 this,
                 "full_edit"
             )'
@@ -1007,12 +1176,12 @@
         <br />
         
         <input type='text'
-            name='ident_23::is'
+            name='ident_13::is'
             value=''
             class='urgency_10'
             onblur='javascript:update_multivalue(
                 "field_statement_text",
-                "ident_23::is",
+                "ident_13::is",
                 this,
                 "full_edit"
             )'
@@ -1038,13 +1207,8 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
 
-
-
-
-      <table id='ident_23::refers_to_input_table'>
+      <table id='ident_13::refers_to_input_table'>
         <tr><th> Table </th>
             <th> Column
                  
@@ -1055,11 +1219,11 @@ auto</pre>
             <tr><td>
                 <input
                     type='text'
-                    name='ident_23::refers_to_key'
+                    name='ident_13::refers_to_key'
                     class='urgency_1'
                     onblur='javascript:update_pairs(
                         "field_statement_pair",
-                        "ident_23::refers_to",
+                        "ident_13::refers_to",
                         0,
                         this
                     )'
@@ -1068,11 +1232,11 @@ auto</pre>
             <td>
                 <input
                     type='text'
-                    name='ident_23::refers_to_value'
+                    name='ident_13::refers_to_value'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "field_statement_pair",
-                        "ident_23::refers_to",
+                        "ident_13::refers_to",
                         0,
                         this
                     )'
@@ -1096,20 +1260,15 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
-            id='ident_23::on_delete'
+            id='ident_13::on_delete'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_23::on_delete",
+                "ident_13::on_delete",
                 this.value
             )'
         />
@@ -1129,20 +1288,15 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
-            id='ident_23::on_update'
+            id='ident_13::on_update'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_23::on_update",
+                "ident_13::on_update",
                 this.value
             )'
         />
@@ -1162,20 +1316,15 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
-            id='ident_23::label'
+            id='ident_13::label'
             value="Name"
             class='urgency_5'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_23::label",
+                "ident_13::label",
                 this.value,
                 "",
                 "full_edit"
@@ -1192,23 +1341,45 @@ auto</pre>
   
     
     <tr>
+        <td> searchable </td>
+        <td>
+
+            
+            
+
+<input type='checkbox'
+       value='ident_13::searchable'
+       id='ident_13::searchable'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_13::searchable",
+           this.checked,
+           "",
+           "full_edit"
+       )'
+/>
+
+
+        </td>
+        <td>
+            Include this field in searches?
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_type </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
 
-
-
-
-    <select             id='ident_23::html_form_type'            class='urgency_5'
+    <select             id='ident_13::html_form_type'            class='urgency_5'
             onchange='javascript:
               myvalue = walk_selections( this );
               update_tree(
                 "field_statement_text",
-                "ident_23::html_form_type",
+                "ident_13::html_form_type",
                 myvalue
               )'
     >
@@ -1249,18 +1420,13 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
-       value='ident_23::html_form_optional'
-       id='ident_23::html_form_optional'
+       value='ident_13::html_form_optional'
+       id='ident_13::html_form_optional'
        class='urgency_0'       onchange='javascript:update_tree(
            "field_statement_bool",
-           "ident_23::html_form_optional",
+           "ident_13::html_form_optional",
            this.checked,
            "",
            "full_edit"
@@ -1281,20 +1447,15 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
-            id='ident_23::html_form_constraint'
+            id='ident_13::html_form_constraint'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_23::html_form_constraint",
+                "ident_13::html_form_constraint",
                 this.value,
                 "",
                 "full_edit"
@@ -1316,20 +1477,15 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
-            id='ident_23::html_form_default_value'
+            id='ident_13::html_form_default_value'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_23::html_form_default_value",
+                "ident_13::html_form_default_value",
                 this.value,
                 "",
                 "full_edit"
@@ -1351,20 +1507,15 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
-            id='ident_23::html_form_cols'
+            id='ident_13::html_form_cols'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_23::html_form_cols",
+                "ident_13::html_form_cols",
                 this.value
             )'
         />
@@ -1384,20 +1535,15 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
-            id='ident_23::html_form_rows'
+            id='ident_13::html_form_rows'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_23::html_form_rows",
+                "ident_13::html_form_rows",
                 this.value
             )'
         />
@@ -1417,20 +1563,15 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
-            id='ident_23::html_form_display_size'
+            id='ident_13::html_form_display_size'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_23::html_form_display_size",
+                "ident_13::html_form_display_size",
                 this.value
             )'
         />
@@ -1445,18 +1586,69 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_class </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_13::html_form_class'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_13::html_form_class",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            class attribute for the form field
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_hint </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_13::html_form_hint'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_13::html_form_hint",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            form field hint
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_options </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
 
-
-
-
-      <table id='ident_23::html_form_options_input_table'>
+      <table id='ident_13::html_form_options_input_table'>
         <tr><th> Label </th>
             <th> Database Value
                  
@@ -1465,11 +1657,11 @@ auto</pre>
             <tr><td>
                 <input
                     type='text'
-                    name='ident_23::html_form_options_key'
+                    name='ident_13::html_form_options_key'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "field_statement_pair",
-                        "ident_23::html_form_options",
+                        "ident_13::html_form_options",
                         1,
                         this
                     )'
@@ -1478,11 +1670,11 @@ auto</pre>
             <td>
                 <input
                     type='text'
-                    name='ident_23::html_form_options_value'
+                    name='ident_13::html_form_options_value'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "field_statement_pair",
-                        "ident_23::html_form_options",
+                        "ident_13::html_form_options",
                         1,
                         this
                     )'
@@ -1506,18 +1698,13 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
-       value='ident_23::html_form_foreign'
-       id='ident_23::html_form_foreign'
+       value='ident_13::html_form_foreign'
+       id='ident_13::html_form_foreign'
        class='urgency_0'       onchange='javascript:update_tree(
            "field_statement_bool",
-           "ident_23::html_form_foreign",
+           "ident_13::html_form_foreign",
            this.checked
        )'
 />
@@ -1525,7 +1712,35 @@ auto</pre>
 
         </td>
         <td>
-            Display field is foreign key
+            Display field is a foreign key
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_onchange </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_13::html_form_onchange'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_13::html_form_onchange",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Name of Javascript function to call on change
         </td>
     </tr>
   
@@ -1536,20 +1751,15 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
-            id='ident_23::date_select_text'
+            id='ident_13::date_select_text'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_23::date_select_text",
+                "ident_13::date_select_text",
                 this.value,
                 "",
                 "full_edit"
@@ -1571,20 +1781,15 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
-            id='ident_23::html_form_raw_html'
+            id='ident_13::html_form_raw_html'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_23::html_form_raw_html",
+                "ident_13::html_form_raw_html",
                 this.value
             )'
         />
@@ -1604,18 +1809,13 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
-       value='ident_23::non_essential'
-       id='ident_23::non_essential'
+       value='ident_13::non_essential'
+       id='ident_13::non_essential'
        class='urgency_0'       onchange='javascript:update_tree(
            "field_statement_bool",
-           "ident_23::non_essential",
+           "ident_13::non_essential",
            this.checked
        )'
 />
@@ -1703,47 +1903,6 @@ app Sample {
             is varchar;
             label Name;
             html_form_type text;
-        }
-    }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-            extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
         }
     }
 }

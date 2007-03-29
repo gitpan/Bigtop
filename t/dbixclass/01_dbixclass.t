@@ -63,6 +63,8 @@ app Contact {
         }
         sequence        number_seq;
         foreign_display `%name`;
+        refered_to_by   bday => `birth_days`;
+        refered_to_by   missing;
     }
     table bday {
         field id      { is int4, primary_key, assign_by_sequence; }

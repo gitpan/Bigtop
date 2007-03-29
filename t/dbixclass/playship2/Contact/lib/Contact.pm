@@ -13,7 +13,7 @@ use Contact::Number;
 #-----------------------------------------------------------------
 # $self->init( $r )
 #-----------------------------------------------------------------
-# This method supplied by GENContact
+# This method inherited from GENContact
 
 1;
 

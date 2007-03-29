@@ -1,4 +1,7 @@
-The useful contents of this directory have been moved.
+The useful documents of this directory have been moved.
+
+The only useful things left are the screen shots for other docs.
 
 All relavent docs are kept up to date in modules under the Bigtop::Docs
-namespace.  Look for Tutorial.pm, Keywords.pm, Syntax.pm, etc.
+namespace.  Look for Tutorial, Keywords, Syntax, etc.
+TentTut and TentRef use the screen shots included here.

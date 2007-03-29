@@ -13,6 +13,8 @@ __PACKAGE__->add_columns( qw/
 / );
 __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->base_model( 'Contact::Model' );
+__PACKAGE__->has_many( birth_days => 'Contact::Model::bday' );
+__PACKAGE__->has_many( missings => 'Contact::Model::missing' );
 
 sub get_foreign_display_fields {
     return [ qw( name ) ];

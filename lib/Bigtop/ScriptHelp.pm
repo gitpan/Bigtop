@@ -81,6 +81,8 @@ sub _make_model_code {
             $parsed_art->{ columns },
     );
 
+    my $foreign_targets = _transpose( $foreign_key_for );
+
     my $col_num_2_name = _correlate_columns( $columns );
 
     $new_tables = _safely_order( $new_tables, $foreign_key_for );
@@ -102,7 +104,7 @@ sub _make_model_code {
         my $model_label = Bigtop::ScriptHelp->default_label( $schema_free );
 
         my ( $native_text, $show_in_main, $those_excluded_from_form )
-                = _make_native_fields( $columns, $model );
+                = _make_native_fields( $columns, $model, $foreign_targets );
 
         my $foreign_text = _make_foreign_key_fields(
                 $foreign_key_for, $model, $col_num_2_name
@@ -146,6 +148,20 @@ EO_JOINER
     }
 
     return $retval;
+}
+
+sub _transpose {
+    my $foreign_key_for = shift;
+
+    my %retval;
+
+    foreach my $foreign_key ( keys %{ $foreign_key_for } ) {
+        foreach my $table_info ( @{ $foreign_key_for->{ $foreign_key } } ) {
+            push @{ $retval{ $table_info->{ table } } }, $foreign_key;
+        }
+    }
+
+    return \%retval;
 }
 
 sub _make_default_string {
@@ -264,6 +280,7 @@ sub _build_chain {
 sub _make_native_fields {
     my $columns_for = shift;
     my $table       = shift;
+    my $foreign_targets = shift;
 
     my $columns     = $columns_for->{ $table };
     my $foreign_display;
@@ -327,6 +344,11 @@ EO_DEFAULT
 
     # finish by adding foreign_display
     $retval .= "${outer_indent}foreign_display `%$foreign_display`;";
+
+    foreach my $foreign_target ( @{ $foreign_targets->{ $table } } ) {
+        $retval .=
+            "\n${outer_indent}refered_to_by `$foreign_target`;";
+    }
 
     my $main_cols = $foreign_display;
     $main_cols   .= ", $second_main_col" if $second_main_col;
@@ -413,6 +435,8 @@ sub augment_tree {
         $parsed_art->{ foreigners },
         $parsed_art->{ columns    },
     );
+
+    my $foreign_targets = _transpose( $foreign_key_for );
 
     my $col_num_2_name = _correlate_columns( $columns, $ast );
 
@@ -545,6 +569,55 @@ sub augment_tree {
         }
     }
 
+    foreach my $point_to ( keys %{ $foreign_targets } ) {
+        my $ident = $ast->{application}
+                          {lookup} 
+                          {tables}
+                          {$point_to}
+                          {__IDENT__};
+
+        if ( not defined $ident ) {
+            $ident = $new_table{ $point_to }->get_ident();
+        }
+
+        my @all_referrers;
+        my @referrer_values;
+
+        # find existing referrals
+        my $original_referrers = $ast->get_statement(
+            {
+                type    => 'table',
+                ident   => $ident,
+                keyword => 'refered_to_by',
+            }
+        );
+
+        foreach my $original_referrer ( @{ $original_referrers } ) {
+            my ( $table, $has_many_name ) =
+                    split /\s*=>\s*/, $original_referrer;
+
+            $has_many_name ||= '';
+
+            push @all_referrers, $table;
+            push @referrer_values, $has_many_name;
+        }
+
+        # add new ones and set as new value
+        push @all_referrers, @{ $foreign_targets->{ $point_to } };
+
+        $ast->change_statement(
+            {
+                type => 'table',
+                ident => $ident,
+                keyword => 'refered_to_by',
+                new_value => {
+                    keys   => join( '][', @all_referrers ),
+                    values => join( '][', @referrer_values ),
+                }
+            }
+        );
+    }
+
     # Make three ways.
     foreach my $joiner ( @{ $joiners } ) {
         my ( $table1, $table2 ) = @{ $joiner };
@@ -675,18 +748,18 @@ styles and individual modules under its namespace for how each style
 works.  That said, here is a list of the styles available when this was
 written.
 
-=head2 Original
+=head2 Kickstart
 
 This is the default style.
 
-The original style allows ASCII art pictures of database relationships.
+It allows short text descriptions of database relationships.
 For example:
 
     bigtop -n App 'contact<-birth_day'
 
 But recent versions allow you to specify column names, their types, whether
 they are optional, and to give them literal default values.  See
-C<Bigtop::ScriptHelp::Style::Original> for details.  This is my favorite
+C<Bigtop::ScriptHelp::Style::Kickstart> for details.  This is my favorite
 style (so it's no surprise that it is the default).
 
 =head2 Pg8Live

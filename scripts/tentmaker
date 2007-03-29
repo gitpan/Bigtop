@@ -111,10 +111,17 @@ sub trap_int {
 
     @ARGV = (); # IO::Prompt uses @ARGV, don't let it
 
-    my $response = prompt
-                    "\n\nYou hit CTRL-C, would you like to save changes? ";
+    my $response = '';
+    my $prompt   = "\n\nYou hit CTRL-C, would you like to save changes? ";
 
-    if ( $response !~ /^n/i ) {
+    while ( length $response == 0 ) {
+        $response = prompt $prompt;
+        $response =~ s/\W+|\s+//gms;
+        $response =~ s/A//;
+        $prompt   = "\nPlease answer yes or no. ";
+    }
+
+    if ( $response =~ /^y/i ) {
         my $file = Bigtop::TentMaker->get_file() || 'tmp.bigtop';
 
         open my $OUTPUT, '>', $file or die "I couldn't write the changes\n";

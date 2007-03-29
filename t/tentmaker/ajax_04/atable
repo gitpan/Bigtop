@@ -10,7 +10,7 @@
         <legend>
             Table 
             ( <a href='javascript:show_or_hide( "hideable_ident_4" );'>
-                edit</a> |  
+                edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_4' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -57,11 +57,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select multiple
             name='ident_4::not_for'            class='urgency_0'
@@ -98,11 +93,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -127,15 +117,63 @@
     
     
     <tr>
+        <td> refered_to_by </td>
+        <td>
+            
+            
+
+      <table id='ident_4::refered_to_by_input_table'>
+        <tr><th> Foreign Table </th>
+            <th> Name of Has Many
+                 
+                    [optional]
+                 
+            </th></tr>
+    
+            <tr><td>
+                <input
+                    type='text'
+                    name='ident_4::refered_to_by_key'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "table_statement_pair",
+                        "ident_4::refered_to_by",
+                        1,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_4::refered_to_by_value'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "table_statement_pair",
+                        "ident_4::refered_to_by",
+                        1,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            Table has many rows from this other table
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
         <td> model_base_class </td>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -164,11 +202,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -226,6 +259,49 @@
             Label
             <br />
             
+            
+        </th>
+      
+      
+      
+        <th>
+            Searchable
+            <br />
+            
+            
+                
+                
+                  
+                  
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+                  
+                  
+                  
+                   
+                
+            <input type='checkbox'
+                   name='quick_all_searchable_ident_4'
+                   
+                   onchange='javascript:quick_all(
+                        "ident_4",
+                        "searchable",
+                        this.checked
+                   )'
+            />
             
         </th>
       
@@ -309,6 +385,12 @@
       
       
       
+      
+      
+      
+      
+      
+      
     </tr >
     
       
@@ -363,6 +445,25 @@
                     "field_statement_text",
                     "ident_6::label",
                     this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_searchable_ident_6'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_6::searchable",
+                    this.checked,
                     "",
                     "quick_edit"
                )'
@@ -444,6 +545,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     </tr>
     
       
@@ -496,6 +603,25 @@
                     "field_statement_text",
                     "ident_7::label",
                     this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_searchable_ident_7'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_7::searchable",
+                    this.checked,
                     "",
                     "quick_edit"
                )'
@@ -577,6 +703,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     </tr>
     
       
@@ -629,6 +761,25 @@
                     "field_statement_text",
                     "ident_8::label",
                     this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_searchable_ident_8'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_8::searchable",
+                    this.checked,
                     "",
                     "quick_edit"
                )'
@@ -710,6 +861,12 @@
       
         
       
+        
+      
+        
+      
+        
+      
     </tr>
     
       
@@ -762,6 +919,25 @@
                     "field_statement_text",
                     "ident_9::label",
                     this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_searchable_ident_9'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_9::searchable",
+                    this.checked,
                     "",
                     "quick_edit"
                )'
@@ -825,6 +1001,12 @@
         />
           
       </td>
+        
+      
+        
+      
+        
+      
         
       
         
@@ -929,7 +1111,7 @@
         
          <fieldset>
          <legend>Field
-            ( <a href='javascript:show_or_hide( "hideable_ident_5" );'>edit</a> |
+            ( <a href='javascript:show_or_hide( "hideable_ident_5" );'>edit or hide</a> |
 <a href="#" name='field_block_delete::ident_5' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -974,11 +1156,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select multiple
             name='ident_5::not_for'            class='urgency_0'
@@ -1015,11 +1192,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -1108,11 +1280,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_5::refers_to_input_table'>
         <tr><th> Table </th>
@@ -1166,11 +1333,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1199,11 +1361,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1232,11 +1389,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1262,16 +1414,38 @@ auto</pre>
   
     
     <tr>
+        <td> searchable </td>
+        <td>
+
+            
+            
+
+<input type='checkbox'
+       value='ident_5::searchable'
+       id='ident_5::searchable'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_5::searchable",
+           this.checked,
+           "",
+           "full_edit"
+       )'
+/>
+
+
+        </td>
+        <td>
+            Include this field in searches?
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_type </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select             id='ident_5::html_form_type'            class='urgency_5'
             onchange='javascript:
@@ -1319,11 +1493,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_5::html_form_optional'
@@ -1351,11 +1520,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1386,11 +1550,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1421,11 +1580,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1454,11 +1608,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1487,11 +1636,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1515,16 +1659,67 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_class </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_5::html_form_class'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_5::html_form_class",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            class attribute for the form field
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_hint </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_5::html_form_hint'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_5::html_form_hint",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            form field hint
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_options </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_5::html_form_options_input_table'>
         <tr><th> Label </th>
@@ -1576,11 +1771,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_5::html_form_foreign'
@@ -1595,7 +1785,35 @@ auto</pre>
 
         </td>
         <td>
-            Display field is foreign key
+            Display field is a foreign key
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_onchange </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_5::html_form_onchange'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_5::html_form_onchange",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Name of Javascript function to call on change
         </td>
     </tr>
   
@@ -1606,11 +1824,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1641,11 +1854,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1674,11 +1882,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_5::non_essential'
@@ -1724,7 +1927,7 @@ auto</pre>
         
          <fieldset>
          <legend>Field
-            ( <a href='javascript:show_or_hide( "hideable_ident_6" );'>edit</a> |
+            ( <a href='javascript:show_or_hide( "hideable_ident_6" );'>edit or hide</a> |
 <a href="#" name='field_block_delete::ident_6' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -1769,11 +1972,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select multiple
             name='ident_6::not_for'            class='urgency_0'
@@ -1810,11 +2008,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -1877,11 +2070,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_6::refers_to_input_table'>
         <tr><th> Table </th>
@@ -1935,11 +2123,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1968,11 +2151,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2001,11 +2179,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2031,16 +2204,38 @@ auto</pre>
   
     
     <tr>
+        <td> searchable </td>
+        <td>
+
+            
+            
+
+<input type='checkbox'
+       value='ident_6::searchable'
+       id='ident_6::searchable'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_6::searchable",
+           this.checked,
+           "",
+           "full_edit"
+       )'
+/>
+
+
+        </td>
+        <td>
+            Include this field in searches?
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_type </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select             id='ident_6::html_form_type'            class='urgency_5'
             onchange='javascript:
@@ -2088,11 +2283,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_6::html_form_optional'
@@ -2120,11 +2310,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2155,11 +2340,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2190,11 +2370,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2223,11 +2398,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2256,11 +2426,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2284,16 +2449,67 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_class </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_6::html_form_class'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_6::html_form_class",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            class attribute for the form field
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_hint </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_6::html_form_hint'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_6::html_form_hint",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            form field hint
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_options </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_6::html_form_options_input_table'>
         <tr><th> Label </th>
@@ -2345,11 +2561,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_6::html_form_foreign'
@@ -2364,7 +2575,35 @@ auto</pre>
 
         </td>
         <td>
-            Display field is foreign key
+            Display field is a foreign key
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_onchange </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_6::html_form_onchange'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_6::html_form_onchange",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Name of Javascript function to call on change
         </td>
     </tr>
   
@@ -2375,11 +2614,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2410,11 +2644,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2443,11 +2672,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_6::non_essential'
@@ -2493,7 +2717,7 @@ auto</pre>
         
          <fieldset>
          <legend>Field
-            ( <a href='javascript:show_or_hide( "hideable_ident_7" );'>edit</a> |
+            ( <a href='javascript:show_or_hide( "hideable_ident_7" );'>edit or hide</a> |
 <a href="#" name='field_block_delete::ident_7' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -2538,11 +2762,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select multiple
             name='ident_7::not_for'            class='urgency_0'
@@ -2579,11 +2798,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -2646,11 +2860,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_7::refers_to_input_table'>
         <tr><th> Table </th>
@@ -2704,11 +2913,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2737,11 +2941,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2770,11 +2969,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2800,16 +2994,38 @@ auto</pre>
   
     
     <tr>
+        <td> searchable </td>
+        <td>
+
+            
+            
+
+<input type='checkbox'
+       value='ident_7::searchable'
+       id='ident_7::searchable'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_7::searchable",
+           this.checked,
+           "",
+           "full_edit"
+       )'
+/>
+
+
+        </td>
+        <td>
+            Include this field in searches?
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_type </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select             id='ident_7::html_form_type'            class='urgency_5'
             onchange='javascript:
@@ -2857,11 +3073,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_7::html_form_optional'
@@ -2889,11 +3100,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2924,11 +3130,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2959,11 +3160,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -2992,11 +3188,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3025,11 +3216,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3053,16 +3239,67 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_class </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_7::html_form_class'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_7::html_form_class",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            class attribute for the form field
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_hint </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_7::html_form_hint'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_7::html_form_hint",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            form field hint
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_options </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_7::html_form_options_input_table'>
         <tr><th> Label </th>
@@ -3114,11 +3351,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_7::html_form_foreign'
@@ -3133,7 +3365,35 @@ auto</pre>
 
         </td>
         <td>
-            Display field is foreign key
+            Display field is a foreign key
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_onchange </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_7::html_form_onchange'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_7::html_form_onchange",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Name of Javascript function to call on change
         </td>
     </tr>
   
@@ -3144,11 +3404,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3179,11 +3434,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3212,11 +3462,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_7::non_essential'
@@ -3262,7 +3507,7 @@ auto</pre>
         
          <fieldset>
          <legend>Field
-            ( <a href='javascript:show_or_hide( "hideable_ident_8" );'>edit</a> |
+            ( <a href='javascript:show_or_hide( "hideable_ident_8" );'>edit or hide</a> |
 <a href="#" name='field_block_delete::ident_8' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -3307,11 +3552,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select multiple
             name='ident_8::not_for'            class='urgency_0'
@@ -3348,11 +3588,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -3415,11 +3650,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_8::refers_to_input_table'>
         <tr><th> Table </th>
@@ -3473,11 +3703,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3506,11 +3731,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3539,11 +3759,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3569,16 +3784,38 @@ auto</pre>
   
     
     <tr>
+        <td> searchable </td>
+        <td>
+
+            
+            
+
+<input type='checkbox'
+       value='ident_8::searchable'
+       id='ident_8::searchable'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_8::searchable",
+           this.checked,
+           "",
+           "full_edit"
+       )'
+/>
+
+
+        </td>
+        <td>
+            Include this field in searches?
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_type </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select             id='ident_8::html_form_type'            class='urgency_5'
             onchange='javascript:
@@ -3626,11 +3863,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_8::html_form_optional'
@@ -3658,11 +3890,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3693,11 +3920,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3728,11 +3950,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3761,11 +3978,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3794,11 +4006,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3822,16 +4029,67 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_class </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_8::html_form_class'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_8::html_form_class",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            class attribute for the form field
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_hint </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_8::html_form_hint'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_8::html_form_hint",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            form field hint
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_options </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_8::html_form_options_input_table'>
         <tr><th> Label </th>
@@ -3883,11 +4141,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_8::html_form_foreign'
@@ -3902,7 +4155,35 @@ auto</pre>
 
         </td>
         <td>
-            Display field is foreign key
+            Display field is a foreign key
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_onchange </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_8::html_form_onchange'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_8::html_form_onchange",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Name of Javascript function to call on change
         </td>
     </tr>
   
@@ -3913,11 +4194,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3948,11 +4224,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -3981,11 +4252,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_8::non_essential'
@@ -4031,7 +4297,7 @@ auto</pre>
         
          <fieldset>
          <legend>Field
-            ( <a href='javascript:show_or_hide( "hideable_ident_9" );'>edit</a> |
+            ( <a href='javascript:show_or_hide( "hideable_ident_9" );'>edit or hide</a> |
 <a href="#" name='field_block_delete::ident_9' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -4076,11 +4342,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select multiple
             name='ident_9::not_for'            class='urgency_0'
@@ -4117,11 +4378,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -4184,11 +4440,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_9::refers_to_input_table'>
         <tr><th> Table </th>
@@ -4242,11 +4493,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -4275,11 +4521,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -4308,11 +4549,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -4338,16 +4574,38 @@ auto</pre>
   
     
     <tr>
+        <td> searchable </td>
+        <td>
+
+            
+            
+
+<input type='checkbox'
+       value='ident_9::searchable'
+       id='ident_9::searchable'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "field_statement_bool",
+           "ident_9::searchable",
+           this.checked,
+           "",
+           "full_edit"
+       )'
+/>
+
+
+        </td>
+        <td>
+            Include this field in searches?
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_type </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     <select             id='ident_9::html_form_type'            class='urgency_5'
             onchange='javascript:
@@ -4395,11 +4653,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_9::html_form_optional'
@@ -4427,11 +4680,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -4462,11 +4710,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -4497,11 +4740,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -4530,11 +4768,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -4563,11 +4796,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -4591,16 +4819,67 @@ auto</pre>
   
     
     <tr>
+        <td> html_form_class </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_9::html_form_class'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_9::html_form_class",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            class attribute for the form field
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_hint </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_9::html_form_hint'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_9::html_form_hint",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            form field hint
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> html_form_options </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_9::html_form_options_input_table'>
         <tr><th> Label </th>
@@ -4652,11 +4931,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_9::html_form_foreign'
@@ -4671,7 +4945,35 @@ auto</pre>
 
         </td>
         <td>
-            Display field is foreign key
+            Display field is a foreign key
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> html_form_onchange </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_9::html_form_onchange'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "field_statement_text",
+                "ident_9::html_form_onchange",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Name of Javascript function to call on change
         </td>
     </tr>
   
@@ -4682,11 +4984,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -4717,11 +5014,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -4750,11 +5042,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_9::non_essential'
@@ -4800,7 +5087,7 @@ auto</pre>
   <fieldset>
     <legend>
       Data Statements ( <a href='javascript:show_or_hide( "hideable_data_ident_4" );'>
-                          edit</a> )
+                          edit or hide</a> )
     </legend>
 
     
@@ -4937,7 +5224,7 @@ auto</pre>
           <legend>
               Controller 
               ( <a href='javascript:show_or_hide( "hideable_ident_10" );'>
-                  edit</a> |  
+                  edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_10' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -5012,11 +5299,6 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_10::no_gen'
@@ -5042,11 +5324,6 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -5075,11 +5352,6 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -5097,7 +5369,7 @@ auto</pre>
 
         </td>
         <td>
-            Location of this controller relative to app location[non-base controllers must have either a location or a rel_location.]
+            Location of this controller relative to app location [non-base controllers must have either a location or a rel_location.]
         </td>
     </tr>
   
@@ -5108,11 +5380,6 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -5141,11 +5408,6 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -5179,7 +5441,7 @@ auto</pre>
 
         </td>
         <td>
-            List of modules used gen module
+            List of modules used in gen module
         </td>
     </tr>
   
@@ -5190,11 +5452,6 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -5228,7 +5485,7 @@ auto</pre>
 
         </td>
         <td>
-            List of modules used stub module
+            List of modules used in stub module
         </td>
     </tr>
   
@@ -5239,11 +5496,6 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -5288,11 +5540,6 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -5321,17 +5568,12 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
             id='ident_10::page_link_label'
             value="Street Address"
-            class='urgency_1'
+            class='urgency_3'
             onblur='javascript:update_tree(
                 "controller_statement_text",
                 "ident_10::page_link_label",
@@ -5354,11 +5596,6 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -5387,11 +5624,6 @@ auto</pre>
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_10::skip_test'
@@ -5458,7 +5690,7 @@ auto</pre>
         
          <fieldset>
          <legend>Method 
-            ( <a href='javascript:show_or_hide( "hideable_ident_11" );'>edit</a> |  
+            ( <a href='javascript:show_or_hide( "hideable_ident_11" );'>edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_11' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -5546,11 +5778,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_11::no_gen'
@@ -5577,11 +5804,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -5622,16 +5844,40 @@ auto</pre>
     
     
     <tr>
+        <td> order_by </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_11::order_by'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "method_statement_text",
+                "ident_11::order_by",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Exact text of SQL order by
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
         <td> rows </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -5661,11 +5907,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -5695,11 +5936,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -5769,11 +6005,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -5807,7 +6038,33 @@ auto</pre>
 
         </td>
         <td>
-            Labels for fields on main_listing [optional defaults to fields label]
+            Labels for fields on main_listing [optional default uses field labels]
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
+        <td> livesearch </td>
+        <td>
+
+            
+            
+
+<input type='checkbox'
+       value='ident_11::livesearch'
+       id='ident_11::livesearch'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "method_statement_bool",
+           "ident_11::livesearch",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Places a search box on results page
         </td>
     </tr>
   
@@ -5819,11 +6076,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_11::header_options_input_table'>
         <tr><th> Label </th>
@@ -5913,11 +6165,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_11::row_options_input_table'>
         <tr><th> Label </th>
@@ -6042,11 +6289,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -6076,11 +6318,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -6110,11 +6347,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -6164,7 +6396,7 @@ auto</pre>
         
          <fieldset>
          <legend>Method 
-            ( <a href='javascript:show_or_hide( "hideable_ident_12" );'>edit</a> |  
+            ( <a href='javascript:show_or_hide( "hideable_ident_12" );'>edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_12' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -6252,11 +6484,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_12::no_gen'
@@ -6283,11 +6510,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -6336,17 +6558,14 @@ auto</pre>
     
     
     
+    
+    
     <tr>
         <td> all_fields_but </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -6428,11 +6647,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -6478,11 +6692,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_12::extra_keys_input_table'>
         <tr><th> key </th>
@@ -6568,11 +6777,6 @@ auto</pre>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'

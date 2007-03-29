@@ -5,6 +5,7 @@ package Apps::Checkbook::GEN::Trans;
 use strict;
 
 use base 'Apps::Checkbook';
+use JSON;
 
 use SomePackage::SomeModule qw( a_method $b_scalar );
 use SomePackage::OtherModule;
@@ -44,10 +45,33 @@ sub do_main {
         ],
     };
 
-    my @rows = $TRANS->get_listing();
+    my %param = $self->get_param_hash;
+
+    my $search = {};
+    if ( $param{ search } ) {
+        my $form = $self->form();
+
+        my @searches;
+        foreach my $field ( @{ $form->{ fields } } ) {
+            if ( $field->{ searchable } ) {
+                push( @searches,
+                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                );
+            }
+        }
+
+        $search = {
+            -or => \@searches
+        } if scalar( @searches ) > 0;
+    }
+
+    my @rows = $TRANS->get_listing( { order_by => 'trans_date DESC', } );
 
     foreach my $row ( @rows ) {
         my $id = $row->id;
+        my $payee_payor = ( $row->payee_payor )
+                ? $row->payee_payor->foreign_display()
+                : '';
         push(
             @{ $retval->{rows} }, {
                 data => [
@@ -55,7 +79,7 @@ sub do_main {
                     $row->cleared_display(),
                     $row->trans_date,
                     $row->amount,
-                    $row->payee_payor->foreign_display(),
+                    $payee_payor,
                 ],
                 options => [
                     {
@@ -69,6 +93,19 @@ sub do_main {
                 ],
             }
         );
+    }
+
+    if ( $param{ json } ) {
+        $self->template_disable( 1 );
+
+        my $obj = {
+            headings        => $retval->{ headings },
+            header_options  => $retval->{ header_options },
+            rows            => $retval->{ rows },
+        };
+
+        my $json = objToJson( $obj );
+        return( $json );
     }
 
     $self->stash->view->data( $retval );

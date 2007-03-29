@@ -22,12 +22,12 @@ use Gantry::Plugins::DBIxClassConn qw( get_schema );
 #-----------------------------------------------------------------
 # $self->do_main(  )
 #-----------------------------------------------------------------
-# This method supplied by AddressBook::GEN::Family
+# This method inherited from AddressBook::GEN::Family
 
 #-----------------------------------------------------------------
 # $self->form( $row )
 #-----------------------------------------------------------------
-# This method supplied by AddressBook::GEN::Family
+# This method inherited from AddressBook::GEN::Family
 
 
 #-----------------------------------------------------------------

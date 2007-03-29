@@ -28,3 +28,5 @@
 # Avoid inline's dropings
 _Inline
 
+# a place to hide things
+skip

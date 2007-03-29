@@ -9,7 +9,9 @@ BEGIN {
     );
 
     Bigtop::Parser->add_valid_keywords(
-        Bigtop::Keywords->get_docs_for( 'table', 'sequence', 'data' )
+        Bigtop::Keywords->get_docs_for(
+                'table', 'sequence', 'data', 'refered_to_by'
+        )
     );
 
     Bigtop::Parser->add_valid_keywords(

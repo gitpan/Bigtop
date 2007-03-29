@@ -8,9 +8,9 @@ This document goes into some depth on each piece of of the Bigtop distribution.
 Some of the details are left for the POD of the pieces themselves.
 
 If you want to know exactly what's legal in a bigtop file, look in
-Bigtop::Docs::Syntax or the more concise (and less complete)
-Bigtop::Docs::Keywords.  Or, you could look where tentmaker looks:
-Bigtop::Keywords.
+C<Bigtop::Docs::Syntax> or the more concise (and less complete)
+C<Bigtop::Docs::AutoKeywords>.  Or, you could look where tentmaker looks:
+C<Bigtop::Keywords>.
 
 =head2 Bigtop.pm
 

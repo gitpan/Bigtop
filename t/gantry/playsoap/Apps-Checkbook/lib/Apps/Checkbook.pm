@@ -12,18 +12,18 @@ use Apps::Checkbook::SOAP;
 #-----------------------------------------------------------------
 # $self->do_main(  )
 #-----------------------------------------------------------------
-# This method supplied by Apps::GENCheckbook
+# This method inherited from Apps::GENCheckbook
 
 #-----------------------------------------------------------------
 # $self->site_links(  )
 #-----------------------------------------------------------------
-# This method supplied by Apps::GENCheckbook
+# This method inherited from Apps::GENCheckbook
 
 
 #-----------------------------------------------------------------
 # $self->init( $r )
 #-----------------------------------------------------------------
-# This method supplied by Apps::GENCheckbook
+# This method inherited from Apps::GENCheckbook
 
 1;
 

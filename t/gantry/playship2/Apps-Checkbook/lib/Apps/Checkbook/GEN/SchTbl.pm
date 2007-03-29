@@ -5,6 +5,7 @@ package Apps::Checkbook::GEN::SchTbl;
 use strict;
 
 use base 'Apps::Checkbook';
+use JSON;
 
 use Apps::Checkbook::Model::sch_tbl qw(
     $SCH_TBL

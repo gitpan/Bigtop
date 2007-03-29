@@ -3,7 +3,7 @@
         
          <fieldset>
          <legend>Method 
-            ( <a href='javascript:show_or_hide( "hideable_ident_7" );'>edit</a> |  
+            ( <a href='javascript:show_or_hide( "hideable_ident_7" );'>edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_7' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -91,11 +91,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_7::no_gen'
@@ -122,11 +117,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -167,16 +157,40 @@
     
     
     <tr>
+        <td> order_by </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_7::order_by'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "method_statement_text",
+                "ident_7::order_by",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Exact text of SQL order by
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
         <td> rows </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -206,11 +220,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -240,11 +249,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -290,11 +294,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -328,7 +327,33 @@
 
         </td>
         <td>
-            Labels for fields on main_listing [optional defaults to fields label]
+            Labels for fields on main_listing [optional default uses field labels]
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
+        <td> livesearch </td>
+        <td>
+
+            
+            
+
+<input type='checkbox'
+       value='ident_7::livesearch'
+       id='ident_7::livesearch'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "method_statement_bool",
+           "ident_7::livesearch",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Places a search box on results page
         </td>
     </tr>
   
@@ -340,11 +365,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_7::header_options_input_table'>
         <tr><th> Label </th>
@@ -399,11 +419,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_7::row_options_input_table'>
         <tr><th> Label </th>
@@ -458,11 +473,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -492,11 +502,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -526,11 +531,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'

@@ -7,12 +7,12 @@ use base 'Apps::Checkbook::GEN::SOAP';
 #-----------------------------------------------------------------
 # $self->namespace(  )
 #-----------------------------------------------------------------
-# This method supplied by Apps::Checkbook::GEN::SOAP
+# This method inherited from Apps::Checkbook::GEN::SOAP
 
 #-----------------------------------------------------------------
 # $self->get_soap_ops(  )
 #-----------------------------------------------------------------
-# This method supplied by Apps::Checkbook::GEN::SOAP
+# This method inherited from Apps::Checkbook::GEN::SOAP
 
 #-----------------------------------------------------------------
 # $self->greet(  )

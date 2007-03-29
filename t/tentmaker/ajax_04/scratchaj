@@ -2,16 +2,16 @@
 
 
   <div class='app_block_join_table'
-       id='div_ident_27'>
+       id='div_ident_26'>
       
       
         
         <fieldset>
         <legend>
             Join Table 
-            ( <a href='javascript:show_or_hide( "hideable_ident_27" );'>
-                edit</a> |  
-<a href="#" name='app_body_delete::ident_27' onclick='javascript:delete_block( this )'>delete</a>
+            ( <a href='javascript:show_or_hide( "hideable_ident_26" );'>
+                edit or hide</a> |  
+<a href="#" name='app_body_delete::ident_26' onclick='javascript:delete_block( this )'>delete</a>
        
 
             )
@@ -21,11 +21,11 @@
                 <td> Name: </td>
                 <td>
                     <input type='text'
-                           id='app_block::ident_27'
+                           id='app_block::ident_26'
                            value='fox_sock'
                            onblur='javascript:update_tree(
                                "name",
-                               "table::ident_27",
+                               "table::ident_26",
                                this.value
                            )'
                     />
@@ -34,7 +34,7 @@
             <tr>
                 <td colspan='2'>
                   
-<div id='hideable_ident_27'
+<div id='hideable_ident_26'
   
     style='display: none'
   
@@ -57,13 +57,8 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
 
-
-
-
-      <table id='ident_27::joins_input_table'>
+      <table id='ident_26::joins_input_table'>
         <tr><th> Table </th>
             <th> Table
                  
@@ -72,11 +67,11 @@
             <tr><td>
                 <input
                     type='text'
-                    name='ident_27::joins_key'
+                    name='ident_26::joins_key'
                     class='urgency_10'
                     onblur='javascript:update_pairs(
                         "join_table_statement_pair",
-                        "ident_27::joins",
+                        "ident_26::joins",
                         0,
                         this
                     )'
@@ -85,11 +80,11 @@
             <td>
                 <input
                     type='text'
-                    name='ident_27::joins_value'
+                    name='ident_26::joins_value'
                     class='urgency_10'
                     onblur='javascript:update_pairs(
                         "join_table_statement_pair",
-                        "ident_27::joins",
+                        "ident_26::joins",
                         0,
                         this
                     )'
@@ -113,13 +108,8 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
 
-
-
-
-      <table id='ident_27::names_input_table'>
+      <table id='ident_26::names_input_table'>
         <tr><th> Has Many Name </th>
             <th> Has Many Name
                  
@@ -128,11 +118,11 @@
             <tr><td>
                 <input
                     type='text'
-                    name='ident_27::names_key'
+                    name='ident_26::names_key'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "join_table_statement_pair",
-                        "ident_27::names",
+                        "ident_26::names",
                         0,
                         this
                     )'
@@ -141,11 +131,11 @@
             <td>
                 <input
                     type='text'
-                    name='ident_27::names_value'
+                    name='ident_26::names_value'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "join_table_statement_pair",
-                        "ident_27::names",
+                        "ident_26::names",
                         0,
                         this
                     )'
@@ -158,7 +148,7 @@
 
         </td>
         <td>
-            What should I call the has many?
+            What should I call each has many?
         </td>
     </tr>
   

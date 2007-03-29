@@ -17,10 +17,10 @@ Backends tab in tentmaker.  Some of the other advice must be applied
 on the App Body tab.  See L<Bigtop::Docs::TentTut> to get started with
 tentmaker or L<Bigtop::Docs::TentRef> for full details on using it.
 
-For quick syntax reference consult L<Bigtop::Docs::Keywords> for more
-complete information consult L<Bigtop::Docs::Syntax> or the
-source code of C<Bigtop::Keywords> from which tentmaker draws its
-on-screen information.
+For full syntax consult L<Bigtop::Docs::AutoKeywords> and/or
+L<Bigtop::Docs::Syntax> along with  L<Bigtop::Docs::AutoBackends>.
+You could also run tentmaker which displays the same things as the
+Auto Docs, but in an organized way in a browser.
 
 The questions are in sections.  Here is a complete list of sections and
 questions:
@@ -278,6 +278,7 @@ You could start your app like this:
     'child(name,birth_day:date)->family(name,phone,+email)
     anniversary(anniv_date:date,preferred_gift=money)->family'
 
+The string in single quotes is a 'kickstart' description of the data model.
 Column names go in parentheses.  Types default to strings, if you need
 something else use a colon as for C<birth_day> in the child table.  Indicate
 optional fields with a leading plus sign.  Specify literal defaults with
@@ -285,23 +286,30 @@ an equal sign as for anniversary C<preferred_gift>.
 
 In addition to the columns listed, each table will have an integer
 primary key called id and two dates fields: created and modified.
+You may remove those after initial generation is you like, but eliminating
+the integer id makes using an Object Relational Mapper (ORM) harder.
 
 For slightly different discussion and instructions for on building an
-app directly from an existing postgres 8 database, see
+app directly from an existing PostgreSQL 8 database, see
 C<Bigtop::Docs::QuickStart>.
 
 =head2 How can I just as easily add to an existing bigtop file?
 
 Suppose that you want to add some tables to the app from the previous
-question, here's all you need to do (from the Dancers directory):
+question, here's all you need to do (from the Contacts directory):
 
     bigtop --add docs/contacts.bigtop 'family<->job(title,description)'
 
-This will add a new table for supervisors and a many-to-many relationship
-between it and the existing dancer table.  It will also rebuild the
+So, you can use a 'kickstart' even if you have already started.  Then
+it will kick start the addition of tables.
+
+This will add a new table for jobs and a many-to-many relationship
+between it and the existing family table.  It will also rebuild the
 app.  Specify columns for new table as in the previous question.  Existing
 tables will get new foreign keys, but can't be changed in any other way
-from the command line.
+from the command line.  Note that you will need to alter your database
+before restarting the application.  Use the new table(s) and foreign key(s)
+in docs/schema.YOUR_DB_NAME to make the additions.
 
 =head2 I don't like the bigtop defaults how can I change them before building?
 
@@ -318,7 +326,7 @@ Bigtop::Docs::TentTut for advice on what to do while you're there.
 
 Once you save the file, do this:
 
-    bigtop --create dancer.bigtop
+    bigtop --create dancer.bigtop all
 
 Then change the Dancers directory and proceed as before.
 
@@ -367,6 +375,9 @@ It also makes the following directories:
 It will try to put the bigtop file into the docs directory (but it
 won't overwrite it, if its already there).  Note that Init doesn't put
 things into the lib or t directories.
+
+Everything Init::Std builds is a stub (and will never be overwritten),
+except the MANIFEST.
 
 =head2 How can I regenerate some of those files but not others?
 

@@ -5,7 +5,7 @@ use File::Spec;
 
 sub get_style {
     my $class = shift;
-    my $style = shift || 'Original';
+    my $style = shift || 'Kickstart';
 
     my $style_module_file = File::Spec->catfile(
         'Bigtop', 'ScriptHelp', 'Style', "$style.pm"
@@ -50,7 +50,7 @@ scripts and ScriptHelp.  It is a simple factory.  Call C<get_style>
 with the name of a style module, to receive a style suitable for passing
 to C<<Bigtop::ScriptHelp->get_big_default>> and
 C<<Bigtop::ScriptHelp->augment_tree>>.  All styles live in the
-Bigtop::ScriptHelp::Style:: namespace.
+Bigtop::ScriptHelp::Style:: namespace.  The default style is 'Kickstart'.
 
 Each stye must implement C<get_db_layout> which is the only method called by
 C<Bigtop::ScriptHelp> methods.  See below for what it receives and returns.

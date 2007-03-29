@@ -181,7 +181,7 @@ EO_Bigtop
 @correct_error_output = split /\n/, <<"EO_bad_backed";
 Error: invalid keyword 'SQL' (line 3) near:
        Postgres;
-I was expecting one of these: app_dir, base_dir, engine, template_engine, or a valid backend block.
+I was expecting one of these: app_dir, base_dir, engine, plugins, template_engine, or a valid backend block.
 EO_bad_backed
 
 eval {

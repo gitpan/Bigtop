@@ -2950,7 +2950,7 @@ sub Parse::RecDescent::Bigtop::Grammar::controller_statement
 	while (!$_matched && !$commit)
 	{
 		
-		Parse::RecDescent::_trace(q{Trying production: [CONFIG '\{' controller_config_statement '\}']},
+		Parse::RecDescent::_trace(q{Trying production: [CONFIG IDENT '\{' controller_config_statement '\}']},
 					  Parse::RecDescent::_tracefirst($_[1]),
 					  q{controller_statement},
 					  $tracelevel)
@@ -2992,6 +2992,34 @@ sub Parse::RecDescent::Bigtop::Grammar::controller_statement
 		push @item, $_tok;
 		
 		}
+
+		Parse::RecDescent::_trace(q{Trying repeated subrule: [IDENT]},
+				  Parse::RecDescent::_tracefirst($text),
+				  q{controller_statement},
+				  $tracelevel)
+					if defined $::RD_TRACE;
+		$expectation->is(q{IDENT})->at($text);
+		
+		unless (defined ($_tok = $thisparser->_parserepeat($text, \&Parse::RecDescent::Bigtop::Grammar::IDENT, 0, 1, $_noactions,$expectation,undef))) 
+		{
+			Parse::RecDescent::_trace(q{<<Didn't match repeated subrule: [IDENT]>>},
+						  Parse::RecDescent::_tracefirst($text),
+						  q{controller_statement},
+						  $tracelevel)
+							if defined $::RD_TRACE;
+			last;
+		}
+		Parse::RecDescent::_trace(q{>>Matched repeated subrule: [IDENT]<< (}
+					. @$_tok . q{ times)},
+					  
+					  Parse::RecDescent::_tracefirst($text),
+					  q{controller_statement},
+					  $tracelevel)
+						if defined $::RD_TRACE;
+		$item{q{IDENT(?)}} = $_tok;
+		push @item, $_tok;
+		
+
 
 		Parse::RecDescent::_trace(q{Trying terminal: ['\{']},
 					  Parse::RecDescent::_tracefirst($text),
@@ -3080,7 +3108,8 @@ sub Parse::RecDescent::Bigtop::Grammar::controller_statement
 
 		$_tok = ($_noactions) ? 0 : do {
                    bless {
-                       __BODY__ => $item{'controller_config_statement(s?)'}
+                       __BODY__ => $item{'controller_config_statement(s?)'},
+                       __TYPE__ => $item{'IDENT(?)'}[0],
                    }, 'controller_config_block'
                 };
 		unless (defined $_tok)
@@ -3098,7 +3127,7 @@ sub Parse::RecDescent::Bigtop::Grammar::controller_statement
 		
 
 
-		Parse::RecDescent::_trace(q{>>Matched production: [CONFIG '\{' controller_config_statement '\}']<<},
+		Parse::RecDescent::_trace(q{>>Matched production: [CONFIG IDENT '\{' controller_config_statement '\}']<<},
 					  Parse::RecDescent::_tracefirst($text),
 					  q{controller_statement},
 					  $tracelevel)
@@ -7183,7 +7212,7 @@ sub Parse::RecDescent::Bigtop::Grammar::app_config_block
 	while (!$_matched && !$commit)
 	{
 		
-		Parse::RecDescent::_trace(q{Trying production: [CONFIG '\{' app_config_statement '\}']},
+		Parse::RecDescent::_trace(q{Trying production: [CONFIG IDENT '\{' app_config_statement '\}']},
 					  Parse::RecDescent::_tracefirst($_[1]),
 					  q{app_config_block},
 					  $tracelevel)
@@ -7225,6 +7254,34 @@ sub Parse::RecDescent::Bigtop::Grammar::app_config_block
 		push @item, $_tok;
 		
 		}
+
+		Parse::RecDescent::_trace(q{Trying repeated subrule: [IDENT]},
+				  Parse::RecDescent::_tracefirst($text),
+				  q{app_config_block},
+				  $tracelevel)
+					if defined $::RD_TRACE;
+		$expectation->is(q{IDENT})->at($text);
+		
+		unless (defined ($_tok = $thisparser->_parserepeat($text, \&Parse::RecDescent::Bigtop::Grammar::IDENT, 0, 1, $_noactions,$expectation,undef))) 
+		{
+			Parse::RecDescent::_trace(q{<<Didn't match repeated subrule: [IDENT]>>},
+						  Parse::RecDescent::_tracefirst($text),
+						  q{app_config_block},
+						  $tracelevel)
+							if defined $::RD_TRACE;
+			last;
+		}
+		Parse::RecDescent::_trace(q{>>Matched repeated subrule: [IDENT]<< (}
+					. @$_tok . q{ times)},
+					  
+					  Parse::RecDescent::_tracefirst($text),
+					  q{app_config_block},
+					  $tracelevel)
+						if defined $::RD_TRACE;
+		$item{q{IDENT(?)}} = $_tok;
+		push @item, $_tok;
+		
+
 
 		Parse::RecDescent::_trace(q{Trying terminal: ['\{']},
 					  Parse::RecDescent::_tracefirst($text),
@@ -7313,7 +7370,8 @@ sub Parse::RecDescent::Bigtop::Grammar::app_config_block
 
 		$_tok = ($_noactions) ? 0 : do {
                    bless {
-                       __BODY__ => $item{'app_config_statement(s?)'}
+                       __BODY__ => $item{'app_config_statement(s?)'},
+                       __TYPE__ => $item{'IDENT(?)'}[0],
                    }, 'app_config_block'
                 };
 		unless (defined $_tok)
@@ -7331,7 +7389,7 @@ sub Parse::RecDescent::Bigtop::Grammar::app_config_block
 		
 
 
-		Parse::RecDescent::_trace(q{>>Matched production: [CONFIG '\{' app_config_statement '\}']<<},
+		Parse::RecDescent::_trace(q{>>Matched production: [CONFIG IDENT '\{' app_config_statement '\}']<<},
 					  Parse::RecDescent::_tracefirst($text),
 					  q{app_config_block},
 					  $tracelevel)
@@ -12197,7 +12255,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                     'hashname' => '__STRING1__',
                                                                                                     'description' => '\'is\'',
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 190
+                                                                                                    'line' => 191
                                                                                                   }, 'Parse::RecDescent::Literal' ),
                                                                                            bless( {
                                                                                                     'subrule' => 'IDENT',
@@ -12205,12 +12263,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                     'implicit' => undef,
                                                                                                     'argcode' => undef,
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 190
+                                                                                                    'line' => 191
                                                                                                   }, 'Parse::RecDescent::Subrule' ),
                                                                                            bless( {
                                                                                                     'hashname' => '__ACTION1__',
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 190,
+                                                                                                    'line' => 191,
                                                                                                     'code' => '{ $item{IDENT} }'
                                                                                                   }, 'Parse::RecDescent::Action' )
                                                                                          ],
@@ -12219,7 +12277,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                    ],
                                                         'name' => 'method_type',
                                                         'vars' => '',
-                                                        'line' => 190
+                                                        'line' => 191
                                                       }, 'Parse::RecDescent::Rule' ),
                               'join_table_statement' => bless( {
                                                                  'impcount' => 0,
@@ -12247,13 +12305,13 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'hashname' => '__STRING1__',
                                                                                                              'description' => '\'field\'',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 279
+                                                                                                             'line' => 280
                                                                                                            }, 'Parse::RecDescent::Literal' ),
                                                                                                     bless( {
                                                                                                              'hashname' => '__DIRECTIVE1__',
                                                                                                              'name' => '<commit>',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 279,
+                                                                                                             'line' => 280,
                                                                                                              'code' => '$commit = 1'
                                                                                                            }, 'Parse::RecDescent::Directive' ),
                                                                                                     bless( {
@@ -12262,14 +12320,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => undef,
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 279
+                                                                                                             'line' => 280
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'pattern' => '{',
                                                                                                              'hashname' => '__STRING2__',
                                                                                                              'description' => '\'\\{\'',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 279
+                                                                                                             'line' => 280
                                                                                                            }, 'Parse::RecDescent::Literal' ),
                                                                                                     bless( {
                                                                                                              'subrule' => 'field_body',
@@ -12277,19 +12335,19 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => undef,
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 279
+                                                                                                             'line' => 280
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'pattern' => '}',
                                                                                                              'hashname' => '__STRING3__',
                                                                                                              'description' => '\'\\}\'',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 279
+                                                                                                             'line' => 280
                                                                                                            }, 'Parse::RecDescent::Literal' ),
                                                                                                     bless( {
                                                                                                              'hashname' => '__ACTION1__',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 279,
+                                                                                                             'line' => 280,
                                                                                                              'code' => '{
                            bless {
                                __IDENT__ => Bigtop::Parser->get_ident(),
@@ -12318,7 +12376,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => '[\'join_table\']',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 289
+                                                                                                             'line' => 290
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'subrule' => 'arg_list',
@@ -12326,7 +12384,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => undef,
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 289
+                                                                                                             'line' => 290
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'subrule' => 'SEMI_COLON',
@@ -12334,12 +12392,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => undef,
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 289
+                                                                                                             'line' => 290
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'hashname' => '__ACTION1__',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 289,
+                                                                                                             'line' => 290,
                                                                                                              'code' => '{
                       bless {
                           __KEYWORD__ => $item[1], __DEF__ => $item[2]
@@ -12347,12 +12405,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                   }'
                                                                                                            }, 'Parse::RecDescent::Action' )
                                                                                                   ],
-                                                                                       'line' => 289
+                                                                                       'line' => 290
                                                                                      }, 'Parse::RecDescent::Production' )
                                                                             ],
                                                                  'name' => 'join_table_statement',
                                                                  'vars' => '',
-                                                                 'line' => 279
+                                                                 'line' => 280
                                                                }, 'Parse::RecDescent::Rule' ),
                               'backend_body' => bless( {
                                                          'impcount' => 0,
@@ -12425,14 +12483,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                             'implicit' => undef,
                                                                                             'argcode' => undef,
                                                                                             'lookahead' => 0,
-                                                                                            'line' => 344
+                                                                                            'line' => 346
                                                                                           }, 'Parse::RecDescent::Subrule' ),
                                                                                    bless( {
                                                                                             'pattern' => '=>',
                                                                                             'hashname' => '__STRING1__',
                                                                                             'description' => '\'=>\'',
                                                                                             'lookahead' => 0,
-                                                                                            'line' => 344
+                                                                                            'line' => 346
                                                                                           }, 'Parse::RecDescent::Literal' ),
                                                                                    bless( {
                                                                                             'subrule' => 'arg_element',
@@ -12440,12 +12498,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                             'implicit' => undef,
                                                                                             'argcode' => undef,
                                                                                             'lookahead' => 0,
-                                                                                            'line' => 344
+                                                                                            'line' => 346
                                                                                           }, 'Parse::RecDescent::Subrule' ),
                                                                                    bless( {
                                                                                             'hashname' => '__ACTION1__',
                                                                                             'lookahead' => 0,
-                                                                                            'line' => 344,
+                                                                                            'line' => 346,
                                                                                             'code' => '{ $return = { $item[1] => $item[3] } }'
                                                                                           }, 'Parse::RecDescent::Action' )
                                                                                  ],
@@ -12466,21 +12524,21 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                             'implicit' => undef,
                                                                                             'argcode' => undef,
                                                                                             'lookahead' => 0,
-                                                                                            'line' => 345
+                                                                                            'line' => 347
                                                                                           }, 'Parse::RecDescent::Subrule' ),
                                                                                    bless( {
                                                                                             'hashname' => '__ACTION1__',
                                                                                             'lookahead' => 0,
-                                                                                            'line' => 345,
+                                                                                            'line' => 347,
                                                                                             'code' => '{ $item[1] }'
                                                                                           }, 'Parse::RecDescent::Action' )
                                                                                  ],
-                                                                      'line' => 345
+                                                                      'line' => 347
                                                                     }, 'Parse::RecDescent::Production' )
                                                            ],
                                                 'name' => 'arg',
                                                 'vars' => '',
-                                                'line' => 344
+                                                'line' => 346
                                               }, 'Parse::RecDescent::Rule' ),
                               'IDENT' => bless( {
                                                   'impcount' => 0,
@@ -12503,14 +12561,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                               'description' => '/^\\\\w[\\\\w\\\\d_]*/',
                                                                                               'lookahead' => 0,
                                                                                               'rdelim' => '/',
-                                                                                              'line' => 382,
+                                                                                              'line' => 384,
                                                                                               'mod' => '',
                                                                                               'ldelim' => '/'
                                                                                             }, 'Parse::RecDescent::Token' ),
                                                                                      bless( {
                                                                                               'hashname' => '__ACTION1__',
                                                                                               'lookahead' => 0,
-                                                                                              'line' => 382,
+                                                                                              'line' => 384,
                                                                                               'code' => '{ $item[1] }'
                                                                                             }, 'Parse::RecDescent::Action' )
                                                                                    ],
@@ -12519,7 +12577,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                              ],
                                                   'name' => 'IDENT',
                                                   'vars' => '',
-                                                  'line' => 382
+                                                  'line' => 384
                                                 }, 'Parse::RecDescent::Rule' ),
                               'string' => bless( {
                                                    'impcount' => 0,
@@ -12545,13 +12603,13 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                'implicit' => undef,
                                                                                                'argcode' => undef,
                                                                                                'lookahead' => 0,
-                                                                                               'line' => 366
+                                                                                               'line' => 368
                                                                                              }, 'Parse::RecDescent::Subrule' ),
                                                                                       bless( {
                                                                                                'hashname' => '__DIRECTIVE1__',
                                                                                                'name' => '<skip:\'\'>',
                                                                                                'lookahead' => 0,
-                                                                                               'line' => 366,
+                                                                                               'line' => 368,
                                                                                                'code' => 'my $oldskip = $skip; $skip=\'\'; $oldskip'
                                                                                              }, 'Parse::RecDescent::Directive' ),
                                                                                       bless( {
@@ -12560,7 +12618,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                'implicit' => undef,
                                                                                                'argcode' => undef,
                                                                                                'lookahead' => 0,
-                                                                                               'line' => 366
+                                                                                               'line' => 368
                                                                                              }, 'Parse::RecDescent::Subrule' ),
                                                                                       bless( {
                                                                                                'subrule' => 'BACKTICK',
@@ -12568,12 +12626,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                'implicit' => undef,
                                                                                                'argcode' => undef,
                                                                                                'lookahead' => 0,
-                                                                                               'line' => 366
+                                                                                               'line' => 368
                                                                                              }, 'Parse::RecDescent::Subrule' ),
                                                                                       bless( {
                                                                                                'hashname' => '__ACTION1__',
                                                                                                'lookahead' => 0,
-                                                                                               'line' => 366,
+                                                                                               'line' => 368,
                                                                                                'code' => '{ $item{text} }'
                                                                                              }, 'Parse::RecDescent::Action' )
                                                                                     ],
@@ -12582,7 +12640,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                               ],
                                                    'name' => 'string',
                                                    'vars' => '',
-                                                   'line' => 366
+                                                   'line' => 368
                                                  }, 'Parse::RecDescent::Rule' ),
                               'app_config_statement' => bless( {
                                                                  'impcount' => 0,
@@ -12609,7 +12667,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => undef,
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 301
+                                                                                                             'line' => 303
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'subrule' => 'arg_list',
@@ -12617,7 +12675,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => undef,
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 301
+                                                                                                             'line' => 303
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'subrule' => 'SEMI_COLON',
@@ -12625,12 +12683,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => undef,
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 301
+                                                                                                             'line' => 303
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'hashname' => '__ACTION1__',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 301,
+                                                                                                             'line' => 303,
                                                                                                              'code' => '{
                          bless {
                             __KEYWORD__ => $item{IDENT},
@@ -12656,14 +12714,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'description' => '/[^\\\\\\}]/',
                                                                                                              'lookahead' => 0,
                                                                                                              'rdelim' => '/',
-                                                                                                             'line' => 307,
+                                                                                                             'line' => 309,
                                                                                                              'mod' => '',
                                                                                                              'ldelim' => '/'
                                                                                                            }, 'Parse::RecDescent::Token' ),
                                                                                                     bless( {
                                                                                                              'hashname' => '__ACTION1__',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 307,
+                                                                                                             'line' => 309,
                                                                                                              'code' => '{
                             my $message = "bad config statement, "
                                         . "possible extra semicolon";
@@ -12678,12 +12736,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                        }'
                                                                                                            }, 'Parse::RecDescent::Action' )
                                                                                                   ],
-                                                                                       'line' => 307
+                                                                                       'line' => 309
                                                                                      }, 'Parse::RecDescent::Production' )
                                                                             ],
                                                                  'name' => 'app_config_statement',
                                                                  'vars' => '',
-                                                                 'line' => 301
+                                                                 'line' => 303
                                                                }, 'Parse::RecDescent::Rule' ),
                               'arg_element' => bless( {
                                                         'impcount' => 0,
@@ -12709,12 +12767,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                     'implicit' => undef,
                                                                                                     'argcode' => undef,
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 347
+                                                                                                    'line' => 349
                                                                                                   }, 'Parse::RecDescent::Subrule' ),
                                                                                            bless( {
                                                                                                     'hashname' => '__ACTION1__',
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 347,
+                                                                                                    'line' => 349,
                                                                                                     'code' => '{ $item[1] }'
                                                                                                   }, 'Parse::RecDescent::Action' )
                                                                                          ],
@@ -12735,16 +12793,16 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                     'implicit' => undef,
                                                                                                     'argcode' => undef,
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 348
+                                                                                                    'line' => 350
                                                                                                   }, 'Parse::RecDescent::Subrule' ),
                                                                                            bless( {
                                                                                                     'hashname' => '__ACTION1__',
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 348,
+                                                                                                    'line' => 350,
                                                                                                     'code' => '{ $item[1] }'
                                                                                                   }, 'Parse::RecDescent::Action' )
                                                                                          ],
-                                                                              'line' => 348
+                                                                              'line' => 350
                                                                             }, 'Parse::RecDescent::Production' ),
                                                                      bless( {
                                                                               'number' => '2',
@@ -12758,7 +12816,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                            bless( {
                                                                                                     'hashname' => '__ACTION1__',
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 349,
+                                                                                                    'line' => 351,
                                                                                                     'code' => '{
     my $message = "I was expecting an argument or argument list";
     if ( $backtick_warning ) {
@@ -12771,12 +12829,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
 }'
                                                                                                   }, 'Parse::RecDescent::Action' )
                                                                                          ],
-                                                                              'line' => 349
+                                                                              'line' => 351
                                                                             }, 'Parse::RecDescent::Production' )
                                                                    ],
                                                         'name' => 'arg_element',
                                                         'vars' => '',
-                                                        'line' => 347
+                                                        'line' => 349
                                                       }, 'Parse::RecDescent::Rule' ),
                               'backend_statement' => bless( {
                                                               'impcount' => 0,
@@ -12911,12 +12969,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                             'matchrule' => 0,
                                                                                                             'repspec' => '?',
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 271
+                                                                                                            'line' => 272
                                                                                                           }, 'Parse::RecDescent::Repetition' ),
                                                                                                    bless( {
                                                                                                             'hashname' => '__ACTION1__',
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 271,
+                                                                                                            'line' => 272,
                                                                                                             'code' => '{
                         bless {
                             __ARGS__ => $item[1]->[0]
@@ -12929,7 +12987,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                            ],
                                                                 'name' => 'field_statement_def',
                                                                 'vars' => '',
-                                                                'line' => 271
+                                                                'line' => 272
                                                               }, 'Parse::RecDescent::Rule' ),
                               'controller_statement' => bless( {
                                                                  'impcount' => 0,
@@ -13042,6 +13100,17 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'line' => 151
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
+                                                                                                             'subrule' => 'IDENT',
+                                                                                                             'expected' => undef,
+                                                                                                             'min' => 0,
+                                                                                                             'argcode' => undef,
+                                                                                                             'max' => 1,
+                                                                                                             'matchrule' => 0,
+                                                                                                             'repspec' => '?',
+                                                                                                             'lookahead' => 0,
+                                                                                                             'line' => 151
+                                                                                                           }, 'Parse::RecDescent::Repetition' ),
+                                                                                                    bless( {
                                                                                                              'pattern' => '{',
                                                                                                              'hashname' => '__STRING1__',
                                                                                                              'description' => '\'\\{\'',
@@ -13072,7 +13141,8 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'line' => 151,
                                                                                                              'code' => '{
                    bless {
-                       __BODY__ => $item{\'controller_config_statement(s?)\'}
+                       __BODY__ => $item{\'controller_config_statement(s?)\'},
+                       __TYPE__ => $item{\'IDENT(?)\'}[0],
                    }, \'controller_config_block\'
                 }'
                                                                                                            }, 'Parse::RecDescent::Action' )
@@ -13093,7 +13163,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'hashname' => '__STRING1__',
                                                                                                              'description' => '\'literal\'',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 156
+                                                                                                             'line' => 157
                                                                                                            }, 'Parse::RecDescent::Literal' ),
                                                                                                     bless( {
                                                                                                              'subrule' => 'keyword',
@@ -13101,7 +13171,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => '[ \'controller_literal\' ]',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 156
+                                                                                                             'line' => 157
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'subrule' => 'string',
@@ -13109,7 +13179,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => undef,
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 157
+                                                                                                             'line' => 158
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'subrule' => 'SEMI_COLON',
@@ -13117,12 +13187,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => undef,
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 157
+                                                                                                             'line' => 158
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'hashname' => '__ACTION1__',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 157,
+                                                                                                             'line' => 158,
                                                                                                              'code' => '{
                     bless {
                         __IDENT__   => Bigtop::Parser->get_ident(),
@@ -13132,7 +13202,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
            }'
                                                                                                            }, 'Parse::RecDescent::Action' )
                                                                                                   ],
-                                                                                       'line' => 156
+                                                                                       'line' => 157
                                                                                      }, 'Parse::RecDescent::Production' ),
                                                                               bless( {
                                                                                        'number' => '3',
@@ -13149,7 +13219,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => '[\'controller\']',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 164
+                                                                                                             'line' => 165
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'subrule' => 'arg_list',
@@ -13160,7 +13230,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'matchrule' => 0,
                                                                                                              'repspec' => '?',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 164
+                                                                                                             'line' => 165
                                                                                                            }, 'Parse::RecDescent::Repetition' ),
                                                                                                     bless( {
                                                                                                              'subrule' => 'SEMI_COLON',
@@ -13168,12 +13238,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                              'implicit' => undef,
                                                                                                              'argcode' => undef,
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 164
+                                                                                                             'line' => 165
                                                                                                            }, 'Parse::RecDescent::Subrule' ),
                                                                                                     bless( {
                                                                                                              'hashname' => '__ACTION1__',
                                                                                                              'lookahead' => 0,
-                                                                                                             'line' => 164,
+                                                                                                             'line' => 165,
                                                                                                              'code' => '{
                            bless {
                                __KEYWORD__ => $item{keyword},
@@ -13182,7 +13252,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
            }'
                                                                                                            }, 'Parse::RecDescent::Action' )
                                                                                                   ],
-                                                                                       'line' => 164
+                                                                                       'line' => 165
                                                                                      }, 'Parse::RecDescent::Production' )
                                                                             ],
                                                                  'name' => 'controller_statement',
@@ -13398,14 +13468,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                     'implicit' => undef,
                                                                                                     'argcode' => undef,
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 360
+                                                                                                    'line' => 362
                                                                                                   }, 'Parse::RecDescent::Subrule' ),
                                                                                            bless( {
                                                                                                     'pattern' => '.',
                                                                                                     'hashname' => '__STRING1__',
                                                                                                     'description' => '\'.\'',
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 360
+                                                                                                    'line' => 362
                                                                                                   }, 'Parse::RecDescent::Literal' ),
                                                                                            bless( {
                                                                                                     'subrule' => 'IDENT',
@@ -13413,12 +13483,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                     'implicit' => undef,
                                                                                                     'argcode' => undef,
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 360
+                                                                                                    'line' => 362
                                                                                                   }, 'Parse::RecDescent::Subrule' ),
                                                                                            bless( {
                                                                                                     'hashname' => '__ACTION1__',
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 360,
+                                                                                                    'line' => 362,
                                                                                                     'code' => '{ $item[1] . \'.\' . $item[3] }'
                                                                                                   }, 'Parse::RecDescent::Action' )
                                                                                          ],
@@ -13439,21 +13509,21 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                     'implicit' => undef,
                                                                                                     'argcode' => undef,
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 361
+                                                                                                    'line' => 363
                                                                                                   }, 'Parse::RecDescent::Subrule' ),
                                                                                            bless( {
                                                                                                     'hashname' => '__ACTION1__',
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 361,
+                                                                                                    'line' => 363,
                                                                                                     'code' => '{ $item[1] }'
                                                                                                   }, 'Parse::RecDescent::Action' )
                                                                                          ],
-                                                                              'line' => 361
+                                                                              'line' => 363
                                                                             }, 'Parse::RecDescent::Production' )
                                                                    ],
                                                         'name' => 'table_ident',
                                                         'vars' => '',
-                                                        'line' => 360
+                                                        'line' => 362
                                                       }, 'Parse::RecDescent::Rule' ),
                               'table_body' => bless( {
                                                        'impcount' => 0,
@@ -13481,7 +13551,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                    'matchrule' => 0,
                                                                                                    'repspec' => 's?',
                                                                                                    'lookahead' => 0,
-                                                                                                   'line' => 243
+                                                                                                   'line' => 244
                                                                                                  }, 'Parse::RecDescent::Repetition' )
                                                                                         ],
                                                                              'line' => undef
@@ -13489,7 +13559,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                   ],
                                                        'name' => 'table_body',
                                                        'vars' => '',
-                                                       'line' => 243
+                                                       'line' => 244
                                                      }, 'Parse::RecDescent::Rule' ),
                               'anything' => bless( {
                                                      'impcount' => 0,
@@ -13609,12 +13679,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                  'hashname' => '__STRING1__',
                                                                                                  'description' => '\'`\'',
                                                                                                  'lookahead' => 0,
-                                                                                                 'line' => 380
+                                                                                                 'line' => 382
                                                                                                }, 'Parse::RecDescent::InterpLit' ),
                                                                                         bless( {
                                                                                                  'hashname' => '__ACTION1__',
                                                                                                  'lookahead' => 0,
-                                                                                                 'line' => 380,
+                                                                                                 'line' => 382,
                                                                                                  'code' => '{ $backtick_line = $thisline; }'
                                                                                                }, 'Parse::RecDescent::Action' )
                                                                                       ],
@@ -13623,7 +13693,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                 ],
                                                      'name' => 'BACKTICK',
                                                      'vars' => '',
-                                                     'line' => 380
+                                                     'line' => 382
                                                    }, 'Parse::RecDescent::Rule' ),
                               'join_table_body' => bless( {
                                                             'impcount' => 0,
@@ -13651,7 +13721,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                         'matchrule' => 0,
                                                                                                         'repspec' => 's?',
                                                                                                         'lookahead' => 0,
-                                                                                                        'line' => 277
+                                                                                                        'line' => 278
                                                                                                       }, 'Parse::RecDescent::Repetition' )
                                                                                              ],
                                                                                   'line' => undef
@@ -13659,7 +13729,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                        ],
                                                             'name' => 'join_table_body',
                                                             'vars' => '',
-                                                            'line' => 277
+                                                            'line' => 278
                                                           }, 'Parse::RecDescent::Rule' ),
                               'literal_block' => bless( {
                                                           'impcount' => 0,
@@ -13756,7 +13826,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                         'implicit' => undef,
                                                                                                         'argcode' => '[\'field\']',
                                                                                                         'lookahead' => 0,
-                                                                                                        'line' => 265
+                                                                                                        'line' => 266
                                                                                                       }, 'Parse::RecDescent::Subrule' ),
                                                                                                bless( {
                                                                                                         'subrule' => 'field_statement_def',
@@ -13764,7 +13834,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                         'implicit' => undef,
                                                                                                         'argcode' => undef,
                                                                                                         'lookahead' => 0,
-                                                                                                        'line' => 265
+                                                                                                        'line' => 266
                                                                                                       }, 'Parse::RecDescent::Subrule' ),
                                                                                                bless( {
                                                                                                         'subrule' => 'SEMI_COLON',
@@ -13772,12 +13842,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                         'implicit' => undef,
                                                                                                         'argcode' => undef,
                                                                                                         'lookahead' => 0,
-                                                                                                        'line' => 265
+                                                                                                        'line' => 266
                                                                                                       }, 'Parse::RecDescent::Subrule' ),
                                                                                                bless( {
                                                                                                         'hashname' => '__ACTION1__',
                                                                                                         'lookahead' => 0,
-                                                                                                        'line' => 265,
+                                                                                                        'line' => 266,
                                                                                                         'code' => '{
                       bless {
                           __KEYWORD__ => $item[1], __DEF__ => $item[2]
@@ -13790,7 +13860,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                        ],
                                                             'name' => 'field_statement',
                                                             'vars' => '',
-                                                            'line' => 265
+                                                            'line' => 266
                                                           }, 'Parse::RecDescent::Rule' ),
                               'method_statement' => bless( {
                                                              'impcount' => 0,
@@ -13817,7 +13887,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                          'implicit' => undef,
                                                                                                          'argcode' => '[\'method\']',
                                                                                                          'lookahead' => 0,
-                                                                                                         'line' => 194
+                                                                                                         'line' => 195
                                                                                                        }, 'Parse::RecDescent::Subrule' ),
                                                                                                 bless( {
                                                                                                          'subrule' => 'arg_list',
@@ -13825,7 +13895,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                          'implicit' => undef,
                                                                                                          'argcode' => undef,
                                                                                                          'lookahead' => 0,
-                                                                                                         'line' => 194
+                                                                                                         'line' => 195
                                                                                                        }, 'Parse::RecDescent::Subrule' ),
                                                                                                 bless( {
                                                                                                          'subrule' => 'SEMI_COLON',
@@ -13833,12 +13903,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                          'implicit' => undef,
                                                                                                          'argcode' => undef,
                                                                                                          'lookahead' => 0,
-                                                                                                         'line' => 194
+                                                                                                         'line' => 195
                                                                                                        }, 'Parse::RecDescent::Subrule' ),
                                                                                                 bless( {
                                                                                                          'hashname' => '__ACTION1__',
                                                                                                          'lookahead' => 0,
-                                                                                                         'line' => 194,
+                                                                                                         'line' => 195,
                                                                                                          'code' => '{
                         bless {
                             __KEYWORD__ => $item{keyword},
@@ -13852,7 +13922,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                         ],
                                                              'name' => 'method_statement',
                                                              'vars' => '',
-                                                             'line' => 194
+                                                             'line' => 195
                                                            }, 'Parse::RecDescent::Rule' ),
                               'controller_body' => bless( {
                                                             'impcount' => 0,
@@ -13913,12 +13983,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                 'implicit' => undef,
                                                                                                 'argcode' => undef,
                                                                                                 'lookahead' => 0,
-                                                                                                'line' => 320
+                                                                                                'line' => 322
                                                                                               }, 'Parse::RecDescent::Subrule' ),
                                                                                        bless( {
                                                                                                 'hashname' => '__ACTION1__',
                                                                                                 'lookahead' => 0,
-                                                                                                'line' => 320,
+                                                                                                'line' => 322,
                                                                                                 'code' => '{
     if ( Bigtop::Parser->is_valid_keyword( $arg[0], $item[1] ) ) {
         $return = $item[1];
@@ -13943,7 +14013,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                ],
                                                     'name' => 'keyword',
                                                     'vars' => '',
-                                                    'line' => 320
+                                                    'line' => 322
                                                   }, 'Parse::RecDescent::Rule' ),
                               'SEMI_COLON' => bless( {
                                                        'impcount' => 0,
@@ -13965,7 +14035,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                    'hashname' => '__STRING1__',
                                                                                                    'description' => '\';\'',
                                                                                                    'lookahead' => 0,
-                                                                                                   'line' => 384
+                                                                                                   'line' => 386
                                                                                                  }, 'Parse::RecDescent::Literal' )
                                                                                         ],
                                                                              'line' => undef
@@ -13982,7 +14052,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                           bless( {
                                                                                                    'hashname' => '__ACTION1__',
                                                                                                    'lookahead' => 0,
-                                                                                                   'line' => 385,
+                                                                                                   'line' => 387,
                                                                                                    'code' => '{
     my $message = "missing semi-colon";
     if ( $backtick_warning ) {
@@ -13995,12 +14065,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
 }'
                                                                                                  }, 'Parse::RecDescent::Action' )
                                                                                         ],
-                                                                             'line' => 385
+                                                                             'line' => 387
                                                                            }, 'Parse::RecDescent::Production' )
                                                                   ],
                                                        'name' => 'SEMI_COLON',
                                                        'vars' => '',
-                                                       'line' => 384
+                                                       'line' => 386
                                                      }, 'Parse::RecDescent::Rule' ),
                               'controller_block' => bless( {
                                                              'impcount' => 0,
@@ -14198,7 +14268,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                    'matchrule' => 0,
                                                                                                    'repspec' => 's?',
                                                                                                    'lookahead' => 0,
-                                                                                                   'line' => 263
+                                                                                                   'line' => 264
                                                                                                  }, 'Parse::RecDescent::Repetition' )
                                                                                         ],
                                                                              'line' => undef
@@ -14206,12 +14276,13 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                   ],
                                                        'name' => 'field_body',
                                                        'vars' => '',
-                                                       'line' => 263
+                                                       'line' => 264
                                                      }, 'Parse::RecDescent::Rule' ),
                               'app_config_block' => bless( {
                                                              'impcount' => 0,
                                                              'calls' => [
                                                                           'CONFIG',
+                                                                          'IDENT',
                                                                           'app_config_statement'
                                                                         ],
                                                              'changed' => 0,
@@ -14232,14 +14303,25 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                          'implicit' => undef,
                                                                                                          'argcode' => undef,
                                                                                                          'lookahead' => 0,
-                                                                                                         'line' => 295
+                                                                                                         'line' => 296
                                                                                                        }, 'Parse::RecDescent::Subrule' ),
+                                                                                                bless( {
+                                                                                                         'subrule' => 'IDENT',
+                                                                                                         'expected' => undef,
+                                                                                                         'min' => 0,
+                                                                                                         'argcode' => undef,
+                                                                                                         'max' => 1,
+                                                                                                         'matchrule' => 0,
+                                                                                                         'repspec' => '?',
+                                                                                                         'lookahead' => 0,
+                                                                                                         'line' => 296
+                                                                                                       }, 'Parse::RecDescent::Repetition' ),
                                                                                                 bless( {
                                                                                                          'pattern' => '{',
                                                                                                          'hashname' => '__STRING1__',
                                                                                                          'description' => '\'\\{\'',
                                                                                                          'lookahead' => 0,
-                                                                                                         'line' => 295
+                                                                                                         'line' => 296
                                                                                                        }, 'Parse::RecDescent::Literal' ),
                                                                                                 bless( {
                                                                                                          'subrule' => 'app_config_statement',
@@ -14250,22 +14332,23 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                          'matchrule' => 0,
                                                                                                          'repspec' => 's?',
                                                                                                          'lookahead' => 0,
-                                                                                                         'line' => 295
+                                                                                                         'line' => 296
                                                                                                        }, 'Parse::RecDescent::Repetition' ),
                                                                                                 bless( {
                                                                                                          'pattern' => '}',
                                                                                                          'hashname' => '__STRING2__',
                                                                                                          'description' => '\'\\}\'',
                                                                                                          'lookahead' => 0,
-                                                                                                         'line' => 295
+                                                                                                         'line' => 296
                                                                                                        }, 'Parse::RecDescent::Literal' ),
                                                                                                 bless( {
                                                                                                          'hashname' => '__ACTION1__',
                                                                                                          'lookahead' => 0,
-                                                                                                         'line' => 295,
+                                                                                                         'line' => 296,
                                                                                                          'code' => '{
                    bless {
-                       __BODY__ => $item{\'app_config_statement(s?)\'}
+                       __BODY__ => $item{\'app_config_statement(s?)\'},
+                       __TYPE__ => $item{\'IDENT(?)\'}[0],
                    }, \'app_config_block\'
                 }'
                                                                                                        }, 'Parse::RecDescent::Action' )
@@ -14275,7 +14358,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                         ],
                                                              'name' => 'app_config_block',
                                                              'vars' => '',
-                                                             'line' => 295
+                                                             'line' => 296
                                                            }, 'Parse::RecDescent::Rule' ),
                               'CONFIG' => bless( {
                                                    'impcount' => 0,
@@ -14297,7 +14380,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                'hashname' => '__STRING1__',
                                                                                                'description' => '\'config\'',
                                                                                                'lookahead' => 0,
-                                                                                               'line' => 378
+                                                                                               'line' => 380
                                                                                              }, 'Parse::RecDescent::Literal' )
                                                                                     ],
                                                                          'line' => undef
@@ -14316,15 +14399,15 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                'hashname' => '__STRING1__',
                                                                                                'description' => '\'set_vars\'',
                                                                                                'lookahead' => 0,
-                                                                                               'line' => 378
+                                                                                               'line' => 380
                                                                                              }, 'Parse::RecDescent::Literal' )
                                                                                     ],
-                                                                         'line' => 378
+                                                                         'line' => 380
                                                                        }, 'Parse::RecDescent::Production' )
                                                               ],
                                                    'name' => 'CONFIG',
                                                    'vars' => '',
-                                                   'line' => 378
+                                                   'line' => 380
                                                  }, 'Parse::RecDescent::Rule' ),
                               'config_body' => bless( {
                                                         'impcount' => 0,
@@ -14443,14 +14526,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                  'implicit' => undef,
                                                                                                  'argcode' => undef,
                                                                                                  'lookahead' => 0,
-                                                                                                 'line' => 338
+                                                                                                 'line' => 340
                                                                                                }, 'Parse::RecDescent::Subrule' ),
                                                                                         bless( {
                                                                                                  'pattern' => ',',
                                                                                                  'hashname' => '__STRING1__',
                                                                                                  'description' => '\',\'',
                                                                                                  'lookahead' => 0,
-                                                                                                 'line' => 338
+                                                                                                 'line' => 340
                                                                                                }, 'Parse::RecDescent::Literal' ),
                                                                                         bless( {
                                                                                                  'subrule' => 'arg_list',
@@ -14458,12 +14541,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                  'implicit' => undef,
                                                                                                  'argcode' => undef,
                                                                                                  'lookahead' => 0,
-                                                                                                 'line' => 338
+                                                                                                 'line' => 340
                                                                                                }, 'Parse::RecDescent::Subrule' ),
                                                                                         bless( {
                                                                                                  'hashname' => '__ACTION1__',
                                                                                                  'lookahead' => 0,
-                                                                                                 'line' => 338,
+                                                                                                 'line' => 340,
                                                                                                  'code' => '{
                unshift @{ $item[3] }, $item[1];
                $return = $item[3];
@@ -14487,21 +14570,21 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                  'implicit' => undef,
                                                                                                  'argcode' => undef,
                                                                                                  'lookahead' => 0,
-                                                                                                 'line' => 342
+                                                                                                 'line' => 344
                                                                                                }, 'Parse::RecDescent::Subrule' ),
                                                                                         bless( {
                                                                                                  'hashname' => '__ACTION1__',
                                                                                                  'lookahead' => 0,
-                                                                                                 'line' => 342,
+                                                                                                 'line' => 344,
                                                                                                  'code' => '{ bless [ $item[1] ], \'arg_list\' }'
                                                                                                }, 'Parse::RecDescent::Action' )
                                                                                       ],
-                                                                           'line' => 342
+                                                                           'line' => 344
                                                                          }, 'Parse::RecDescent::Production' )
                                                                 ],
                                                      'name' => 'arg_list',
                                                      'vars' => '',
-                                                     'line' => 338
+                                                     'line' => 340
                                                    }, 'Parse::RecDescent::Rule' ),
                               'is_type' => bless( {
                                                     'impcount' => 0,
@@ -14575,13 +14658,13 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                             'hashname' => '__STRING1__',
                                                                                                             'description' => '\'field\'',
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 245
+                                                                                                            'line' => 246
                                                                                                           }, 'Parse::RecDescent::Literal' ),
                                                                                                    bless( {
                                                                                                             'hashname' => '__DIRECTIVE1__',
                                                                                                             'name' => '<commit>',
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 245,
+                                                                                                            'line' => 246,
                                                                                                             'code' => '$commit = 1'
                                                                                                           }, 'Parse::RecDescent::Directive' ),
                                                                                                    bless( {
@@ -14590,14 +14673,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                             'implicit' => undef,
                                                                                                             'argcode' => undef,
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 245
+                                                                                                            'line' => 246
                                                                                                           }, 'Parse::RecDescent::Subrule' ),
                                                                                                    bless( {
                                                                                                             'pattern' => '{',
                                                                                                             'hashname' => '__STRING2__',
                                                                                                             'description' => '\'\\{\'',
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 245
+                                                                                                            'line' => 246
                                                                                                           }, 'Parse::RecDescent::Literal' ),
                                                                                                    bless( {
                                                                                                             'subrule' => 'field_body',
@@ -14605,19 +14688,19 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                             'implicit' => undef,
                                                                                                             'argcode' => undef,
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 245
+                                                                                                            'line' => 246
                                                                                                           }, 'Parse::RecDescent::Subrule' ),
                                                                                                    bless( {
                                                                                                             'pattern' => '}',
                                                                                                             'hashname' => '__STRING3__',
                                                                                                             'description' => '\'\\}\'',
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 245
+                                                                                                            'line' => 246
                                                                                                           }, 'Parse::RecDescent::Literal' ),
                                                                                                    bless( {
                                                                                                             'hashname' => '__ACTION1__',
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 245,
+                                                                                                            'line' => 246,
                                                                                                             'code' => '{
                            bless {
                                __IDENT__ => Bigtop::Parser->get_ident(),
@@ -14646,7 +14729,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                             'implicit' => undef,
                                                                                                             'argcode' => '[\'table\']',
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 254
+                                                                                                            'line' => 255
                                                                                                           }, 'Parse::RecDescent::Subrule' ),
                                                                                                    bless( {
                                                                                                             'subrule' => 'arg_list',
@@ -14654,7 +14737,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                             'implicit' => undef,
                                                                                                             'argcode' => undef,
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 254
+                                                                                                            'line' => 255
                                                                                                           }, 'Parse::RecDescent::Subrule' ),
                                                                                                    bless( {
                                                                                                             'subrule' => 'SEMI_COLON',
@@ -14662,12 +14745,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                             'implicit' => undef,
                                                                                                             'argcode' => undef,
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 254
+                                                                                                            'line' => 255
                                                                                                           }, 'Parse::RecDescent::Subrule' ),
                                                                                                    bless( {
                                                                                                             'hashname' => '__ACTION1__',
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 254,
+                                                                                                            'line' => 255,
                                                                                                             'code' => '{
                            bless {
                                __TYPE__  => $item[1],
@@ -14677,7 +14760,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                        }'
                                                                                                           }, 'Parse::RecDescent::Action' )
                                                                                                  ],
-                                                                                      'line' => 254
+                                                                                      'line' => 255
                                                                                     }, 'Parse::RecDescent::Production' ),
                                                                              bless( {
                                                                                       'number' => '2',
@@ -14693,15 +14776,15 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                             'hashname' => '__DIRECTIVE1__',
                                                                                                             'commitonly' => '',
                                                                                                             'lookahead' => 0,
-                                                                                                            'line' => 261
+                                                                                                            'line' => 262
                                                                                                           }, 'Parse::RecDescent::Error' )
                                                                                                  ],
-                                                                                      'line' => 261
+                                                                                      'line' => 262
                                                                                     }, 'Parse::RecDescent::Production' )
                                                                            ],
                                                                 'name' => 'table_element_block',
                                                                 'vars' => '',
-                                                                'line' => 245
+                                                                'line' => 246
                                                               }, 'Parse::RecDescent::Rule' ),
                               'text' => bless( {
                                                  'impcount' => 0,
@@ -14724,14 +14807,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                              'description' => '/[^`]*/',
                                                                                              'lookahead' => 0,
                                                                                              'rdelim' => '/',
-                                                                                             'line' => 368,
+                                                                                             'line' => 370,
                                                                                              'mod' => '',
                                                                                              'ldelim' => '/'
                                                                                            }, 'Parse::RecDescent::Token' ),
                                                                                     bless( {
                                                                                              'hashname' => '__ACTION1__',
                                                                                              'lookahead' => 0,
-                                                                                             'line' => 368,
+                                                                                             'line' => 370,
                                                                                              'code' => '{
     my @lines = split /\\n/, $item[1];
     if ( @lines > 1 ) {
@@ -14748,7 +14831,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                             ],
                                                  'name' => 'text',
                                                  'vars' => '',
-                                                 'line' => 368
+                                                 'line' => 370
                                                }, 'Parse::RecDescent::Rule' ),
                               'sequence_statement' => bless( {
                                                                'impcount' => 0,
@@ -14775,7 +14858,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                            'implicit' => undef,
                                                                                                            'argcode' => undef,
                                                                                                            'lookahead' => 0,
-                                                                                                           'line' => 237
+                                                                                                           'line' => 238
                                                                                                          }, 'Parse::RecDescent::Subrule' ),
                                                                                                   bless( {
                                                                                                            'subrule' => 'arg_list',
@@ -14783,7 +14866,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                            'implicit' => undef,
                                                                                                            'argcode' => undef,
                                                                                                            'lookahead' => 0,
-                                                                                                           'line' => 237
+                                                                                                           'line' => 238
                                                                                                          }, 'Parse::RecDescent::Subrule' ),
                                                                                                   bless( {
                                                                                                            'subrule' => 'SEMI_COLON',
@@ -14791,12 +14874,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                            'implicit' => undef,
                                                                                                            'argcode' => undef,
                                                                                                            'lookahead' => 0,
-                                                                                                           'line' => 237
+                                                                                                           'line' => 238
                                                                                                          }, 'Parse::RecDescent::Subrule' ),
                                                                                                   bless( {
                                                                                                            'hashname' => '__ACTION1__',
                                                                                                            'lookahead' => 0,
-                                                                                                           'line' => 237,
+                                                                                                           'line' => 238,
                                                                                                            'code' => '{
         bless {
             __NAME__ => $item[1], __ARGS__ => $item{arg_list}
@@ -14809,7 +14892,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                           ],
                                                                'name' => 'sequence_statement',
                                                                'vars' => '',
-                                                               'line' => 236
+                                                               'line' => 237
                                                              }, 'Parse::RecDescent::Rule' ),
                               'module_ident' => bless( {
                                                          'impcount' => 0,
@@ -14835,14 +14918,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                      'implicit' => undef,
                                                                                                      'argcode' => undef,
                                                                                                      'lookahead' => 0,
-                                                                                                     'line' => 363
+                                                                                                     'line' => 365
                                                                                                    }, 'Parse::RecDescent::Subrule' ),
                                                                                             bless( {
                                                                                                      'pattern' => '::',
                                                                                                      'hashname' => '__STRING1__',
                                                                                                      'description' => '\'::\'',
                                                                                                      'lookahead' => 0,
-                                                                                                     'line' => 363
+                                                                                                     'line' => 365
                                                                                                    }, 'Parse::RecDescent::Literal' ),
                                                                                             bless( {
                                                                                                      'subrule' => 'module_ident',
@@ -14850,12 +14933,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                      'implicit' => undef,
                                                                                                      'argcode' => undef,
                                                                                                      'lookahead' => 0,
-                                                                                                     'line' => 363
+                                                                                                     'line' => 365
                                                                                                    }, 'Parse::RecDescent::Subrule' ),
                                                                                             bless( {
                                                                                                      'hashname' => '__ACTION1__',
                                                                                                      'lookahead' => 0,
-                                                                                                     'line' => 363,
+                                                                                                     'line' => 365,
                                                                                                      'code' => '{ $item[1] . \'::\' . $item[3] }'
                                                                                                    }, 'Parse::RecDescent::Action' )
                                                                                           ],
@@ -14876,21 +14959,21 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                      'implicit' => undef,
                                                                                                      'argcode' => undef,
                                                                                                      'lookahead' => 0,
-                                                                                                     'line' => 364
+                                                                                                     'line' => 366
                                                                                                    }, 'Parse::RecDescent::Subrule' ),
                                                                                             bless( {
                                                                                                      'hashname' => '__ACTION1__',
                                                                                                      'lookahead' => 0,
-                                                                                                     'line' => 364,
+                                                                                                     'line' => 366,
                                                                                                      'code' => '{ $item[1] }'
                                                                                                    }, 'Parse::RecDescent::Action' )
                                                                                           ],
-                                                                               'line' => 364
+                                                                               'line' => 366
                                                                              }, 'Parse::RecDescent::Production' )
                                                                     ],
                                                          'name' => 'module_ident',
                                                          'vars' => '',
-                                                         'line' => 363
+                                                         'line' => 365
                                                        }, 'Parse::RecDescent::Rule' ),
                               'bigtop_file' => bless( {
                                                         'impcount' => 0,
@@ -14960,7 +15043,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                       'matchrule' => 0,
                                                                                                       'repspec' => 's?',
                                                                                                       'lookahead' => 0,
-                                                                                                      'line' => 234
+                                                                                                      'line' => 235
                                                                                                     }, 'Parse::RecDescent::Repetition' )
                                                                                            ],
                                                                                 'line' => undef
@@ -14968,7 +15051,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                      ],
                                                           'name' => 'sequence_body',
                                                           'vars' => '',
-                                                          'line' => 234
+                                                          'line' => 235
                                                         }, 'Parse::RecDescent::Rule' ),
                               'application' => bless( {
                                                         'impcount' => 0,
@@ -15098,7 +15181,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                                     'implicit' => undef,
                                                                                                                     'argcode' => undef,
                                                                                                                     'lookahead' => 0,
-                                                                                                                    'line' => 171
+                                                                                                                    'line' => 172
                                                                                                                   }, 'Parse::RecDescent::Subrule' ),
                                                                                                            bless( {
                                                                                                                     'subrule' => 'arg_list',
@@ -15106,7 +15189,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                                     'implicit' => undef,
                                                                                                                     'argcode' => undef,
                                                                                                                     'lookahead' => 0,
-                                                                                                                    'line' => 171
+                                                                                                                    'line' => 172
                                                                                                                   }, 'Parse::RecDescent::Subrule' ),
                                                                                                            bless( {
                                                                                                                     'subrule' => 'SEMI_COLON',
@@ -15114,12 +15197,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                                     'implicit' => undef,
                                                                                                                     'argcode' => undef,
                                                                                                                     'lookahead' => 0,
-                                                                                                                    'line' => 171
+                                                                                                                    'line' => 172
                                                                                                                   }, 'Parse::RecDescent::Subrule' ),
                                                                                                            bless( {
                                                                                                                     'hashname' => '__ACTION1__',
                                                                                                                     'lookahead' => 0,
-                                                                                                                    'line' => 171,
+                                                                                                                    'line' => 172,
                                                                                                                     'code' => '{
                         bless {
                             __KEYWORD__ => $item{IDENT},
@@ -15145,14 +15228,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                                     'description' => '/[^\\\\\\}]/',
                                                                                                                     'lookahead' => 0,
                                                                                                                     'rdelim' => '/',
-                                                                                                                    'line' => 177,
+                                                                                                                    'line' => 178,
                                                                                                                     'mod' => '',
                                                                                                                     'ldelim' => '/'
                                                                                                                   }, 'Parse::RecDescent::Token' ),
                                                                                                            bless( {
                                                                                                                     'hashname' => '__ACTION1__',
                                                                                                                     'lookahead' => 0,
-                                                                                                                    'line' => 177,
+                                                                                                                    'line' => 178,
                                                                                                                     'code' => '{
                             my $message = "bad config statement, "
                                         . "possible extra semicolon";
@@ -15167,12 +15250,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                       }'
                                                                                                                   }, 'Parse::RecDescent::Action' )
                                                                                                          ],
-                                                                                              'line' => 177
+                                                                                              'line' => 178
                                                                                             }, 'Parse::RecDescent::Production' )
                                                                                    ],
                                                                         'name' => 'controller_config_statement',
                                                                         'vars' => '',
-                                                                        'line' => 171
+                                                                        'line' => 172
                                                                       }, 'Parse::RecDescent::Rule' ),
                               'block' => bless( {
                                                   'impcount' => 0,
@@ -15317,13 +15400,13 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'hashname' => '__STRING1__',
                                                                                                   'description' => '\'sequence\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 201
+                                                                                                  'line' => 202
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'hashname' => '__DIRECTIVE1__',
                                                                                                   'name' => '<commit>',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 201,
+                                                                                                  'line' => 202,
                                                                                                   'code' => '$commit = 1'
                                                                                                 }, 'Parse::RecDescent::Directive' ),
                                                                                          bless( {
@@ -15332,14 +15415,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'implicit' => undef,
                                                                                                   'argcode' => undef,
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 201
+                                                                                                  'line' => 202
                                                                                                 }, 'Parse::RecDescent::Subrule' ),
                                                                                          bless( {
                                                                                                   'pattern' => '{',
                                                                                                   'hashname' => '__STRING2__',
                                                                                                   'description' => '\'\\{\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 201
+                                                                                                  'line' => 202
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'subrule' => 'sequence_body',
@@ -15347,19 +15430,19 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'implicit' => undef,
                                                                                                   'argcode' => undef,
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 201
+                                                                                                  'line' => 202
                                                                                                 }, 'Parse::RecDescent::Subrule' ),
                                                                                          bless( {
                                                                                                   'pattern' => '}',
                                                                                                   'hashname' => '__STRING3__',
                                                                                                   'description' => '\'\\}\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 201
+                                                                                                  'line' => 202
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'hashname' => '__ACTION1__',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 201,
+                                                                                                  'line' => 202,
                                                                                                   'code' => '{
                 bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
@@ -15387,13 +15470,13 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'hashname' => '__STRING1__',
                                                                                                   'description' => '\'table\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 210
+                                                                                                  'line' => 211
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'hashname' => '__DIRECTIVE1__',
                                                                                                   'name' => '<commit>',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 210,
+                                                                                                  'line' => 211,
                                                                                                   'code' => '$commit = 1'
                                                                                                 }, 'Parse::RecDescent::Directive' ),
                                                                                          bless( {
@@ -15402,14 +15485,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'implicit' => undef,
                                                                                                   'argcode' => undef,
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 210
+                                                                                                  'line' => 211
                                                                                                 }, 'Parse::RecDescent::Subrule' ),
                                                                                          bless( {
                                                                                                   'pattern' => '{',
                                                                                                   'hashname' => '__STRING2__',
                                                                                                   'description' => '\'\\{\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 210
+                                                                                                  'line' => 211
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'subrule' => 'table_body',
@@ -15417,19 +15500,19 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'implicit' => undef,
                                                                                                   'argcode' => undef,
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 210
+                                                                                                  'line' => 211
                                                                                                 }, 'Parse::RecDescent::Subrule' ),
                                                                                          bless( {
                                                                                                   'pattern' => '}',
                                                                                                   'hashname' => '__STRING3__',
                                                                                                   'description' => '\'\\}\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 210
+                                                                                                  'line' => 211
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'hashname' => '__ACTION1__',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 210,
+                                                                                                  'line' => 211,
                                                                                                   'code' => '{
                 bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
@@ -15441,7 +15524,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
             }'
                                                                                                 }, 'Parse::RecDescent::Action' )
                                                                                        ],
-                                                                            'line' => 210
+                                                                            'line' => 211
                                                                           }, 'Parse::RecDescent::Production' ),
                                                                    bless( {
                                                                             'number' => '2',
@@ -15457,13 +15540,13 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'hashname' => '__STRING1__',
                                                                                                   'description' => '\'join_table\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 219
+                                                                                                  'line' => 220
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'hashname' => '__DIRECTIVE1__',
                                                                                                   'name' => '<commit>',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 219,
+                                                                                                  'line' => 220,
                                                                                                   'code' => '$commit = 1'
                                                                                                 }, 'Parse::RecDescent::Directive' ),
                                                                                          bless( {
@@ -15472,14 +15555,14 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'implicit' => undef,
                                                                                                   'argcode' => undef,
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 219
+                                                                                                  'line' => 220
                                                                                                 }, 'Parse::RecDescent::Subrule' ),
                                                                                          bless( {
                                                                                                   'pattern' => '{',
                                                                                                   'hashname' => '__STRING2__',
                                                                                                   'description' => '\'\\{\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 219
+                                                                                                  'line' => 220
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'subrule' => 'join_table_body',
@@ -15487,19 +15570,19 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'implicit' => undef,
                                                                                                   'argcode' => undef,
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 219
+                                                                                                  'line' => 220
                                                                                                 }, 'Parse::RecDescent::Subrule' ),
                                                                                          bless( {
                                                                                                   'pattern' => '}',
                                                                                                   'hashname' => '__STRING3__',
                                                                                                   'description' => '\'\\}\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 219
+                                                                                                  'line' => 220
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'hashname' => '__ACTION1__',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 219,
+                                                                                                  'line' => 220,
                                                                                                   'code' => '{
                 bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
@@ -15510,7 +15593,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
             }'
                                                                                                 }, 'Parse::RecDescent::Action' )
                                                                                        ],
-                                                                            'line' => 219
+                                                                            'line' => 220
                                                                           }, 'Parse::RecDescent::Production' ),
                                                                    bless( {
                                                                             'number' => '3',
@@ -15526,13 +15609,13 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'hashname' => '__STRING1__',
                                                                                                   'description' => '\'schema\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 227
+                                                                                                  'line' => 228
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'hashname' => '__DIRECTIVE1__',
                                                                                                   'name' => '<commit>',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 227,
+                                                                                                  'line' => 228,
                                                                                                   'code' => '$commit = 1'
                                                                                                 }, 'Parse::RecDescent::Directive' ),
                                                                                          bless( {
@@ -15541,26 +15624,26 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'implicit' => undef,
                                                                                                   'argcode' => undef,
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 227
+                                                                                                  'line' => 228
                                                                                                 }, 'Parse::RecDescent::Subrule' ),
                                                                                          bless( {
                                                                                                   'pattern' => '{',
                                                                                                   'hashname' => '__STRING2__',
                                                                                                   'description' => '\'\\{\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 227
+                                                                                                  'line' => 228
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'pattern' => '}',
                                                                                                   'hashname' => '__STRING3__',
                                                                                                   'description' => '\'\\}\'',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 227
+                                                                                                  'line' => 228
                                                                                                 }, 'Parse::RecDescent::Literal' ),
                                                                                          bless( {
                                                                                                   'hashname' => '__ACTION1__',
                                                                                                   'lookahead' => 0,
-                                                                                                  'line' => 227,
+                                                                                                  'line' => 228,
                                                                                                   'code' => '{
                 bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
@@ -15569,12 +15652,12 @@ package Bigtop::Grammar; sub new { my $self = bless( {
             }'
                                                                                                 }, 'Parse::RecDescent::Action' )
                                                                                        ],
-                                                                            'line' => 227
+                                                                            'line' => 228
                                                                           }, 'Parse::RecDescent::Production' )
                                                                  ],
                                                       'name' => 'sql_block',
                                                       'vars' => '',
-                                                      'line' => 201
+                                                      'line' => 202
                                                     }, 'Parse::RecDescent::Rule' ),
                               'method_body' => bless( {
                                                         'impcount' => 0,
@@ -15602,7 +15685,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                     'matchrule' => 0,
                                                                                                     'repspec' => 's?',
                                                                                                     'lookahead' => 0,
-                                                                                                    'line' => 192
+                                                                                                    'line' => 193
                                                                                                   }, 'Parse::RecDescent::Repetition' )
                                                                                          ],
                                                                               'line' => undef
@@ -15610,7 +15693,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                    ],
                                                         'name' => 'method_body',
                                                         'vars' => '',
-                                                        'line' => 192
+                                                        'line' => 193
                                                       }, 'Parse::RecDescent::Rule' )
                             }
                }, 'Parse::RecDescent' );
@@ -15631,5 +15714,6 @@ Returns a new Parse::RecDescent grammar for bigtop.
 Generated by:
 
     perl -MParse::RecDescent - bigtop.grammar Bigtop::Grammar
+    cat Grammar.pm grammar.pod > tmp; mv tmp Grammar.pm
 
 =cut

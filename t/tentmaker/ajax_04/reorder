@@ -60,45 +60,4 @@ app Sample {
         }
         foreign_display `%ident`;
     }
-    sequence addresses_seq {}
-    table addresses {
-        field id {
-            is int4, primary_key, auto;
-        }
-        field ident {
-            is varchar;
-            label Ident;
-            html_form_type text;
-        }
-        field description {
-            is varchar;
-            label Description;
-            html_form_type text;
-        }
-        field created {
-            is datetime;
-        }
-        field modified {
-            is datetime;
-        }
-        sequence addresses_seq;
-        foreign_display `%ident`;
-    }
-    controller Addresses is AutoCRUD {
-        controls_table addresses;
-        rel_location addresses;
-        text_description addresses;
-        page_link_label Addresses;
-        method do_main is main_listing {
-            cols ident, description;
-            header_options Add;
-            row_options Edit, Delete;
-            title Addresses;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but id, created, modified;
-            extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
-        }
-    }
 }

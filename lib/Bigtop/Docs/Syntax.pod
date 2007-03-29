@@ -1,16 +1,26 @@
 =head1 NAME
 
-Bigtop::Docs::Syntax - A (mostly) complete Bigtop syntax description
+Bigtop::Docs::Syntax - A (formerly) complete Bigtop syntax description
+
+=head1 WARNING
+
+This document is no longer maintained.  See L<Bigtop::Docs::AutoKeywords>
+or run tentmaker.
+
+While the introduction in the L<Anatomy of a Bigtop File> section below is
+still instructive, since the structure of bigtop files has not changed, and
+the keywords described below still do the same things, newer keywords are
+no longer added here.
 
 =head1 Intro
 
-This document is a fleshing out of Bigtop::Docs::Keywords.  Note
-that you might find Bigtop::Docs::Cookbook more useful depending on
+Note that you might find L<Bigtop::Docs::Cookbook> useful depending on
 the complexity of your questions and how you like to use docs.  This
-is like a text book, the cookbook teaches exclusively by example.
-See also the examples directory in the distribution and Bigtop::Docs::TentTut
-(tentmaker shows docs in a browser, its docs are taken directly from the
-backends, so it is more up to date than any other doc).
+one, and its replacement L<Bigtop::Docs::AutoKeywords>, are like a text
+book or dictionary, the cookbook teaches exclusively by example.
+See also the examples directory in the distribution and
+L<Bigtop::Docs::TentTut>.  tentmaker shows docs in a browser, its docs
+are taken directly from the backends, so it is always fully up to date.
 
 =head1 Anatomy of a Bigtop File
 

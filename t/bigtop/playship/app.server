@@ -4,7 +4,11 @@ use strict;
 
 use lib qw( lib );
 
-use AddressBook qw{ -Engine=CGI -TemplateEngine=TT };
+use AddressBook qw{
+    -Engine=CGI
+    -TemplateEngine=TT
+    Static
+};
 
 use Getopt::Long;
 use Gantry::Server;
@@ -30,6 +34,8 @@ my $cgi = Gantry::Engine::CGI->new( {
         dbconn => $dsn,
         dbuser => $dbuser,
         dbpass => $dbpass,
+        doc_rootp => '/static',
+        show_dev_navigation => 1,
         template_wrapper => 'genwrapper.tt',
         root => 'html:html/templates',
     },

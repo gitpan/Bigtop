@@ -148,9 +148,10 @@ controller_statement : 'method' <commit> IDENT
                                 __TYPE__  => $item{method_type},
                             }, 'controller_method'
                         }
-         | CONFIG '{' controller_config_statement(s?) '}' {
+         | CONFIG IDENT(?) '{' controller_config_statement(s?) '}' {
                    bless {
-                       __BODY__ => $item{'controller_config_statement(s?)'}
+                       __BODY__ => $item{'controller_config_statement(s?)'},
+                       __TYPE__ => $item{'IDENT(?)'}[0],
                    }, 'controller_config_block'
                 }
          | 'literal' keyword[ 'controller_literal' ]
@@ -292,9 +293,10 @@ join_table_statement : 'field' <commit> IDENT '{' field_body '}' {
                       }, 'join_table_statement'
                   }
 
-app_config_block : CONFIG '{' app_config_statement(s?) '}' {
+app_config_block : CONFIG IDENT(?) '{' app_config_statement(s?) '}' {
                    bless {
-                       __BODY__ => $item{'app_config_statement(s?)'}
+                       __BODY__ => $item{'app_config_statement(s?)'},
+                       __TYPE__ => $item{'IDENT(?)'}[0],
                    }, 'app_config_block'
                 }
 

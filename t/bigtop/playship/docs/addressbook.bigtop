@@ -51,6 +51,7 @@ app AddressBook {
             is datetime;
         }
         foreign_display `%name`;
+        refered_to_by `child`;
 
     }
     controller Family is AutoCRUD {

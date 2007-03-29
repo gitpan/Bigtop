@@ -2,6 +2,10 @@
 
 Bigtop::Docs::Keywords - a bigtop keyword quick reference in monospace font
 
+=head1 WARNING
+
+This file is no longer maintained.  See L<Bigtop::Docs::KeywordsAuto>.
+
 =head1 The Keywords in Bigtop
 
 For those who like compact quick references with too much information crammed

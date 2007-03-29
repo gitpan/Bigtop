@@ -5,6 +5,7 @@ package Apps::Checkbook::GEN::PayeeOr;
 use strict;
 
 use base 'Apps::Checkbook';
+use JSON;
 
 use SomePackage::SomeModule;
 
@@ -45,6 +46,26 @@ sub do_main {
         ],
     };
 
+    my %param = $self->get_param_hash;
+
+    my $search = {};
+    if ( $param{ search } ) {
+        my $form = $self->form();
+
+        my @searches;
+        foreach my $field ( @{ $form->{ fields } } ) {
+            if ( $field->{ searchable } ) {
+                push( @searches,
+                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                );
+            }
+        }
+
+        $search = {
+            -or => \@searches
+        } if scalar( @searches ) > 0;
+    }
+
     my @rows = $PAYEE->get_listing();
 
     foreach my $row ( @rows ) {
@@ -72,8 +93,69 @@ sub do_main {
         );
     }
 
+    if ( $param{ json } ) {
+        $self->template_disable( 1 );
+
+        my $obj = {
+            headings        => $retval->{ headings },
+            header_options  => $retval->{ header_options },
+            rows            => $retval->{ rows },
+        };
+
+        my $json = objToJson( $obj );
+        return( $json );
+    }
+
     $self->stash->view->data( $retval );
 } # END do_main
+
+#-----------------------------------------------------------------
+# $self->my_crud_form( $data )
+#-----------------------------------------------------------------
+sub my_crud_form {
+    my ( $self, $data ) = @_;
+
+    my $selections = $PAYEE->get_form_selections();
+
+    return {
+        name       => 'payee_crud',
+        row        => $data->{row},
+        fields     => [
+            {
+                raw_html => '<tr><td colspan="2">Hi</td></tr>',
+                display_size => 20,
+                name => 'name',
+                label => 'Name',
+                type => 'text',
+                is => 'varchar',
+            },
+        ],
+    };
+} # END my_crud_form
+
+#-----------------------------------------------------------------
+# $self->_form( $data )
+#-----------------------------------------------------------------
+sub _form {
+    my ( $self, $data ) = @_;
+
+    my $selections = $PAYEE->get_form_selections();
+
+    return {
+        name       => 'default_form',
+        row        => $data->{row},
+        fields     => [
+            {
+                raw_html => '<tr><td colspan="2">Hi</td></tr>',
+                display_size => 20,
+                name => 'name',
+                label => 'Name',
+                type => 'text',
+                is => 'varchar',
+            },
+        ],
+    };
+} # END _form
 
 #-----------------------------------------------------------------
 # $self->form( $row )
@@ -123,6 +205,10 @@ Feel free to override them.
 =over 4
 
 =item do_main
+
+=item my_crud_form
+
+=item _form
 
 =item form
 

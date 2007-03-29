@@ -1,4 +1,4 @@
-package Bigtop::ScriptHelp::Style::Original;
+package Bigtop::ScriptHelp::Style::Kickstart;
 use strict; use warnings;
 
 use base 'Bigtop::ScriptHelp::Style';
@@ -14,6 +14,19 @@ sub get_db_layout {
     my $art    = shift || '';
     my $tables = shift || {};
 
+    {
+        no warnings;  # don't tell me about unsuccessful stats on $art
+
+        if ( -f $art ) { # take art from file
+
+            open my $ART, '<', $art;
+            my $actual_art = join '', <$ART>;
+            close $ART;
+
+            $art = $actual_art;
+        }
+    }
+
     my @new_tables;
     my @joiners;
     my %foreign_key_for;
@@ -25,7 +38,8 @@ sub get_db_layout {
     foreach my $art_element ( split /\s+/, $art ) {
         if ( $art_element =~ /<|-|>/ ) {
             # split tables from operator
-            my ( $table1, $op, $table2 ) = split /(<->|->|<-|-)/, $art_element;
+            my ( $table1, $op, $table2 ) =
+                    split /(<->|->|<-|\*>|<\*|-)/, $art_element;
 
             # now pull column descriptions, if present
             my ( $cols1, $cols2 );
@@ -46,21 +60,21 @@ sub get_db_layout {
             unless ( defined $tables->{ $table1 } ) {
                 push @new_tables, $table1;
                 $tables->{ $table1 }++;
-                $columns{ $table1 } = $cols1 unless $columns{ $table1 };
             }
+            $columns{ $table1 } = $cols1 if defined $cols1;
 
             unless ( defined $tables->{ $table2 } ) {
                 push @new_tables, $table2;
                 $tables->{ $table2 }++;
-                $columns{ $table2 } = $cols2 unless $columns{ $table2 };
             }
+            $columns{ $table2 } = $cols2 if defined $cols2;
 
             # process based on operator
-            if ( $op eq '<-' ) {
+            if ( $op eq '<-' or $op eq '*>' ) {
                 push @{ $foreign_key_for{ $table2 } },
                      { table => $table1, col => 1};
             }
-            elsif ( $op eq '->' ) {
+            elsif ( $op eq '->' or $op eq '<*' ) {
                 push @{ $foreign_key_for{ $table1 } },
                      { table => $table2, col => 1};
             }
@@ -92,9 +106,19 @@ sub get_db_layout {
                 die "Invalid ASCII art (3): $art_element\n";
             }
 
-            $tables->{ $table }++;
-            $columns{ $table } = $cols;
+            unless ( defined $tables->{ $table } ) {
+                push @new_tables, $table;
+                $tables->{ $table }++;
+            }
+            $columns{ $table } = $cols if defined $cols;
         }
+    }
+
+    my $parsed_defaults = _parse_columns( $default_columns );
+    NEW_TABLE:
+    foreach my $new_table ( @new_tables ) { # add default cols as needed
+        next NEW_TABLE if defined $columns{ $new_table };
+        $columns{ $new_table } = $parsed_defaults;
     }
 
     return {
@@ -123,7 +147,7 @@ sub _get_columns {
         return ( $name, _parse_columns( $raw ) );
     }
     else {
-        return ( $name, _parse_columns( $default_columns ) );
+        return ( $name );
     }
 }
 
@@ -185,13 +209,23 @@ sub _parse_columns {
 
 =head1 NAME
 
-Bigtop::ScriptHelp::Style::Original - handles ASCII art for scripts
+Bigtop::ScriptHelp::Style::Kickstart - handles kickstart syntax for scripts
 
 =head1 SYNOPSIS
 
+Most users use this module as the default style for the bigtop and
+tentmaker scripts:
+
+    bigtop -n AppName [kickstart]
+
+See L<KICKSTART SYNTAX> below for details, but note that kickstart could
+be a file whose contents are in kickstart syntax.
+
+If you are writing a script that want to leverage styles do this:
+
     use Bigtop::ScriptHelp::Style;
 
-    my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
+    my $style = Bigtop::ScriptHelp::Style->get_style( 'Kickstart' );
 
     # then pass $style to methods of Bigtop::ScriptHelp
 
@@ -206,21 +240,27 @@ must do in general.
 
 =item get_db_layout
 
-This method does not use standard in.  Instead, it expects traditional
-ASCII art.  See L<ASCII Art> below.
+This method does not use standard in.  Instead, it expects
+kickstart syntax.  See L<KICKSTART SYNTAX> below.
 
 =back
 
-=head1 ASCII Art
+=head1 KICKSTART SYNTAX
 
-ASCII art allows you to quickly note relationships between
-tables with simple characters.
+Bigtop's kickstart syntax allows you to describe your tables, their columns,
+and how they are related to other tables in a compressed text style.
 
-Note well: Since the relationships use punctuation that your shell probably
-loves, you must surround the art with single quotes.
+Note well: Since the descriptions use punctuation that your shell probably
+loves, you must surround them with single quotes on the command line.  But,
+there's no need to do that if you put the kickstart description in a file.
+To use the file method, put your kickstart in a file and give that
+file's name as in:
 
-It is easiest to understand the options by seeing an example.  So, suppose
-we have a four table data model describing a bit of our personnel process:
+    tentmaker -a docs/app.bigtop kickstart_file
+
+It is easiest to understand kickstart syntax is by seeing an example.  So,
+suppose we have a four table data model describing a bit of our personnel
+process:
 
     +-----------+       +----------+
     |    job    |<------| position |
@@ -231,15 +271,12 @@ we have a four table data model describing a bit of our personnel process:
     | job_skill |------>|  skill   |
     +-----------+       +----------+
 
-First, you'll be happy to know that bigtop's ASCII art is simpler to draw
-than the above.
-
-What our data model shows is that each position refers to a job (description),
+What this data model shows is that each position refers to a job,
 each job could require many skills, and each skill could be associated with
 many jobs.  The last two mean that job and skill share a many-to-many
 relationship.
 
-Here's how to specify this data model in bigtop ASCII art:
+Here's how to specify this data model with bigtop kickstart syntax:
 
     bigtop --new HR 'job<-position job<->skill'
 
@@ -247,10 +284,10 @@ This indicates a foreign key from position to job and an implied
 table, called job_skill, to hold the many-to-many relationship between
 job and skill.
 
-The same ASCII art can be used with --new and --add for both bigtop
+The same kickstart can be used with --new and --add for both bigtop
 and tentmaker scripts.
 
-There are four art operators:
+There are four kickstart table relationship operators:
 
 =over 4
 
@@ -262,16 +299,30 @@ that your Model backend may not understand these relationships.  At the
 time of this writing only Model GantryDBIxClass did, by luck it happens
 to be the default.
 
-=item ->
+=item <- or *>
 
-The first table has a foreign key pointing to the second.
+The second table has a foreign key pointing to the first.
 
-=item <-
+The *> form is useful if you want to read the relationship with the phrase
+'has-many' as in
 
-The second table has a foreign key pointing to the first.  This is really
-a convenience synonymn for ->.  Tables will appear in the generated
-SQL so that tables with foreign keys appear after the tables they refer
-to (at least that is the goal).
+    book*>chapter
+
+Each book has many chapters.  Instead of
+
+    book<-chapter
+
+Each chapter belongs to a book.  But, both forms are equivalent.
+
+=item -> or <*
+
+The first table has a foreign key pointing to the second.  This is really
+a convenience synonymn for <-.
+
+Note that tables will appear in the generated SQL so that foreign keys
+appear after the tables they refer to (at least that is the goal).  Hence
+the order of your tables in the kickstart has no bearing on
+their order in the bigtop file.
 
 =item -
 
@@ -292,16 +343,18 @@ use spaces inside column definitions.  If you need spaces, colons might
 work.  If not, you'll need to edit the generated bigtop file, just like
 old times.
 
-Column definitions must be placed inside parnetheses immediatly after the
+Column definitions must be placed inside parnetheses immediately after the
 table name and immediately before any table relationship operator.  Separate
 columns with commas.  Specify type definitions with colons.  Use equals
 for defaults and leading plus signs for optional fields.  For example:
 
     bigtop -n App 'family(name,+phone)<-child(name,birth_day:date)'
 
-By default all columns will have type varchar.  If you need something else
-use a colon, as I did for birth_day.  If your type definition needs multiple
-words use colons instead of spaces.
+By default all columns will have type varchar (but note that SQL backends
+translate that into some other string type for all supported databases,
+if a bare varchar wouldn't work).  If you need some other type, use a colon,
+as I did for birth_day.  If your type definition needs multiple words, use
+colons instead of spaces.
 
 Do not include foreign key columns in the list.  They will be generated
 based on the relationship punctuation between the tables.
@@ -321,7 +374,7 @@ gift_pref columns.  The later will have a default value in the database
 and on HTML forms of 'money.'  Finally, a new foreign key will be added
 to the existing family table pointing to the anniversary table.
 
-You may find it easier to supply the ASCII art by first specifying the
+You may find it easier to supply the kickstart text by first specifying the
 relationships without including the columns, then defining the columns later:
 
     tentmaker -n App \
@@ -332,6 +385,16 @@ relationships without including the columns, then defining the columns later:
 
 You may mention a table as many times as you like, but only define its
 columns once.
+
+Finally, as mentioned in the L<SYNOPSIS>, and described in more detail below
+(see L<KICKSTART FILES>, you may put the kickstart in
+a file and supply the file name on the command line:
+
+    tentmaker -n App app.kickstart
+
+None of the syntax changes when you use the file approach, except that
+you don't need the shell quotes.  In paricular, using a file does not
+allow you to include spaces within a table's definition.
 
 =head2 FORMAL SUMMARY
 
@@ -356,6 +419,35 @@ Suppose you want this column definition:
 Say this:
 
     state:int4:NOT:NULL=4
+
+=head2 KICKSTART FILES
+
+Traditionally, kickstart text was specified on the command line.  Now you
+can put it in a file and invoke bigtop or tentmaker like this:
+
+    bigtop -n NewApp file.kickstart
+
+Unfortunately, you cannot currently pipe to bigtop to tentmaker, they
+do not read from standard in.
+
+Here is an example kickstart file for a blogging application:
+
+    blog(active:int4,ident,title,subtitle,blurb,body,gps,comments_enabled:int4,rank:int4,section,username,tag)
+    author(name,address,city,state,country,gps)
+    comment(active:int4,rejected:int4,name,email,url,subject,body)
+    link(active:int4,location,label,posted_date,score,username,tag)
+    tag(active:int4,label,rank)
+    image(active:int4,label,descr,file,default_image,file_ident,file_name,file_size:int4,file_mime,file_suffix)
+    attachment(active:int4,label,descr,file,default_image,file_ident,file_name,file_size:int4,file_mime,file_suffix)
+    section(active:int4,label)
+    blog<-image
+    blog<-attachment
+    blog<-author
+    blog<-comment
+    blog<-section
+
+Note again that spaces are not allowed in column definition lists, since
+whitespace is the separator of table and table relationship entries.
 
 =head1 AUTHOR
 

@@ -27,7 +27,7 @@ my @correct_input;
 my $ajax;
 my $ajax_dir = File::Spec->catdir( qw( t tentmaker ajax_02 ) );
 my $expected_file;
-my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
+my $style = Bigtop::ScriptHelp::Style->get_style();
 
 #--------------------------------------------------------------------
 # Reading sample file from TentMaker __DATA__ block.

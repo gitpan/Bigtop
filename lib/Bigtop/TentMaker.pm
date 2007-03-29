@@ -170,6 +170,11 @@ sub new {
     return bless {}, $class;
 }
 
+# for doc building scripts:
+sub get_backends {
+    return \%backends;
+}
+
 # for testing
 sub show_idents {
     $tree->walk_postorder( 'show_idents' );
@@ -194,11 +199,14 @@ sub do_main {
         $self->update_backends( $tree );
     }
 
+    my @types   = keys %{ $statements };
+
     $self->stash->view->template( 'tenter.tt' );
     $self->stash->view->title( 'TentMaker Home' );
     $self->stash->view->data(
         {
             input                 => $self->deparsed,
+            top_level_configs     => $tree->get_top_level_configs,
             engine                => $tree->get_engine,
             template_engine       => $tree->get_template_engine,
             app                   => $tree->get_app,
@@ -264,8 +272,6 @@ sub do_save {
 
     if ( open my $BIGTOP_UPDATE, '>', $new_file_name ) {
 
-        $file = $new_file_name;
-
         # XXX Assume it will work if we opened it (not always good, I know).
         print $BIGTOP_UPDATE $self->deparsed;
         close $BIGTOP_UPDATE;
@@ -311,9 +317,7 @@ sub complete_update {
 }
 
 sub unescape {
-    my @args  = @_;
-    pop @args if ( @args != 1 and $args[-1] eq 'undefined' );
-    my $input = join '/', @args;
+    my $input = shift;
 
     return unless defined $input;
 
@@ -345,6 +349,26 @@ sub do_update_std {
 
     eval {
         $tree->$method( $new_value );
+    };
+    if ( $@ ) {
+        warn "error: $@\n";
+    }
+
+    $self->complete_update();
+}
+
+sub do_update_top_config_text {
+    my $self      = shift;
+    my $parameter = shift;
+    my $new_value = unescape( @_ );
+
+    eval {
+        if ( $new_value eq 'undefined' ) {
+            $tree->clear_top_level_config( $parameter );
+        }
+        else {
+            $tree->set_top_level_config( $parameter, $new_value );
+        }
     };
     if ( $@ ) {
         warn "error: $@\n";
@@ -455,7 +479,7 @@ sub do_update_app_statement_text {
 
     $new_value    =~ s/\s+\Z//m; # strip trailing whitespace from last line
 
-    if ( $new_value ne 'undefined' ) {
+    if ( $new_value ne 'undefined' and $new_value ) {
         eval {
             $tree->get_app->set_app_statement( $keyword, $new_value );
         };
@@ -1046,6 +1070,11 @@ sub do_update_table_statement_text {
     $self->do_update_block_statement_text( 'table', @_ );
 }
 
+sub do_update_table_statement_pair {
+    my $self = shift;
+    return $self->do_update_subblock_statement_pair( 'table', @_ )
+}
+
 sub do_update_data_statement {
     my $self         = shift;
     my $statement_id = shift;
@@ -1425,7 +1454,7 @@ sub change_conf {
     my $config    = $tree->get_config();
 
     STATEMENT:
-    for( my $i = 0; $i <= $#{ @{ $config->{__STATEMENTS__} } }; $i++ ) {
+    for( my $i = 0; $i <= $#{ $config->{__STATEMENTS__} }; $i++ ) {
         next STATEMENT unless (
                 ref( $config->{__STATEMENTS__}[$i][1] ) eq 'HASH'
         );  # find backends, skip simple statements
@@ -1455,7 +1484,7 @@ sub drop_backend {
     my $doomed_element = -1;
 
     STATEMENT:
-    for( my $i = 0; $i <= $#{ @{ $config->{__STATEMENTS__} } }; $i++ ) {
+    for( my $i = 0; $i <= $#{ $config->{__STATEMENTS__} }; $i++ ) {
 
         next STATEMENT unless (
                 ref( $config->{__STATEMENTS__}[$i][1] ) eq 'HASH'
@@ -1692,19 +1721,19 @@ to the browser, which results in one Javascript error in the browser.
 
 =head2 do_update_std
 
-This method is a facade for top level setters in Bigtop::Parser.
+This method only serves to update the app name.  It does that by calling
+set_appname on the AST.
+
+=head2 do_update_top_config_text
+
+This method is a generic accessor for top level config block statements.
 
 Parameters:
 
-    the set action to call
+    the top level config statement name
     the new value to give it
 
-The set action becomes the suffix of the name of a method the tree responds to.
-The full name is "set_$parameter" (see Bigtop::Parser for details of
-these methods).
-
-The new_value is merely passed to the set_ method, which is responsible
-for updating the tree properly.
+If the new value is 'undefined' (the string), the statement will be cleared.
 
 =head2 do_update_backend
 
@@ -1982,6 +2011,11 @@ I don't think this is called by the templates or their javascript.
 
 Directly calls do_update_block_statement_text specifying type table.
 
+=head2 do_update_table_statement_pair
+
+Directly calls do_update_subblock_statement_pair specifying type table
+and passing on all parameters.
+
 =head2 do_update_data_statement
 
 Tells the tree to update or add a data statement to an existing table.
@@ -2142,7 +2176,14 @@ keywords that all of the backends register.
 =head2 build_backend_list
 
 The backends hash is used internally to know which backends are available,
-whether they are in use, and what statements they support.
+whether they are in use, and what statements they support.  Documentation
+scripts are welcome to call this method to kick start a doc pull from
+the backends.  They should then call:
+
+=head2 get_backends
+
+Accessor which returns the internal hash of all backends and their backend
+block keywords.
 
 =head2 read_file
 

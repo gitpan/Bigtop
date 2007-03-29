@@ -12,14 +12,17 @@ type:
     cd Phone
     ./app.server
 
-There are two tables here.  family has name, phone and optional email columns.
-child has name and birth_day which is a date.
+We call the definition in the single quotes the 'kickstart,' it's a
+description of the data model.  See C<Bigtop::ScriptHelp::Style::Kickstart>
+for additional details on the syntax for kickstarts.  Here there are two
+tables.  family has name, phone, and optional email columns.  child has
+name and birth_day which is a date.
 
 If you don't have sqlite, you'll need to build your database.  If your
-database engine of choice is postgres or mysql, you can follow these
+database engine of choice is PostgreSQL or MySQL, you can follow these
 instructions...
 
-=head2 postgres
+=head2 PostgreSQL
 
     cd Phone
     createdb app.db -U some_power_user
@@ -36,9 +39,9 @@ instructions...
 In all cases, once you start C<app.server>, it will print URLs where you
 may point your browser to start using the app.
 
-=head1 From a Postgres Database
+=head1 From a PostgreSQL Database
 
-If you already have a postgres 8 database called yourdb, and would like a
+If you already have a PostgreSQL 8 database called yourdb, and would like a
 CRUD app for it:
 
     bigtop -n YourApp -s Pg8Live 'dbi:Pg:dbname=yourdb' user pass

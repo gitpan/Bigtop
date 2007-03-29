@@ -13,7 +13,7 @@ use Gantry::Plugins::DBIxClassConn qw( get_schema );
 #-----------------------------------------------------------------
 # $self->do_main( $contact )
 #-----------------------------------------------------------------
-# This method supplied by Contact::GEN::BDay
+# This method inherited from Contact::GEN::BDay
 
 
 #-----------------------------------------------------------------

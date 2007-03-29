@@ -8,7 +8,7 @@
 <table class='bordered'>
     <tr><th> Type </th>
         <th> Backend </th>
-        <th> What Does It Make? </th>
+        <th style='width: 25%;'> What Does It Make? </th>
         <th> Config Statements </th>
     </tr>
     [% backends = view.data.backends %]
@@ -72,8 +72,6 @@
         keyword_prefix = "$type_name::$backend::"
     %]
 </td>
-</tr>
-<tr>
-<td colspan='2'> [% statement.descr %] </td>
+<td> [% statement.descr %] </td>
 <tr>
 [% END %]

@@ -46,6 +46,7 @@ app Address {
             is date;
         }
         foreign_display `%identifier`;
+        refered_to_by birth_date => bdays, z, a, anniversary_date;
     }
     controller FamilyAddress is AutoCRUD {
         controls_table family_address;
@@ -91,6 +92,7 @@ app Address {
             refers_to family_address => id;
             html_form_type select;
         }
+        refered_to_by a;
     }
     controller BirthDate is AutoCRUD {
         controls_table birth_date;

@@ -29,12 +29,12 @@ sub do_detail {
 #-----------------------------------------------------------------
 # $self->do_main(  )
 #-----------------------------------------------------------------
-# This method supplied by Apps::Checkbook::GEN::Trans
+# This method inherited from Apps::Checkbook::GEN::Trans
 
 #-----------------------------------------------------------------
 # $self->form( $row )
 #-----------------------------------------------------------------
-# This method supplied by Apps::Checkbook::GEN::Trans
+# This method inherited from Apps::Checkbook::GEN::Trans
 
 
 #-----------------------------------------------------------------

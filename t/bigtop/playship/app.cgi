@@ -4,7 +4,10 @@ use strict;
 
 use CGI::Carp qw( fatalsToBrowser );
 
-use AddressBook qw{ -Engine=CGI -TemplateEngine=TT };
+use AddressBook qw{
+    -Engine=CGI
+    -TemplateEngine=TT
+};
 
 use Gantry::Engine::CGI;
 

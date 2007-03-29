@@ -5,6 +5,7 @@ package Contact::GEN::BDay;
 use strict;
 
 use base 'Contact';
+use JSON;
 
 use Contact::Model::bday qw(
     $BDAY
@@ -33,26 +34,52 @@ sub do_main {
         header_options => [
             {
                 text => 'Add',
-                link => $real_location . "add",
+                link => $real_location . "add/$contact",
             },
         ],
     };
 
+    my %param = $self->get_param_hash;
+
+    my $search = {};
+    if ( $param{ search } ) {
+        my $form = $self->form();
+
+        my @searches;
+        foreach my $field ( @{ $form->{ fields } } ) {
+            if ( $field->{ searchable } ) {
+                push( @searches,
+                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                );
+            }
+        }
+
+        $search = {
+            -or => \@searches
+        } if scalar( @searches ) > 0;
+    }
+
+    if ( $contact ) {
+        $search->{ contact } = $contact;
+    }
+
     my $schema = $self->get_schema();
-    my $where  = ( $contact ) ? { contact => $contact } : undef;
     my @rows   = $BDAY->get_listing(
         {
-            schema => $schema,
-            where  => $where,
+            schema   => $schema,
+            where    => $search,
         }
     );
 
     foreach my $row ( @rows ) {
         my $id = $row->id;
+        my $contact = ( $row->contact )
+                ? $row->contact->foreign_display()
+                : '';
         push(
             @{ $retval->{rows} }, {
                 data => [
-                    $row->contact->foreign_display(),
+                    $contact,
                     $row->bday,
                 ],
                 options => [
@@ -67,6 +94,19 @@ sub do_main {
                 ],
             }
         );
+    }
+
+    if ( $param{ json } ) {
+        $self->template_disable( 1 );
+
+        my $obj = {
+            headings        => $retval->{ headings },
+            header_options  => $retval->{ header_options },
+            rows            => $retval->{ rows },
+        };
+
+        my $json = objToJson( $obj );
+        return( $json );
     }
 
     $self->stash->view->data( $retval );

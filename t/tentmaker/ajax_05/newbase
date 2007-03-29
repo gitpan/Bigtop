@@ -11,7 +11,7 @@
           <legend>
               Base Controller
               ( <a href='javascript:show_or_hide( "hideable_ident_8" );'>
-                  edit</a>|
+                  edit or hide</a> |
 <a href="#" name='app_body_delete::ident_8' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -42,11 +42,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_8::no_gen'
@@ -72,11 +67,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -107,11 +97,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -140,11 +125,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -178,7 +158,7 @@
 
         </td>
         <td>
-            List of modules used gen module
+            List of modules used in gen module
         </td>
     </tr>
   
@@ -189,11 +169,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -227,7 +202,7 @@
 
         </td>
         <td>
-            List of modules used stub module
+            List of modules used in stub module
         </td>
     </tr>
   
@@ -238,11 +213,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -287,11 +257,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -320,17 +285,12 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
             id='ident_8::page_link_label'
             value=""
-            class='urgency_1'
+            class='urgency_3'
             onblur='javascript:update_tree(
                 "controller_statement_text",
                 "ident_8::page_link_label",
@@ -353,11 +313,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -386,11 +341,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_8::skip_test'
@@ -457,7 +407,7 @@
         
          <fieldset>
          <legend>Method 
-            ( <a href='javascript:show_or_hide( "hideable_ident_9" );'>edit</a> |  
+            ( <a href='javascript:show_or_hide( "hideable_ident_9" );'>edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_9' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -545,11 +495,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_9::no_gen'
@@ -576,11 +521,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -626,17 +566,14 @@
     
     
     
+    
+    
     <tr>
         <td> title </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -666,11 +603,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -721,7 +653,7 @@
         
          <fieldset>
          <legend>Method 
-            ( <a href='javascript:show_or_hide( "hideable_ident_10" );'>edit</a> |  
+            ( <a href='javascript:show_or_hide( "hideable_ident_10" );'>edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_10' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -809,11 +741,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_10::no_gen'
@@ -840,11 +767,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -882,6 +804,8 @@
         </td>
     </tr>
   
+    
+    
     
     
     

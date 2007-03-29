@@ -55,7 +55,7 @@ file_ok( $expected_file, $mini, 'minimal default (minimal)' );
 # Big default
 #-----------------------------------------------------------------
 
-my $style = Bigtop::ScriptHelp::Style->get_style( 'Original' );
+my $style = Bigtop::ScriptHelp::Style->get_style( 'Kickstart' );
 
 my $max   = Bigtop::ScriptHelp->get_big_default(
         $style,
@@ -71,6 +71,9 @@ file_ok( $expected_file, $max, 'bigger default (big_default)' );
 #-----------------------------------------------------------------
 # Augment tree
 #-----------------------------------------------------------------
+
+# add some other referrers and a name too
+$max =~ s/refered_to_by `birth_date`/refered_to_by birth_date => bdays, z/;
 
 my $ast = Bigtop::Parser->parse_string( $max );
 Bigtop::ScriptHelp->augment_tree(

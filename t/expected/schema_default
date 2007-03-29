@@ -44,6 +44,7 @@ app Address {
             is datetime;
         }
         foreign_display `%ident`;
+        refered_to_by `fam.birth_date`;
 
     }
     controller FamFamilyAddress is AutoCRUD {

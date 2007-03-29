@@ -20,7 +20,7 @@
          <fieldset>
          <legend>Field
             ( <a href='javascript:show_or_hide( "[%-
-                "hideable_$item.ident" %]" );'>edit</a> |
+                "hideable_$item.ident" %]" );'>edit or hide</a> |
                 [%- INCLUDE delete_link.ttc
                     name  = "field_block_delete::$item.ident" %]
             )

@@ -22,12 +22,12 @@ use Gantry::Plugins::DBIxClassConn qw( get_schema );
 #-----------------------------------------------------------------
 # $self->do_main(  )
 #-----------------------------------------------------------------
-# This method supplied by Contact::GEN::Number
+# This method inherited from Contact::GEN::Number
 
 #-----------------------------------------------------------------
 # $self->form( $row )
 #-----------------------------------------------------------------
-# This method supplied by Contact::GEN::Number
+# This method inherited from Contact::GEN::Number
 
 #-----------------------------------------------------------------
 # $self->do_csv( $id )

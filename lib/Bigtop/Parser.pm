@@ -53,7 +53,7 @@ BEGIN {
     Bigtop::Parser->add_valid_keywords(
         Bigtop::Keywords->get_docs_for(
             'config',
-            qw( engine template_engine base_dir app_dir )
+            qw( engine template_engine plugins base_dir app_dir )
         )
     );
 
@@ -644,6 +644,40 @@ sub set_comments {
     $self->{comments} = $comments;
 }
 
+sub get_app_configs {
+    my $self = shift;
+
+    my $app_configs = $self->walk_postorder( 'get_app_configs' );
+
+    my %retval;
+
+    foreach my $config_type ( @{ $app_configs } ) {
+        $retval{ $config_type->{ type } } = $config_type->{ statements };
+    }
+
+    return \%retval;
+}
+
+sub get_controller_configs {
+    my $self = shift;
+
+    my $app_configs = $self->walk_postorder( 'get_controller_configs' );
+
+    my %retval;
+
+    foreach my $config_type ( @{ $app_configs } ) {
+        $retval{ $config_type->{ controller } } = $config_type->{ configs };
+    }
+
+    return \%retval;
+}
+
+sub get_app_config_types {
+    my $self = shift;
+
+    return $self->walk_postorder( 'get_app_config_types' );
+}
+
 sub get_lookup {
     my $self = shift;
 
@@ -752,6 +786,85 @@ sub set_appname {
     my $new_name = shift;
 
     $tree->{application}->set_name( $new_name );
+}
+
+sub get_top_level_configs {
+    my $tree = shift;
+
+    my %retval;
+
+    STATEMENT:
+    foreach my $statement ( @{ $tree->{ configuration }{__STATEMENTS__} } ) {
+        my ( $name, $value ) = @{ $statement };
+        next STATEMENT if ref( $value );
+
+        $retval{ $name } = $value;
+    }
+
+    return \%retval;
+}
+
+sub set_top_level_config {
+    my $tree      = shift;
+    my $keyword   = shift;
+    my $new_value = shift;
+
+    $new_value    =~ s/^\s+//;
+    $new_value    =~ s/\s+$//;
+
+    if ( $new_value !~ /^\w[\w\d_:\.]*$/ ) {
+        $new_value = "`$new_value`";
+    }
+
+    my $config    = $tree->{configuration};
+
+    # change it in the quick lookup hash...
+    $config->{ $keyword } = $new_value;
+
+    # ... and in the __STATEMENTS__ list
+    my $we_changed_it = 0;
+    STATEMENT:
+    foreach my $statement ( @{ $config->{__STATEMENTS__} } ) {
+        my ( $candidate_keyword, $value ) = @{ $statement };
+        if ( $candidate_keyword eq $keyword ) {
+            $statement->[1] = $new_value;
+            $we_changed_it++;
+            last STATEMENT;
+        }
+    }
+
+    # add the statement at the top if it wasn't already there
+    unless ( $we_changed_it ) {
+        unshift @{ $config->{__STATEMENTS__} }, [ $keyword, $new_value ];
+    }
+}
+
+sub clear_top_level_config {
+    my $tree      = shift;
+    my $keyword   = shift;
+
+    my $config    = $tree->{configuration};
+
+    # clear it from the quick lookup hash...
+    delete $config->{ $keyword };
+
+    # ... and from the __STATEMENTS__ list
+    my $doomed_index = -1;
+    my $count        = 0;
+    STATEMENT:
+    foreach my $statement ( @{ $config->{__STATEMENTS__} } ) {
+        my ( $candidate_keyword ) = @{ $statement };
+        if ( $candidate_keyword eq $keyword ) {
+            $doomed_index = $count;
+            last STATEMENT;
+        }
+
+        $count++;
+    }
+
+    if ( $doomed_index >= 0 ) {
+        splice @{ $config->{__STATEMENTS__} }, $doomed_index, 1;
+    }
 }
 
 sub get_engine {
@@ -2411,6 +2524,24 @@ sub table_reset_bool {
     return $self->walk_postorder( 'field_reset_bool', $data );
 }
 
+sub get_table_statement {
+    my $self         = shift;
+    shift;
+    my $data         = shift;
+
+    return unless ( $self->{__TYPE__} eq 'tables'       );
+    return unless ( $self->get_ident  eq $data->{ident} );
+
+    BLOCK:
+    foreach my $block ( @{ $self->{__BODY__} } ) {
+        next BLOCK unless $block->{__TYPE__} eq $data->{keyword};
+
+        return [ $block->{__ARGS__}->get_unquoted_args ];
+    }
+
+    return;
+}
+
 package # seq_block
     seq_block;
 use strict; use warnings;
@@ -4023,6 +4154,20 @@ sub show_idents {
     return $child_output;
 }
 
+sub get_controller_configs {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my $name         = $self->get_name();
+
+    my %my_children;
+    foreach my $child ( @{ $child_output } ) {
+        $my_children{ $child->{ type } } = $child->{ statements };
+    }
+
+    return [ { controller => $name, configs => \%my_children } ];
+}
+
 sub walk_postorder {
     my $self   = shift;
     my $action = shift;
@@ -4930,6 +5075,28 @@ sub remove_config_statement {
     return [ 1 ];
 }
 
+sub get_app_configs {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my $type = $self->{__TYPE__} || 'base';
+
+    my %my_children;
+    foreach my $child ( @{ $child_output } ) {
+        $my_children{ $child->{ var } } = $child->{ val };
+    }
+
+    return [ { type => $type, statements => \%my_children } ];
+}
+
+sub get_app_config_types {
+    my $self = shift;
+
+    my $type = $self->{__TYPE__} || 'base';
+
+    return [ $type ];
+}
+
 sub walk_postorder {
     my $self   = shift;
     my $action = shift;
@@ -4963,6 +5130,26 @@ package # controller_config_block
 use strict; use warnings;
 
 use base 'application_ancestor';
+
+sub get_controller_name {
+    my $self = shift;
+
+    return $self->{__PARENT__}->get_name();
+}
+
+sub get_controller_configs {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my $type = $self->{__TYPE__} || 'base';
+
+    my %my_children;
+    foreach my $child ( @{ $child_output } ) {
+        $my_children{ $child->{ var } } = $child->{ val };
+    }
+
+    return [ { type => $type, statements => \%my_children } ];
+}
 
 sub walk_postorder {
     my $self   = shift;
@@ -5092,6 +5279,19 @@ sub config_statement_status {
     return [];
 }
 
+sub get_app_configs {
+    my $self = shift;
+
+    my $var  = $self->{__KEYWORD__};
+    my $val  = $self->{__ARGS__}->get_first_arg;
+
+    if ( ref( $val ) eq 'HASH' ) {
+        ( $val ) = keys %{ $val };
+    }
+
+    return [ { var => $var, val => $val } ];
+}
+
 sub walk_postorder {
     my $self   = shift;
     my $action = shift;
@@ -5126,6 +5326,19 @@ package # controller_config_statement
 use strict; use warnings;
 
 use base 'application_ancestor';
+
+sub get_controller_configs {
+    my $self = shift;
+
+    my $var  = $self->{__KEYWORD__};
+    my $val  = $self->{__ARGS__}->get_first_arg;
+
+    if ( ref( $val ) eq 'HASH' ) {
+        ( $val ) = keys %{ $val };
+    }
+
+    return [ { var => $var, val => $val } ];
+}
 
 sub walk_postorder {
     my $self   = shift;
@@ -5176,8 +5389,9 @@ sub build_values {
         return $values;
     }
     elsif ( ref( $values ) eq 'HASH' ) {
-        my @keys   = split /\]\[/, $values->{ keys   };
-        my @values = split /\]\[/, $values->{ values };
+        my $value_str = $values->{ values } || '';
+        my @keys      = split /\]\[/, $values->{ keys   };
+        my @values    = split /\]\[/, $value_str;
 
         my @retvals;
 

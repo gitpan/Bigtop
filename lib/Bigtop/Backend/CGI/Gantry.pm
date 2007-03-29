@@ -65,46 +65,68 @@ sub gen_CGI {
     my $base_dir     = shift;
     my $tree         = shift;
 
+    my $configs      = $tree->get_app_configs();
     my $fast_cgi     = $tree->get_config->{CGI}{fast_cgi} || 0;
-    my $content      = $class->output_cgi( $tree, $fast_cgi );
-    my $cgi_file     = File::Spec->catfile( $base_dir, 'app.cgi' );
-    my $server_file  = File::Spec->catfile( $base_dir, 'app.server' );
 
-    my $CGI_SCRIPT;
-    unless ( open $CGI_SCRIPT, '>', $cgi_file ) {
-        warn "Couldn't write file $cgi_file: $!\n";
-        return;
-    }
+    foreach my $conf_type ( keys %{ $configs } ) {
+        my $content      = $class->output_cgi(
+            {
+                tree      => $tree,
+                configs   => $configs,
+                conf_type => $conf_type,
+                fast_cgi  => $fast_cgi,
+            }
+        );
+        my $file_type    = ( $conf_type eq 'base' ) ? '' : "$conf_type.";
+        my $cgi_file     = File::Spec->catfile(
+                $base_dir, "app.${file_type}cgi"
+        );
+        my $server_file  = File::Spec->catfile(
+                $base_dir, "app.${file_type}server"
+        );
 
-    print $CGI_SCRIPT $content->{cgi};
-    close $CGI_SCRIPT or warn "Problem closing $cgi_file: $!\n";
-    chmod 0755, $cgi_file;
-
-    if ( $tree->get_config->{CGI}{with_server} ) {
-        my $SERVER;
-        unless ( open $SERVER, '>', $server_file ) {
-            warn "Couldn't write file $server_file: $!\n";
+        my $CGI_SCRIPT;
+        unless ( open $CGI_SCRIPT, '>', $cgi_file ) {
+            warn "Couldn't write file $cgi_file: $!\n";
             return;
         }
 
-        print $SERVER $content->{server};
-        close $SERVER or warn "Problem closing $server_file\n";
+        print $CGI_SCRIPT $content->{cgi};
+        close $CGI_SCRIPT or warn "Problem closing $cgi_file: $!\n";
+        chmod 0755, $cgi_file;
 
-        chmod 0755, $server_file;
+        if ( $tree->get_config->{CGI}{with_server} ) {
+            my $SERVER;
+            unless ( open $SERVER, '>', $server_file ) {
+                warn "Couldn't write file $server_file: $!\n";
+                return;
+            }
+
+            print $SERVER $content->{server};
+            close $SERVER or warn "Problem closing $server_file\n";
+
+            chmod 0755, $server_file;
+        }
     }
 }
 
 our $template_is_setup = 0;
 our $default_template_text = <<'EO_TT_BLOCKS';
 [% BLOCK cgi_script %]
-#!/usr/bin/perl
+#![% perl_path +%]
 use strict;
 
 [% literal %]
 
 use CGI::Carp qw( fatalsToBrowser );
 
-use [% app_name %] qw{ -Engine=[% engine %] -TemplateEngine=[% template_engine %] };
+use [% app_name %] qw{
+    -Engine=CGI
+    -TemplateEngine=[% template_engine +%]
+[% IF plugins %]    -PluginNamespace=[% app_name +%]
+    [% plugins +%]
+[% END %]
+};
 
 use Gantry::Engine::CGI;
 
@@ -123,14 +145,21 @@ if ( $cgi->{config}{debug} ) {
 [% END %][%# end of block cgi_script %]
 
 [% BLOCK stand_alone_server %]
-#!/usr/bin/perl
+#![% perl_path +%]
 use strict;
 
 [% literal %]
 
 use lib qw( lib );
 
-use [% app_name %] qw{ -Engine=[% engine %] -TemplateEngine=[% template_engine %] };
+use [% app_name %] qw{
+    -Engine=CGI
+    -TemplateEngine=[% template_engine +%]
+    Static
+[% IF plugins %]    -PluginNamespace=[% app_name +%]
+    [% plugins +%]
+[% END %]
+};
 
 [% IF flex_db %]
 use Getopt::Long;
@@ -235,13 +264,19 @@ The name of the database, defaults to app.db.
 [% END %][%# end of stand_alone_server %]
 
 [% BLOCK fast_cgi_script %]
-#!/usr/bin/perl
+#![% perl_path +%]
 use strict;
 
 use FCGI;
 use CGI::Carp qw( fatalsToBrowser );
 
-use [% app_name %] qw{ -Engine=[% engine %] -TemplateEngine=[% template_engine %] };
+use [% app_name %] qw{
+    -Engine=CGI
+    -TemplateEngine=[% template_engine +%]
+[% IF plugins %]    -PluginNamespace=[% app_name +%]
+    [% plugins +%]
+[% END %]
+};
 
 use Gantry::Engine::CGI;
 
@@ -262,7 +297,7 @@ while ( $request->Accept() >= 0 ) {
         }
     }
 }
-[% END %][%# end of block cgi_script %]
+[% END %][%# end of block fast_cgi_script %]
 
 [% BLOCK application_loc %]
     locations => {
@@ -314,9 +349,12 @@ sub setup_template {
 }
 
 sub output_cgi {
-    my $class    = shift;
-    my $tree     = shift;
-    my $fast_cgi = shift;
+    my $class     = shift;
+    my $opts      = shift;
+    my $tree      = $opts->{ tree };
+    my $fast_cgi  = $opts->{ fast_cgi };
+    my $conf_type = $opts->{ conf_type };
+    my $configs   = $opts->{ configs };
 
     # first find the base location
     my $location_output = $tree->walk_postorder( 'output_location' );
@@ -349,6 +387,7 @@ sub output_cgi {
     $conffile ||= $backend_block->{ conffile };
 
     if ( $instance ) {
+        $instance .= "_$conf_type" unless $conf_type eq 'base';
         my $conffile_text = '';
         if ( $conffile ) {
             $conffile_text = ' ' x 8
@@ -365,7 +404,11 @@ $conffile_text
     else {
         my $config_output = $tree->walk_postorder(
             'output_config',
-            $backend_block,
+            {
+                backend_block => $backend_block,
+                conf_type     => $conf_type,
+                configs       => $configs,
+            }
         );
 
         my %configs = @{ $config_output };
@@ -379,6 +422,7 @@ $conffile_text
             if ( defined $backend_block->{server_port} );
 
     my $cgi_output;
+    my $perl_path = $^X;
 
     if ( $fast_cgi ) {
         $cgi_output = Bigtop::Backend::CGI::Gantry::fast_cgi_script(
@@ -388,6 +432,7 @@ $conffile_text
                 app_name => $app_name,
                 literal  => $literal,
                 %{ $tree->get_config() },  # Go Fish! (think template_engine)
+                perl_path => $perl_path,
             }
         );
     }
@@ -399,6 +444,7 @@ $conffile_text
                 app_name => $app_name,
                 literal  => $literal,
                 %{ $tree->get_config() },  # Go Fish! (think template_engine)
+                perl_path => $perl_path,
             }
         );
     }
@@ -412,6 +458,7 @@ $conffile_text
             port     => $port,
             flex_db  => $backend_block->{ flex_db },
             %{ $tree->get_config() },  # Go Fish! (think template_engine)
+            perl_path => $perl_path,
         }
     );
 
@@ -425,7 +472,8 @@ use strict; use warnings;
 sub output_config {
     my $self          = shift;
     my $child_output  = shift;
-    my $backend_block = shift;
+    my $data          = shift;
+    my $backend_block = $data->{ backend_block };
 
     if ( defined $backend_block->{ gen_root }
             and
@@ -448,6 +496,8 @@ sub output_config {
             ' ' x 8 . 'dbconn => $dsn,',
             ' ' x 8 . 'dbuser => $dbuser,',
             ' ' x 8 . 'dbpass => $dbpass,',
+            ' ' x 8 . q!doc_rootp => '/static',!,
+            ' ' x 8 . 'show_dev_navigation => 1,',
     }
 
     my $extra_output = Bigtop::Backend::CGI::Gantry::application_config(
@@ -487,8 +537,37 @@ sub output_config {
     my $self         = shift;
     my $child_output = shift;
     my $data         = shift;
+    my $conf_type    = $data->{ conf_type };
+    my $configs      = $data->{ configs };
 
     return unless $child_output;
+
+    my $my_type      = $self->{__TYPE__} || 'base';
+
+    return unless $my_type eq $conf_type;
+
+    if ( $my_type ne 'base' ) {
+
+        my %config_set_for;
+
+        # see what conf was in the named block
+        foreach my $conf_item ( @{ $child_output } ) {
+            my $var = $conf_item->{ name };
+
+            $config_set_for{ $var }++;
+        }
+
+        # fill in omitted keys from the base block
+        BASE_KEY:
+        foreach my $base_key ( keys %{ $configs->{ base } } ) {
+            next BASE_KEY if $config_set_for{ $base_key };
+
+            push @{ $child_output }, {
+                 name  => $base_key,
+                 value => $configs->{ base }{ $base_key }
+            };
+        }
+    }
 
     my $output = Bigtop::Backend::CGI::Gantry::config_body(
         {

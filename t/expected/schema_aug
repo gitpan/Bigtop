@@ -42,6 +42,7 @@ app Simple {
             is datetime;
         }
         foreign_display `%ident`;
+        refered_to_by `fam.bday`;
     }
     controller FamAddress is AutoCRUD {
         controls_table `fam.address`;

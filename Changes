@@ -1,6 +1,96 @@
 Revision history for Perl extension Bigtop.
 
+0.26 Thu Mar 29 12:34:08 CDT 2007
+    - modified CRUD to call from in the GEN by default
+    - modified CRUD to execute standard add/edit/delete on db
+    - added "plugins" to config block. Plugins defined will transfer to the
+      app.server, app.cgi and httpd.conf
+    - All GEN base modules now have a namespace method.  When you use the
+      new plugins keyword, you get a bonus -PluginNamespace in your full use.
+    - Added html_form_hint field keyword.  Hints show up on form.tt below
+      labels usually in grey italics.  (Thanks Tim.)
+    - Generated app.servers now use the Gantry Static plugin so they can
+      serve CSS and other static content.  URI /static maps to ./html dir.
+    - Corrected ASCII art style so it wouldn't ignore solo tables.
+      Changed to calling ASCII art 'kickstart sytnax'.
+    - kickstart descriptions can now come from a file:
+        bigtop -n AppName file.art
+    - There is a new table keyword refered_to_by which generates a has_many
+      call in the model class.
+    - Both bigtop and tentmaker now generate add refered_to_by statements
+      for all foreign keys.
+    - There are new kickstart operators *> and <*.  Example invoice*>task,
+      reads "invoice has many tasks."  These are currently synonyms for
+      <- and ->, but they may deviate in the future.
+    - Corrected various bugs with new kickstart features.
+    - limit_by now appends the parent row id to the end of all header
+      options.
+    - Generated do_main's now call foreign_display only when the attribute
+      for the foreign key in the row object is true.  This prevents fatal
+      errors when foreign keys are optional, but appear on main listings.
+    - main_listing methods now support order_by to control row ordering.
+    - app.server's now get show_dev_navigation set to 1.
+    - Corrected one test and removed another so changes to Gantry's
+      sample_wrapper.tt no longer cause failures.
+    - CRUD forms are not generated into the GEN file, so they can be
+      regened as the model changes.  Check out Gantry::Utils::FormMunger
+      for a convenient way to alter them in an overriden method.
+    - Initial Changes file now has the bigtop version number.
+    - vim syntax file is current again and their is now a script
+      to create the file, so it shouldn't get out of date
+      (unless I forget to run the script)
+    - There is a new doc generated from Bigtop::Keywords.  It is called
+      Bigtop/Docs/AutoKeywords.pod.  It superscedes most of
+      Bigtop::Docs::Syntax and all of Bigtop::Docs::Keywords.
+    - There is a new doc generated from the backends.  It is called
+      Bigtop/Docs/AutoBackends.pod.  It covers some of the same ground as
+      Bigtop::Docs::Syntax.
+    - There are new keywords: for fields: html_form_class, searchable
+      for main_listing methods: livesearch, json.
+      See Bigtop/Docs/AutoKeyword.pod.
+    - You can now have secondary config blocks.  Each named block makes a
+      config file or Gantry::Conf instance.  Named blocks get the unnamed
+      config info, unless they override it.  Also works for controller
+      level config blocks.  Remember that CGIs can only use controller
+      configs if they use the Conf Gantry backend.
+    - tentmaker now draws all Bigtop Config statements except app name
+      directly from Keywords.
+    Pointed out by Stas Bekman :
+    - Changed a test to use $^X instead of 'perl' to run perl.  This
+      avoids problems when two perls are on a box.
+    - Corrected TentMaker.pm change_conf which failed on some 5.8.8 installs
+      (not including mine).  Perl's $# was forcing scalar context on its arg
+      if that arg was an array expanded into a list.
+    - Changed app.cgi and app.server to use $^X instead of assuming
+      /usr/bin/perl
+    - Stop Server, Save As (and it's file name box) are no longer on the
+      first tentmaker tab.  They are next to the title, so they are
+      always on the page (though scrolling up may still be required).
+    - Made other cosmetic changes to tentmaker to reduce scrolling.
+    - The bigtop source dump is now hidden by default.  Click the link
+      to show (and/or hide) it.
+    - Bigtop's Build.PL now uses the most recent install location for
+      tentmaker templates as the default on re-install.
+    - tentmaker now asks again if you answer 'would you like to save changes?'
+      with up arrow.
+    - app.server, app.cgi will always include -Engine=CGI ignoring the
+      requested engine (this is the only engine they can run with).
+    - Repealed changes put in to work around a particular HTTP::Server::Simple
+      version bug that prematurely unescaped URL elements.  This corrects
+      various problems like tentmaker failing when you try to remove
+      a constraint.
+    - Entering blank (or all whitespace) values for app level statements
+      no longer makes statements (so they can't be broken any more).
+    - Bad Things no longer happen when you save in tentmaker and try to keep
+      working.
+    - The term kickstart is now integrated into Bigtop and its docs to
+      refer to command line (or file) descriptions of the data model.
+    - The backends tab in tentmaker looks a lot better.
+    Thanks to Stas for using tentmaker and bigtop enough to generate
+    requests for these and for sending in those requests.
+
 0.25 Thu Feb 15 11:12:12 CST 2007
+    - added hints to the form field properties
     - Increased Test::Files build requires version number to 0.13 in Build.PL.
       Without that some tests fail for lack of file_filter_ok.
     - Made the bigtop test's file test stripper more aggressive.  It now

@@ -5,8 +5,8 @@ Bigtop::Docs::TentRef - tentmaker reference (best viewed in html)
 =head1 Intro
 
 If you haven't used tentmaker before, you probably want to start with
-its tutorial: Bigtop::Docs::TentTut.  If you don't know what bigtop is,
-read Bigtop::Docs::About.
+its tutorial: C<Bigtop::Docs::TentTut>.  If you don't know what bigtop is,
+read C<Bigtop::Docs::About>.
 
 Unlike the tutorial, this document assumes you have started looking
 around tentmaker, but are wondering what all it can do.  Here
@@ -65,11 +65,22 @@ a firewall is a good place).
 
 When in new or add modes, you can specify more than just table names.  You
 can also control their relationships and columns.  Do this by picking a
-style.  Currently there are two styles: Original and Pg8Live (yes, I've
-thought having an ExtraCrispy).  See C<Bigtop::ScriptHelp::Style::Original>
+style.  Currently there are two styles: Kickstart and Pg8Live.
+See C<Bigtop::ScriptHelp::Style::Kickstart>
 and C<Bigtop::ScriptHelp::Style::Pg8Live> for details.  Hint: with them
 you get not only tables, but can control the columns in those tables including
 their column names, SQL types, foreign keys, and default values.
+
+=head1 Above the Tabs
+
+There are three useful widgets above tentmaker's tabs.  Two go together:
+the Save As button and its file name input box.  The other button stops
+tentmaker.  Stopping it via this button is easier on everyone's sanity.
+If you kill it at the command line, your web browser's caching is bound
+to confuse you at some point.  If you press the button, tentmaker's
+javascript will know that the server is down and warn you when you try
+to work on a stale page.  After you restart tentmaker, request a full
+refresh (press shift while you click the refresh button) before beginning work.
 
 =head1 The Tabs in Detail
 
@@ -79,9 +90,9 @@ In total, there are five tabs in tentmaker:
 
 =item Bigtop Config
 
-Controls only three things: the app name, what engine will serve it, and
-what type of templates it will use.  But it also provides a snapshot of
-the bigtop file and a way to save it.
+Controls only four things: the app name, what engine will serve it,
+what type of templates it will use, and what plugins you want.  But
+it also provides a snapshot of the bigtop file (concealed by default).
 
 =item App Body
 
@@ -128,7 +139,7 @@ dependent on an engine.  Some of those choices are in controller code
 you wrote by hand, but others are in the backend statements (see below).
 
 That's really all there is to see here (aside from seeing the raw
-bigtop source and the saving box and button).
+bigtop source).
 
 =head1 App Body
 
@@ -163,25 +174,19 @@ will make a controller to go with it.  Once you have a table, click
 
     http://www.usegantry.org/images/tenttut/tableedit.png
 
-There are four statements which affect a whole table:
+There are five statements which affect a whole table:
 
 =over 4
 
 =item not_for
 
 Should you need to hide this table from your Model or SQL backend (or both),
-select from the pull down.  Indicated backends will pass over this table
+select from the list.  Indicated backends will pass over this table
 as if it were not in the bigtop file.
 
 We use this occasionally when we want to build models for our auth tables
 within the app, but actually point to an external database for the data.
 Then, we select not_for SQL.
-
-=item sequence
-
-If you use sequences to generate your primary keys in Postgres, fill in
-the sequence name here.  You should get a good value by default, if you
-created the sequence with tentmaker.
 
 =item foreign_display
 
@@ -193,12 +198,25 @@ of the people.  You could use this foreign_display: C<%last, %first>.
 Anything abutted to the left of a percent sign must be a column in the
 table.  Anything else is taken literally.
 
+=item refered_to_by
+
+If other tables have foreign keys to this table, list them here.  Doing
+so earns you a has_many relationship, if you use DBIx::Class as your ORM.
+The has many name is optional and defaults to the name of the other table
+with an 's' appended.
+
 =item model_base_class
 
 Most table models inherit from the default base class prefered by their
 backend.  In the backend block, you can change that default for all the
 tables in the app.  Sometimes one table needs a special parent.  This
 statement allows you to pick such a parent on a table by table basis.
+
+=item sequence
+
+If you use sequences to generate your primary keys in PostgreSQL, fill in
+the sequence name here.  You should get a good value by default, if you
+created the sequence with tentmaker.
 
 =back
 
@@ -209,7 +227,8 @@ table which was featured so heavily in the tutorial.  It looks like this:
 
     http://www.usegantry.org/images/tenttut/quickedit.png
 
-There are five columns in the quick edit table:
+There are seven columns in the quick edit table (you'll probably have to
+use horizontal scrolling to see them all):
 
 =over 4
 
@@ -230,9 +249,20 @@ as you like.
 If you change the type to date, tentmaker will do all the needed work to
 make a popup calendar for easy date selection.
 
+Note that int4 and varchar are magical.  Each database backend does something
+reasonable to turn these into integers and strings respectively.  All other
+types are taken literally and must be understood by the database you
+actually use.
+
 =item Label
 
 What the user sees as a label for this field when it is on the screen.
+
+=item Searchable
+
+Check this box if the column should be searchable when it appears in a
+main listing result table.  You must also request livesearch for the
+controller's do_main method (see below).
 
 =item Optional
 
@@ -244,8 +274,8 @@ Any valid Data::FormValidator constraint.  Usually this is a regex, but it
 could be call to a sub which returns a regex.  See the POD for
 Data::FormValidator for details.  Note that if you use the exported
 subs provided by Data::FormValidator modules, you must add those modules
-to the uses list of the controller which will display the form for this
-table.
+to the gen_uses or uses list of the controller which will display the
+form for this table.
 
 =item Default
 
@@ -255,16 +285,20 @@ will be overriden by prior user input or a good value from the database row.
 =back
 
 All of the things which appear in the quick edit table appear in the more
-detailed edit tables for each field.
+detailed individual edit tables for each field.
 
 If you need to edit other features of your fields, you need to choose
 your field in the 'Edit Field' selection box immediately under the
 Create Field(s) box.  As soon as you select a field from the pull down
-list, it will open for editing like this:
+list, it will open for editing like these overlapping images:
 
 =for html <img src='http://www.usegantry.org/images/tenttut/fieldedit.png' alt='tentmaker field expanded for editing' />
 
     http://www.usegantry.org/images/tenttut/fieldedit.png
+
+=for html <img src='http://www.usegantry.org/images/tenttut/fieldedit2.png' alt='tentmaker field expanded for editing' />
+
+    http://www.usegantry.org/images/tenttut/fieldedit2.png
 
 Here are the statements which apply to fields:
 
@@ -285,9 +319,11 @@ You can use multiple entries for is.  That is why there are extra input boxes.
 If you fill up the last box, a new one will appear as if by magic.
 
 Normally, the first item must be a valid SQL type, where valid means anything
-your database understands.  If your database is Postgres and you are using
+your database understands.  If your database is PostgreSQL and you are using
 auto-incrementing without sequences, you can just put auto in the list,
-the backend will assign SERIAL as the type for you.
+the backend will assign SERIAL as the type for you.  Or, you can leave
+it as int4, primary_key, and auto.  All backends handle that correctly
+for an auto-incrementing integer primary key.
 
 There are a few special bits of magic bigtop uses to keep all SQL engines
 happy.  For instance, if you use int4 as the type, it will be converted by
@@ -301,7 +337,7 @@ actual SQL sequences only if you created a sequence for the table and
 included a sequence statement.  Otherwise, the backend will tell the
 databse to auto-increment without sequences.
 
-If the column is the unique primary key, put primary_key in the list.
+If the column is part (or all) of the primary key, put primary_key in the list.
 The Model backends also honor that.
 
 If you use varchar, it will be converted into a suitable string even
@@ -312,23 +348,32 @@ definition.
 
 =item refers_to
 
-Indicates that this column is a foreign key to another table.  The value
-is the name of the other table.  Not that SQL backends do not currently
-indicate that the column is a foreign key.  The foreign key concept is
-managed by the ORM.
+Indicates that this column is a foreign key to another table.  The 'Table'
+is the name of the other table.  The 'Column' is optional, but important.
+If you omit it, the foreign key is not actually engraved into SQL,
+rather the ORM treats it as a foreign key, but it is not genuine.  Adding
+the name of the primary key for the other table (it must a solo primary key),
+instructs the SQL backend to make a foreign key.  Note that not all databases
+support foreign keys well or at all.
 
 You must choose html_form_type select for these fields.  This will allow
 users to select rows from the foreign table based on their foreign_display
 output.
 
-=item non_essential
+=item on_delete and on_update
 
-Some ORMs only fetch columns selectively, if yours does, this is how
-you tell it to skip this column.
+If your database handles foreign keys and you supplied a refers_to column,
+use this to fill in the dots in ON DELETE ... or ON UPDATE for this SQL column.
+A frequent choice is CASCADE, but this is database specific.
 
 =item label
 
 What the user sees when the field is on screen.
+
+=item searchable
+
+Check this box if your controller uses 'livesearch' in its do_main method
+and you want this field to be one of the fields searched.
 
 =item html_form_type
 
@@ -367,22 +412,20 @@ virtual method by that name.)
 
 Applies only to html_form_type select, and then only if the field is not
 a foreign_key.  Allows you to specify the pull down labels and values
-for the select menu.
-
-To enter your options, there are two input columns that look like this:
-
-=for html <img src='http://www.usegantry.org/images/tenttut/optionsedit.png' alt='editing html form options' />
-
-    http://www.usegantry.org/images/tenttut/optionsedit.png
-
-Under Label, enter what you want the user to see in the pull down list.
-Under Database Value, enter what you want the database to store.  Each time
-you add an option, a new pair of boxes will appear.
+for the select menu.  Under 'Label,' enter what you want the user to see
+in the pull down list.  Under 'Database Value,' enter what you want the
+database to store.  Each time you add an option, a new pair of boxes
+will appear.
 
 =item html_form_foreign
 
 Applies only to html_form_type display.  Indicates that this field is a
 foreign key and the foreign_display should be used instead of the id.
+
+=item html_form_onchange
+
+If the field's type is select, this becomes the onchange callback for
+the select input element.
 
 =item date_select_text
 
@@ -392,7 +435,32 @@ value here, several other changes will happen throughout the bigtop file,
 so that the user can easily pick dates.  This will be set automatically
 when any field's type becomes date.
 
+=item html_form_raw_html
+
+HTML to be added immediately before this field's HTML table row.  Generally
+useful for hacking only.
+
+=item non_essential
+
+Some ORMs only fetch columns selectively, if yours does, this is how
+you tell it to skip this column.
+
 =back
+
+Below the Edit Field table, you may add Data Statements:
+
+=for html <img src='http://www.usegantry.org/images/tenttut/dataedit.png' alt='tentmaker controller expanded for editing' />
+
+    http://www.usegantry.org/images/tenttut/dataedit.png
+
+Each data statement will make one INSERT INTO statement in SQL output.
+This allows you to create test data or a starting point for production data.
+You may have as many data statements as you like.  The table will add columns
+as needed.  You don't need to put something in every box.  It is usually
+a bad idea to put anything in the id box.
+
+Data statements considerably reduce the pain of discarding a dev database
+due to model changes.
 
 =item Controller
 
@@ -420,40 +488,33 @@ ignored.
 
 =item location
 
-Specify an absolute location from the document root for the web server
-for this page.
+Specify an absolute location for this page from the document root of
+the web server.
 
 You must specify either a location or a rel_location for each controller.
 
 =item rel_location
 
 Specify a location for this page relative to the app's base location.
-You may control the app's base location on the App Level Staatements tab,
-see below.
+You should control the app's base location in the base controller.
 
 You must specify either a location or a rel_location for each controller.
+The base controller is an exception.  It does not allow a rel_location,
+since there is nothing for it to be relative to.  Further, it has a
+default location of /.
 
 =item controls_table
 
 The name of the table controlled by this controller.
 
-=item uses
+=item gen_uses, stub_uses, uses
 
-List any modules you want to use in your controller here.  Keep in mind
-that stub modules are not regenerated, so adding to this list after
-generation will not add use statements to the stub.  But, items in the
-uses list are also used in the GEN modules, which will incorporate new
-ones.
-
-=item stub_uses
-
-Just like uses, except that the used modules only appear in the stub.
-Remember that stubs are not regenerated, so this is still not effective
-if you already have your stub.
-
-=item gen_uses
-
-Just like uses, except that the modules only appear in the stub.
+List any modules you want to use in your controller modules here.
+Modules in the gen_uses list are used only the GEN module.
+Modules in the stub_uses list are used only the stub module.
+Modules in the uses list are used in both, but keep in mind
+that stub modules are not regenerated.  So, adding to these lists after
+generation will not add use statements to the stub.
 
 =item text_description
 
@@ -470,12 +531,16 @@ Most of the time bigtop supplies the proper ORM helper for Gantry's AutoCRUD
 scheme without intervention (providing you check the For use with DBIx::Class
 on the Control Gantry backend as appropriate).  If you want to use
 a different helper, supply it here.  See
-Gantry::Plugins::AutoCRUDHelper::DBIxClass for an example of what to do.
+C<Gantry::Plugins::AutoCRUDHelper::DBIxClass> for an example of what to do.
+
+=item skip_test
+
+Check this if you don't want a default page hit test for this controller.
 
 =back
 
 In addition to the statements that affect the whole controller, there
-are methods in it.  Methods come in four types, shown below.
+are methods in it.  Methods come in seven types, shown below.
 There are two statements they all understand: no_gen (take a guess)
 and extra_args.  Any extra_args -- and you can have as many as you like --
 are added to the argument list in the generated routine.  Be sure to
@@ -484,7 +549,8 @@ include full perl variables, including sigils:
     $id
     @variadic
 
-If you include an array, put it at the end, remember that they are greedy.
+If you include an array, put it at the end, remember that arg handling
+is greedy.
 
 Here are the method types and what's unique about them:
 
@@ -492,29 +558,33 @@ Here are the method types and what's unique about them:
 
 =item stub
 
-This makes an uninteresting sub, which can save some typing.
+This makes an uninteresting sub, which can save some typing.  It has no
+special statements.
 
 =item main_listing
 
 Makes a do_main style method which displays the rows from the controlled
 table something like this:
 
-=for html <img src='http://www.usegantry.org/images/tenttut/mainlist.png' alt='sample main listing' />
+=for html <img src='http://www.usegantry.org/images/tenttut/main_listout.png' alt='sample main listing' />
 
     http://www.usegantry.org/images/tenttut/main_listingout.png
 
-Most statements apply to either main_listings or forms, not to both.
-When you expand a method for editing, you see something like this:
+What you see when you expand a method for editing depends on its type.
+You should only see the statements suitable for methods of the selected
+type.  (If you change the type of an existing method, you will have to
+request a page refresh for the available statements to change.)
+For main listings you'll see something like this:
 
-=for html <img src='http://www.usegantry.org/images/tenttut/stubmethodedit.png' alt='editing a method' />
+=for html <img src='http://www.usegantry.org/images/tenttut/mainlistedit.png' alt='sample main listing' />
 
-    http://www.usegantry.org/images/tenttut/stubmethodedit.png
-
-Note that there is a column labeled 'Applies to.'  It tells you which
-method types understand statement.  For stubs, only the first two are
-available.  For main_listings we can set these extras:
+    http://www.usegantry.org/images/tenttut/mainlistedit.png
 
 =over 4
+
+=item order_by
+
+A valid SQL ORDER BY clause for a select from this table alone.
 
 =item rows
 
@@ -538,6 +608,11 @@ By default each column is labeled with its field's label.  If you want
 something different just for the main listing, specify that here.  Labels
 are used in the order given (blank boxes are ignored) until they run out.
 At that point labels are taken from field definitions again.
+
+=item livesearch
+
+If your template supports it, this will add a search box to the main
+listing result, so users can limit which rows appear.
 
 =item header_options
 
@@ -578,13 +653,11 @@ field name which is a foreign key (has a valid refers_to value).
 
 =back
 
-=item AutoCRUD_form
+The other method edit boxes look similar to the one shown for main listings,
+so I won't include more screen shots of them.  But, I will cover their
+special keywords.
 
-The statements which apply just to form methods are shown here:
-
-=for html <img src='http://www.usegantry.org/images/tenttut/formedit.png' alt='editing a form' />
-
-    http://www.usegantry.org/images/tenttut/formedit.png
+=item CRUD_form and AutoCRUD_form
 
 =over 4
 
@@ -605,13 +678,15 @@ This is not compatible with the all_fields_but statement.
 
 Form methods return hashes as expected by their templates.  This allows
 you to pump extra keys into that hash.  The value must be perl code.
+Quoting issues are inevitable with this field.  Javascript and Perl must
+fight over the quote operators.  To be safe use q or qq quoting operators.
 
 =item form_name
 
 Becomes the name attribute of the form HTML element.  tentmaker will set this
 when a field's SQL type becomes date or you set date_select_text for it.
 
-See How can I let my users pick dates easily? in Gantry::Docs::FAQ for
+See 'How can I let my users pick dates easily?' in C<Gantry::Docs::FAQ> for
 an explanation of all the pieces needed to make date popups work.
 Then be glad tentmaker already knows all that.
 
@@ -622,6 +697,16 @@ Then be glad tentmaker already knows all that.
 The statements are exactly the same as for AutoCRUD_forms, they differ only
 internally so they can respond to the slightly different APIs of AutoCRUD
 and CRUD.
+
+=item base_links
+
+See 'Base Controller' below.
+
+=item links
+
+See 'Base Controller' below.
+
+=item SOAP
 
 =back
 
@@ -668,15 +753,16 @@ in the nav links.  This method type ignores all statements.
 Literal text intended for one of the backends.  These allow you to augment
 what bigtop knows how to generate.  With careful use of them, you can
 usually continue to regenerate the app, without fear, even after it is in
-production (regenerating on a dev box and testing before release is usually
-a good idea).
+production (regenerating on a dev box and testing before release is
+A Good Idea).
 
 It is usually better not to give the Literal a name.  If you do give
-it a name, it must be one of those shown below (or it will be ignored):
+it a name, it must be one of those shown below (or it will be ignored).
 
 Once the literal block is created, you may easily change the type from
-the pull down menu.  See Bigtop::Docs::Syntax or Bigtop::Docs::Keywords
-for more details of where these literals put their output.
+the pull down menu.  See C<Bigtop::Docs::AutoKeywords> or
+C<Bigtop::Docs::Syntax> for more details of where these literals put
+their output.
 
 The literal types are:
 
@@ -739,7 +825,7 @@ Normally, the names of the many-to-many relationships are formed by adding
 a trailing 's' to the table names.  If you want to control the names,
 enter yours here.  If you supply one, you must supply the other, even
 if you don't mind the original default.  Keep the tables in the same
-order, to protect everyones sanity.
+order, to protect everyone's sanity.
 
 =back
 
@@ -924,7 +1010,7 @@ Just as for CGI Gantry.
 
 =item Conf General
 
-This backend is not used much any more.  It is mostly surpassed by Conf Gantry.
+This backend is not used much any more.  It was replaced by Conf Gantry.
 It writes the information from your app and controller level
 config blocks into docs/appname.conf in Config::General format, suitable
 for use with Gantry::Conf, if you are using ConfigureVia statements.
@@ -1313,18 +1399,20 @@ to your dbuser.
 This concludes our exhaustive tour of tentmaker.  I hope you are more
 excited than exhausted.
 
-Consult Building and Starting in Bigtop::Docs::TentTut for instructions
+'Consult Building and Starting' in C<Bigtop::Docs::TentTut> for instructions
 on how to build your app once you have saved the above.
 
 =head1 Further Reading
 
-See Bigtop::Docs::Cookbook for small problems and answers,
-Bigtop::Docs::Tutorial for a more complete example, with discussion,
-Bigtop::Docs::Keywords for a list of valid keywords and their meanings,
-and Bigtop::Docs::Sytnax for full details.  If you need to write your
-own backends, see Bigtop::Docs::Modules.
+See C<Bigtop::Docs::Cookbook> for small problems and answers,
+C<Bigtop::Docs::Tutorial> for a more complete example, with discussion,
+C<Bigtop::Docs::AutoKeywords> for a list of valid keywords and their meanings,
+and C<Bigtop::Docs::Sytnax> for more details.  The above backend information
+is repeated in shorter form in C<Bigtop::Docs::AutoBackends>, but that
+document is more up to date.  If you need to write your
+own backends, see C<Bigtop::Docs::Modules>.
 
-All of the doc modules are described briefly in Bigtop::Docs::TOC.
+All of the doc modules are described briefly in C<Bigtop::Docs::TOC>.
 
 =head1 Author
 

@@ -11,7 +11,7 @@
           <legend>
               Controller 
               ( <a href='javascript:show_or_hide( "hideable_ident_4" );'>
-                  edit</a> |  
+                  edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_4' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -86,11 +86,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_4::no_gen'
@@ -116,11 +111,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -149,11 +139,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -171,7 +156,7 @@
 
         </td>
         <td>
-            Location of this controller relative to app location[non-base controllers must have either a location or a rel_location.]
+            Location of this controller relative to app location [non-base controllers must have either a location or a rel_location.]
         </td>
     </tr>
   
@@ -182,11 +167,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -215,11 +195,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -253,7 +228,7 @@
 
         </td>
         <td>
-            List of modules used gen module
+            List of modules used in gen module
         </td>
     </tr>
   
@@ -264,11 +239,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -302,7 +272,7 @@
 
         </td>
         <td>
-            List of modules used stub module
+            List of modules used in stub module
         </td>
     </tr>
   
@@ -313,11 +283,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -362,11 +327,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -395,17 +355,12 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
             id='ident_4::page_link_label'
             value=""
-            class='urgency_1'
+            class='urgency_3'
             onblur='javascript:update_tree(
                 "controller_statement_text",
                 "ident_4::page_link_label",
@@ -428,11 +383,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -461,11 +411,6 @@
         <td>
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_4::skip_test'
@@ -532,7 +477,7 @@
         
          <fieldset>
          <legend>Method 
-            ( <a href='javascript:show_or_hide( "hideable_ident_5" );'>edit</a> |  
+            ( <a href='javascript:show_or_hide( "hideable_ident_5" );'>edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_5' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -620,11 +565,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_5::no_gen'
@@ -651,11 +591,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -696,16 +631,40 @@
     
     
     <tr>
+        <td> order_by </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_5::order_by'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "method_statement_text",
+                "ident_5::order_by",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            Exact text of SQL order by
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
         <td> rows </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -735,11 +694,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -769,11 +723,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -843,11 +792,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -881,7 +825,33 @@
 
         </td>
         <td>
-            Labels for fields on main_listing [optional defaults to fields label]
+            Labels for fields on main_listing [optional default uses field labels]
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
+        <td> livesearch </td>
+        <td>
+
+            
+            
+
+<input type='checkbox'
+       value='ident_5::livesearch'
+       id='ident_5::livesearch'
+       class='urgency_0'       onchange='javascript:update_tree(
+           "method_statement_bool",
+           "ident_5::livesearch",
+           this.checked
+       )'
+/>
+
+
+        </td>
+        <td>
+            Places a search box on results page
         </td>
     </tr>
   
@@ -893,11 +863,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_5::header_options_input_table'>
         <tr><th> Label </th>
@@ -987,11 +952,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_5::row_options_input_table'>
         <tr><th> Label </th>
@@ -1116,11 +1076,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1150,11 +1105,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1184,11 +1134,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'
@@ -1238,7 +1183,7 @@
         
          <fieldset>
          <legend>Method 
-            ( <a href='javascript:show_or_hide( "hideable_ident_6" );'>edit</a> |  
+            ( <a href='javascript:show_or_hide( "hideable_ident_6" );'>edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_6' onclick='javascript:delete_block( this )'>delete</a>
        
 
@@ -1326,11 +1271,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
 <input type='checkbox'
        value='ident_6::no_gen'
@@ -1357,11 +1297,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -1410,17 +1345,14 @@
     
     
     
+    
+    
     <tr>
         <td> all_fields_but </td>
         <td>
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -1502,11 +1434,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         
@@ -1552,11 +1479,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
       <table id='ident_6::extra_keys_input_table'>
         <tr><th> key </th>
@@ -1642,11 +1564,6 @@
 
             
             
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
-
-
-
 
     
         <input type='text'

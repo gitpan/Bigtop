@@ -1,8 +1,6 @@
 use strict;
 
 use File::Spec;
-use lib File::Spec->catdir( 'lib' );
-
 use Module::Build;
 
 my $subclass = Module::Build->subclass(
@@ -23,6 +21,7 @@ my $build = $subclass->new(
         'Gantry'          => 3.46, # need Gantry::Build
         'IO::Prompt'      => 0,
         'HTTP::Server::Simple' => 0.27, # for tentmaker
+        'JSON'            => 0, # because gantry controllers will want it
     },
     build_requires      => {
         'Test'        => 0,
@@ -55,6 +54,13 @@ my $try_for_tentmaker = ( $@ ) ? 0 : 1;
 
 if ( $try_for_tentmaker ) {
 
+    my $default_template_path = '/usr/local/share/TentMaker';
+
+    eval {
+        require Bigtop::TentMakerPath;
+        $default_template_path = Bigtop::TentMakerPath->get_template_path;
+    };
+
     print "\n\nBigtop has an editor called tentmaker.  It allows\n";
     print "you to edit bigtop files with a DOM compatible browser\n";
     print "(like Firefox).  tentmaker requires some templates.\n\n";
@@ -71,7 +77,7 @@ if ( $try_for_tentmaker ) {
 
         my $tentmaker_template_path = $build->prompt(
             "Path for TentMaker templates",
-            '/usr/local/share/TentMaker'
+            $default_template_path,
         );
         $build->notes( tentmaker_template_path => $tentmaker_template_path );
 

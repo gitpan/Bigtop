@@ -63,7 +63,7 @@ our $default_template_text = <<'EO_Template';
 Revision history for Perl web application [% app_name %]
 
 0.01  [% time_stamp %]
-    - original version created with bigtop[% IF flags %] using:
+    - original version created with bigtop version [% bigtop_version %][% IF flags %] using:
         [% flags %]
 [% END %]
 [% END %]
@@ -309,6 +309,7 @@ sub init_simple_file {
             license_text     => $license_text,
             flags            => $flags,
             control_backend  => $control_backend,
+            bigtop_version   => $Bigtop::VERSION,
         } );
     }
 

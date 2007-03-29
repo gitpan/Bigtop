@@ -19,7 +19,7 @@ my %doc_for = (
         },
         engine   => {
             keyword    => 'engine',
-            label      => 'Web Engine',
+            label      => 'Engine',
             descr      => 'mod_perl 1.3, mod_perl 2.0, CGI, etc.',
             type       => 'select',
             options    => [
@@ -33,8 +33,19 @@ my %doc_for = (
             keyword    => 'template_engine',
             label      => 'Template Engine',
             descr      => 'Template Toolkit, Mason, etc.',
-            type       => 'text',
+            type       => 'select',
+            options    => [
+                { label => 'Template Toolkit', value => 'TT' },
+                { label => 'No Templating',    value => 'Default' },
+            ],
             sort_order => 20,
+        },
+        plugins => {
+            keyword    => 'plugins',
+            label      => 'Plugins',
+            descr      => 'List of Plugins i.e. AuthCookie Static',
+            type       => 'text',
+            sort_order => 30,
         },
     },
 
@@ -199,6 +210,18 @@ my %doc_for = (
             urgency  => 3,
             sort_order => 30,
         },
+        refered_to_by => {
+            keyword       => 'refered_to_by',
+            label         => 'Refered to by',
+            descr         => 'Table has many rows from this other table',
+            type          => 'pair',
+            pair_labels   => [ 'Foreign Table', 'Name of Has Many' ],
+            pair_required => 0,
+            multiple      => 1,
+            repeatable    => 0,
+            urgency       => 0,
+            sort_order    => 35,
+        },
         model_base_class => {
             keyword  => 'model_base_class',
             label    => 'Inherits From',
@@ -288,6 +311,14 @@ my %doc_for = (
             quick_label => 'Label',
             sort_order => 60,
         },
+        searchable => {
+            keyword  => 'searchable',
+            label    => 'Searchable',
+            descr    => 'Include this field in searches?',
+            type     => 'boolean',
+            quick_label => 'Searchable',
+            sort_order => 65,
+        },
         html_form_type => {
             keyword  => 'html_form_type',
             label    => 'Form Type',
@@ -357,6 +388,23 @@ my %doc_for = (
             multiple   => 0,
             sort_order => 130,
         },
+        html_form_class => {
+            keyword    => 'html_form_class',
+            label      => 'Class',
+            descr      => 'class attribute for the form field',
+            type       => 'text',
+            field_type => 'text',
+            multiple   => 0,
+            sort_order => 130,
+        },
+        html_form_hint => {
+            keyword    => 'html_form_hint',
+            label      => 'Hint',
+            descr      => 'form field hint',
+            type       => 'text',
+            multiple   => 0,
+            sort_order => 135,
+        },
         html_form_options => {
             keyword     => 'html_form_options',
             label       => 'Options',
@@ -372,11 +420,20 @@ my %doc_for = (
         html_form_foreign => {
             keyword    => 'html_form_foreign',
             label      => 'Foreign',
-            descr      => 'Display field is foreign key',
+            descr      => 'Display field is a foreign key',
             type       => 'boolean',
             field_type => 'display',
             multiple   => 0,
             sort_order => 145,
+        },
+        html_form_onchange => {
+            keyword    => 'html_form_onchange',
+            label      => 'onchange Callback',
+            descr      => 'Name of Javascript function to call on change',
+            type       => 'text',
+            field_type => 'select',
+            multiple   => 0,
+            sort_order => 146,
         },
         date_select_text => {
             keyword    => 'date_select_text',
@@ -393,7 +450,6 @@ my %doc_for = (
             label      => 'Raw HTML',
             descr      => q!appears before this field's table row!,
             type       => 'text',
-            field_type => 'text',
             multiple   => 0,
             sort_order => 160,
         },
@@ -421,7 +477,7 @@ my %doc_for = (
         names => {
             keyword       => 'names',
             label         => 'Name the Joins',
-            descr         => 'What should I call the has many?',
+            descr         => 'What should I call each has many?',
             type          => 'pair',
             pair_labels   => [ 'Has Many Name', 'Has Many Name' ],
             pair_required => 1,
@@ -434,6 +490,7 @@ my %doc_for = (
             label      => 'Data',
             descr      => 'What to INSERT INTO table upon initial creation',
             type       => 'pair',
+            pair_required => 1,
             multiple   => 1,
             repeatable => 1,
             sort_order => 20000,
@@ -469,7 +526,7 @@ my %doc_for = (
         rel_location => {
             keyword  => 'rel_location',
             label    => 'Relative Loc.',
-            descr    => 'Location of this controller relative to app location'
+            descr    => 'Location of this controller relative to app location '
                         .   '[non-base controllers must have either a '
                         .   'location or a rel_location.]',
             type     => 'text',
@@ -498,10 +555,13 @@ my %doc_for = (
         gen_uses => {
             keyword  => 'gen_uses',
             label    => 'Modules Used',
-            descr    => 'List of modules used gen module',
+            descr    => 'List of modules used in gen module',
             type     => 'text',
+#            type     => 'pair',
             multiple => 1,
             sort_order => 45,
+#            pair_labels => [ 'Module', 'Literal Use List' ],
+#            pair_required => 0,
             controller_types => {
                 all => 1,
             },
@@ -509,10 +569,13 @@ my %doc_for = (
         stub_uses => {
             keyword  => 'stub_uses',
             label    => 'Modules Used',
-            descr    => 'List of modules used stub module',
+            descr    => 'List of modules used in stub module',
             type     => 'text',
+#            type     => 'pair',
             multiple => 1,
             sort_order => 48,
+#            pair_labels => [ 'Module', 'Literal Use List' ],
+#            pair_required => 0,
             controller_types => {
                 all => 1,
             },
@@ -522,8 +585,11 @@ my %doc_for = (
             label    => 'Modules Used',
             descr    => 'List of modules used by gen and stub modules',
             type     => 'text',
+#            type     => 'pair',
             multiple => 1,
             sort_order => 50,
+#            pair_labels => [ 'Module', 'Literal Use List' ],
+#            pair_required => 0,
             controller_types => {
                 all => 1,
             },
@@ -548,7 +614,7 @@ my %doc_for = (
                             . 'for navigable controllers]',
             type     => 'text',
             multiple => 0,
-            urgency  => 1,
+            urgency  => 3,
             sort_order => 70,
             controller_types => {
                 all => 1,
@@ -644,6 +710,19 @@ my %doc_for = (
                 links         => 1,
                 AutoCRUD_form => 1,
                 CRUD_form     => 1,
+                stub          => 1,
+            },
+        },
+        order_by => {
+            keyword     => 'order_by',
+            label       => 'SQL Order By',
+            descr       => 'Exact text of SQL order by',
+            type        => 'text',
+            multiple    => 0,
+            urgency     => 0,
+            sort_order  => 22,
+            method_types => {
+                main_listing => 1,
             },
         },
         rows => {
@@ -686,11 +765,22 @@ my %doc_for = (
             keyword     => 'col_labels',
             label       => 'Override Field Labels',
             descr       => 'Labels for fields on main_listing [optional '
-                              .     'defaults to fields label]',
+                              .     'default uses field labels]',
             type        => 'text',
             multiple    => 1,
             urgency     => 0,
             sort_order  => 40,
+            method_types => {
+                main_listing => 1,
+            },
+        },
+        livesearch => {
+            keyword     => 'livesearch',
+            label       => 'Live Search',
+            descr       => 'Places a search box on results page',
+            type        => 'boolean',
+            urgency     => 0,
+            sort_order  => 49,
             method_types => {
                 main_listing => 1,
             },
@@ -839,7 +929,7 @@ my %doc_for = (
             descr         => 'Things your SOAP method returns',
             type          => 'pair',
             pair_required => 0,
-            pair_label    => [ 'Name', 'Type' ],
+            pair_labels   => [ 'Name', 'Type' ],
             multiple      => 1,
             urgency       => 10,
             sort_order    => 140,
@@ -862,6 +952,10 @@ sub get_docs_for {
     }
 
     return @retvals;
+}
+
+sub get_full_doc_hash {
+    return \%doc_for;
 }
 
 1;
@@ -887,6 +981,10 @@ In your backend or backend type module:
     }
 
 Note that this must be done in a BEGIN block.
+
+Or, if you are writing a documenation tool:
+
+    my $keyword_for = Bigtop::Keywords->get_full_doc_hash();
 
 =head1 DESCRIPTION
 
@@ -933,11 +1031,25 @@ tentmaker shows this next to the input box for the keyword.  Feel free
 to use a bit of html in the value for descr.  For instance, when providing
 examples, surround them with pre tags.
 
+=item sort_order
+
+tentmaker uses this to order the statements within their category.  A
+simple numeric sort is done on these values.
+
 =item multiple
 
 Indicates that the keyword can accept a list of values (or pairs of them
 if its type is pair).  This only applies to types text, pair, and select.
 The others ignore it.  See below for information about types.
+
+=item repeatable
+
+Indicates that the statement can be repeated.  Currently only data
+statements may be repeated to any useful effect.  To contrast, multiple
+means that the single statement can take many values in a comma separated
+list, while repeatable means that the keyword itself may be used many
+times each timw with one or more values.  Again, only data statements
+are repeatble.
 
 =item pair_labels
 
@@ -979,9 +1091,8 @@ the value if you the user selects '-- Choose One --'.
 
 Only applies to field keywords.  Indicates that this keyword should appear
 in the Field Quick Edit box in tentmaker.  Fields appear there in
-the same order they appear in the full edit expanding box.  The order
-here does not matter.  To change the order, look for add_valid_keywords
-in the backends.
+the same order they appear in the full edit expanding box.  That order
+is controlled by the sort_order (see below).
 
 Quick editing does not allow pairs or multiples.  You can set a quick_label
 for a multiple entry keyword, but the quick edit will only update the first
@@ -990,10 +1101,12 @@ preserved.  Pairs will not work in the quick edit box.
 
 =item refresh
 
-Only applies to field keywords.  Indicates that a change in the keyword's
-value should trigger a page reload in tentmaker.  This implied by
-quick_label, so you only need it for keywords that should trigger
-a refresh, but should not appear in the Field Quick Edit box.
+Unused and ignored.
+
+This used to indicate that a field keyword update should trigger a full
+page refresh.  There is now javascript support to update the DOM no
+matter what happens and it should stay that way.  Temptation to set
+this flag indicates a lack of javascript courage.
 
 =item urgency
 
@@ -1014,7 +1127,7 @@ If you use other values, they will be treated as zero.
 =item method_types
 
 This tells tentmaker which method types understand a keyword.  It is
-a hash.  They keys are individual method types.  The values are 1.
+a hash.  They key are individual method types.  The values are 1.
 There is one special key 'all'.  If it has a true value, then the keyword
 is available to all methods regardless of type.
 
@@ -1140,6 +1253,14 @@ elements are keyword hashes.
 This return is designed for direct passing to the add_valid_keywords
 method of Bigtop::Parser
 
+=item get_full_doc_hash
+
+Parameters: none
+
+Returns: the entire internal hash representation of all the keywords.
+This is useful for automated tools, like C<scripts/vimsyntax> that builds
+the vim syntax file.
+
 =back
 
 =head1 AUTHOR
@@ -1148,7 +1269,7 @@ Phil Crow E<lt>crow.phil@gmail.comE<gt>
 
 =head1 COPYRIGHT and LICENSE
 
-Copyright (C) 2006 by Phil Crow
+Copyright (C) 2006-7 by Phil Crow
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.6 or,

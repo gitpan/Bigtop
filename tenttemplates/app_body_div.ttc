@@ -72,7 +72,7 @@
         <legend>
             [% type_label %] 
             ( <a href='javascript:show_or_hide( "[% "hideable_$block.ident" %]" );'>
-                edit</a> |  
+                edit or hide</a> |  
                 [%- INCLUDE delete_link.ttc
                     name  = "app_body_delete::$block.ident" %]
             )
@@ -115,7 +115,7 @@
               [% type_label %]
               ( <a href='javascript:show_or_hide( "[%-
                   "hideable_$block.ident" %]" );'>
-                  edit</a>|
+                  edit or hide</a> |
                   [%- INCLUDE delete_link.ttc
                       name = "app_body_delete::$block.ident" %]
               )
@@ -136,7 +136,7 @@
               [% type_label %] 
               ( <a href='javascript:show_or_hide( "[%-
                   "hideable_$block.ident" %]" );'>
-                  edit</a> |  
+                  edit or hide</a> |  
                   [%- INCLUDE delete_link.ttc
                       name  = "app_body_delete::$block.ident" %]
               )
@@ -205,7 +205,7 @@
             [% type_label %] 
             ( <a href='javascript:show_or_hide( "[%-
                 "hideable_$block.ident" %]" );'>
-                edit</a> |  
+                edit or hide</a> |  
                 [%- INCLUDE delete_link.ttc
                     name  = "app_body_delete::$block.ident" %]
             )
@@ -270,7 +270,7 @@
             [% type_label %] 
             ( <a href='javascript:show_or_hide( "[%-
                 "hideable_$block.ident" %]" );'>
-                edit</a> |  
+                edit or hide</a> |  
                 [%- INCLUDE delete_link.ttc
                     name  = "app_body_delete::$block.ident" %]
             )
@@ -385,7 +385,7 @@
     <legend>
       Data Statements ( <a href='javascript:show_or_hide( "[%-
                           "hideable_data_$block.ident" %]" );'>
-                          edit</a> )
+                          edit or hide</a> )
     </legend>
 
     [% WRAPPER show_or_hide.ttc

@@ -40,6 +40,9 @@ app Name {
         odbcconn `dbi:ODBC:OddOS`;
         var value;
     }
+    config prod {
+        dbconn `dbi:Pg:dbname=sample;host=192.168.0.1` => no_accessor;
+    }
     # keeps track of names
     sequence names_seq {}
     table names {
@@ -123,6 +126,9 @@ app Name {
         dbconn `dbi:Pg:dbname=sample` => no_accessor;
         odbcconn `dbi:ODBC:OddOS`;
         var value;
+    }
+    config prod {
+        dbconn `dbi:Pg:dbname=sample;host=192.168.0.1` => no_accessor;
     }
     # keeps track of names
     sequence names_seq {}

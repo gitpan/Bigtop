@@ -41,9 +41,31 @@
 </script>
     </head>
 <body>
+<!--
 <div class='main_title'>
 <h2>tentmaker - A Bigtop Editor</h2>
 </div>
+-->
+    <div id="save_file">
+    <button type='button'
+          onclick='javascript:server_stop()'> Stop tentmaker </button>
+
+    <button type='button'
+          onclick='javascript:saver()'>       Save As: </button>
+
+    <input type='text'
+         value="[% view.data.file_name || '' %]"
+         id='save_file_name'
+         size='35' />
+
+    &nbsp; &nbsp;
+    <span style='font-weight: bold;'>tentmaker - A Bigtop Editor</span>
+
+      <div id="chatter">
+      </div>
+
+    </div>
+
 <!--    **********************************************
         Begin the Main Table where all the input lives
         ********************************************** -->
@@ -87,27 +109,16 @@
     [% INCLUDE bigtop_config.ttc %]
     <br />
 
-    <div id="save_file">
-    <button type='button'
-          onclick='javascript:server_stop()'> Stop Server </button>
-
-    <button type='button'
-          onclick='javascript:saver()'>       Save As: </button>
-
-    <input type='text'
-         value="[% view.data.file_name || '' %]"
-         id='save_file_name'
-         size='45' />
-
-      <div id="chatter">
-      </div>
-
-    </div>
-
     <br />
-    <fieldset> <legend> Current bigtop file </legend>
+    <fieldset>
+      <legend>
+        <a href='javascript:show_or_hide( "raw_output" );'>
+            Current bigtop file
+        </a>
+      </legend>
 
-    <div id="raw_output" style="white-space: pre; font-family: monospace">
+    <div id="raw_output"
+         style="white-space: pre; font-family: monospace; display: none;">
 
         [% view.data.input %]
 

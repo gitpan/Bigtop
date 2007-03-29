@@ -16,6 +16,8 @@
                            ignored if statement.multiple is set
     values               - initial values (plural) for text type when multiple
                            is set
+    key                  - the keyword of this statement (same as
+                           statement.keyword below)
     statement            - hash of legal statements whose keys are below
 
     keys in the statement hash:
@@ -46,13 +48,13 @@
                            choose from 0, 1, 3, 5, or 10 which are (roughly)
                            white, lt. blue, green, orange, or red
 
-%]
-<!-- values are double qouted to prevent clashes with single
-     quotes in the values -->
+values are double qouted to prevent clashes with single
+quotes in the values
 
-[%   full_key     = "$keyword_prefix$key";
+-%]
+[%-   full_key     = "$keyword_prefix$key";
      full_name    = "$name_prefix$key";
-     full_id      = "$id_prefix$key";       %]
+     full_id      = "$id_prefix$key";       -%]
 
 [% IF    statement.type == 'textarea'           %]
 <textarea id='[% full_id %]'

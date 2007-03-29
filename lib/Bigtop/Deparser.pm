@@ -104,7 +104,17 @@ sub output_app_body {
 
     my $indent        = ' ' x 4;
 
-    my @retval = ( "${indent}config {", @{ $child_output }, "${indent}}" );
+    my @retval;
+    
+    if ( $self->{__TYPE__} ) {
+        @retval = ( "${indent}config $self->{__TYPE__} {",
+                    @{ $child_output },
+                    "${indent}}"
+                  );
+    }
+    else {
+        @retval = ( "${indent}config {", @{ $child_output }, "${indent}}" );
+    }
 
     return \@retval;
 }

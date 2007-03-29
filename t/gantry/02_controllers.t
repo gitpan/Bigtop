@@ -184,6 +184,7 @@ app Apps::Checkbook {
                               Date => `\$site->location() . '/date_order'`;
             header_options    Add;
             row_options       Edit, Delete;
+            order_by          `trans_date DESC`;
         }
         method form is AutoCRUD_form {
             all_fields_but    id;
@@ -470,10 +471,18 @@ use strict;
 
 use Gantry qw{ -TemplateEngine=TT };
 
+use JSON;
+
 our @ISA = qw( Gantry );
 
 use Some::Module;
 use Some::Other::Module;
+#-----------------------------------------------------------------
+# $self->namespace() or Apps::Checkbook->namespace()
+#-----------------------------------------------------------------
+sub namespace {
+    return 'Apps::Checkbook';
+}
 
 ##-----------------------------------------------------------------
 ## $self->init( $r )

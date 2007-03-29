@@ -10,7 +10,7 @@
         <legend>
             Literal 
             ( <a href='javascript:show_or_hide( "hideable_ident_4" );'>
-                edit</a> |  
+                edit or hide</a> |  
 <a href="#" name='app_body_delete::ident_4' onclick='javascript:delete_block( this )'>delete</a>
        
 

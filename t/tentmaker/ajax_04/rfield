@@ -82,7 +82,6 @@ app Sample {
         }
         foreign_display `%ident `;
     }
-    sequence addresses_seq {}
     table new_table_name {
         field id {
             is int4, primary_key, auto;
@@ -103,7 +102,6 @@ app Sample {
         field modified {
             is datetime;
         }
-        sequence addresses_seq;
         foreign_display `%ident`;
     }
     controller Addresses is AutoCRUD {

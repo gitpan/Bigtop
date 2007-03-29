@@ -203,6 +203,9 @@ __PACKAGE__->add_columns( qw/
 __PACKAGE__->belongs_to( [% has_a.column %] => '[% base_package_name %]::[% has_a.table %]' );
 [% END %]
 __PACKAGE__->base_model( '[% app_name %]::Model' );
+[% FOREACH has_many IN has_manys %]
+__PACKAGE__->has_many( [% has_many.name %] => '[% app_name %]::Model::[% has_many.table %]' );
+[% END %]
 [% FOREACH has_many IN three_ways %]
 __PACKAGE__->has_many(
     [% has_many.join_name %] => '[% has_many.three_way_model %]',
@@ -432,7 +435,7 @@ sub what_do_you_make {
         [ 'lib/AppName/Model/GEN/*.pm' =>
             'DBIx::Class style model specifications [please, do not change]' ],
         [ 'note' =>
-            'This backend requires "For use with DBIx::Class" to checked '
+            'This backend requires "For use with DBIx::Class" to be checked '
             .   'for the Control Gantry backend.' ],
         [ 'note' =>
             'This backend is incompatible with other Model backends.' ],
@@ -606,6 +609,11 @@ sub output_dbix_model {
             'output_foreign_tables_dbix',       $lookup
     );
 
+    # deal with foreign keys pointing toward this table
+    my $has_manys = $self->walk_postorder(
+            'output_has_manys', $lookup
+    );
+
     my @foreign_table_names;
     my @has_a_list;
 
@@ -702,6 +710,7 @@ sub output_dbix_model {
             all_columns             => $all,
             essential_columns       => $essentials,
             has_a_list              => \@has_a_list,
+            has_manys               => $has_manys,
             three_ways              => $three_ways,
             foreign_tables          => \@foreign_table_names,
             app_name                => $data->{ app_name },
@@ -788,6 +797,26 @@ sub output_foreign_tables_dbix {
         ];
     }
     return;
+}
+
+sub output_has_manys {
+    my $self = shift;
+
+    return unless ( $self->{__TYPE__} eq 'refered_to_by' );
+
+    my @retval;
+    foreach my $arg ( @{ $self->{__ARGS__} } ) {
+        if ( ref( $arg ) eq 'HASH' ) {
+            my ( $refering_table, $has_many_name ) = %{ $arg };
+
+            push @retval, { name => $has_many_name, table => $refering_table };
+        }
+        else {
+            push @retval, { name => $arg . 's', table => $arg };
+        }
+    }
+
+    return \@retval;
 }
 
 sub output_join_modules_dbix {

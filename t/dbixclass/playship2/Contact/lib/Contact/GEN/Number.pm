@@ -5,6 +5,7 @@ package Contact::GEN::Number;
 use strict;
 
 use base 'Contact';
+use JSON;
 
 use Contact::Model::number qw(
     $NUMBER
@@ -42,15 +43,35 @@ sub do_main {
         ],
     };
 
-    my $query   = $self->get_arg_hash;
-    my $page    = $query->{ page } || 1;
+    my %param = $self->get_param_hash;
+
+    my $search = {};
+    if ( $param{ search } ) {
+        my $form = $self->form();
+
+        my @searches;
+        foreach my $field ( @{ $form->{ fields } } ) {
+            if ( $field->{ searchable } ) {
+                push( @searches,
+                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                );
+            }
+        }
+
+        $search = {
+            -or => \@searches
+        } if scalar( @searches ) > 0;
+    }
+
+    my $page    = $param{ page } || 1;
 
     my $schema  = $self->get_schema();
     my $results = $NUMBER->get_listing(
         {
-            schema => $schema,
-            rows   => $self->number_rows,
-            page   => $page,
+            schema   => $schema,
+            rows     => $self->number_rows,
+            page     => $page,
+            where    => $search,
         }
     );
 
@@ -77,6 +98,19 @@ sub do_main {
                 ],
             }
         );
+    }
+
+    if ( $param{ json } ) {
+        $self->template_disable( 1 );
+
+        my $obj = {
+            headings        => $retval->{ headings },
+            header_options  => $retval->{ header_options },
+            rows            => $retval->{ rows },
+        };
+
+        my $json = objToJson( $obj );
+        return( $json );
     }
 
     $self->stash->view->data( $retval );
