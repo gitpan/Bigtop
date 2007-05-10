@@ -1,6 +1,7 @@
 package Contact::Number;
 
 use strict;
+use warnings;
 
 use base 'Contact::GEN::Number';
 
@@ -15,9 +16,6 @@ use Gantry::Plugins::AutoCRUD qw(
 use Contact::Model::number qw(
     $NUMBER
 );
-use Contact::Model;
-sub schema_base_class { return 'Contact::Model'; }
-use Gantry::Plugins::DBIxClassConn qw( get_schema );
 
 #-----------------------------------------------------------------
 # $self->do_main(  )
@@ -35,7 +33,6 @@ use Gantry::Plugins::DBIxClassConn qw( get_schema );
 sub do_csv {
     my ( $self, $id ) = @_;
 } # END do_csv
-
 
 #-----------------------------------------------------------------
 # get_model_name( )
@@ -111,8 +108,6 @@ You might even want to describe the table this module controls here.
 =item get_model_name
 
 =item text_descr
-
-=item schema_base_class
 
 =item get_orm_helper
 

@@ -1217,43 +1217,80 @@ sub remove_app_statement {
 
 sub set_config_statement {
     my $self     = shift;
+    my $ident    = shift;
     my $keyword  = shift;
     my $value    = shift;
     my $accessor = shift;
 
     my $success  = $self->walk_postorder(
-        'update_config_statement', { keyword => $keyword, value => $value, }
+        'update_config_statement',
+        {
+            ident   => $ident,
+            keyword => $keyword,
+            value   => $value,
+        }
     );
 
     unless ( defined $success->[0] ) { # no such statement
         $self->{__BODY__}->add_last_config_statement(
-                $keyword, $value, $accessor
+                $ident, $keyword, $value, $accessor
         );
     }
 }
 
 sub get_config_statement {
-    my $self    = shift;
-    my $keyword = shift;
+    my $self             = shift;
+    my $config_type_name = shift;
+    my $keyword          = shift;
 
-    return $self->walk_postorder( 'get_config_value', $keyword );
+    return $self->walk_postorder(
+        'get_config_value',
+        {
+            config_type_name => $config_type_name,
+            keyword => $keyword,
+        }
+    );
+}
+
+sub get_config_ident {
+    my $self              = shift;
+    my $config_block_name = shift;
+
+    my $idents = $self->walk_postorder(
+            'get_config_idents', $config_block_name
+    );
+
+    return $idents->[0];
 }
 
 sub set_config_statement_status {
     my $self    = shift;
+    my $ident   = shift;
     my $keyword = shift;
     my $value   = shift;
 
     $self->walk_postorder(
-        'config_statement_status', { keyword => $keyword, value => $value }
+        'config_statement_status',
+        {
+            ident   => $ident,
+            keyword => $keyword,
+            value   => $value,
+        }
     );
 }
 
 sub delete_config_statement {
     my $self    = shift;
+    my $ident   = shift;
     my $keyword = shift;
 
-    $self->walk_postorder( 'remove_config_statement', $keyword );
+    $self->walk_postorder(
+        'remove_config_statement',
+        {
+            ident => $ident,
+            keyword => $keyword,
+        }
+    );
 }
 
 sub get_config {
@@ -1428,6 +1465,7 @@ sub remove_statement {
 
 sub add_last_config_statement {
     my $self     = shift;
+    my $ident    = shift;
     my $keyword  = shift;
     my $value    = shift;
     my $accessor = shift;
@@ -1435,6 +1473,7 @@ sub add_last_config_statement {
     my $success  = $self->walk_postorder(
         'add_config_statement',
         {
+            ident    => $ident,
             keyword  => $keyword,
             value    => $value,
             accessor => $accessor,
@@ -1455,7 +1494,9 @@ sub add_last_config_statement {
                 statements => [ $statement ],
             }
         );
-            
+
+        $statement->{__PARENT__} = $block;
+
         push @{ $self->{ 'block(s?)' } }, $block;
     }
 }
@@ -1598,6 +1639,7 @@ my %block_name_for = (
     literal    => 'literal_block',
     join_table => 'join_table',
     schema     => 'schema_block',
+    config     => 'app_config_block',
 );
 
 sub new_block {
@@ -3845,7 +3887,7 @@ sub new_block {
             keyword   => 'extra_keys',
             new_value => {
                 keys   => 'legend',
-                values => q{$self->path_info =~ /edit/i ? 'Edit' : 'Add'}
+                values => q{$self->path_info =~ /edit/i ? q!Edit! : q!Add!}
             }
         } );
     }
@@ -3899,15 +3941,23 @@ sub add_subblock {
 
     return unless ( $params->{parent}{type}    eq 'controller'     );
     return unless ( $params->{parent}{ident}   eq $self->get_ident );
-    return unless ( $params->{new_child}{type} eq 'method'         );
 
-    my $new_method = controller_method->new(
-            $self, $params
-    );
+    if ( $params->{new_child}{type} eq 'method' ) {
+        my $new_method = controller_method->new(
+                $self, $params
+        );
 
-    push @{ $self->{__BODY__} }, $new_method;
+        push @{ $self->{__BODY__} }, $new_method;
 
-    return [ $new_method ];
+        return [ $new_method ];
+    }
+    elsif ( $params->{new_child}{type} eq 'config' ) {
+        my $new_config = controller_config_block->new( $self, $params );
+
+        push @{ $self->{__BODY__} }, $new_config;
+
+        return [ $new_config ];
+    }
 }
 
 sub remove_block {
@@ -4019,7 +4069,7 @@ sub app_block_hashes {
 
     my $body = {
         statements => {},
-        methods    => [],
+        blocks     => [],
     };
 
     foreach my $child_item ( @{ $child_output } ) {
@@ -4028,7 +4078,7 @@ sub app_block_hashes {
                 $child_item->{ value };
         }
         else {
-            push @{ $body->{ methods } }, $child_item;
+            push @{ $body->{ blocks } }, $child_item;
         }
     }
 
@@ -4380,12 +4430,16 @@ sub change_method_statement {
 
     if ( $data->{ keyword } eq 'paged_conf' ) {
         my $current_value = $data->{ app }->get_config_statement(
-                $data->{ new_value }
+                'base', $data->{ new_value }
         );
 
         unless ( defined $current_value->[0] and $current_value->[0] > 0 ) {
-            $data->{ app }->set_config_statement( $data->{ new_value }, 20 );
-            return [ [ $data->{ new_value }, 20 ] ];
+            my $config_ident = $data->{ app }->get_config_ident( 'base' );
+
+            $data->{ app }->set_config_statement(
+                    $config_ident, $data->{ new_value }, 20
+            );
+            return [ [ $config_ident . '::' . $data->{ new_value }, 20 ] ];
         }
     }
 
@@ -5029,9 +5083,42 @@ sub new {
     my $params = shift;
 
     return bless {
+        __IDENT__  => Bigtop::Parser->get_ident(),
         __PARENT__ => $params->{parent},
         __BODY__   => $params->{statements},
+        __TYPE__   => $params->{type},
     }, $class;
+}
+
+sub new_block {
+    my $class  = shift;
+    my $parent = shift;
+    my $data   = shift;
+
+    return $class->new(
+        {
+            parent     => $parent,
+            statements => [],
+            type       => $data->{ name },
+        }
+    );
+}
+
+sub change_name_config {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless $self->{__IDENT__} eq $data->{ident};
+
+    $self->set_name( $data->{ new_value } );
+
+    return;
+}
+
+sub set_name {
+    my $self          = shift;
+    $self->{__TYPE__} = shift;
 }
 
 sub add_config_statement {
@@ -5039,10 +5126,13 @@ sub add_config_statement {
     shift;
     my $data = shift;
 
+    return unless $data->{ ident } eq $self->{__IDENT__};
+
     my $new_statement = app_config_statement->new(
         $data->{ keyword  },
         $data->{ value    },
         $data->{ accessor },
+        $self,
     );
 
     push @{ $self->{ __BODY__ } }, $new_statement;
@@ -5053,7 +5143,11 @@ sub add_config_statement {
 sub remove_config_statement {
     my $self    = shift;
     shift;
-    my $keyword = shift;
+    my $data    = shift;
+    my $ident   = $data->{ ident   };
+    my $keyword = $data->{ keyword };
+
+    return unless $self->{__IDENT__} eq $ident;
 
     my $doomed_child = -1;
     my $count        = 0;
@@ -5097,6 +5191,66 @@ sub get_app_config_types {
     return [ $type ];
 }
 
+sub app_block_hashes {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my @statements;
+
+    foreach my $child_item ( @{ $child_output } ) {
+        my $no_accessor = 0;
+        my $value       = $child_item->{ value };
+        if ( ref( $value ) eq 'HASH' ) {
+            ( $value, $no_accessor ) = %{ $value };
+        }
+
+        push @statements, {
+            keyword     => $child_item->{ keyword },
+            value       => $value,
+            no_accessor => $no_accessor,
+        };
+    }
+
+    return [ {
+        ident       => $self->{__IDENT__},
+        type        => 'config',
+        name        => $self->{__TYPE__} || 'base',
+        statements  => \@statements,
+    } ];
+}
+
+sub get_ident {
+    my $self = shift;
+
+    return $self->{__IDENT__};
+}
+
+sub get_config_idents {
+    my $self       = shift;
+    shift;
+    my $block_name = shift;
+
+    if ( ( not defined $self->{__TYPE__} and $block_name eq 'base' )
+                or
+           $self->{__TYPE__} eq $block_name
+    ) {
+        return [ $self->{__IDENT__} ];
+    }
+    else {
+        return;
+    }
+}
+
+sub show_idents {
+    my $self         = shift;
+    my $child_output = shift;
+
+    push @{ $child_output },
+            [ 'config', $self->{ __NAME__ }, $self->{ __IDENT__ } ];
+
+    return $child_output;
+}
+
 sub walk_postorder {
     my $self   = shift;
     my $action = shift;
@@ -5131,10 +5285,43 @@ use strict; use warnings;
 
 use base 'application_ancestor';
 
+sub new {
+    my $class  = shift;
+    my $parent = shift;
+    my $params = shift;
+
+    my $self   = {
+        __PARENT__ => $parent,
+        __IDENT__  => Bigtop::Parser->get_ident(),
+        __BODY__   => [],
+        __TYPE__   => $params->{ new_child }{ name },
+    };
+
+    return bless $self, $class;
+}
+
+sub change_name_controller_config {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless $self->get_ident  eq $data->{ident};
+
+    $self->{__TYPE__} = $data->{new_value};
+
+    return [ 1 ];
+}
+
 sub get_controller_name {
     my $self = shift;
 
     return $self->{__PARENT__}->get_name();
+}
+
+sub get_ident {
+    my $self = shift;
+
+    return $self->{__IDENT__};
 }
 
 sub get_controller_configs {
@@ -5149,6 +5336,81 @@ sub get_controller_configs {
     }
 
     return [ { type => $type, statements => \%my_children } ];
+}
+
+sub add_config_statement {
+    my $self = shift;
+    shift;
+    my $data = shift;
+
+    return unless $data->{ ident } eq $self->{__IDENT__};
+
+    my $new_statement = controller_config_statement->new(
+        $data->{ keyword  },
+        $data->{ value    },
+        $self,
+    );
+
+    push @{ $self->{__BODY__} }, $new_statement;
+
+    return [ 1 ];
+}
+
+sub remove_config_statement {
+    my $self    = shift;
+    shift;
+    my $data    = shift;
+    my $ident   = $data->{ ident   };
+    my $keyword = $data->{ keyword };
+
+    return unless $self->{__IDENT__} eq $ident;
+
+    my $doomed_child = -1;
+    my $count        = 0;
+
+    STATEMENT:
+    foreach my $child ( @{ $self->{__BODY__} } ) {
+        my $child_keyword = $child->get_keyword();
+        if ( $keyword eq $child_keyword ) {
+            $doomed_child = $count;
+            last STATEMENT;
+        }
+        $count++;
+    }
+
+    if ( $doomed_child >= 0 ) {
+        splice @{ $self->{__BODY__} }, $doomed_child, 1;
+    }
+
+    return [ 1 ];
+}
+
+sub app_block_hashes {
+    my $self         = shift;
+    my $child_output = shift;
+
+    my @statements;
+
+    foreach my $child_item ( @{ $child_output } ) {
+        my $no_accessor = 0;
+        my $value       = $child_item->{ value };
+        if ( ref( $value ) eq 'HASH' ) {
+            ( $value, $no_accessor ) = %{ $value };
+        }
+
+        push @statements, {
+            keyword     => $child_item->{ keyword },
+            value       => $value,
+            no_accessor => $no_accessor,
+        };
+    }
+
+    return [ {
+        ident       => $self->{__IDENT__},
+        type        => 'config',
+        name        => $self->{__TYPE__} || 'base',
+        statements  => \@statements,
+    } ];
 }
 
 sub walk_postorder {
@@ -5190,20 +5452,18 @@ sub new {
     my $keyword  = shift;
     my $value    = shift;
     my $accessor = shift;
+    my $parent   = shift;
 
-    my $self;
+    my $self = {
+        __PARENT__  => $parent,
+        __KEYWORD__ => $keyword,
+    };
  
     if ( $accessor ) {
-        $self = {
-            __KEYWORD__  => $keyword,
-            __ARGS__     => arg_list->new( [ { $value => 'no_accessor' } ] )
-        };
+        $self->{__ARGS__} = arg_list->new( [ { $value => 'no_accessor' } ] );
     }
     else {
-        $self = {
-            __KEYWORD__ => $keyword,
-            __ARGS__    => arg_list->new( [ $value ] )
-        };
+        $self->{__ARGS__} = arg_list->new( [ $value ] );
     }
 
     return bless $self, $class;
@@ -5225,6 +5485,8 @@ sub update_config_statement {
     my $self   = shift;
     shift;
     my $data   = shift;
+
+    return unless ( $data->{ ident } eq $self->{__PARENT__}->get_ident );
 
     return [] unless ( $data->{ keyword } eq $self->{ __KEYWORD__ } );
 
@@ -5249,8 +5511,17 @@ sub update_config_statement {
 sub get_config_value {
     my $self    = shift;
     shift;
-    my $keyword = shift;
+    my $data    = shift;
 
+    my $config_type_name = $data->{ config_type_name };
+    my $keyword          = $data->{ keyword };
+
+#    warn "I want the config value for:\n";
+#    use Data::Dumper; warn Dumper( $data );
+#    warn 'my config type: ' . $self->get_config_type_name() . "\n";
+#    warn "my keyword: $self->{__KEYWORD__}\n";
+    
+    return [] unless ( $config_type_name eq $self->get_config_type_name() );
     return [] unless ( $keyword eq $self->{ __KEYWORD__ } );
 
     return $self->{__ARGS__};
@@ -5260,6 +5531,8 @@ sub config_statement_status {
     my $self   = shift;
     shift;
     my $data   = shift;
+
+    return unless ( $data->{ ident } eq $self->{__PARENT__}->get_ident );
 
     return [] unless ( $data->{ keyword } eq $self->{ __KEYWORD__ } );
 
@@ -5290,6 +5563,21 @@ sub get_app_configs {
     }
 
     return [ { var => $var, val => $val } ];
+}
+
+sub app_block_hashes {
+    my $self         = shift;
+
+    return [ {
+        keyword     => $self->{__KEYWORD__},
+        value       => $self->{__ARGS__}[0],
+    } ];
+}
+
+sub get_config_type_name {
+    my $self = shift;
+
+    return $self->{__PARENT__}{__TYPE__} || 'base';
 }
 
 sub walk_postorder {
@@ -5327,6 +5615,28 @@ use strict; use warnings;
 
 use base 'application_ancestor';
 
+sub new {
+    my $class    = shift;
+    my $keyword  = shift;
+    my $value    = shift;
+    my $parent   = shift;
+
+    my $self = {
+        __PARENT__  => $parent,
+        __KEYWORD__ => $keyword,
+    };
+ 
+    $self->{__ARGS__} = arg_list->new( [ $value ] );
+
+    return bless $self, $class;
+}
+
+sub get_keyword {
+    my $self = shift;
+
+    return $self->{__KEYWORD__};
+}
+
 sub get_controller_configs {
     my $self = shift;
 
@@ -5338,6 +5648,33 @@ sub get_controller_configs {
     }
 
     return [ { var => $var, val => $val } ];
+}
+
+sub app_block_hashes {
+    my $self         = shift;
+
+    return [ {
+        keyword     => $self->{__KEYWORD__},
+        value       => $self->{__ARGS__}[0],
+    } ];
+}
+
+sub update_config_statement {
+    my $self   = shift;
+    shift;
+    my $data   = shift;
+
+    return unless ( $data->{ ident } eq $self->{__PARENT__}->{__IDENT__} );
+
+    return [] unless ( $data->{ keyword } eq $self->{ __KEYWORD__ } );
+
+    my $arg = $self->{__ARGS__}->get_first_arg();
+
+    $self->{__ARGS__} = arg_list->new(
+        [ $data->{value} ]
+    );
+
+    return [ 1 ];
 }
 
 sub walk_postorder {

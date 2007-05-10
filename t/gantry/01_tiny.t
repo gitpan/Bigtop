@@ -102,7 +102,7 @@ Bigtop::Backend::HttpdConf::Gantry->gen_HttpdConf( $base_dir, $tree );
 
 $correct_conf = <<'EO_CORRECT_CONF';
 <Perl>
-    #!/usr/bin/perl
+
 
     use lib '/home/user/lib';
     use Apps::Checkbook;
@@ -138,11 +138,16 @@ Include /some/file.conf
 
 EO_CORRECT_CONF
 
-file_ok( $httpd_conf, $correct_conf, 'generated output' );
+file_filter_ok(
+    $httpd_conf,
+    $correct_conf,
+    \&strip_shebang,
+    'generated output'
+);
 
 $correct_conf = <<'EO_CORRECT_PROD_CONF';
 <Perl>
-    #!/usr/bin/perl
+
 
     use lib '/home/user/lib';
     use Apps::Checkbook;
@@ -178,7 +183,12 @@ Include /some/file.conf
 
 EO_CORRECT_PROD_CONF
 
-file_ok( $prod_httpd_conf, $correct_conf, 'generated prod conf' );
+file_filter_ok(
+    $prod_httpd_conf,
+    $correct_conf,
+    \&strip_shebang,
+    'generated prod conf',
+);
 
 unlink $httpd_conf;
 unlink $prod_httpd_conf;
@@ -233,7 +243,7 @@ Bigtop::Backend::HttpdConf::Gantry->gen_HttpdConf( $base_dir, $tree );
 
 $correct_conf = <<'EO_CORRECT_CONF';
 <Perl>
-    #!/usr/bin/perl
+
 
     use Apps::Checkbook;
     use Apps::Checkbook::PayeeOr;
@@ -264,8 +274,18 @@ EO_CORRECT_CONF
 my $correct_prod_conf = $correct_conf;
 $correct_prod_conf    =~ s/GantryConfInstance app/GantryConfInstance app_prod/;
 
-file_ok( $httpd_conf,      $correct_conf,      'skip PerlSetVars' );
-file_ok( $prod_httpd_conf, $correct_prod_conf, 'skip PerlSetVars named conf' );
+file_filter_ok(
+    $httpd_conf,
+    $correct_conf,
+    \&strip_shebang,
+    'skip PerlSetVars'
+);
+file_filter_ok(
+    $prod_httpd_conf,
+    $correct_prod_conf,
+    \&strip_shebang,
+    'skip PerlSetVars named conf'
+);
 
 unlink $httpd_conf;
 unlink $prod_httpd_conf;
@@ -316,7 +336,7 @@ Bigtop::Backend::HttpdConf::Gantry->gen_HttpdConf( $base_dir, $tree );
 
 $correct_conf = <<'EO_CORRECT_CONF';
 <Perl>
-    #!/usr/bin/perl
+
 
     use Apps::Checkbook qw{
         -Engine=MP13
@@ -351,7 +371,12 @@ Include /some/file.conf
 
 EO_CORRECT_CONF
 
-file_ok( $httpd_conf, $correct_conf, 'full use statement' );
+file_filter_ok(
+    $httpd_conf,
+    $correct_conf,
+    \&strip_shebang,
+    'full use statement'
+);
 
 use lib 't';
 use Purge;

@@ -3,12 +3,22 @@
 package GENContact;
 
 use strict;
+use warnings;
 
-use Gantry qw{ -Engine=MP20 -TemplateEngine=TT };
+use Gantry qw{
+    -Engine=MP20
+    -TemplateEngine=TT
+};
 
 use JSON;
+use Gantry::Utils::TablePerms;
 
 our @ISA = qw( Gantry );
+
+
+use Contact::Model;
+sub schema_base_class { return 'Contact::Model'; }
+use Gantry::Plugins::DBIxClassConn qw( get_schema );
 
 #-----------------------------------------------------------------
 # $self->namespace() or Contact->namespace()
@@ -74,6 +84,8 @@ Contact should inherit from this module.
 =head1 METHODS
 
 =over 4
+
+=item namespace
 
 =item init
 

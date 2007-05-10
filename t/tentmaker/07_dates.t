@@ -19,6 +19,8 @@ BEGIN {
 use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=Default /;
 use Bigtop::ScriptHelp::Style;
 
+$ENV{ BIGTOP_REAL_DEF } = 1;
+
 my $style = Bigtop::ScriptHelp::Style->get_style();
 
 Bigtop::TentMaker->take_performance_hit( $style, undef, 'family', 'Address' );
@@ -34,13 +36,15 @@ my @correct_input;
 
 @correct_input = split /\n/, <<'EO_sanity';
 config {
-    engine CGI;
+    engine MP20;
     template_engine TT;
     Init Std {  }
+    Conf Gantry { conffile `docs/app.gantry.conf`; gen_root 1; instance address; }
+    HttpdConf Gantry { gantry_conf 1; }
     SQL SQLite {  }
     SQL Postgres {  }
     SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    CGI Gantry { with_server 1; flex_db 1; gantry_conf 1; }
     Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
@@ -49,6 +53,8 @@ app Address {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
+        doc_rootp `/static` => no_accessor;
+        show_dev_navigation 1 => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {
@@ -92,7 +98,7 @@ app Address {
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
             extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend => `$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
         }
     }
 }
@@ -111,19 +117,19 @@ is_deeply( \@maker_deparse, \@correct_input, 'one table sanity check' );
 # option in each case.
 
 #$tent_maker->do_update_field_statement_text(
-#    'ident_5::date_select_text', 'Set Date'
+#    'ident_6::date_select_text', 'Set Date'
 #);
 
 $tent_maker->do_update_controller_statement_text(
-    'ident_10::uses', 'Missing][Module'
+    'ident_11::uses', 'Missing][Module'
 );
 
 #$tent_maker->do_update_method_statement_text(
-#    'ident_10::form_name', 'family_form'
+#    'ident_11::form_name', 'family_form'
 #);
 
 my $ajax = $tent_maker->do_update_field_statement_text(
-    'ident_7::is', 'date'
+    'ident_8::is', 'date'
 );
 
 my $expected_file = File::Spec->catfile( qw( t tentmaker ajax_07 todate ) );

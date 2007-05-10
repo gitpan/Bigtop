@@ -1,4 +1,5 @@
 use strict;
+use warnings;
 
 use Test::More tests => 4;
 use Test::Files;
@@ -43,6 +44,7 @@ my $bigtop_string = <<"EO_Bigtop_File";
 config {
     base_dir        `$play_dir`;
     engine          MP20;
+    plugins         PluginQ;
     template_engine TT;
     Control         Gantry   { full_use 1; }
     SQL             Postgres { no_gen 1; }
@@ -141,7 +143,9 @@ app Apps::Checkbook {
             title             Payees;
             cols              name;
             header_options    Add => `$add_loc`;
-            row_options       Edit, `Make Some`, Delete;
+            row_options
+                Tasks => `"/lineitem/main/\$id"`, Edit, `Make Some`, Delete;
+            row_option_perms Tasks => update;
         }
         controls_table    payee;
         method my_crud_form is CRUD_form {
@@ -195,14 +199,18 @@ app Apps::Checkbook {
         }
     }
     controller Trans::Action is AutoCRUD {
+        plugins PluginA;
         controls_table trans;
         rel_location   transaction;
         method form is AutoCRUD_form {
             form_name trans;
             fields    status;
         }
+        method controller_config is hashref {
+            permissions `crudcr-d-r--`;
+        }
     }
-    controller NoOp { rel_location none; skip_test 1; }
+    controller NoOp { rel_location none; skip_test 1; plugins PluginB; }
     table sch.tbl {
         field id { is int4, primary_key, auto; }
         field name { is varchar; }
@@ -468,15 +476,19 @@ my $correct = <<'EO_Correct_Simple_Use';
 package Apps::GENCheckbook;
 
 use strict;
+use warnings;
 
 use Gantry qw{ -TemplateEngine=TT };
 
 use JSON;
+use Gantry::Utils::TablePerms;
 
 our @ISA = qw( Gantry );
 
 use Some::Module;
 use Some::Other::Module;
+
+
 #-----------------------------------------------------------------
 # $self->namespace() or Apps::Checkbook->namespace()
 #-----------------------------------------------------------------
@@ -541,6 +553,8 @@ Apps::Checkbook should inherit from this module.
 =head1 METHODS
 
 =over 4
+
+=item namespace
 
 =item init
 

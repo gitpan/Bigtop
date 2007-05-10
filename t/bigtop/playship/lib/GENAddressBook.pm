@@ -3,12 +3,19 @@
 package GENAddressBook;
 
 use strict;
+use warnings;
 
 use Gantry qw{ -TemplateEngine=TT };
 
 use JSON;
+use Gantry::Utils::TablePerms;
 
 our @ISA = qw( Gantry );
+
+
+use AddressBook::Model;
+sub schema_base_class { return 'AddressBook::Model'; }
+use Gantry::Plugins::DBIxClassConn qw( get_schema );
 
 #-----------------------------------------------------------------
 # $self->namespace() or AddressBook->namespace()
@@ -78,11 +85,15 @@ AddressBook should inherit from this module.
 
 =over 4
 
+=item namespace
+
 =item init
 
 =item do_main
 
 =item site_links
+
+=item schema_base_class
 
 
 =back

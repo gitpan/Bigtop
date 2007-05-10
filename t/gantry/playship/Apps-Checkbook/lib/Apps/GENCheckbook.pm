@@ -3,12 +3,21 @@
 package Apps::GENCheckbook;
 
 use strict;
+use warnings;
 
-use Gantry qw{ -Engine=MP20 -TemplateEngine=TT };
+use Gantry qw{
+    -Engine=MP20
+    -TemplateEngine=TT
+    -PluginNamespace=Apps::Checkbook
+    PluginQ
+};
 
 use JSON;
+use Gantry::Utils::TablePerms;
 
 our @ISA = qw( Gantry );
+
+
 
 #-----------------------------------------------------------------
 # $self->namespace() or Apps::Checkbook->namespace()
@@ -96,6 +105,8 @@ Apps::Checkbook should inherit from this module.
 =head1 METHODS
 
 =over 4
+
+=item namespace
 
 =item init
 

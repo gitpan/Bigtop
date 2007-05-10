@@ -1,5 +1,51 @@
 Revision history for Perl extension Bigtop.
 
+0.27 Thu May 10 09:10:22 CDT 2007
+    - added skipinvalid flag to json converter. ( skips the orm row )
+    - added orm row to do_main data
+    - added gantry conf to generation when using kickstart file
+    - added permissions keyword controller hashref method type
+    - added support for controller_config
+
+        method controller_config is hashref {
+            literal `mykey => 'somevalue'`;
+            authed_methods 
+                do_delete => ``;
+            permissions `crudcrud-r--` => admin;
+        }
+    - added support for Gantry's new row and table level permissions new
+      keywords in main listing methods:
+          header_option_perms `Special Add` => create;
+          row_option_perms `Exotic Edit` => update, `See Details` => retrieve;
+    - Change tentmaker so it uses bigtop keywords instead of labels for
+      easier movement between it an hand editing (and to consolidate book
+      chapters, eventually).
+    - tentmaker now allows you to enter import lists on all uses statements.
+    - added controller level plugins keyword (not for base controllers,
+      keep using bigtop config plugins keyword for them)
+    - fixed generated default page hit tests to use top level plugins keyword
+    - put a guard around t/bigtop/01_twotable.t so it won't be run if it
+      can't find the Gantry templates
+    - improved error message and reported line when a method block has no type
+    - moved from single quotes to q!! for legends on formsets, setting an
+      example for all users to not embed ' or " quotes in bigtop strings,
+      to reduce the risk of quote conflict with HTML quoting in tentmaker
+    - controller level configs now place any init and accessor methods in GEN
+    - taught tentmaker to think of the app level config blocks as
+      app body blocks (the App Config tab went away)
+    - taught tentmaker to handle controller level config blocks
+    - generated controller modules now use warnings
+    - fixed javascript so data statement values are properly URL escaped
+      by tentmaker (now you can include non-word chars in the values).
+    - switched default apps made with bigtop and tentmaker to new developer
+      navigation drop down menus
+    - tentmaker reports a better error when you forget the -n flag
+    - users can now supply their own default bigtop file as a TT template
+      called ./bigtopdef or ~/.bigtopdef for use with -n in bigtop
+      and tentmaker.  To revert to orignal default set environment var
+      BIGTOP_REAL_DEF to a true value
+    - corrected some generated POD so POD tests can pass
+
 0.26 Thu Mar 29 12:34:08 CDT 2007
     - modified CRUD to call from in the GEN by default
     - modified CRUD to execute standard add/edit/delete on db
@@ -32,7 +78,7 @@ Revision history for Perl extension Bigtop.
     - app.server's now get show_dev_navigation set to 1.
     - Corrected one test and removed another so changes to Gantry's
       sample_wrapper.tt no longer cause failures.
-    - CRUD forms are not generated into the GEN file, so they can be
+    - CRUD forms are now generated into the GEN file, so they can be
       regened as the model changes.  Check out Gantry::Utils::FormMunger
       for a convenient way to alter them in an overriden method.
     - Initial Changes file now has the bigtop version number.

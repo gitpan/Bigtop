@@ -2,6 +2,10 @@
 
 Bigtop::Docs::About - A document explaining Bigtop's features and history
 
+=head1 Guide to Docs
+
+For a complete and annotated list of Bigtop docs, see L<Bigtop::Docs::TOC>.
+
 =head1 Features
 
 Bigtop is a little language for describing the basic structure of web apps

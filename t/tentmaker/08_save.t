@@ -19,6 +19,8 @@ BEGIN {
 use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=Default /;
 use Bigtop::ScriptHelp::Style;
 
+$ENV{ BIGTOP_REAL_DEF } = 1;
+
 my $style      = Bigtop::ScriptHelp::Style->get_style();
 
 Bigtop::TentMaker->take_performance_hit( $style ); # all defaults please
@@ -34,13 +36,15 @@ my $answer;
 
 $correct_input = <<'EO_Minimal';
 config {
-    engine CGI;
+    engine MP20;
     template_engine TT;
     Init Std {  }
+    Conf Gantry { conffile `docs/app.gantry.conf`; gen_root 1; instance sample; }
+    HttpdConf Gantry { gantry_conf 1; }
     SQL SQLite {  }
     SQL Postgres {  }
     SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    CGI Gantry { with_server 1; flex_db 1; gantry_conf 1; }
     Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
@@ -49,6 +53,8 @@ app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
+        doc_rootp `/static` => no_accessor;
+        show_dev_navigation 1 => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {

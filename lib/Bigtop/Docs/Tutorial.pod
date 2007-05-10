@@ -11,10 +11,12 @@ for details.
 
 If you need a simpler example than the one shown here, consider
 the one table address book example in Gantry::Docs::Tutorial.
+There are even more examples in the Gantry book.  Visit http://usegantry.org
+to purchase the book and to download the sample code from it.
 
 =head1 Driving Idea
 
-Many (not all) applications are mostly data managers.  That is, they are
+Many applications are mostly data managers.  That is, they are
 really intermediaries between users and various tables in a database.
 A bigtop file is meant to be a single place to describe all (or practically
 all) facits of the data in an application.  This includes at least:

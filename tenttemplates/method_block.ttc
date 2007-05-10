@@ -65,6 +65,10 @@
     [% IF item.method_type == 'CRUD_form' %]selected='selected'[% END %] >
                         CRUD_form
                       </option>
+                      <option value='hashref'
+    [% IF item.method_type == 'hashref' %]selected='selected'[% END %] >
+                        hashref
+                      </option>
                       <option value='base_links'
     [% IF item.method_type == 'base_links' %]selected='selected'[% END %] >
                         base_links

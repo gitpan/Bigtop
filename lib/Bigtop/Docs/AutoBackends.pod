@@ -606,7 +606,7 @@ Path to sample_wrapper.tt in the Gantry distribution [defaults to ./html]
 
 =head1 AUTHOR
 
-The skip/backends script generated this file Thu Mar 29 10:59:03 2007.
+The skip/backends script generated this file Thu May 10 12:33:20 2007.
 The script was written by Phil Crow E<lt>crow.phil@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

@@ -1,6 +1,7 @@
 package Apps::Checkbook::PayeeOr;
 
 use strict;
+use warnings;
 
 use base 'Apps::Checkbook::GEN::PayeeOr';
 
@@ -69,7 +70,10 @@ sub my_crud_add {
 #-------------------------------------------------
 sub do_delete {
     my ( $self, $doomed_id, $confirm ) = @_;
-    $my_crud->delete( $self, $confirm, { id => $doomed_id } );
+
+    my $row = $PAYEE->gfind( $self, $doomed_id );
+
+    $my_crud->delete( $self, $confirm, { row => $row } );
 }
 
 #-------------------------------------------------
@@ -82,8 +86,7 @@ sub my_crud_delete {
     # delete it
     # remember to add commit if needed
 
-    my $row = $PAYEE->gfind( $self, $data->{id} );
-    $row->delete;
+    $data->{ row }->delete;
 }
 
 #-------------------------------------------------
@@ -92,7 +95,6 @@ sub my_crud_delete {
 sub do_edit {
     my ( $self, $id ) = @_;
 
-    # This might work for DBIx::Class:
     my $row = $PAYEE->gfind( $self, $id );
 
     $my_crud->edit( $self, { row => $row } );
@@ -162,7 +164,10 @@ sub crud_add {
 #-------------------------------------------------
 sub do_delete {
     my ( $self, $doomed_id, $confirm ) = @_;
-    $crud->delete( $self, $confirm, { id => $doomed_id } );
+
+    my $row = $PAYEE->gfind( $self, $doomed_id );
+
+    $crud->delete( $self, $confirm, { row => $row } );
 }
 
 #-------------------------------------------------
@@ -175,8 +180,7 @@ sub crud_delete {
     # delete it
     # remember to add commit if needed
 
-    my $row = $PAYEE->gfind( $self, $data->{id} );
-    $row->delete;
+    $data->{ row }->delete;
 }
 
 #-------------------------------------------------
@@ -185,7 +189,6 @@ sub crud_delete {
 sub do_edit {
     my ( $self, $id ) = @_;
 
-    # This might work for DBIx::Class:
     my $row = $PAYEE->gfind( $self, $id );
 
     $crud->edit( $self, { row => $row } );
@@ -220,37 +223,6 @@ sub crud_edit {
 sub do_members {
     my ( $self ) = @_;
 } # END do_members
-
-
-#-----------------------------------------------------------------
-# $self->init( $r )
-#-----------------------------------------------------------------
-sub init {
-    my ( $self, $r ) = @_;
-
-    # process SUPER's init code
-    $self->SUPER::init( $r );
-
-    $self->set_importance( $self->fish_config( 'importance' ) || '' );
-} # END init
-
-#-----------------------------------------------------------------
-# $self->set_importance( $new_value )
-#-----------------------------------------------------------------
-sub set_importance {
-    my ( $self, $value ) = @_;
-
-    $self->{ __importance__ } = $value;
-}
-
-#-----------------------------------------------------------------
-# $self->importance(  )
-#-----------------------------------------------------------------
-sub importance {
-    my $self = shift;
-
-    return $self->{ __importance__ };
-}
 
 
 1;
@@ -306,6 +278,34 @@ You might even want to describe the table this module controls here.
 =item get_model_name
 
 =item text_descr
+
+=item my_crud_redirect
+
+=item do_add
+
+=item my_crud_add
+
+=item do_delete
+
+=item my_crud_delete
+
+=item do_edit
+
+=item my_crud_edit
+
+=item crud_redirect
+
+=item do_add
+
+=item crud_add
+
+=item do_delete
+
+=item crud_delete
+
+=item do_edit
+
+=item crud_edit
 
 
 =back

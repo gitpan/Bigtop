@@ -10,6 +10,8 @@ use Bigtop::ScriptHelp::Style;
 use Bigtop::Parser;
 use Bigtop::Deparser;
 
+$ENV{ BIGTOP_REAL_DEF } = 1;
+
 my @received;
 my @correct;
 
@@ -73,7 +75,7 @@ file_ok( $expected_file, $max, 'bigger default (big_default)' );
 #-----------------------------------------------------------------
 
 # add some other referrers and a name too
-$max =~ s/refered_to_by `birth_date`/refered_to_by birth_date => bdays, z/;
+$max =~ s/refered_to_by birth_date/refered_to_by birth_date => bdays, z/;
 
 my $ast = Bigtop::Parser->parse_string( $max );
 Bigtop::ScriptHelp->augment_tree(

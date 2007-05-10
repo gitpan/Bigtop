@@ -79,7 +79,7 @@ app Name {
             form_name address;
             all_fields_but id;
             extra_keys
-                legend => `\$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend => `\$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
         }
         literal Location
             `    require valid-user`;
@@ -166,7 +166,7 @@ app Name {
             form_name        address;
             all_fields_but   id;
             extra_keys
-                legend     => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend     => `$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
         }
         literal Location `    require valid-user`;
         config {

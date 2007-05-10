@@ -1,26 +1,22 @@
 =head1 NAME
 
-Bigtop::Docs::Syntax - A (formerly) complete Bigtop syntax description
-
-=head1 WARNING
-
-This document is no longer maintained.  See L<Bigtop::Docs::AutoKeywords>
-or run tentmaker.
-
-While the introduction in the L<Anatomy of a Bigtop File> section below is
-still instructive, since the structure of bigtop files has not changed, and
-the keywords described below still do the same things, newer keywords are
-no longer added here.
+Bigtop::Docs::Syntax - An introduction to Bigtop syntax description
 
 =head1 Intro
 
+This document explains the basic structure of a bigtop file.
+
 Note that you might find L<Bigtop::Docs::Cookbook> useful depending on
-the complexity of your questions and how you like to use docs.  This
-one, and its replacement L<Bigtop::Docs::AutoKeywords>, are like a text
-book or dictionary, the cookbook teaches exclusively by example.
-See also the examples directory in the distribution and
-L<Bigtop::Docs::TentTut>.  tentmaker shows docs in a browser, its docs
-are taken directly from the backends, so it is always fully up to date.
+the complexity of your questions and how you like to use docs.  For a
+full list of Bigtop keywords, see L<Bigtop::Docs::FullKeywords>.  A
+shorter version is available in L<Bigtop::Docs::QuickKeywords>.
+To know what each backend does, and how to configure them, see
+L<Bigtop::Docs::AutoBackends>.  All of those, except the cookbook,
+are generated from the official source of Bigtop keywords (Bigtop::Keywords)
+and so are up to date.
+
+Other docs are available, including docs on tentmaker.  See
+L<Bigtop::Docs::TOC> for a complete list of documentation.
 
 =head1 Anatomy of a Bigtop File
 
@@ -31,9 +27,11 @@ language.  There is no flow of control.  That means that you can
 put things in whatever order you like, except that config comes first
 and some recipients of the generated files may care about order.  For
 instance, your command line SQL tool probably expects to see the
-definition for a sequence before it sees a table which uses it.  These
-orderings are usually fairly intuitive, especially when that other program
-complains about missing definitions, etc.
+definition for a table before it sees any foreign keys pointing to that
+table.  These orderings are usually fairly intuitive, especially when that
+other program complains about missing definitions, etc.  (Further, if
+you use L<Kickstart Syntax>, Bigtop will adjust the order to account
+for foreign keys.)
 
 The following skeleton is the smallest legal bigtop file which describes
 almost nothing (and will do nothing if you feed it to bigtop):
@@ -44,48 +42,20 @@ almost nothing (and will do nothing if you feed it to bigtop):
 =head2 config Section
 
 At the top level there are two sections in a Bigtop file.  The order is
-enforced (though I can't really defend that).  First comes config.
-It lists things that make the output specific.  In it, there are statements
-and backend blocks.  Each statement can take exactly one value.
-If there are any characters that Perl wouldn't like in an identifier,
-enclose the value in backquotes (the quote usually found under tilde, not
-the ones on the same key with double quotes).
+enforced.  First comes config.  It lists things that make the output
+specific.  In it, there are statements and backend blocks.  Each statement
+can take exactly one value.  If there are any characters that Perl wouldn't
+like in an identifier, enclose the value in back ticks, a.k.a. backquotes,
+(the quote usually found under tilde, not the ones on the same key with
+double quotes).
 
-The available config statements are:
+The available config statements are described briefly in
+L<Bigtop::Docs::QuickKeywords> and in more detail in
+L<Bigtop::Docs::FullKeywords>.  There are two keywords which have
+been deprecated and so do not appear there.  These are sometimes useful
+for testing, so I've described them here:
 
 =over 4
-
-=item engine
-
-This is the web engine you plan to use.  Example:
-
-    engine MP13;
-
-This notation is stolen from Catalyst and is also used in Gantry.
-Your actual choices are dependent on which framework you use and
-what the backend for that framework is expecting.  Gantry supports these:
-
-    MP13 - mod_perl 1.3.x
-    MP20 - mod_perl 2.x
-    CGI  - cgi/fast cgi
-
-=item template_engine
-
-The templating system you want to use.  Example:
-
-    template_engine TT;
-
-Where TT could be replaced with one of these.
-
-    Default
-    Mason
-    Your::Soon::To::Be::Replaced::We::Hope::Home::Rolled::Templater
-
-The Default will probably provide raw text/html output.  Which of these
-you can choose, and what they do, is determined by your framework.
-
-[ A fact which is still strange to me: Bigtop has no knowledge of the
-templates your application will use (though some of its backends might). ]
 
 =item base_dir
 
@@ -151,9 +121,10 @@ etc.).  This allows bigtop to call gen_SomeType when the user types:
 
 =back
 
-The distribution comes with a number of these Bigtop:: backends.
-[ See L<Bigtop Backends> below for a list. ]  If you write a useful one,
-please send it in so we can include it in a future release.
+The distribution comes with a number of these Bigtop::Backends.
+[ See L<Bigtop::Docs::AuotBackends> for a list. ]  If you write a useful one,
+please send it in so we can include it in a future release.  For advice
+on writing one, see L<Bigtop::Docs::Modules>.
 
 As a user, you can mark a file as not to be generated by saying:
 
@@ -172,7 +143,7 @@ Bigtop::Backend::SomeType::SomeModule will use C<my_template.tt> instead of
 the one hard coded inside it.  Note that the template must be directly
 usable by Template Toolit.  Further, it needs to define the same blocks
 as the backend's normal template.  It's usually best to start by copying
-the template from the here doc in the backend into a file, then modify
+the template from the here doc in backend into a file, then modify
 it.
 
 That is all there is to the config section.  A typical one looks
@@ -191,10 +162,6 @@ like this:
 Note that one engine statement is commented out.  A comment is any line
 whose first non-whitespace character is a pound sign.
 
-After the L<app Section>, there is a list of all the current backends,
-what keywords they understand, and what they do with them (if they
-do anything special).
-
 =head2 app Section
 
 The app section is far more interesting than the config section.  This is
@@ -205,7 +172,7 @@ Postgres for mysql, Catalyst for Gantry, mod_perl 1.3 for mod_perl 2.0,
 etc.) without changing the app section.  Whether you can do that in
 practice depends on whether there are backends for the system you want
 to move to (if you are interested in writing backends, see
-Bigtop::Docs::Modules for some pointers).  Reality also impinges on
+L<Bigtop::Docs::Modules> for some pointers).  Reality also impinges on
 this ideal.  Some backends understand different keywords, because
 they work with different concepts.
 
@@ -222,7 +189,7 @@ Most blocks look like this:
     }
 
 Controller and method blocks are exceptions.  These have a type property
-(the type is required for methods but is optional for controllers):
+(the type is required for methods, but is optional for controllers):
 
     method name is stub { ... }
 
@@ -237,7 +204,7 @@ Some examples of statements:
 
     label          Description;
     label          `First Name`;
-    header_options Add => `$site->location . '/add`;
+    header_options Add => `$site->location . q!/add!`;
     cols           first_name, last_name, age;
 
 A statement is a legal keyword followed by a value and terminated with a
@@ -248,14 +215,13 @@ the above.
 
 Note that we sometimes use => instead of comma, they mean substantially
 different things.  Only use => when told to.  Always use the => when told to.
-
-(Footnote on fat commas:  In the grammar, comma is the separator for items
+Here's the difference.  In the grammar, comma is the separator for items
 in a list, while the fat comma (=>) forms a pair which becomes a single
 element in the list.  If your backend is expecting two items and it
 gets one pair instead, it will be sorely confused.  Likewise, if your backend
 is expecting a pair, but you give it two items separated by comma, it will be
 just as confused.  This is different from the way Perl treats the fat
-comma.  Remember: in Bigtop a fat comma makes a pair a comma never does.)
+comma.  Remember: in Bigtop a fat comma makes a pair a comma never does.
 
 Which keywords are legal depends on which backends you are using.
 Whether a particular keyword's value will work is up to the backend and to
@@ -286,9 +252,14 @@ This results in the correct final output:
 You must read the backend documentation to find out what will happen
 to the value you provide, but the above is typical.
 
+In particular, if the statement's value is Perl code, you probably want
+to use q or qq operators for quoting instead of single or double quotes.
+Otherwise, tentmaker may become confused about your values, since it must
+embed them in Javascript enabled HTML.
+
 [ Note for those who read tests as examples:  In the tests you will
 see quotes protected by two backslashes.  This is because the tests
-use here documents to build bigtop input.  The first backslash is
+use here documents to build Bigtop input.  The first backslash is
 eaten by the heredoc processor.  Since you will supply input from 
 file (at least most of the time), you should not need two backslashes. ]
 
@@ -301,186 +272,18 @@ The general structure of the app section is:
 In fact, that is a valid specification, but it doesn't do much (you could
 generate Init for such an app, but that would do slightly less than h2xs).
 
-Inside the braces there are statements and blocks.
-
-While the app level keywords are all defined by various backends,
-here are some that are commonly available:
-
-=over 4
-
-=item authors
-
-(registered by Bigtop::Backend::Control and Bigtop::Backend::Init::Std)
-
-A comma separated list of authors (use backquotes around these to
-protect spaces, etc.).  These authors will be put into the README
-file and into the AUTHORS section of the stub modules' POD.
-
-    authors `Phil Crow` => `crow.phil@gmail.com, `My Friend`;
-
-Each author item may be either a name or name => email pair.
-
-If you omit the authors statement, bigtop will use the same method as
-h2xs.  This means the author name will be taken from the gcos field
-of the password file for the current user (or the moral equivalent on
-non-unix systems).
-
-=item contact_us
-
-(registered by Bigtop::Backend::Control and Bigtop::Backend::Init::Std)
-
-Describe how to contact or join project developers:
-
-     contact_us `Visit us at www.useourproject.org, or join our mailing
- list by sending subscribe to list-sub@useourproject.org`;
-
-Note that all manner of whitespace is legal inside the quotes, the
-value will be used literally.
-
-=item copyright_holder
-
-(registered by Bigtop::Backend::Control and Bigtop::Backend::Init::Std)
-
-By default the copyright holder listed in README and POD is the first
-author.  If you want someone else, list them here.  For example, the app
-might belong to your company:
-
-    copyright_holder `The World Company`;
-
-=item license_text
-
-(registered by Bigtop::Backend::Control and Bigtop::Backend::Init::Std)
-
-By default the license in README and POD is what h2xs produced for perl 5.8.0.
-Use this, if you want something different (e.g. due to company policy):
-
-    license_text `All rights reserved.`;
-
-Include the complete text here.  Feel free to include new lines in the
-backquotes.
-
-=item location
-
-(registered by Bigtop::Backend::HttpdConf, Bigtop::Backend::CGI,
-and Bigtop::Backend::SiteLook::GantryDefault)
-
-The root location in your apache conf or cgi dispatching script.  Defaults
-to /.
-
-=item uses
-
-(registered by Bigtop::Backend::Control, understood by
-Bigtop::Backend::Control::Gantry)
-
-A list of modules which will be used in the base modules of the application.
-
-=item literal
-
-(part of the grammar)
-
-Literal means literal.  Enclose the value in backquotes and it will appear
-in the result unmodified.  (Exception: one new line will be added if the
-literal does not already have trailing whitespace.)  This means
-you are primarily responsible for white space management.
-
-At the app level, there are several valid literal types:
-
-=over 4
-
-=item HttpdConf
-
-(registered by Bigtop::Backend::HttpdConf)
-
-Places arbitrary directives between location blocks in httpd.conf:
-
-    literal HttpdConf `Include /some/other/file.conf`;
-
-You can certainly use this to add locations for which you don't have
-controllers defined in your Bigtop file.  This opens the option of continuing
-to regenerate even after you have extra locations or other directives.
-
-Literal HttpdConf directives appear in the generated output
-with controller locations in the order these appear in the Bigtop file.
-
-=item Location
-
-(registered by Bigtop::Backend::HttpdConf)
-
-Places Apache directives directly into the root location of the app:
-
-    literal Location `    require valid-user`;
-
-=item PerlTop
-
-(registered by Bigtop::Backend::HttpdConf and Bigtop::Backend::CGI)
-
-Places perl code immediately under the #!/usr/bin/perl line in either the
-<Perl> block in the generated httpd.conf or in the CGI/FastCGI dispatching
-script (and app.server if you had the CGI backend build one).  May be
-repeated.  Output appears in the same order as the statements in the Bigtop
-file.  Example:
-
-    literal PerlTop `    use lib '/home/myuser/perl/lib';`;
-
-=item PerlBlock
-
-(handled by Bigtop::Backend::HttpdConf)
-
-Places perl code into the <Perl> block in the generated httpd.conf after
-the use statement for the base module of the app.  Output appears in
-the same area as the use statements for controller blocks, in
-the same order as the statements and controller blocks appear in the
-bigtop file.  Example:
-
-    controller SubName {
-        #...
-    }
-    literal PerlBlock `    use Some::Module;`;
-    controller OtherName {
-        #...
-    }
-
-yeilds:
-
-    <Perl>
-        #!/usr/bin/perl
-
-        use BaseModule;
-        use SubName;
-        use Some::Module;
-        use OtherName;
-    </Perl>
-
-You may prefer to have a single literal PerlBlock at the bottom of the
-bigtop file, below all of the controllers.
-
-=item SQL
-
-(registered by Bigtop::Backend::SQL)
-
-Places SQL statements directly into schema.* generated by
-Bigtop::Backend::SQL::*
-modules.  Literal SQL statements are mixed with sequences and tables in
-the generated file with all of them appearing in the output in the order
-they appear in the input.  There is no way to have literal statements
-apply to specific SQL backends.  If you use a literal SQL statement,
-its contents will go into every schema.* file.
-
-=item Conf
-
-(registered by Bigtop::Backend::Conf)
-
-Places config variable/value pairs into the config file at the top level.
-
-=back
-
-There are additional literal statements at other levels.
-
-=back
+Inside the braces there are statements and blocks.  Again, the
+statements are described in L<Bigtop::Docs::QuickKeywords> and
+L<Bigtop::Docs::FullKeywords>.
 
 Currently there are five legal block types at the app level: sequence,
-config, table, join_table, and controller.  These are described in detail
-directly below.  
+config, table, join_table, and controller.  These are described
+below.  
+
+There are also several literal statements which dump their string values
+directly to generated output files.  See L<Bigtop::Docs::QuickKeywords>
+or L<Bigtop::Docs::FullKeywords> for a list of legal literal types and
+explanations of where their output goes.
 
 =over 4
 
@@ -489,8 +292,8 @@ directly below.
 (understood by Bigtop::Backend::SQL::*, Bigtop::Backend::Model::*,
 and some Bigtop::Backend::Control::* modules)
 
-If you are going to generate default id's from sequences, use this to
-declare the sequence.  Give the sequence a name and a block:
+If you are going to generate default id's from sequences in PostgreSQL,
+use this to declare the sequence.  Give the sequence a name and a block:
 
     sequence address_seq {}
 
@@ -507,7 +310,7 @@ That use is deprecated. ]
 
 This allows you to dump config parameters into your Gantry::Conf instance
 config file, PerlSetVar statements into the root location for your app in
-your httpd.conf, or the equivalent in your cgi dispatching script or stand
+your httpd.conf, or the equivalent in your CGI dispatching script or stand
 alone server.  Simply list the name of a variable and its value in each
 statement (remember to use backquotes):
 
@@ -527,7 +330,23 @@ method.
 Note that all the backends which understand config blocks allow a gen_root
 statement in their backend block in the bigtop config section.  It will
 manufacture a root parameter with a relative path to the generated html
-templates (the path is 'html', which will be relative to the build directory).
+templates.
+
+You can have multiple config blocks.  One of them must have either no name
+(as shown above), or be called 'base'.  The others can named with any valid
+Perl ident.  A second config block might look like this:
+
+    config prod {
+        dbconn `dbi:Pg:dbname=proddb;host=ourdb.example.com`;
+    }
+
+This results in a second conf instance for Gantry::Conf and alternate
+files for other approaches (like two cgi scritps or two files ready for
+inclusion in httpd.conf).
+
+All of the config values are inherited from the unnamed config block.
+Parameters defined in a named config block override or augment those
+inherited values.
 
 =item table
 
@@ -539,422 +358,29 @@ The general structure of a table is:
     table name { }
 
 Inside you can list either statements or field blocks.
-There are three legal statements at present:
-
-=over 4
-
-=item data last_name => Crow, first_name => Phil;
-
-(registered by Bigtop::Backend::SQL)
-
-This corresponds directly to an INSERT INTO statement for the given data.
-You may use as many data statements as you like.  Obviously, all fields
-you name must be defined for the table and your values must be of the
-proper SQL type.  Note that it is usually a bad idea to specify a value
-for the primary key, in a data statement, when the table has
-auto-incrementing behavior.
-
-=item foreign_display `%last_name, %first_name`;
-
-(registered by Bigtop::Backend::Model)
-
-This becomes the user's view of rows from this table when other tables point
-to them via a foreign_key.  Always use backquotes.  The formatting is
-simplistic.  Any text, which looks like an ident, abutted after a percent
-must be a field in the table whose value will go in that spot.  Literal
-percents are allowed at the end of the string or with trailing whitespace
-or punctuation (except underscore, '_').  Example:
-
-    foreign_display `name: %last, %first, score: %score%`;
-
-=item model_base_class
-
-(registered by Bigtop::Backend::Model)
-
-Each Model backend has a default base class for its models.  This overrides
-that default.
-
-    model_base_class Gantry::Utils::AuthCDBI;
-
-To specify the default, use the same statment, but put it in the model's
-backend block in the bigtop config section.
-
-=item not_for
-
-(registered by Bigtop::Backend::Parser, understood by Bigtop::Backend::Model::*
-and Bigtop::Backend::SQL::*)
-
-Tells one or more backends to skip this table.  Choices:
-
-    not_for SQL;
-    not_for Model;
-    not_for Model, SQL;
-
-For example, you might use this to obtain a model for a table that shouldn't
-appear in your in schema.* (perhaps the table lives in an external
-database).
-
-=item sequence sequence_name;
-
-(registered by Bigtop::Backend::SQL understood by Bigtop::Backend::SQL::*
-and Bigtop::Backend::Model::*);
-
-This means that the table might use the named sequence, but how it uses
-it is up to the field blocks (see below).  You can only name one
-sequence per table.
-
-=back
-
-There is only one legal block type:
 
     field name { }
 
-The field block can contain only statements.  The legal keywords
-typically include:
-
-=over 4
-
-=item is
-
-(registered and required by Bigtop::Backend::SQL)
-
-Allows a comma separated list of SQL descriptors for this field.  Choose from:
-
-=over 4
-
-=item type (must be first)
-
-This should be a valid SQL type (or something your backend will convert
-into one) like int4, varchar, etc.  Note that int4 is properly converted
-to something the database understands for all available backends.
-
-=item primary_key (can only be used by one field in each table)
-
-(handled by Bigtop::Backend::SQL::* and Bigtop::Backend::Model::*)
-
-This column is the primary key.  Multi-column primary keys are not supported.
-
-=item auto (also known as assign_by_sequence)
-
-(handled by Bigtop::Backend::SQL::* required by Bigtop::Backend::Model::Gantry)
-
-This column's default value will be the next value of the sequence for
-this table, if there is one and your database understands sequences.
-Otherwise, this will indicate that column should be marked auto-increment,
-so the database will auto-generate a sequence of value for the primary key.
-
-=back
-
-Example field blocks (but see below for more statements):
-
-    field id   { is int4, primary_key, auto; }
-    field name { is varchar; }
-
-=item label
-
-(registered by Bigtop::Backend::Control::Gantry)
-
-What the user will see as a description of the field in main_listing
-tables and on input/edit forms.
-
-    label `First Name`;
-
-=item date_select_text
-
-(registered by Bigtop::Backend::Control::Gantry)
-
-For fields of type date, this provides a date popup (if your backend supports
-it).  The text is used as the label for the href that triggers the popup.
-
-    date_select_text `Launch Calendar Popup`;
-
-See 'How can I let my users pick dates easily?' in Gantry::Docs::FAQ
-for details.
-
-=item html_form_constraint
-
-(registered by Bigtop::Backend::Control::Gantry)
-
-A regex or code which will generate one immediately.  If supplied, any
-value the user supplies will have to match this.
-
-    html_form_constraint `qr[^\d{5}(-\d{4})?]`;
-
-These are passed to Data::FormValidator, see its docs for full details.
-
-=item html_form_default_value
-
-(registered by Bigtop::Backend::Control::Gantry)
-
-A literal value to plug into an HTML form element when the user has not
-supplied one and the database row is missing or has no value for the field.
-
-    html_form_default_value KS;
-
-=item html_form_display_size
-
-(registered by Bigtop::Backend::Control::Gantry)
-
-For fields of html_form_type text, this controls how wide the field appears.
-
-    html_form_display_size 8;
-
-=item html_form_optional
-
-(registered by Bigtop::Backend::Control::Gantry)
-
-By default, fields are required (except for the primary key, which is
-assumed to be generated by the database using a sequence).  This means
-that users must supply a value for them (which may or may not be carefully
-validated).  If the field is not required, set this to a true value.
-
-    html_form_optional 1;
-
-=item html_form_options
-
-(registered by Bigtop::Backend::Control::Gantry)
-
-The options for fields of html_form_type select (except fields with refers_to
-statements).  Provide a comma separated list of option pairs like this:
-
-    field times_per_day {
-        is                int4;
-        label             `Notification Frequency`;
-        html_form_type    select;
-        html_form_options
-            Daily              => 1,
-            `Every other hour` => 12,
-            Hourly             => 24;
-    }
-
-In each pair, the key is what they user will see, the value is what the
-form's POST processor will see.  Note the careful use of backquotes for
-options with spaces in them.  If your option has any characters that Perl
-wouldn't like in an ident name, use backquotes.
-
-Omit this if your select field is really a foreign key (has a refers_to
-statement).  The user will be allowed to pick from all available rows
-in the foreign key table, seeing each row through its foreign_display.
-
-=item html_form_type
-
-(registered by Bigtop::Backend::Control::Gantry)
-
-What input type the user will use to enter/edit values of this field.
-
-    html_form_type textarea;
-
-Choose from text, textarea, select, or display.  If you choose select, and
-your field does not have a refers_to statement, you need to include the
-html_form_options statement.  If you choose display, the data in the
-underlying database row will be displayed (if it is available), but not
-in an input element, so users cannot change it.
-
-=item html_form_rows and html_form_cols
-
-For fields of type textarea, controls height and width of the text area's box.
-
-=item html_form_foreign
-
-(registered by Bigtop::Backend::Control::Gantry)
-
-Applies to fields of html_form_type 'display.'  Indicates that the field
-is a foreign key which use the foreign_display of the foreign row instead
-of its id.
-
-=item non_essential
-
-(registered by Bigtop::Backend::Model)
-
-Tells the Model backend that this field should not be retrieved until someone
-accesses it.  Not all models pay attention to this suggestion.
-
-=item refers_to
-
-(registered by Bigtop::Backend::SQL, understood by
-Bigtop::Backend::Control::Gantry,  Bigtop::Backend::Model::Gantry,
-Bigtop::Backend::Model::GantryDBIxClass, and
-Bigtop::Backend::Model::GantryCDBI)
-
-Indicates that this column is a foreign key holding the single integer
-primary key of another table.  The other table must exist.
-
-Use an html_form_type of select with refers_to fields.  Bigtop and Gantry
-will do the rest.  When the user needs to set a refers_to field, she
-will be presented with a pull down list.  The items in the list will
-be from the foreign table and will show the foreign_display from each
-of its rows.
-
-Model backends will tell their respective ORMs that this field is a foreign
-key, so they can make the proper relationship definitions (e.g. by calling
-belongs_to, has_a, etc.).
-
-=back
+The field block can contain only statements.
 
 =item join_table
 
-=over 4
+Join tables are used to connect two other tables in a many-to-many
+relationship.  For example, a book can have multiple authors while an
+author can have multiple books.  A joining table for this set-up has
+two foreign keys one to author and the other to book.
 
-=item joins (required)
-
-(registered by Bigtop::Backend::SQL and Bigtop::Backend::Model, understood by
-Bigtop::Backend::SQL::SQLite, Bigtop::Backend::SQL::Postgres,
-Bigtop::Backend::SQL::MySQL, and Bigtop::Backend::Model::GantryDBIxClass)
-
-A pair of tables which have a many-to-many relationship.  The order
-of the tables is not important.  Example:
-
-    join_table tshirt_color {
-        joins tshirt => color;
-    }
-
-The name of the join table is arbitrary, but command line tools make it
-by joining the first table's name to the second table's name with an
-underscore.
-
-The has_many relationships will be named for the table, by appending an
-s to the table name.  If that won't work for your table, see the names
-statement directly below.
-
-=item names (optional)
-
-(registered by Bigtop::Backend::SQL and Bigtop::Backend::Model, understood by
-Bigtop::Backend::SQL::SQLite, Bigtop::Backend::SQL::Postgres,
-Bigtop::Backend::SQL::MySQL, and Bigtop::Backend::Model::GantryDBIxClass)
-
-Names default to table names with a trailing s appended so color is called
-colors.  If you want the has_many relationships to have custom names do this:
-
-    join_table fox_sock {
-        joins fox   => sock;
-        names foxes => socks;
-    }
-
-Note that if you are providing one name, you must provide the other one.
-The names should be in the same order as they are in the joins statement.
-
-=back
+Join table blocks have statements and allow field blocks just as other
+tables do.
 
 =item controller
 
     controller Control::Module [ is type ] { ... }
 
-Controllers have several statments:
+The type is optional and defaults to stub.  Nothing special happens for stubs.
 
-=over 4
-
-=item controls_table
-
-(registered by Bigtop::Backend::Control)
-
-Says that this controller manages a given table.  Example:
-
-    controls_table transaction;
-
-=item literal Location
-
-(registered by Bigtop::Backend::HttpdConf)
-
-Puts literal text into the apache location block for this controller.  Example:
-
-    literal Location `    require group tech`;
-
-Then, C<require group tech> will appear as the last statement in
-the location block for the controller.
-
-=item literal GantryLocation
-
-(registered by Bigtop::Backend::Conf)
-
-Puts literal variable/value pairs into the Config::General output
-in the GantryLocation for this controller.
-
-=item location
-
-(registered by Bigtop::Backend::HttpdConf, Bigtop::Backend::CGI, and
-Bigtop::Backend::SiteLook::GantryDefault)
-
-The absolute location where users will point their browsers for this
-controller.  (This is still not a full URL.  It will be in the same
-host or virtual host as the other controllers.)
-
-=item page_link_label
-
-(registered by Bigtop::Backend::SiteLook::GantryDefault)
-
-Indicates that this controller should be included in default site
-navigation.  The value is the link text.
-
-=item rel_location
-
-(registered by Bigtop::Backend::HttpdConf, Bigtop::Backend::CGI, and
-Bigtop::Backend::SiteLook::GantryDefault)
-
-The location, relative to the app level location, where users will point
-their browsers for this controller.  (For Gantry apps, you must specify
-either rel_location or location for each controller.)
-
-=item text_description
-
-(registered by Bigtop::Backend::Control)
-
-Used to fill in various blanks in user messages relating to items being
-added, edited, and deleted by automated CRUD schemes.
-
-=item uses
-
-(registered by Bigtop::Backend::Control)
-
-Takes a list of modules which will be used at the top of the generated
-module.  Do not include the data model package here, controls_table
-is responsible for using it.  If your controller has a type, you should
-also leave out the module corresponding to that type.  For example,
-if you use the Control Gantry backend and you say
-
-    controller Transaction is CRUD {
-        #...
-    }
-
-you shouldn't put Gantry::Plugins::CRUD in your uses statement.  Doing
-so will result in duplicate use statements.
-
-By default, modules mentioned in uses statements will appear with import
-lists which explicitly import all items in their @EXPORT.
-But, you may supply the modules to use as a pair, where the key is the name
-of the module and the value is a literal string which becomes the
-import list for the module:
-
-    uses Gantry::Utils::AutoCRUD => `qw( do_add do_edit )`;
-
-This generates:
-
-    use Gantry::Utils::AutoCRUD qw( do_add do_edit );
-
-To turn off all explicit importation:
-
-    uses Gantry::Utils::AutotCRUD => ``;
-
-which will generate:
-
-    use Gantry::Utils::AutoCRUD;
-
-To decline imports:
-
-    uses Gantry::Utils::AutoCRUD => `qw()`;
-
-=item gen_uses
-
-(registered by Bigtop::Backend::Control)
-
-Just like uses, except that the modules are only used in the GEN module.
-
-=item stub_uses
-
-(registered by Bigtop::Backend::Control)
-
-Just like uses, except that the modules are only used in the stub module.
-
-=back
+Controllers allow statements and literal statements.  They also contain
+method and config blocks (see below).
 
 There are four controller types:
 
@@ -1030,9 +456,11 @@ Bigtop::Backend::Control::Gantry and Bigtop::Backend::HttpdConf::Gantry)
 That use is deprecated. ]
 
 This block works like the app level config block, but dumps its
-variables into the location for the controller.
-
-=back
+variables into the location for the controller.  The same rules for
+named blocks apply.  There must be an unnamed block (well, you could call
+it 'base').  Other blocks need names, and their names should match
+the app level named blocks (if there are any).  Then parameters in the
+named blocks augment or override the ones in the base block.
 
 =item method
 
@@ -1041,393 +469,7 @@ variables into the location for the controller.
 What goes in the block is controlled by the type (and how the backend
 treats it).  Everything in the block must be a statement.
 
-Most of the method statements depend on the method's type.  There is one
-they all share: extra_args.  It allows you to augment the parameter list
-the method expects.  Example:
-
-    extra_args `$id`, `@some_list`;
-
-So the value for this statement is a comma separated list.  Each argument
-must be separately backquoted.  They must include their sigils.  These
-values will be used as is.  (Note that typically you can only have
-one array in this list and it must be last.  The first array in the
-list will take all the remaining items from @_.)
-
-The method types are:
-
-=over 4
-
-=item main_listing
-
-(understood by Bigtop::Backend::Control::Gantry)
-
-You should probably call this method do_main, since Gantry calls that by
-default.  It makes an html table of rows from the controlled table.  Its
-statements are:
-
-=over 4
-
-=item rows
-
-The number of rows to include on each main listing page.
-
-=item paged_conf
-
-The name of the conf variable which holds the number of rows to include
-on each main listing page.  Dispite the name and the previous sentence,
-this is actually the name of the accessor which returns the number of
-rows and need not be part of conf.  It must be the name of a method
-on the Gantry site object.  So, the easiest way to set it up is to
-define a conf variable of the same name.
-
-=item cols
-
-A comma separated list of the fields from the controlled table which should
-be included in the html table.
-
-=item col_labels (optional)
-
-By default the columns are labeled with the value of the field's label
-statement in the table block.  If no label is given, the field's name
-is used as the default (and the bigtop user is warned).  To pick your
-own labels, use this statement.
-
-Each item in the list can be plain text or a pair.  If it is a pair,
-the key is link text and the value is Perl code which will generate
-an href link.  Example:
-
-    col_labels `Full Name`,
-               Date => `$site->location() . '/order_by_date'`;
-
-Presumably you have supplied a do_order_by_date method in the controller
-to handle reordering the html table by date.
-
-col_labels is used from left to right.  If it runs out of entries, the
-remaining labels revert to default behavior.
-
-=item header_options
-
-Gantry's results.tt main listing template has a spot for table level
-links at the far right of the heading row.  To populate it, use
-this statement.  Use either strings or text => link pairs.  Example:
-
-    header_options Add, Reports => `$self->location() . '/table_reports'`;
-
-For simple strings the link will take users to:
-
-    ( my $label = $your_label ) =~ s/ /_/g;
-    $self->location() . '/' . lc( $label );
-
-So, if the above location was /loc/subloc, Add will link to
-
-    /loc/subloc/add
-
-=item html_template
-
-By default main_listings use Gantry's results.tt.  Use this to
-override that template with one of yours.  Put it in a location where your
-template processor can find it.
-
-=item row_options
-
-These options are like header options, but they appear at the right side
-of each row in the main listing.  Typical example:
-
-    row_options Edit, Delete;
-
-These link to
-
-    ( my $label = $your_label ) =~ s/ /_/g;
-    $self->location() . '/' . lc( $label ) . "/$id";
-
-So, if the above location was /loc/subloc, Edit will link to
-
-    /loc/subloc/edit/$id
-
-To change the link location, use a pair (as shown above for header_options):
-
-    row_options Edit => `$self->location() . "/exotic_edit/$id";
-
-=item title
-
-The browser window title to display while do_main's page is displayed.
-
-=item limit_by
-
-(Optional) If present, this is the name of a foreign key field.  The
-generated do_main will take a value for that foreign key as an optional
-parameter.  If the paramter is supplied, only rows which match that
-foriegn key value will appear.
-
-Note that the parameter for this key is always last in the arg list
-(after any extra_args) and is named for the for the foreign key.
-
 =back
-
-=item AutoCRUD_form
-
-This method must be called form, since Gantry's AutoCRUD scheme will call
-it by name (well, you could call it _form, but that's deprecated).
-The statements for this type are:
-
-=over 4
-
-=item fields
-
-A comma separated list of the names of the fields from the controlled
-table that should appear on the form.  They will appear in the order given.
-Example:
-
-    fields name, address, city, state, zip, phone;
-
-=item all_fields_but
-
-Negated form of the fields statement.  Here you list the fields you don't
-want.  They appear in the order they are specified in the table.  Example:
-
-    all_fields_but id;
-
-=item extra_keys
-
-Gantry's AutoCRUD scheme uses form.tt to display the form.  That
-template expects a hash describing the form's layout, validation
-requirements, etc.  You can add keys to the hash with this statement.
-Provide as many comma separated pairs as you like.  The keys and
-their values will be used as is in the hash for form.tt.  Example:
-
-    javascript => `$self->calendar_month_js( 'my_form_name' )`;
-
-This is one step in the process of allowing easy date selection
-described in 'How can I let my users pick dates easily?' in
-Gantry::Docs::FAQ.
-
-Use any keys you want, but know that your template is your audience.
-If it doesn't know about the key, it will be ignored.
-
-=item form_name
-
-Provides a name attribute to the html form element (yes, I know this
-is not in compliance with the current xhtml).  You need to use this
-statement if you are using Gantry's popup calendar scheme for user
-date input.
-
-=back
-
-=item CRUD_form
-
-If you use this method type, you might want to mark the controller's
-type as CRUD:
-
-    controller MyModule is CRUD {
-        #...
-    }
-
-If you do mark the controller's type as CRUD, name this
-something_form.  That is, end the name with _form.  The backend
-strips that and uses what's left as the name of its
-generated Gantry::Plugins::CRUD object.
-
-See 'How do I use Gantry's CRUD?' in Bigtop::Docs::Cookbook for
-details about what the backend makes in this case.
-
-=back
-
-=item base_links
-
-This makes a default do_main style method for the base module of the app.
-It only understands to special keywords (besides extra_args):
-
-=over 4
-
-=item title
-
-The browser page title.
-
-=item template
-
-Defaults to main.tt.  The name of a template to use for rendering the
-nav links.
-
-=back
-
-=item links
-
-This makes a standard site_links style method.  It does not understand
-any keywords other than extra_args.
-
-=back
-
-=head1 Bigtop Backends
-
-This section lists the available backends.  Bigtop::Docs::Cookbook has more
-details on what each one makes and where it puts its output.
-
-=over 4
-
-=item CGI Gantry
-
-By default, this makes a single file app.cgi in the build directory which
-you must copy to your cgi-bin directory.  If you want FastCGI instead,
-set fast_cgi:
-
-    CGI Gantry { fast_cgi 1; }
-
-This backend can also make a stand alone server for testing your app.
-The server will be based on HTTP::Server::Simple.  To get a server, set
-with_server:
-
-    CGI Gantry { with_server 1; }
-
-The default server binds to port 8080, to change that, add server_port:
-
-    CGI Gantry { with_server 1;
-                 server_port 8192; }
-
-If you want to use Gantry::Conf, you should use the gantry_conf statement:
-
-    CGI Gantry { gantry_conf 1; }
-
-This will put GantryConfInstance -- and GantryConfFile if needed -- into
-the CGI engine object.  The values for these will be drawn from the the
-Conf Gantry backend's config block.
-
-Note that you may still use instance and conffile keywords, but they
-are deprecated.
-
-=item Conf Gantry
-
-Makes docs/appname.gantry.conf suitable for immediate use in /etc/gantry.d.
-That is, it wraps Config::General output in an <instance></instance> tag
-pair, making a stand alone Gantry::Conf file.  Normal Gantry::Conf master
-files have an C<include /etc/gantry.d/*.conf> statement, which brings
-in everything ending in conf from /etc/gantry.d.
-
-You need to specify an instance to use this backend:
-
-    Conf Gantry { instance your_instance; }
-
-If your conf is not drawn from /etc/gantry.conf, you need to add the
-master file name:
-
-    Conf Gantry {
-        instance your_instance;
-        conffile `/path/to/your/master.conf`;
-    }
-
-If you want a default TT root path add gen_root:
-
-    Conf Gantry {
-        instance your_instance;
-        gen_root 1;
-    }
-
-This creates a config variable called roots and gives it the value 'html.'
-That probably won't work in production, but is highly useful for initial
-development.  The path needs to point to your app specific templates,
-so don't use this unless you are using the stand alone server and keep your
-templates in the html subdirectory of the build directory.  In other cases,
-you need to put a proper root config variable in the app's config block
-with an absolute path to the templates.
-
-=item Conf General
-
-This backend is not very useful now that Conf Gantry does a better job
-of integrating with Gantry::Conf.  But, you may still want it if your
-conf scheme is different.
-
-Puts all app and controller level config statements into a Config::General
-formatted file (Appname.conf in the docs subdirectory of the build directory).
-Use the gen_root statement to have it generate a root parameter at the base
-location level:
-
-    Conf General { gen_root 1; }
-
-=item Control Gantry
-
-You can control whether the use Gantry statement in the base module of your
-app has the Engine and TemplateEngine import values.  By default, you don't
-get them.  If you want them in the controller, say this:
-
-    Control Gantry { full_use 1; }
-
-In this case, you should probably put a C<full_use 0;> statement somewhere
-else (like in HttpdConf Gantry's block, see below).
-
-Setting full_use to 1 makes it harder to port the app from one engine
-or template engine to another, which is why it isn't the default.
-
-If you use DBIx::Class as your ORM (which we recommend), make sure
-to include C<dbix 1;>.  In normal use, DBIx::Class performs queries
-via a call to resultset on the schema for your whole database.  That
-requires slightly different coding than directly querying the models.
-Hence this flag.  It defaults to false, but that is subject change
-since dbic is now our preferred ORM.
-
-=item HttpdConf Gantry
-
-If you are using Gantry::Conf, set the gantry_conf statement:
-
-    HttpdConf Gantry { gantry_conf 1; }
-
-Alternatively, if you are usuing the Conf General backend, you may want
-to turn off PerlSetVar generation for app and controller level config
-block statements by setting skip_config:
-
-    HttpdConf Gantry { skip_config 1; }
-
-Note that gantry_conf implies skip_config.
-
-If you do not want the Engine and TemplateEngine import values in your use
-App::Name statement in the Perl block of the generated httpd.conf, say
-something like this:
-
-    HttpdConf Gantry { full_use 0; }
-
-By default the use statement will have a full import list.
-
-=item Init Std
-
-For historical reasons, you may say:
-
-    Init Std { MANIFEST no_gen; }
-
-But this is now exactly equivalent to the more usual:
-
-    Init Std { no_gen 1; }
-
-Since all other files generated by Init Std are now (as of version 0.19)
-stubs, which are not subject to overwriting.
-
-It is not illegal to list the other files in no_gen statements, but it
-has no effect.
-
-=item Model GantryDBIxClass
-
-If you use this backend, you should set the dbix statement in the Control
-Gantry backend to a true value.
-
-=item Model Gantry
-
-=item Model GantryCDBI
-
-=item SiteLook Gantry
-
-Allows you to include a gantry_wrapper statement in its config block:
-
-    SiteLook Gantry {
-        gantry_wrapper `/path/to/gantry/root/sample_wrapper.tt`;
-    }
-
-The path needs to point to a wrapper with the structure of the
-sample_wrapper.tt that ships with Gantry.  By default, the backend
-just uses the one that came with Gantry.  So, you don't usually need
-this statement.
-
-=item SQL SQLite
-
-=item SQL Postgres
-
-=item SQL MySQL
 
 =back
 

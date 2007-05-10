@@ -27,7 +27,8 @@
                     <option value='literal'>    Literal    </option>
                     <option value='join_table'> Join Table </option>
                     <option value='schema'>     Schema (Postgres only)</option>
-                    <option value='sequence'>   Sequence   </option>
+                    <option value='config'>     Config Block </option>
+<!--                <option value='sequence'>   Sequence   </option> -->
                 </select>
             </td>
             <td colspan='2'>

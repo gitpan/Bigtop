@@ -1,6 +1,7 @@
 package Contact;
 
 use strict;
+use warnings;
 
 our $VERSION = '0.01';
 
@@ -58,6 +59,8 @@ You might even want to describe the table this module controls here.
 =head1 METHODS (inherited from GENContact)
 
 =over 4
+
+=item namespace
 
 =item init
 

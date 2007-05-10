@@ -19,7 +19,7 @@
     [% FOREACH statement IN view.data.statements.app.statements %]
     [% keyword = statement.keyword %]
     <tr>
-      <td>[% statement.label %]</td>
+      <td>[% statement.keyword %]</td>
       <td>
         [% values       = view.data.app.get_app_statement( keyword )
            single_value = values.0

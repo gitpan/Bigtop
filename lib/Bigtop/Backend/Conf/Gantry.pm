@@ -55,6 +55,16 @@ sub gen_Conf {
 
     my $app_name     = $tree->get_appname();
     $app_name        =~ s/::/-/g;
+
+    # write gantry incude 
+    my $include_file    = File::Spec->catfile(
+            $docs_dir,
+            "app.gantry.conf"
+    );
+
+    Bigtop::write_file( $include_file, "Include $app_name.gantry.conf\n" );
+    
+    # write gantry conf 
     my $conf_file    = File::Spec->catfile(
             $docs_dir,
             "$app_name.gantry.conf"
@@ -96,6 +106,7 @@ sub output_conf {
         );
         my $name = $instance;
         $name   .= "_$conf_type" unless $conf_type eq 'base';
+        s/^/    /gms for @{ $locations };  # apply an indent
         push @instances, { name => $name, locations => $locations };
     }
 
@@ -115,13 +126,13 @@ our $default_template_text = <<'EO_TT_BLOCKS';
 [% line %]
 [% END %][%# end of foreach line in locations %]
 </instance>
+
 [% END %]
 [% END %]
 
 [% BLOCK all_locations %]
 [% FOREACH config IN configs %][% config %][% END %]
 [% FOREACH literal IN literals %][% literal %][% END %]
-
 [% FOREACH child_piece IN child_output %][% child_piece %][% END %]
 [% END %][%# all_locations %]
 
@@ -136,7 +147,6 @@ our $default_template_text = <<'EO_TT_BLOCKS';
 [% config %][% END %]
 [% IF literal %][% literal %][% END %]
 </GantryLocation>
-
 [% END %]
 EO_TT_BLOCKS
 

@@ -1,5 +1,10 @@
+app.cgi
+app.server
 Build.PL
 Changes
+docs/AddressBook.gantry.conf
+docs/app.gantry.conf
+docs/httpd.conf
 docs/schema.mysql
 docs/schema.postgres
 docs/schema.sqlite
@@ -9,6 +14,12 @@ lib/AddressBook/Child.pm
 lib/AddressBook/Family.pm
 lib/AddressBook/GEN/Child.pm
 lib/AddressBook/GEN/Family.pm
+lib/AddressBook/GENModel.pm
+lib/AddressBook/Model.pm
+lib/AddressBook/Model/child.pm
+lib/AddressBook/Model/family.pm
+lib/AddressBook/Model/GEN/child.pm
+lib/AddressBook/Model/GEN/family.pm
 lib/GENAddressBook.pm
 MANIFEST			This list of files
 MANIFEST.SKIP

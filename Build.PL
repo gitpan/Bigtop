@@ -18,10 +18,11 @@ my $build = $subclass->new(
         'Template'        => 2.0,
         'Inline'          => 0.40,
         'Inline::TT'      => 0.06,
-        'Gantry'          => 3.46, # need Gantry::Build
+        'Gantry'          => 3.48, # need row level permissions
         'IO::Prompt'      => 0,
         'HTTP::Server::Simple' => 0.27, # for tentmaker
         'JSON'            => 0, # because gantry controllers will want it
+        'File::HomeDir'   => 0, # bigtop defaults come from home dirs
     },
     build_requires      => {
         'Test'        => 0,
@@ -171,6 +172,15 @@ sub _custom_code {
                 $self->copy_if_modified( $file, $path );
             }
             print "installed tentmaker templates to $path\n";
+        }
+        sub ACTION_dist {
+            my $self = shift;
+
+            if ( -x 'skip/gendocs' ) {
+                `skip/gendocs`;
+            }
+
+            $self->SUPER::ACTION_dist();
         }
     };
 }

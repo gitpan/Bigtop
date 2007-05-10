@@ -14,17 +14,83 @@ Off topic:
 
         perrin says that perltidy can make color-coded HTML
 
-Generated bigtop values which include Perl code should always use q or qq
-quoters.  This includes at least the default legend extra key in form methods.
+Most calls to get_param_hash on Gantry site objects should be replaced
+with calls to params instead.  This also needs to change in AutoCRUD
+and CRUD plugins.
 
-The tent tut and tent ref pods need new screen shots.  The old ones
-got lost in a web site move and they were out of date anyway.
+---
+
+While teaching tentmaker about controller level configs I discovered that
+you cannot delete a controller block you made in the current tentmaker
+session (full page refreshes might help).  This was a latent bug.
+
+Stas would like docs/app.gantry.conf to by named for his app:
+docs/appname.gantry.conf.
+
+Do Controller configs which are distinct from app level configs result
+in controller level inits and accessors?  (I doubt it.)  Should they?
+Probably.
+
+Tentmaker tests should test what is passed to templates instead of what
+those templates produce.
+    I simplified the first test in t/tentmaker/04_... so it doesn't check html.
+    More work is needed.
+    I've gone back to testing just the deparsed output, leaving HTML
+    appearance for manual visual inspection.
+
+When Pg8Live is used, your default database should be the PostgreSQL
+database you used with Pg8Live.  The user and password should probably
+also be recorded in conf.
+    This might be hacked in to the new defaulting approach.  Perhaps
+    get_minimal_default should receive a style (defaulting to kickstart),
+    it could then deflect to a method in the style (passing all command
+    line args?)
+
+---
+
+Stas noticed that the app.cgi script does not have a useful master conf
+file and it ignores the one in the Conf Gantry block.
+    I got this wrong.  He actually objected to the default name.  If you
+    change it in the Conf Gantry block, it will work.
+    I'm not overly concerned about this, as you probably want to use
+    a single system wide Gantry master conf file, not one for each app.
+
+Stas suggests that form fields should be generated into a file lexical
+variable so they don't have to built as method lexicals on each call.
+
+Augment Keywords.pm so it has detailed docs for all non-deprecated keywords.
+    There are two parts to this.  First, an even shorter description is
+    needed for the latex (and possibly web) table.  Second, a longer
+    description taken from the existing book.
+
+Merge tentmaker ref with Bigtop Syntax book chapters with new generation
+script based on a template of the book text.
+
+Write a doc about table perms.
+    specifying the perms
+    making them work to limit header and row options links
+    using them with CRUD
+
+We need new intro docs to feature:
+    kickstart
+    Gantry::Conf
+    named config blocks
+    life cycle (app.server <-> mod_perl)
+    moxie templates
 
 Stas says deleting fields does not remove them from the data statements
 table.  But adding data statements always sends a clean and correct table.
 
 Stas wants better tabbing order in the data statements table (so tab
 moves down).  This may not be so easy as the tabbing order is now default.
+    Maybe the data statements table should just stop fighting the current
+    and have its data across instead of down.  The only disadvantage
+    to that is excessive use of screen width.  The disadvantages to the
+    current approach are numerous.
+
+Stas thought using -c should move the source bigtop file into the
+docs directory instead of copying it and inform the user of the move.
+I'm still mulling this.
 
 ---
 
@@ -383,15 +449,31 @@ Not to be Done:
         new one.  I like being able to say: "It never overwrites a stub,
         full stop."
 
-    generate app_navigation with proper links in W::C::Gantry.
-        App navigation has rightly moved to the app specific wrapper.
-        While a generator for it might be nice, most of it is really
-        the css and layout of the hosting site.
-
     Add comment stubs for methods imported from uses statements.
         This is just litter.
 
 Bug fixes:
+
+    When you run tentmaker meaning to start a new project, but omit the
+    -n flag, the error message is:
+        Couldn't read AppName
+    which is OK, but it continues:
+        usage: Bigtop::Parser->parse_string(...) at Tentmaker.pm line 49.
+            New message:
+                Couldn't read 'AppName': No such file or directory
+                  perhaps you needed -n?
+
+    The generated app.server should not have the incompatible flags if test.
+
+    Bigtop is no longer generating nav links.
+
+    Stas says data statements in tentmaker cannot take values including
+    slashes.
+        He was right, data statement values were not being encoded by
+        the javascript ajax dispatching function.
+
+    The tent tut and tent ref pods need new screen shots.  The old ones
+    got lost in a web site move and they were out of date anyway.
 
     Stas noticed that attempting to change the engine immediately after saving
     results in:
@@ -477,6 +559,116 @@ Bug fixes:
     When config values have colons in them, deparse is not quoting them.
 
 Done:
+
+    Generated CRUD stubs never have any of their do_add, do_edit, or callbacks
+    listed in POD => podcoverage failures.
+        I'm not sure when this got fixed, but it did.
+
+    Controller level plugins are ignored, if don't need a GEN module.
+        Now using controller level plugins always results in a GEN module,
+        even if nothing else is in it.  But, you get your plugin.
+
+    Controller level plugins now have a namespace, but it differs from the
+    Apps top level namespace, so the top level plugins need to be repeated in
+    the controller's list so they can register the callbacks again in the
+    proper namespace.
+
+    Generated namespace and schema_base_class methods are not getting docs in
+    GEN modules, this leads to pod test failures.
+
+    Tentmaker should treat controller level config blocks as well as it does
+    app level config blocks.
+
+    Stas would like gantry conf files to use indentation for readability.
+        Thanks to Stas for sending a patch to do this.  Reability is improved.
+
+    Controller plugins don't give you a namespace.
+
+    Now that there are so many generated doc pieces (including vim
+    syntax), it would be nice to have a script to run all the automaters.
+    If that could be part of ./Build dist, so much the better.
+
+    The QuickStart pod doesn't use the new flags for controlling databases.
+
+    Remove abandoned docs and make TOC more prominent.  Rework Syntax.pod.
+
+    The new instance based scheme is not all that great since is doesn't
+    provide an automatic way to change databases at the command line in
+    app.server.  You have to manually make a conf block with a name you
+    like, then put the dsn in it.  Messy!  This should be automated.
+        Solution: foreach model other than SQLite, make a config block in
+        default (from script help) named for the database
+        We might want to restore the -n and -p command line flags (or not)
+            No.  Simpler.  I just restored the old flags to override conf at
+            the command line.
+
+
+    Users can now have their own default.  Place it in a template called
+    bigtopdef in the directory from which they run bigtop -n or tentmaker -n
+    or (if no such file exists) in ~/.bigtopdef.
+
+    We really want to allow users to provide their own minimal default.
+    Key: get rid of get_big_default in ScriptHelp and always use
+    get_minimal_default combined with the augmenter.  Then the user's minimal
+    default can drop in.
+        Actually, get_big_default stays, but now uses get_minimal_default
+        and then augments it.
+
+    In tentmaker, config should be a block type you can create.  The config
+    tab should go away.  You should also be able to create multiple
+    config blocks in controllers (in addition to making methods).
+
+    Whenever bigtop generates use strict; it should generate use warnings;.
+
+    Tentmaker now treats config blocks like other app body blocks.
+
+    Controller level configs are resulting in inits and their accessors going
+    to stubs instead of GEN modules.
+
+    Generated bigtop values which include Perl code should always use q or qq
+    quoters.  This includes at least the default legend extra key in form
+    methods.
+
+    controller_config methods are showing up in documenation link in their
+    stub, but not as comments like do_main or form.
+
+    When a method has no type, the bigtop error is strange.  See Dell laptop
+    ~/Bigtop/play/error.bigtop
+
+    t/bigtop/01_twotable.t should have a test for Gantry, without which it
+    is doomed to fail.  Versioning might be necessary and the best remeady
+    may be to exclude that test from the MANIFEST.
+
+    Now that app.server scripts take -i instance and -t type from command line,
+    we no longer need to generate multiple versions of them.  app.cgi might
+    still be another matter, since presumably each one has a different
+    instance.
+
+    Bigtop's plugins top config level keyword is not being used by the
+    test generation in Control Gantry backend.
+
+    We have a new bigtop level config keyword plugins which affects everything.
+    We need that at the controller level, so individual controllers can use
+    plugins that would interfere with other controllers (like SOAP plugins do).
+
+    All uses keywords should show in tentmaker as being pair optional.  Test
+    to see what the values need to be.
+
+    Sequence creation should be retired from tentmaker.
+
+    Tentmaker should never use labels for keywords.  It should just use
+    the keyword itself.  This will simplify descriptions in the book and
+    in other docs.
+        It still uses labels in the html for app body creation and display.
+
+    We need a new main_listing keyword: row_option_perms which takes a list
+    of pairs.  The keys are link text of row_options, the values are
+    'create', 'update', 'retrieve', or 'delete'.  These override the following
+    defaults.
+        Edit            is update
+        Update          is update
+        Delete          is delete
+        everything else is retrieve
 
     Stas thinks tentmaker backends tab could be clearer if the center column
     was narrower and the right column had name, input element, descr on one

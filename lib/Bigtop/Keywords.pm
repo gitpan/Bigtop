@@ -131,43 +131,46 @@ my %doc_for = (
         Conf => {
             keyword  => 'Conf',
             label    => 'Global Level',
-            descr    => 'Place outside all gened config blocks',
+            descr    => 'top level of Gantry::Conf file',
             sort_order => 10,
         },
         GantryLocation => {
             keyword  => 'GantryLocation',
             label    => 'Root level config',
-            descr    => 'Place in root GantryLocation',
+            descr    => 'controller level of Gantry::Conf file',
             sort_order => 20,
         },
         PerlTop => {
             keyword  => 'PerlTop',
             label    => 'Preamble',
-            descr    => 'Place at the top of the generated script(s)',
+            descr    =>
+                'immediately after shebang line in httpd.conf<br />' .
+                '<Perl> block and in the CGI scripts',
             sort_order => 30,
         },
         PerlBlock => {
             keyword  => 'PerlBlock',
             label    => 'Epilogue',
-            descr    => 'Place inside Perl block',
+            descr    => 'in the httpd.conf <Perl> block (in order<br />' .
+                        'with controllers)',
             sort_order => 40,
         },
         HttpdConf => {
             keyword  => 'HttpdConf',
             label    => 'Apache Conf',
-            descr    => 'Place outside of all generated blocks',
+            descr    => 'between location directives in httpd.conf',
             sort_order => 50,
         },
         Location => {
             keyword  => 'Location',
             label    => 'Base Location',
-            descr    => 'Place inside base Location block',
+            descr    => 'in the base Location directive for the app',
             sort_order => 60,
         },
         SQL => {
             keyword   => 'SQL',
             label     => 'SQL',
-            descr     => 'Dumped directly into schema',
+            descr     => 'dumped directly into all schemas',
             sort_order => 70,
         },
     },
@@ -408,7 +411,7 @@ my %doc_for = (
         html_form_options => {
             keyword     => 'html_form_options',
             label       => 'Options',
-            descr       => 'Choices for fields of type select '
+            descr       => 'Choices for fields of type select <br />'
                                        .   '[ignored for refers_to fields]',
             type        => 'pair',
             field_type  => 'select',
@@ -513,7 +516,7 @@ my %doc_for = (
             keyword  => 'location',
             label    => 'Location',
             descr    => 'Absolute Location of this controller '
-                        .   '[non-base controllers must have either a '
+                        .   '[non-base controllers<br />must have either a '
                         .   'location or a rel_location.]',
             type     => 'text',
             multiple => 0,
@@ -526,9 +529,9 @@ my %doc_for = (
         rel_location => {
             keyword  => 'rel_location',
             label    => 'Relative Loc.',
-            descr    => 'Location of this controller relative to app location '
-                        .   '[non-base controllers must have either a '
-                        .   'location or a rel_location.]',
+            descr    => 'Location of this controller relative to app location'
+                        .   '<br />[non-base controllers must have '
+                        .   'location or rel_location.]',
             type     => 'text',
             multiple => 0,
             urgency  => 5,
@@ -555,13 +558,14 @@ my %doc_for = (
         gen_uses => {
             keyword  => 'gen_uses',
             label    => 'Modules Used',
-            descr    => 'List of modules used in gen module',
+            descr    => 'List of modules used in gen module<br />' . #/
+                        'use list ex: qw( :default )',
             type     => 'text',
-#            type     => 'pair',
+            type     => 'pair',
             multiple => 1,
             sort_order => 45,
-#            pair_labels => [ 'Module', 'Literal Use List' ],
-#            pair_required => 0,
+            pair_labels => [ 'Module', 'Literal Use List' ],
+            pair_required => 0,
             controller_types => {
                 all => 1,
             },
@@ -571,11 +575,11 @@ my %doc_for = (
             label    => 'Modules Used',
             descr    => 'List of modules used in stub module',
             type     => 'text',
-#            type     => 'pair',
+            type     => 'pair',
             multiple => 1,
             sort_order => 48,
-#            pair_labels => [ 'Module', 'Literal Use List' ],
-#            pair_required => 0,
+            pair_labels => [ 'Module', 'Literal Use List' ],
+            pair_required => 0,
             controller_types => {
                 all => 1,
             },
@@ -584,12 +588,22 @@ my %doc_for = (
             keyword  => 'uses',
             label    => 'Modules Used',
             descr    => 'List of modules used by gen and stub modules',
-            type     => 'text',
-#            type     => 'pair',
+            type     => 'pair',
             multiple => 1,
             sort_order => 50,
-#            pair_labels => [ 'Module', 'Literal Use List' ],
-#            pair_required => 0,
+            pair_labels => [ 'Module', 'Literal Use List' ],
+            pair_required => 0,
+            controller_types => {
+                all => 1,
+            },
+        },
+        plugins => {
+            keyword  => 'plugins',
+            label    => 'Plugins Used',
+            descr    => 'List of plugins used by gen module',
+            type     => 'text',
+            multiple => 1,
+            sort_order => 52,
             controller_types => {
                 all => 1,
             },
@@ -610,7 +624,7 @@ my %doc_for = (
         page_link_label => {
             keyword  => 'page_link_label',
             label    => 'Navigation Label',
-            descr    => 'Link text in navigation bar [use only '
+            descr    => 'Link text in navigation bar<br />[use only '
                             . 'for navigable controllers]',
             type     => 'text',
             multiple => 0,
@@ -672,14 +686,14 @@ my %doc_for = (
         Location => {
             keyword  => 'Location',
             label    => 'Controller Loc.',
-            descr    => 'Place inside Location block for this controller',
+            descr    => 'in Location block for this controller',
             sort_order => 10,
         },
         GantryLocation => {
             keyword  => 'GantryLocation',
             label    => 'Controller Loc.',
             descr    =>
-                'Place inside GantryLocation block for this controller',
+                'in GantryLocation block for this controller',
             sort_order => 20,
         },
     },
@@ -692,6 +706,7 @@ my %doc_for = (
             type       => 'boolean',
             urgency    => 0,
             sort_order => 10,
+            applies_to => 'all',
             method_types => {
                 all => 1,
             },
@@ -704,6 +719,7 @@ my %doc_for = (
             multiple    => 1,
             urgency     => 0,
             sort_order  => 20,
+            applies_to => 'all but SOAP',
             method_types => {
                 main_listing  => 1,
                 base_links    => 1,
@@ -721,6 +737,7 @@ my %doc_for = (
             multiple    => 0,
             urgency     => 0,
             sort_order  => 22,
+            applies_to => 'main listing',
             method_types => {
                 main_listing => 1,
             },
@@ -733,6 +750,7 @@ my %doc_for = (
             multiple    => 0,
             urgency     => 3,
             sort_order  => 25,
+            applies_to  => 'main listing',
             method_types => {
                 main_listing => 1,
             },
@@ -745,6 +763,7 @@ my %doc_for = (
             multiple    => 0,
             urgency     => 0,
             sort_order  => 26,
+            applies_to  => 'main listing',
             method_types => {
                 main_listing => 1,
             },
@@ -757,6 +776,7 @@ my %doc_for = (
             multiple    => 1,
             urgency     => 5,
             sort_order  => 30,
+            applies_to  => 'main listing',
             method_types => {
                 main_listing => 1,
             },
@@ -764,12 +784,13 @@ my %doc_for = (
         col_labels => {
             keyword     => 'col_labels',
             label       => 'Override Field Labels',
-            descr       => 'Labels for fields on main_listing [optional '
+            descr       => 'Labels for fields on main_listing<br />[optional '
                               .     'default uses field labels]',
             type        => 'text',
             multiple    => 1,
             urgency     => 0,
             sort_order  => 40,
+            applies_to  => 'main listing',
             method_types => {
                 main_listing => 1,
             },
@@ -781,6 +802,7 @@ my %doc_for = (
             type        => 'boolean',
             urgency     => 0,
             sort_order  => 49,
+            applies_to  => 'main listing',
             method_types => {
                 main_listing => 1,
             },
@@ -795,6 +817,24 @@ my %doc_for = (
             multiple      => 1,
             urgency       => 5,
             sort_order    => 50,
+            applies_to    => 'main listing',
+            method_types => {
+                main_listing => 1,
+            },
+        },
+        header_option_perms => {
+            keyword       => 'header_option_perms',
+            label         => 'Header Option Permissions',
+            descr         => 'The table permission which controls options' .
+                         '<br />Pick from create, retrieve, update, or delete',
+            type          => 'pair',
+            pair_required => 1,
+            pair_labels   => [ 'Header Option Label',
+                               'Controlling Permission' ],
+            multiple      => 1,
+            urgency       => 0,
+            sort_order    => 55,
+            applies_to    => 'main listing',
             method_types => {
                 main_listing => 1,
             },
@@ -802,13 +842,46 @@ my %doc_for = (
         row_options => {
             keyword       => 'row_options',
             label         => 'Row Options',
-            descr         => 'User actions affecting rows [like Edit]',
+            descr         => 'User actions affecting rows [like Edit]' .
+                             '<br />Locations should not end with / or ' .
+                             '<br />include $id',
             type          => 'pair',
             pair_required => 0,
             pair_labels   => [ 'Label', 'Location' ],
             multiple      => 1,
             urgency       => 5,
             sort_order    => 60,
+            applies_to    => 'main listing',
+            method_types => {
+                main_listing => 1,
+            },
+        },
+        row_option_perms => {
+            keyword       => 'row_option_perms',
+            label         => 'Row Option Permissions',
+            descr         => 'The table permission which controls options' .
+                         '<br />Pick from create, retrieve, update, or delete',
+            type          => 'pair',
+            pair_required => 1,
+            pair_labels   => [ 'Row Option Label', 'Controlling Permission' ],
+            multiple      => 1,
+            urgency       => 0,
+            sort_order    => 65,
+            applies_to    => 'main listing',
+            method_types => {
+                main_listing => 1,
+            },
+        },
+        limit_by => {
+            keyword       => 'limit_by',
+            label         => 'Limit by Foreign Key',
+            descr         => 'If an arg is supplied, show only matching rows',
+            type          => 'text',
+            pair_required => 0,
+            multiple      => 0,
+            urgency       => 0,
+            sort_order    => 68,
+            applies_to    => 'main listing',
             method_types => {
                 main_listing => 1,
             },
@@ -821,6 +894,7 @@ my %doc_for = (
             multiple    => 0,
             urgency     => 3,
             sort_order  => 70,
+            applies_to  => 'main listing and links',
             method_types => {
                 main_listing => 1,
                 base_links   => 1,
@@ -829,39 +903,71 @@ my %doc_for = (
         html_template => {
             keyword     => 'html_template',
             label       => 'Output Template',
-            descr       => 'Template to use for main_listing [defaults '
+            descr       => 'Template to use for main_listing<br />[defaults '
                               .     'to results.tt or main.tt]',
             type        => 'text',
             multiple    => 0,
             urgency     => 0,
             sort_order  => 80,
+            applies_to  => 'main listing and links',
             method_types => {
                 main_listing => 1,
                 base_links   => 1,
             },
         },
-        limit_by => {
-            keyword       => 'limit_by',
-            label         => 'Limit by Foreign Key',
-            descr         => 'If an arg is supplied, show only matching rows',
-            type          => 'text',
+        authed_methods => {
+            keyword     => 'authed_methods',
+            label       => 'Authed Methods',
+            descr       => 'Controller methods that require auth',
+            type          => 'pair',
+            pair_labels   => [ 'Method', 'Group' ],
+            pair_required => 0,
+            multiple      => 1,
+            urgency     => 0,
+            sort_order  => 82,
+            applies_to  => 'hashref',
+            method_types => {
+                hashref => 1,
+            },
+        },   
+        permissions => {
+            keyword     => 'permissions',
+            label       => 'Permissions',
+            descr       => 'Set table permissions e.g. crudcr--cr--',
+            type          => 'pair',
+            pair_labels   => [ 'Bits', 'Group' ],
             pair_required => 0,
             multiple      => 0,
-            urgency       => 0,
-            sort_order    => 85,
+            urgency     => 0,
+            sort_order  => 84,
+            applies_to  => 'hashref',
             method_types => {
-                main_listing => 1,
+                hashref => 1,
+            },
+        },
+        literal => {
+            keyword     => 'literal',
+            label       => 'Perl Hashref',
+            descr       => 'Supply a custom perl hashref',
+            type        => 'text',
+            multiple    => 1,
+            urgency     => 0,
+            sort_order  => 86,
+            applies_to  => 'hashref',
+            method_types => {
+                hashref => 1,
             },
         },
         all_fields_but => {
             keyword     => 'all_fields_but',
             label       => 'Exclued These Fields',
-            descr       => 'Fields to exclude from a form '
+            descr       => 'Fields to exclude from a form<br/>'
                             .  '[either all_fields_but or fields is REQUIRED]',
             type        => 'text',
             multiple    => 1,
             urgency     => 5,
             sort_order  => 90,
+            applies_to  => 'form',
             method_types => {
                 AutoCRUD_form => 1,
                 CRUD_form     => 1,
@@ -870,12 +976,13 @@ my %doc_for = (
         fields => {
             keyword     => 'fields',
             label       => 'Include These Fields',
-            descr       => 'Fields to include on a form '
+            descr       => 'Fields to include on a form<br/>'
                             .  '[either all_fields_but or fields is REQUIRED]',
             type        => 'text',
             multiple    => 1,
             urgency     => 5,
             sort_order  => 100,
+            applies_to  => 'form',
             method_types => {
                 AutoCRUD_form => 1,
                 CRUD_form     => 1,
@@ -891,6 +998,7 @@ my %doc_for = (
             multiple      => 1,
             urgency       => 0,
             sort_order    => 110,
+            applies_to    => 'form',
             method_types => {
                 AutoCRUD_form => 1,
                 CRUD_form     => 1,
@@ -904,6 +1012,7 @@ my %doc_for = (
             multiple    => 0,
             urgency     => 0,
             sort_order  => 120,
+            applies_to  => 'form',
             method_types => {
                 AutoCRUD_form => 1,
                 CRUD_form     => 1,
@@ -919,6 +1028,7 @@ my %doc_for = (
             multiple      => 1,
             urgency       => 10,
             sort_order    => 130,
+            applies_to    => 'SOAP',
             method_types  => {
                 SOAP => 1,
             },
@@ -933,6 +1043,7 @@ my %doc_for = (
             multiple      => 1,
             urgency       => 10,
             sort_order    => 140,
+            applies_to    => 'SOAP',
             method_types  => {
                 SOAP => 1,
             },

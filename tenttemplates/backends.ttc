@@ -59,7 +59,7 @@
 
 [% BLOCK backend_statement %]
 <tr>
-<td> [% statement.label || statement.keyword %] </td>
+<td> [% statement.keyword %] </td>
 <td>
     [%
         key            = statement.keyword

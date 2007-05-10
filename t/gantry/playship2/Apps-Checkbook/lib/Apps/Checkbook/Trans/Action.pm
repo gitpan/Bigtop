@@ -1,6 +1,7 @@
 package Apps::Checkbook::Trans::Action;
 
 use strict;
+use warnings;
 
 use base 'Apps::Checkbook::GEN::Trans::Action';
 
@@ -21,6 +22,10 @@ use Apps::Checkbook::Model::trans qw(
 #-----------------------------------------------------------------
 # This method inherited from Apps::Checkbook::GEN::Trans::Action
 
+#-----------------------------------------------------------------
+# $self->controller_config(  )
+#-----------------------------------------------------------------
+# This method inherited from Apps::Checkbook::GEN::Trans::Action
 
 #-----------------------------------------------------------------
 # get_model_name( )
@@ -91,6 +96,10 @@ You might even want to describe the table this module controls here.
 =over 4
 
 =item form
+
+=item controller_config
+
+=item namespace
 
 
 =back

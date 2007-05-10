@@ -1,8 +1,12 @@
 use strict;
+use warnings;
 
 use Test::More tests => 3;
 
-use AddressBook qw{ -Engine=CGI -TemplateEngine=TT };
+use AddressBook qw{
+    -Engine=CGI
+    -TemplateEngine=TT
+};
 
 use Gantry::Server;
 use Gantry::Engine::CGI;
@@ -13,6 +17,8 @@ use Gantry::Engine::CGI;
 my $cgi = Gantry::Engine::CGI->new( {
     config => {
         dbconn => 'dbi:SQLite:dbname=app.db',
+        doc_rootp => '/static',
+        show_dev_navigation => '1',
         template_wrapper => 'genwrapper.tt',
         root => 'html:html/templates',
     },

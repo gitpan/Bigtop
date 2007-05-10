@@ -3,22 +3,14 @@
 package Apps::Checkbook::GEN::SOAP;
 
 use strict;
+use warnings;
 
 use Apps::Checkbook qw(
     -PluginNamespace=Apps::Checkbook::SOAP
-    SOAPMP20
+    SOAP::RPC
 );
 
 our @ISA = qw( Apps::Checkbook );
-
-
-use Gantry::Plugins::SOAPMP20 qw(
-    soap_in
-    soap_out
-    do_main
-    do_wsdl
-    return_error
-);
 
 
 #-----------------------------------------------------------------

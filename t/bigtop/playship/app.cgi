@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/alternate/bin/perl
 use strict;
 
 
@@ -13,9 +13,8 @@ use Gantry::Engine::CGI;
 
 my $cgi = Gantry::Engine::CGI->new( {
     config => {
-        dbconn => 'dbi:SQLite:dbname=app.db',
-        template_wrapper => 'genwrapper.tt',
-        root => 'html:html/templates',
+        GantryConfInstance => 'addressbook',
+        GantryConfFile => 'docs/app.gantry.conf',
     },
     locations => {
         '/' => 'AddressBook',

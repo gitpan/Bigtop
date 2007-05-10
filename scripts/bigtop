@@ -265,7 +265,7 @@ From your build directory:
 Supply passwords as prompted when creating and building the database.
 You may abbreviate --dbd as -d, --dbuser as -u, and --dbpass as -p.
 
-If you change the name from app.db, use --dbname (aka -n) on app.server.
+If you change the name from app.db, supply --dbname (aka -n) to app.server.
 
 EO_pg_help
 
@@ -286,7 +286,7 @@ For MySQL:
 Supply passwords as prompted when creating and building the database.
 You may abbreviate --dbd as -d, --dbuser as -u, and --dbpass as -p.
 
-If you change the name from app.db, use --dbname (aka -n) on app.server.
+If you change the name from app.db, supply --dbname (aka -n) to app.server.
 
 EO_mysql_help
 
@@ -450,6 +450,38 @@ If you don't have sqlite, a message will explain what to do to start the
 app.  Mostly this boils down to changing into the new build directory,
 creating a database called app.db, and running app.server with the proper
 flags for your database engine.
+
+This flag uses the default bigtop file from L<Bigtop::ScriptHelp> (which you
+can see by examining examples/default.bigtop in the distrubution).  If you
+like, you may override that default.  To do so, copy examples/default.bigtop
+to either bigtopdef in the directory from which you plan to run bigtop -n, or
+to .bigtopdef in your home directory.  Edit the file to your heart's content.
+
+The result must be a valid bigtop file, with one exception.  The file
+you create will be used as a template toolkit template.  But, only three
+things are available for subsitution:
+
+=over 4
+
+=item app_name
+
+The name of the app from the command line.
+
+=item no_colon_name
+
+The app name, where all ::'s are replaced with underscores.
+
+=item short_name
+
+Everything after the last :: in the app_name in lower case.
+
+=back
+
+For example see examples/def.bigtop.tt.
+
+If you have a ./bigtopdef or ~/.bigtopdef, but don't want to use it
+for a particular instance, set the BIGTOP_REAL_DEF enivornment variable
+in your shell.
 
 =item --add (-a )
 

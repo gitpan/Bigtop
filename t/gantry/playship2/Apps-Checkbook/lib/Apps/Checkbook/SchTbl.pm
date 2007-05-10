@@ -1,6 +1,7 @@
 package Apps::Checkbook::SchTbl;
 
 use strict;
+use warnings;
 
 use base 'Apps::Checkbook::GEN::SchTbl';
 
@@ -20,7 +21,6 @@ use Apps::Checkbook::Model::sch_tbl qw(
 # $self->form( $row )
 #-----------------------------------------------------------------
 # This method inherited from Apps::Checkbook::GEN::SchTbl
-
 
 #-----------------------------------------------------------------
 # get_model_name( )

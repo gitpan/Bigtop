@@ -177,6 +177,10 @@
     [% IF block.controller_type == 'CRUD' %]selected='selected'[% END %]
                           > CRUD     </option>
 
+                          <option value='hashref'
+    [% IF block.controller_type == 'hashref' %]selected='selected'[% END %]
+                          > hashref  </option>
+
                           <option value='SOAP'
     [% IF block.controller_type == 'SOAP' %]selected='selected'[% END %]
                           > SOAP     </option>
@@ -300,6 +304,52 @@
                      expanded = view.data.expanded_divs.${block.ident} || 0
                   %]
                     [% INCLUDE join_table_block %]
+                  [% END %] </td>
+            </tr>
+        </table>
+        </fieldset>
+
+      [% ELSIF block.type == 'config' %]
+        [% type_label = 'Config Block' %]
+        <fieldset>
+        <legend>
+            [% type_label %] 
+            ( <a href='javascript:show_or_hide( "[%-
+                "hideable_$block.ident" %]" );'>
+                edit or hide</a> [% UNLESS block.name == 'base' %] |  
+                [%- INCLUDE delete_link.ttc
+                    name  = "app_body_delete::$block.ident" %] [% END %]
+            )
+        </legend>
+        <table>
+              <tr>
+                <td> Name: </td>
+                <td>
+[% IF block.name == 'base' %]
+                    base
+[% ELSE %]
+                    <input type='text'
+                           id='app_block::[% block.ident %]'
+                           value='[% block.name %]'
+                           onblur='javascript:update_tree(
+                               "name",
+                               "config::[% block.ident %]",
+                               this.value
+                           )'
+                    />
+[% END %]
+                </td>
+            </tr>
+            <tr>
+                <td colspan='2'>
+                  [% WRAPPER show_or_hide.ttc
+                     clickable_id          = "config_heading_$block.ident"
+                     element_under_control = "hideable_$block.ident"
+                     label                 = 'Close Edit'
+                     heading_level         = 'none'
+                     expanded = view.data.expanded_divs.${block.ident} || 0
+                  %]
+                    [% INCLUDE config_block %]
                   [% END %] </td>
             </tr>
         </table>
@@ -453,6 +503,7 @@
               <option value='main_listing'>  main_listing  </option>
               <option value='AutoCRUD_form'> AutoCRUD_form </option>
               <option value='CRUD_form'>     CRUD_form     </option>
+              <option value='hashref'>       hashref       </option>
               <option value='base_links'>    base_links    </option>
               <option value='links'>         links         </option>
               <option value='SOAP'>          SOAP          </option>
@@ -470,8 +521,37 @@
 
   <br />
 
-  [% FOREACH item IN block.body.methods %]
-      [% INCLUDE method_block.ttc %]
+  <div class='app_block_controller_element'>
+    <fieldset>
+      <legend>Create Config Block</legend>
+    <table>
+      <tr><td> Name: </td>
+          <td>
+              <input type='text' id='new_controller_config_[% block.ident %]' />
+          </td>
+          <td colspan='2'>
+              <button type='button'
+                 name='new_controller_config_[% block.ident %]_create'
+                 onclick='javascript:create_controller_config(
+                    "[% block.ident %]"
+                 )'
+              > Create </button>
+          </td>
+      </tr>
+    </table>
+    </fieldset>
+  </div>
+
+  <br />
+
+  [% FOREACH controller_block IN block.body.blocks %]
+    [% IF controller_block.type == 'config' %]
+      [% INCLUDE controller_config_block.ttc
+            config_block = controller_block %]
+    [% ELSE %][%# must be a method %]
+      [% INCLUDE method_block.ttc
+            item = controller_block %]
+    [% END %]
     <br />
   [% END %]
 
@@ -551,4 +631,65 @@
   [% END %]
   </table>
 [% END %][%# end of join_table_statement_table %]
+
+[% BLOCK config_block %]
+<div class='app_block'>
+<table id='app_config_table_[% block.ident %]' class='bordered'>
+    <tr><th> Keyword </th>
+        <th> Value </th>
+        <th> Skip Accessor? </th>
+        <th> Delete Buttons </th>
+    </tr>
+    [% FOREACH statement IN block.statements %]
+      <tr id='app_config::row::[% block.ident %]::[% statement.keyword %]'>
+        <td> [% statement.keyword %] </td>
+        <td>
+          <input type='text'
+             name='app_conf_value::[% block_ident %]::[% statement.keyword %]'
+               value='[% statement.value %]'
+               onblur='javascritp:update_tree(
+                   "app_conf_statement",
+                   "[% block.ident %]::[% statement.keyword %]",
+                   this.value
+               )'
+          />
+        </td>
+        <td>
+            <input type='checkbox'
+             value='app_config_box::[% block.ident %]::[% statement.keyword %]'
+             name='app_config_box::[% block.ident %]::[% statement.keyword %]'
+                   [%- IF statement.no_accessor -%]checked='checked'[%- END -%]
+                   onchange='javascript:update_tree(
+                       "app_conf_accessor",
+                       "[% block.ident %]::[% statement.keyword %]",
+                       this.checked
+                   )'
+            />
+        </td>
+        <td>
+            <button type='button'
+name='app_config_delete::[% block.ident %]::[% statement.keyword %]'
+              onclick='javascript:delete_app_config( this )' >
+              Delete
+            </button>
+        </td>
+      </tr>
+    [% END %][%# end of existing config statement rows %]
+    [%# add one row for the new statement button and keyword text input %]
+      <tr>
+        <td> <button type='button' name='app_config_[% block.ident %]'
+                 onclick='javascript:add_app_config( "[% block.ident %]" )' >
+                New Config Statement:
+             </button>
+        </td>
+        <td>
+           <input type='text' id='app_config_new_[% block.ident %]' value='' />
+        </td>
+        <td>
+            <!-- place holder so the table cell borders look good -->
+        </td>
+      </tr>
+</table>
+</div>
+[% END %][%# end of config_block %]
 

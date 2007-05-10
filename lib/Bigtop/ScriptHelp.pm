@@ -5,6 +5,9 @@ use base 'Exporter';
 
 our @EXPORT = qw( valid_ident );
 
+use File::HomeDir;
+use File::Spec;
+
 my %non_entry   = (
     id       => 1,
     created  => 1,
@@ -12,16 +15,22 @@ my %non_entry   = (
 );
 
 sub _get_config_block {
+    my $app_name = shift;
+    
+    $app_name =~ s/::/_/g;
+    $app_name = lc( $app_name );
+    
     return << "EO_Config_Default";
 config {
-    engine          CGI;
+    engine          MP20;
     template_engine TT;
-
     Init            Std             {}
+    Conf Gantry      { gen_root 1; conffile `docs/app.gantry.conf`; instance $app_name; }
+    HttpdConf Gantry { gantry_conf 1; }
     SQL             SQLite          {}
     SQL             Postgres        {}
     SQL             MySQL           {}
-    CGI             Gantry          { with_server 1; gen_root 1; flex_db 1; }
+    CGI             Gantry          { with_server 1; flex_db 1; gantry_conf 1; }
     Control         Gantry          { dbix 1; }
     Model           GantryDBIxClass {}
     SiteLook        GantryDefault   {}
@@ -32,7 +41,24 @@ EO_Config_Default
 sub get_minimal_default {
     my $class  = shift;
     my $name   = shift || 'Sample';
-    my $config = _get_config_block;
+
+    # See if they have a bigtopdef or ~/.bigtopdef
+    # If no .bigtopdef, whip something up from scratch
+    my $def_file;
+    my $home_dir = File::HomeDir->my_home();
+    my $home_def = File::Spec->catfile( $home_dir, '.bigtopdef' );
+    if ( -f 'bigtopdef' ) {
+        $def_file = 'bigtopdef';
+    }
+    elsif ( -f $home_def ) {
+        $def_file = $home_def;
+    }
+
+    if ( $def_file and not $ENV{ BIGTOP_REAL_DEF } ) {
+        return _minimal_from_file( $def_file, $name );
+    }
+
+    my $config = _get_config_block( $name );
 
     return << "EO_Little_Default";
 $config
@@ -40,6 +66,8 @@ app $name {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
+        doc_rootp `/static` => no_accessor;
+        show_dev_navigation 1 => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {
@@ -51,103 +79,47 @@ app $name {
 EO_Little_Default
 }
 
+sub _minimal_from_file {
+    my $file     = shift;
+    my $app_name = shift;
+
+    # form substitution names
+    my $short_name = $app_name;
+    $short_name    =~ s/.*:://;
+
+    my $no_colon_name = $app_name;
+    $no_colon_name    =~ s/::/_/g;
+    $no_colon_name    = lc( $no_colon_name );
+
+    my %subs = (
+        app_name      => $app_name,
+        no_colon_name => $no_colon_name,
+        short_name    => $short_name,
+    );
+
+    # apply substitution names
+    require Template;
+
+    my $retval;
+    my $tt = Template->new( { ABSOLUTE => 1 } );
+    $tt->process( $file, \%subs, \$retval );
+
+    # give it to 'em
+    return $retval;
+}
+
 sub get_big_default {
     my $class    = shift;
     my $style    = shift;
     my $app_name = shift;
-    my @models   = @_;
+    my $extras   = join ' ', @_;
 
-    my $model_code = _make_model_code( $style, @models );
-    return _make_default_string( $app_name, $model_code );
-}
+    my $starter_kit = $class->get_minimal_default( $app_name );
+    my $tree        = Bigtop::Parser->parse_string( $starter_kit );
 
-sub _make_model_code {
-    my $style = shift;
+    $class->augment_tree( $style, $tree, $extras );
 
-    my $space = ' ';
-    my $args  = join $space, @_;
-
-    my %tables;
-    my @all_tables;
-    my %foreign_key_for;
-    my @joiners;
-
-    my $parsed_art = $style->get_db_layout( $args );
-    my ( $tables, $new_tables, $joiners, $foreign_key_for, $columns ) = (
-            $parsed_art->{ all_tables },
-            $parsed_art->{ new_tables },
-            $parsed_art->{ joiners },
-            $parsed_art->{ foreigners },
-            $parsed_art->{ columns },
-    );
-
-    my $foreign_targets = _transpose( $foreign_key_for );
-
-    my $col_num_2_name = _correlate_columns( $columns );
-
-    $new_tables = _safely_order( $new_tables, $foreign_key_for );
-
-    my $retval = '';
-
-    foreach my $model ( @{ $new_tables } ) {
-        my $schema_free = $model;
-        $schema_free    = _strip_schema( $schema_free );
-
-        my $controller  = Bigtop::ScriptHelp->default_controller( $model );
-
-        my $rel_loc     = $model;
-        $rel_loc        =~ s/\./_/;
-
-        my $descr       = $schema_free;
-        $descr          =~ s/_/ /g;
-
-        my $model_label = Bigtop::ScriptHelp->default_label( $schema_free );
-
-        my ( $native_text, $show_in_main, $those_excluded_from_form )
-                = _make_native_fields( $columns, $model, $foreign_targets );
-
-        my $foreign_text = _make_foreign_key_fields(
-                $foreign_key_for, $model, $col_num_2_name
-        );
-
-        $retval .= << "EO_MODEL";
-    table $model {
-$native_text
-$foreign_text
-    }
-    controller $controller is AutoCRUD {
-        controls_table `$model`;
-        rel_location $rel_loc;
-        text_description `$descr`;
-        page_link_label `$model_label`;
-        method do_main is main_listing {
-            cols $show_in_main;
-            header_options Add;
-            row_options Edit, Delete;
-            title `$model_label`;
-        }
-        method form is AutoCRUD_form {
-            all_fields_but $those_excluded_from_form;
-            extra_keys
-                legend => `\$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
-        }
-    }
-EO_MODEL
-    }
-
-    foreach my $joiner ( @{ $joiners } ) {
-        my ( $table1, $table2 ) = @{ $joiner };
-
-        my $join_name = join '_', $table1, $table2;
-
-        $retval .= << "EO_JOINER";
-    join_table $join_name {
-        joins $table1 => $table2;
-    }
-EO_JOINER
-    }
-
-    return $retval;
+    return Bigtop::Deparser->deparse( $tree );
 }
 
 sub _transpose {
@@ -162,33 +134,6 @@ sub _transpose {
     }
 
     return \%retval;
-}
-
-sub _make_default_string {
-    my $app_name   = shift;
-    my $model_code = shift;
-
-    my $dbname     = lc $app_name;
-    $dbname        =~ s/::/_/g;
-
-    my $config     = _get_config_block();
-
-    return <<"EO_Model_Bigtop";
-$config
-app $app_name {
-    config {
-        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt` => no_accessor;
-    }
-    controller is base_controller {
-        method do_main is base_links {
-        }
-        method site_links is links {
-        }
-    }
-$model_code
-}
-EO_Model_Bigtop
 }
 
 sub _correlate_columns {

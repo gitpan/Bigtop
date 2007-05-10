@@ -1,8 +1,12 @@
 use strict;
+use warnings;
 
 use Test::More tests => 3;
 
-use Contact qw{ -Engine=CGI -TemplateEngine=TT };
+use Contact qw{
+    -Engine=CGI
+    -TemplateEngine=TT
+};
 
 use Gantry::Server;
 use Gantry::Engine::CGI;

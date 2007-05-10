@@ -191,7 +191,7 @@ our $default_template_text = <<'EO_TT_BLOCKS';
 
 [% BLOCK perl_block %]
 <Perl>
-    #!/usr/bin/perl
+    #![% perl_path +%]
 
 [% FOREACH line IN top_lines %]
 [% line %]
@@ -204,8 +204,8 @@ our $default_template_text = <<'EO_TT_BLOCKS';
         -TemplateEngine=[% template_engine %][% END %][% IF plugins %]
 
         -PluginNamespace=[% base_module +%]
-        [% plugins +%]
-[% END %][%# end of IF plugins %]
+        [% plugins %]
+[% END %][%# end of IF plugins +%]
     };
 [% ELSE %]
     use [% base_module %];
@@ -301,12 +301,15 @@ sub output_perl_block {
         $full_base_use      = 0;
     }
 
+    my $perl_path           = $^X;
+
     my $output = Bigtop::Backend::HttpdConf::Gantry::perl_block(
         {
             base_module   => $base_module,
             child_output  => \@regular_lines,
             top_lines     => \@top_lines,
             full_base_use => $full_base_use,
+            perl_path     => $perl_path,
             %{ $config }, # in case full use is true
         }
     );

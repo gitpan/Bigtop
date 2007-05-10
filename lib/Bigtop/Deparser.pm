@@ -435,7 +435,9 @@ sub output_app_body {
     my $child_output = shift;
 
     my $indent       = ' ' x 8;
-    my @retval       = ( $indent . 'config {' );
+    my $type         = $self->{__TYPE__} || '';
+    $type           .= ' ' if $type;
+    my @retval       = ( $indent . "config ${type}{" );
 
     push @retval, @{ $child_output };
 

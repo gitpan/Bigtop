@@ -116,31 +116,29 @@ Bigtop::Backend::Conf::Gantry->gen_Conf( $base_dir, $tree );
 
 $correct_conf = <<'EO_CORRECT_CONF';
 <instance happy>
-DB app_db
-DBName some_user
-root html:html/templates
-hello shane
-
-<GantryLocation /app_base/payee>
-    importance 3
-    lines_per_page 3
-    hello savine
-</GantryLocation>
-
+    DB app_db
+    DBName some_user
+    root html:html/templates
+    hello shane
+    <GantryLocation /app_base/payee>
+        importance 3
+        lines_per_page 3
+        hello savine
+    </GantryLocation>
 </instance>
+
 <instance happy_prod>
-DB prod_db
-root html:html/templates
-DBName some_user
-hello shane
-
-<GantryLocation /app_base/payee>
-    lines_per_page 25
-    importance 3
-    hello savine
-</GantryLocation>
-
+    DB prod_db
+    root html:html/templates
+    DBName some_user
+    hello shane
+    <GantryLocation /app_base/payee>
+        lines_per_page 25
+        importance 3
+        hello savine
+    </GantryLocation>
 </instance>
+
 EO_CORRECT_CONF
 
 file_ok( $gconf, $correct_conf, 'generated gantry output' );

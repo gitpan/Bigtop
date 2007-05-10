@@ -1,6 +1,7 @@
 package Apps::Checkbook::SOAP;
 
 use strict;
+use warnings;
 
 use base 'Apps::Checkbook::GEN::SOAP';
 
@@ -27,7 +28,6 @@ sub greet {
 sub cube_root {
     my ( $self, $input ) = @_;
 } # END cube_root
-
 
 
 1;
@@ -102,7 +102,6 @@ You might even want to describe the table this module controls here.
 
     Apps::Checkbook
     Apps::Checkbook::GEN::SOAP
-    Gantry::Plugins::SOAPMP20
 
 =head1 AUTHOR
 

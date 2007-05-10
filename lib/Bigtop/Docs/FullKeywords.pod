@@ -1,6 +1,6 @@
 =head1 NAME
 
-Bigtop::Docs::AutoKeywords - Generated descriptions of Bigtop keywords
+Bigtop::Docs::FullKeywords - Descriptions of all Bigtop keywords
 
 =head1 Intro
 
@@ -159,37 +159,39 @@ Where to send complaints (think mailing list)
 
 =item Conf
 
-Place outside all gened config blocks
+top level of Gantry::Conf file
 
 
 =item GantryLocation
 
-Place in root GantryLocation
+controller level of Gantry::Conf file
 
 
 =item PerlTop
 
-Place at the top of the generated script(s)
+immediately after shebang line in httpd.conf
+<Perl> block and in the CGI scripts
 
 
 =item PerlBlock
 
-Place inside Perl block
+in the httpd.conf <Perl> block (in order
+with controllers)
 
 
 =item HttpdConf
 
-Place outside of all generated blocks
+between location directives in httpd.conf
 
 
 =item Location
 
-Place inside base Location block
+in the base Location directive for the app
 
 
 =item SQL
 
-Dumped directly into schema
+dumped directly into all schemas
 
 
 =back
@@ -284,7 +286,8 @@ This field is boolean, use 1 for true or 0 for false.
 
 =item location
 
-Absolute Location of this controller [non-base controllers must have either a location or a rel_location.]
+Absolute Location of this controller [non-base controllers
+must have either a location or a rel_location.]
 
 
 Applies to all controller types.
@@ -294,7 +297,8 @@ This statement is virtually required.
 
 =item rel_location
 
-Location of this controller relative to app location [non-base controllers must have either a location or a rel_location.]
+Location of this controller relative to app location
+[non-base controllers must have location or rel_location.]
 
 Applies to controllers of type: AutoCRUD, CRUD, SOAP, and stub.
 
@@ -314,10 +318,18 @@ This statement is virtually required.
 =item gen_uses
 
 List of modules used in gen module
+use list ex: qw( :default )
 
 
 Applies to all controller types.
 
+
+Values for gen_uses statements may be individual values
+or pairs like:
+
+    name => optional_value
+
+where C<name> is a module and C<optional_value> is a literal use list.
 
 You may supply a comma separated list of values for
 gen_uses statements.
@@ -330,6 +342,13 @@ List of modules used in stub module
 Applies to all controller types.
 
 
+Values for stub_uses statements may be individual values
+or pairs like:
+
+    name => optional_value
+
+where C<name> is a module and C<optional_value> is a literal use list.
+
 You may supply a comma separated list of values for
 stub_uses statements.
 
@@ -341,8 +360,26 @@ List of modules used by gen and stub modules
 Applies to all controller types.
 
 
+Values for uses statements may be individual values
+or pairs like:
+
+    name => optional_value
+
+where C<name> is a module and C<optional_value> is a literal use list.
+
 You may supply a comma separated list of values for
 uses statements.
+
+=item plugins
+
+List of plugins used by gen module
+
+
+Applies to all controller types.
+
+
+You may supply a comma separated list of values for
+plugins statements.
 
 =item text_description
 
@@ -355,7 +392,8 @@ This statement is frequently used.
 
 =item page_link_label
 
-Link text in navigation bar [use only for navigable controllers]
+Link text in navigation bar
+[use only for navigable controllers]
 
 
 Applies to all controller types.
@@ -407,12 +445,12 @@ This statement is required.
 
 =item Location
 
-Place inside Location block for this controller
+in Location block for this controller
 
 
 =item GantryLocation
 
-Place inside GantryLocation block for this controller
+in GantryLocation block for this controller
 
 
 =back
@@ -599,7 +637,8 @@ form field hint
 
 =item html_form_options
 
-Choices for fields of type select [ignored for refers_to fields]
+Choices for fields of type select 
+[ignored for refers_to fields]
 
 Applies only to fields of type select.
 
@@ -759,7 +798,8 @@ This statement is virtually required.
 
 =item col_labels
 
-Labels for fields on main_listing [optional default uses field labels]
+Labels for fields on main_listing
+[optional default uses field labels]
 
 Applies to methods of type: main_listing.
 
@@ -796,9 +836,28 @@ header_options statements.
 
 This statement is virtually required.
 
+=item header_option_perms
+
+The table permission which controls options
+Pick from create, retrieve, update, or delete
+
+Applies to methods of type: main_listing.
+
+
+All values for header_option_perms statements must be pairs like:
+
+    name => its_value
+
+where C<name> is a header option label and C<its_value> is a controlling permission.
+
+You may supply a comma separated list of values for
+header_option_perms statements.
+
 =item row_options
 
 User actions affecting rows [like Edit]
+Locations should not end with / or 
+include $id
 
 Applies to methods of type: main_listing.
 
@@ -815,6 +874,30 @@ row_options statements.
 
 This statement is virtually required.
 
+=item row_option_perms
+
+The table permission which controls options
+Pick from create, retrieve, update, or delete
+
+Applies to methods of type: main_listing.
+
+
+All values for row_option_perms statements must be pairs like:
+
+    name => its_value
+
+where C<name> is a row option label and C<its_value> is a controlling permission.
+
+You may supply a comma separated list of values for
+row_option_perms statements.
+
+=item limit_by
+
+If an arg is supplied, show only matching rows
+
+Applies to methods of type: main_listing.
+
+
 =item title
 
 Browser title bar title for main_listing
@@ -826,21 +909,57 @@ This statement is frequently used.
 
 =item html_template
 
-Template to use for main_listing [defaults to results.tt or main.tt]
+Template to use for main_listing
+[defaults to results.tt or main.tt]
 
 Applies to methods of type: base_links and main_listing.
 
 
-=item limit_by
+=item authed_methods
 
-If an arg is supplied, show only matching rows
+Controller methods that require auth
 
-Applies to methods of type: main_listing.
+Applies to methods of type: hashref.
 
+
+Values for authed_methods statements may be individual values
+or pairs like:
+
+    name => optional_value
+
+where C<name> is a method and C<optional_value> is a group.
+
+You may supply a comma separated list of values for
+authed_methods statements.
+
+=item permissions
+
+Set table permissions e.g. crudcr--cr--
+
+Applies to methods of type: hashref.
+
+
+Values for permissions statements may be individual values
+or pairs like:
+
+    name => optional_value
+
+where C<name> is a bits and C<optional_value> is a group.
+
+=item literal
+
+Supply a custom perl hashref
+
+Applies to methods of type: hashref.
+
+
+You may supply a comma separated list of values for
+literal statements.
 
 =item all_fields_but
 
-Fields to exclude from a form [either all_fields_but or fields is REQUIRED]
+Fields to exclude from a form
+[either all_fields_but or fields is REQUIRED]
 
 Applies to methods of type: AutoCRUD_form and CRUD_form.
 
@@ -852,7 +971,8 @@ This statement is virtually required.
 
 =item fields
 
-Fields to include on a form [either all_fields_but or fields is REQUIRED]
+Fields to include on a form
+[either all_fields_but or fields is REQUIRED]
 
 Applies to methods of type: AutoCRUD_form and CRUD_form.
 
@@ -1015,7 +1135,7 @@ You may use multiple data statements.
 
 =head1 AUTHOR
 
-The skip/podsyntax script generated this file Thu Mar 29 10:59:31 2007.
+The skip/podsyntax script generated this file Thu May 10 12:33:19 2007.
 The script was written by Phil Crow E<lt>crow.phil\@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

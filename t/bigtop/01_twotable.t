@@ -1,11 +1,28 @@
 use strict;
 
-use Test::More tests => 1;
+use Test::More;
 use Test::Files;
 use File::Spec;
 
 use lib 't';
 use Purge; # exports real_purge_dir and strip_copyright;
+
+BEGIN {
+    eval {
+        require Gantry::Init;
+
+        my $path = Gantry::Init->base_root();
+
+        die "no path to templates\n" unless -d $path;
+
+        plan tests => 1;
+    };
+    if ( $@ ) {
+        plan skip_all => 'Could not find Gantry templates';
+    }
+}
+
+$ENV{ BIGTOP_REAL_DEF } = 1;
 
 my $play_dir = File::Spec->catdir( qw( AddressBook ) );
 my $ship_dir = File::Spec->catdir( qw( t bigtop playship ) );
@@ -40,7 +57,7 @@ sub stripper {
         return '';
     }
 
-    $line   =~ s/^#!.*//;
+    $line   =~ s/^\s*#!.*//;
 
     return $line;
 }

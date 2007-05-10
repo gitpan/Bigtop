@@ -1,35 +1,37 @@
 [
-  { "keyword" : "ident_14::label", "value" : "Street Address" },
-  { "keyword" : "ident_4::foreign_display", "value" : "%street_address" },
-  { "keyword" : "ident_11::cols", "values" : [
+  { "keyword" : "ident_15::label", "value" : "Street Address" },
+  { "keyword" : "ident_5::foreign_display", "value" : "%street_address" },
+  { "keyword" : "ident_12::cols", "values" : [
       "ident",
       "street_address",
       "description"
     ]
   },
-  { "keyword" : "ident_12::all_fields_but", "values" : [
+  { "keyword" : "ident_13::all_fields_but", "values" : [
       "id",
       "created",
       "street_address",
       "modified"
     ]
   },
-  { "keyword" : "ident_12::fields", "values" : [
+  { "keyword" : "ident_13::fields", "values" : [
       "street_address"
     ]
   },
-  { "keyword" : "field_edit_option::ident_14", "text" : "street_address" },
-  { "keyword" : "field_name::ident_14", "value" : "street_address" },
-  { "keyword" : "quick_label_ident_14", "value" : "Street Address" }
+  { "keyword" : "field_edit_option::ident_15", "text" : "street_address" },
+  { "keyword" : "field_name::ident_15", "value" : "street_address" },
+  { "keyword" : "quick_label_ident_15", "value" : "Street Address" }
 ]
 config {
-    engine CGI;
+    engine MP20;
     template_engine TT;
     Init Std {  }
+    Conf Gantry { conffile `docs/app.gantry.conf`; gen_root 1; instance sample; }
+    HttpdConf Gantry { gantry_conf 1; }
     SQL SQLite {  }
     SQL Postgres {  }
     SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    CGI Gantry { with_server 1; flex_db 1; gantry_conf 1; }
     Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
@@ -38,6 +40,8 @@ app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
+        doc_rootp `/static` => no_accessor;
+        show_dev_navigation 1 => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {
@@ -59,7 +63,7 @@ app Sample {
         method form is AutoCRUD_form {
             all_fields_but id, created, street_address, modified;
             extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend => `$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
             fields street_address;
         }
     }

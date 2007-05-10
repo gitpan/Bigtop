@@ -3,7 +3,7 @@ use strict;
 use Test::More;
 use Test::Files;
 
-eval "use Gantry::Plugins::SOAPMP20";
+eval "use Gantry::Plugins::SOAP::RPCMP";
 if ( $@ ) {
     plan skip_all => 'SOAP only supported for mod_perl 2' if $@;
 }

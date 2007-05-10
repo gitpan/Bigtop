@@ -3,9 +3,11 @@
 package Apps::Checkbook::GEN::Trans;
 
 use strict;
+use warnings;
 
 use base 'Apps::Checkbook';
 use JSON;
+use Gantry::Utils::TablePerms;
 
 use SomePackage::SomeModule qw( a_method $b_scalar );
 use SomePackage::OtherModule;
@@ -29,6 +31,14 @@ sub do_main {
         $real_location .= '/';
     }
 
+    my @header_options = (
+        {
+            text => 'Add',
+            link => $real_location . "add",
+            type => 'create',
+        },
+    );
+
     my $retval = {
         headings       => [
             'Status 3',
@@ -36,12 +46,6 @@ sub do_main {
             '<a href=' . $site->location() . '/date_order' . '>Date</a>',
             'Amount',
             'Paid To/Rec\'v\'d From',
-        ],
-        header_options => [
-            {
-                text => 'Add',
-                link => $real_location . "add",
-            },
         ],
     };
 
@@ -65,15 +69,45 @@ sub do_main {
         } if scalar( @searches ) > 0;
     }
 
+    my @row_options = (
+        {
+            text => 'Edit',
+            type => 'update',
+        },
+        {
+            text => 'Delete',
+            type => 'delete',
+        },
+    );
+
+    my $perm_obj = Gantry::Utils::TablePerms->new(
+        {
+            site           => $self,
+            real_location  => $real_location,
+            header_options => \@header_options,
+            row_options    => \@row_options,
+        }
+    );
+
+    $retval->{ header_options } = $perm_obj->real_header_options;
+
+    my $limit_to_user_id = $perm_obj->limit_to_user_id;
+    $search->{ user_id } = $limit_to_user_id if ( $limit_to_user_id );
+
     my @rows = $TRANS->get_listing( { order_by => 'trans_date DESC', } );
 
+    ROW:
     foreach my $row ( @rows ) {
+        last ROW if $perm_obj->hide_all_data;
+
         my $id = $row->id;
         my $payee_payor = ( $row->payee_payor )
                 ? $row->payee_payor->foreign_display()
                 : '';
+
         push(
             @{ $retval->{rows} }, {
+                orm_row => $row,
                 data => [
                     $row->status,
                     $row->cleared_display(),
@@ -81,16 +115,7 @@ sub do_main {
                     $row->amount,
                     $payee_payor,
                 ],
-                options => [
-                    {
-                        text => 'Edit',
-                        link => $real_location . "edit/$id",
-                    },
-                    {
-                        text => 'Delete',
-                        link => $real_location . "delete/$id",
-                    },
-                ],
+                options => $perm_obj->real_row_options( $row ),
             }
         );
     }
@@ -104,7 +129,7 @@ sub do_main {
             rows            => $retval->{ rows },
         };
 
-        my $json = objToJson( $obj );
+        my $json = objToJson( $obj, { skipinvalid => 1 } );
         return( $json );
     }
 

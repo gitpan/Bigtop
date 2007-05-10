@@ -172,11 +172,6 @@ sub _parse_columns {
         my $optional;
         $optional = 1 if ( $name =~ s/^\+// );
 
-        # set type
-        foreach my $type ( @types ) {
-            $type = "`$type`" unless valid_ident( $type );
-        }
-
         @types = ( 'varchar' ) unless ( @types > 0 );
 
         # begin building columns sub hash with required keys

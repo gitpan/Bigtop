@@ -3,9 +3,17 @@
 package Apps::Checkbook::GEN::Trans::Action;
 
 use strict;
+use warnings;
 
-use base 'Apps::Checkbook';
+use Apps::Checkbook qw{
+    -PluginNamespace=Apps::Checkbook::Trans::Action
+    PluginQ PluginA
+};
+
+our @ISA = qw( Apps::Checkbook );
+
 use JSON;
+use Gantry::Utils::TablePerms;
 
 use Apps::Checkbook::Model::trans qw(
     $TRANS
@@ -34,6 +42,27 @@ sub form {
     };
 } # END form
 
+#-----------------------------------------------------------------
+# $self->controller_config(  )
+#-----------------------------------------------------------------
+sub controller_config {
+    my ( $self ) = @_;
+
+    return {
+        permissions => {
+            bits  => 'crudcr-d-r--',
+            group => ''
+        },
+    };
+} # END controller_config
+
+#-----------------------------------------------------------------
+# $self->namespace() or Apps::Checkbook->namespace()
+#-----------------------------------------------------------------
+sub namespace {
+    return 'Apps::Checkbook::Trans::Action';
+}
+
 1;
 
 =head1 NAME
@@ -57,6 +86,10 @@ Feel free to override them.
 =over 4
 
 =item form
+
+=item controller_config
+
+=item namespace
 
 
 =back

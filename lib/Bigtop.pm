@@ -5,7 +5,7 @@ use warnings::register;
 use Carp;
 use File::Spec;
 
-our $VERSION = '0.26';
+our $VERSION = '0.27';
 
 sub write_file {
     my $file_name    = shift;
@@ -268,9 +268,9 @@ Bigtop is discussed on the Gantry mailing list.  Please visit
 http://www.usegantry.org, and click on the Mailing List tab under the
 banner, for instructions.
 
-Bigtop source is available for svn checkout:
+Bigtop source is available for svn checkout.  For instructions, visit:
 
-    svn checkout http://svn.usegantry.org/repo/bigtop/trunk/
+    http://usegantry.org
 
 =head1 AUTHOR
 

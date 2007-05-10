@@ -1,21 +1,23 @@
 config {
-    engine          CGI;
+    engine MP20;
     template_engine TT;
-
-    Init            Std             {}
-    SQL             SQLite          {}
-    SQL             Postgres        {}
-    SQL             MySQL           {}
-    CGI             Gantry          { with_server 1; gen_root 1; flex_db 1; }
-    Control         Gantry          { dbix 1; }
-    Model           GantryDBIxClass {}
-    SiteLook        GantryDefault   {}
+    Init Std {  }
+    Conf Gantry { conffile `docs/app.gantry.conf`; gen_root 1; instance addressbook; }
+    HttpdConf Gantry { gantry_conf 1; }
+    SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { with_server 1; flex_db 1; gantry_conf 1; }
+    Control Gantry { dbix 1; }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
-
 app AddressBook {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
+        doc_rootp `/static` => no_accessor;
+        show_dev_navigation 1 => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {
@@ -28,19 +30,19 @@ app AddressBook {
             is int4, primary_key, auto;
         }
         field name {
-            is             varchar;
-            label          Name;
+            is varchar;
+            label Name;
             html_form_type text;
         }
         field street {
-            is             varchar;
-            label          Street;
+            is varchar;
+            label Street;
             html_form_type text;
             html_form_optional 1;
         }
         field city {
-            is             varchar;
-            label          City;
+            is varchar;
+            label City;
             html_form_type text;
             html_form_optional 1;
         }
@@ -51,24 +53,23 @@ app AddressBook {
             is datetime;
         }
         foreign_display `%name`;
-        refered_to_by `child`;
-
+        refered_to_by child;
     }
     controller Family is AutoCRUD {
-        controls_table `family`;
+        controls_table family;
         rel_location family;
-        text_description `family`;
-        page_link_label `Family`;
+        text_description family;
+        page_link_label Family;
         method do_main is main_listing {
             cols name, street;
             header_options Add;
             row_options Edit, Delete;
-            title `Family`;
+            title Family;
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
             extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend => `$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
         }
     }
     table child {
@@ -76,13 +77,13 @@ app AddressBook {
             is int4, primary_key, auto;
         }
         field name {
-            is             varchar;
-            label          Name;
+            is varchar;
+            label Name;
             html_form_type text;
         }
         field birth_day {
-            is             date;
-            label          `Birth Day`;
+            is date;
+            label `Birth Day`;
             html_form_type text;
         }
         field created {
@@ -93,28 +94,27 @@ app AddressBook {
         }
         foreign_display `%name`;
         field family {
-            is             int4;
-            label          `Family`;
-            refers_to      `family` => id;
+            is int4;
+            label Family;
+            refers_to family => id;
             html_form_type select;
         }
     }
     controller Child is AutoCRUD {
-        controls_table `child`;
+        controls_table child;
         rel_location child;
-        text_description `child`;
-        page_link_label `Child`;
+        text_description child;
+        page_link_label Child;
         method do_main is main_listing {
             cols name, birth_day;
             header_options Add;
             row_options Edit, Delete;
-            title `Child`;
+            title Child;
         }
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
             extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend => `$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
         }
     }
-
 }

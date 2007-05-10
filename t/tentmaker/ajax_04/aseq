@@ -7006,7 +7006,7 @@ auto</pre>
                 <input
                     type='text'
                     name='ident_22::extra_keys_value'
-                    value="$self->path_info =~ /edit/i ? 'Edit' : 'Add'"
+                    value="$self->path_info =~ /edit/i ? q!Edit! : q!Add!"
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
@@ -7194,7 +7194,7 @@ app Sample {
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
             extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend => `$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
         }
     }
     sequence addresses_seq {}
@@ -7235,7 +7235,7 @@ app Sample {
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
             extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend => `$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
         }
     }
 }

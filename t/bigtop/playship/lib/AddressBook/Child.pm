@@ -1,6 +1,7 @@
 package AddressBook::Child;
 
 use strict;
+use warnings;
 
 use base 'AddressBook::GEN::Child';
 
@@ -15,9 +16,6 @@ use Gantry::Plugins::AutoCRUD qw(
 use AddressBook::Model::child qw(
     $CHILD
 );
-use AddressBook::Model;
-sub schema_base_class { return 'AddressBook::Model'; }
-use Gantry::Plugins::DBIxClassConn qw( get_schema );
 
 #-----------------------------------------------------------------
 # $self->do_main(  )
@@ -28,7 +26,6 @@ use Gantry::Plugins::DBIxClassConn qw( get_schema );
 # $self->form( $row )
 #-----------------------------------------------------------------
 # This method inherited from AddressBook::GEN::Child
-
 
 #-----------------------------------------------------------------
 # get_model_name( )
@@ -102,8 +99,6 @@ You might even want to describe the table this module controls here.
 =item get_model_name
 
 =item text_descr
-
-=item schema_base_class
 
 =item get_orm_helper
 

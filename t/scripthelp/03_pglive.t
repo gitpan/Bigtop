@@ -2,6 +2,14 @@ use strict;
 
 use Test::More;
 
+# To run this test, you need a postgresql 8 database called kids2.  There
+# is a dump of mine in the same directory as this script called:
+#   kids2.pg_dump
+# That database must be accessible by the postgres user without password.
+# Beware of the security considerations of that.
+# With the database in place, you still need to set the BIGTOP_PGLIVE
+# shell environment variable to a true value (like 1) for the test to run.
+
 BEGIN {
     plan skip_all => 'set BIGTOP_PGLIVE to enable test, must have kids2 db'
             unless $ENV{BIGTOP_PGLIVE};

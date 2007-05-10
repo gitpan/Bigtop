@@ -25,12 +25,6 @@ Describes the features and motivations of Bigtop.
 Documentation on each available backend and how to configure it.  This
 one is auto-generated, and is therefore more likely to be up to date.
 
-=item C<Bigtop::Docs::AutoKeywords>
-
-Documents all the valid keywords Bigtop understands by the block in
-which they appear.  This one is auto-generated and shows exactly the
-same information as tentmaker.
-
 =item C<Bigtop::Docs::Cookbook>
 
 Modeled after the Perl Cookbook, this provides a list of things you might
@@ -38,9 +32,11 @@ want to do, the syntax needed to make Bigtop do them for you, and the
 output produced by them.  It focuses on hand written bigtop files, rather
 than on tentmaker.
 
-=item C<Bigtop::Docs::Keywords>
+=item C<Bigtop::Docs::FullKeywords>
 
-Abandoned.  See C<Bigtop::Docs::AutoKeywords> or run tentmaker.
+Documents all the valid keywords Bigtop understands by the block in
+which they appear.  This one is auto-generated and shows exactly the
+same information as tentmaker.
 
 =item C<Bigtop::Docs::Modules>
 
@@ -51,9 +47,10 @@ is now in its own file called bigtop.grammar, but this has no effect on
 the docs in Bigtop::Docs::Modules.  It may be out of date, but the extraction
 of the grammar is not the reason.)
 
-=item C<Bigtop::Docs::QuickRef>
+=item C<Bigtop::Docs::QuickKeywords>
 
-Abandoned.  Run tentmaker.
+Abbreviated version of L<Bigtop::Docs::FullKeywords>.  Reduces most
+descriptions to one line.
 
 =item C<Bigtop::Docs::QuickStart>
 

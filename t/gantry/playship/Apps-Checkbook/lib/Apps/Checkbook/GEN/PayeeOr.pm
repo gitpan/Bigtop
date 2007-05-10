@@ -3,9 +3,11 @@
 package Apps::Checkbook::GEN::PayeeOr;
 
 use strict;
+use warnings;
 
 use base 'Apps::Checkbook';
 use JSON;
+use Gantry::Utils::TablePerms;
 
 use SomePackage::SomeModule;
 
@@ -34,15 +36,17 @@ sub do_main {
         $real_location .= '/';
     }
 
+    my @header_options = (
+        {
+            text => 'Add',
+            link => $self->exoticlocation() . "/strangely_named_add",
+            type => 'create',
+        },
+    );
+
     my $retval = {
         headings       => [
             'Name',
-        ],
-        header_options => [
-            {
-                text => 'Add',
-                link => $self->exoticlocation() . "/strangely_named_add",
-            },
         ],
     };
 
@@ -66,29 +70,55 @@ sub do_main {
         } if scalar( @searches ) > 0;
     }
 
+    my @row_options = (
+        {
+            text => 'Tasks',
+            link => "/lineitem/main",
+            type => 'update',
+        },
+        {
+            text => 'Edit',
+            type => 'update',
+        },
+        {
+            text => 'Make Some',
+            type => 'retrieve',
+        },
+        {
+            text => 'Delete',
+            type => 'delete',
+        },
+    );
+
+    my $perm_obj = Gantry::Utils::TablePerms->new(
+        {
+            site           => $self,
+            real_location  => $real_location,
+            header_options => \@header_options,
+            row_options    => \@row_options,
+        }
+    );
+
+    $retval->{ header_options } = $perm_obj->real_header_options;
+
+    my $limit_to_user_id = $perm_obj->limit_to_user_id;
+    $search->{ user_id } = $limit_to_user_id if ( $limit_to_user_id );
+
     my @rows = $PAYEE->get_listing();
 
+    ROW:
     foreach my $row ( @rows ) {
+        last ROW if $perm_obj->hide_all_data;
+
         my $id = $row->id;
+
         push(
             @{ $retval->{rows} }, {
+                orm_row => $row,
                 data => [
                     $row->name,
                 ],
-                options => [
-                    {
-                        text => 'Edit',
-                        link => $real_location . "edit/$id",
-                    },
-                    {
-                        text => 'Make Some',
-                        link => $real_location . "make_some/$id",
-                    },
-                    {
-                        text => 'Delete',
-                        link => $real_location . "delete/$id",
-                    },
-                ],
+                options => $perm_obj->real_row_options( $row ),
             }
         );
     }
@@ -102,7 +132,7 @@ sub do_main {
             rows            => $retval->{ rows },
         };
 
-        my $json = objToJson( $obj );
+        my $json = objToJson( $obj, { skipinvalid => 1 } );
         return( $json );
     }
 
@@ -181,6 +211,37 @@ sub form {
         ],
     };
 } # END form
+
+#-----------------------------------------------------------------
+# $self->init( $r )
+#-----------------------------------------------------------------
+sub init {
+    my ( $self, $r ) = @_;
+
+    # process SUPER's init code
+    $self->SUPER::init( $r );
+
+    $self->set_importance( $self->fish_config( 'importance' ) || '' );
+} # END init
+
+#-----------------------------------------------------------------
+# $self->set_importance( $new_value )
+#-----------------------------------------------------------------
+sub set_importance {
+    my ( $self, $value ) = @_;
+
+    $self->{ __importance__ } = $value;
+}
+
+#-----------------------------------------------------------------
+# $self->importance(  )
+#-----------------------------------------------------------------
+sub importance {
+    my $self = shift;
+
+    return $self->{ __importance__ };
+}
+
 
 1;
 

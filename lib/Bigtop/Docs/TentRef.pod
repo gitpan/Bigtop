@@ -708,6 +708,22 @@ See 'Base Controller' below.
 
 =item SOAP
 
+In addition to no_gen, SOAP methods have two statements.  Each can
+take multiple values.  First is expects.  These are the parameters callers
+will provide.  Type defaults to xsd:string, where xsd is the name
+given to the http://www.w3.org/2001/XMLSchema namespace by Gantry's
+wsdl.tt template.
+
+The second statement is returns.  These are the things you are giving
+back to the caller.
+
+For both input and output, simple types are preferred.  If you need
+something complex, have your caller put it in a single XML string and
+base 64 encode it.  Then you can decode it and use XML::Simple to recover it.
+
+Note that SOAP methods are only supported by Gantry apps running under
+mod_perl 2.
+
 =back
 
 =item Base Controller

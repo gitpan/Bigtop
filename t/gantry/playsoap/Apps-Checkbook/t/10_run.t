@@ -1,8 +1,12 @@
 use strict;
+use warnings;
 
 use Test::More tests => 1;
 
-use Apps::Checkbook qw{ -Engine=CGI -TemplateEngine=TT };
+use Apps::Checkbook qw{
+    -Engine=CGI
+    -TemplateEngine=TT
+};
 
 use Gantry::Server;
 use Gantry::Engine::CGI;

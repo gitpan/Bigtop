@@ -13,7 +13,7 @@ type:
     ./app.server
 
 We call the definition in the single quotes the 'kickstart,' it's a
-description of the data model.  See C<Bigtop::ScriptHelp::Style::Kickstart>
+description of the data model.  See L<Bigtop::ScriptHelp::Style::Kickstart>
 for additional details on the syntax for kickstarts.  Here there are two
 tables.  family has name, phone, and optional email columns.  child has
 name and birth_day which is a date.
@@ -39,6 +39,26 @@ instructions...
 In all cases, once you start C<app.server>, it will print URLs where you
 may point your browser to start using the app.
 
+You may choose to put the database connection information in the base config
+block in your bigtop file.  Then you won't need the flags.  If you want
+to use mulitple databases on a regular basis, consider adding a config block
+named for each database:
+
+    config mydbd {
+        dbconn `dbi:mydbd:dbname=somename`;
+        dbuser `your_pg_user`;
+        dbpass `secret`;
+    }
+
+Then you can regenerate once, and switch to the database of your choice with
+one command line flag:
+
+    bigtop docs/your.bigtop  # do this once
+    ./app.server -t mydbd    # repeat on each server start
+
+The rest of your app's config info will still come from the base config block,
+which you don't need to change.
+
 =head1 From a PostgreSQL Database
 
 If you already have a PostgreSQL 8 database called yourdb, and would like a
@@ -47,5 +67,8 @@ CRUD app for it:
     bigtop -n YourApp -s Pg8Live 'dbi:Pg:dbname=yourdb' user pass
     cd YourApp
     ./app.server -d Pg -n yourdb -u user -p pass
+
+Again, you might want to create a config block for this database as
+discussed above.
 
 =cut

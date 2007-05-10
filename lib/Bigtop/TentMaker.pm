@@ -21,6 +21,7 @@ my %backends;
 my %engines;
 my %template_engines;
 my $statements;
+my $testing = 0;
 
 sub AUTOLOAD {
     my $self = shift;
@@ -168,6 +169,11 @@ sub new {
     my $class = shift;
 
     return bless {}, $class;
+}
+
+sub set_testing {
+    shift;             # don't need invocant
+    $testing  = shift;
 }
 
 # for doc building scripts:
@@ -658,7 +664,12 @@ sub do_create_app_block {
 
     $self->template_disable( 1 );
 
-    return $self->stash->controller->data( $new_divs . $self->deparsed );
+    if ( $testing ) {
+        return $self->deparsed;
+    }
+    else {
+        return $self->stash->controller->data( $new_divs . $self->deparsed );
+    }
 }
 
 sub do_delete_block {
@@ -773,9 +784,9 @@ sub do_create_subblock {
 
     delete $self->{__TEMPLATE_WRAPPER__}; # just in case
 
-    my $template     = ( $type eq 'field' )
-                     ? 'new_field_div.tt'
-                     : 'new_method_div.tt';
+    my $template     = ( $type eq 'field' )  ? 'new_field_div.tt'
+                     : ( $type eq 'method' ) ? 'new_method_div.tt'
+                                             : 'new_controller_config_div.tt';
     my @new_divs;
     my $new_block_hashes;
     my $table_block_hash;
@@ -1354,6 +1365,11 @@ sub do_update_method_statement_bool {
     );
 }
 
+sub do_update_controller_statement_pair {
+    my $self = shift;
+    return $self->do_update_subblock_statement_pair( 'controller', @_ );
+}
+
     # This one takes its args from the query string.
 sub do_update_method_statement_pair {
     my $self = shift;
@@ -1402,10 +1418,12 @@ sub do_update_literal {
 
 sub do_update_app_conf_statement {
     my $self    = shift;
-    my $keyword = shift;
+    my $id      = shift;
     my $checked = pop; # it's always last, but value can be in several slots
     my $value   = unescape( @_ );
     my $accessor;
+
+    my ( $ident, $keyword ) = split /::/, $id;
 
     if ( $value eq 'undefined' or $value eq 'undef' ) {
         $value = '';
@@ -1417,28 +1435,43 @@ sub do_update_app_conf_statement {
                     ( $checked eq 'false'     ) ? 0     : 1;
     }
 
-    $tree->get_app->set_config_statement( $keyword, $value, $accessor );
+    $tree->get_app->set_config_statement(
+        $ident,
+        $keyword,
+        $value,
+        $accessor,
+    );
 
     $self->complete_update();
 }
 
 sub do_update_app_conf_accessor {
     my $self    = shift;
-    my $keyword = shift;
+    my $id      = shift;
     my $value   = unescape( shift );
+
+    my ( $ident, $keyword ) = split /::/, $id;
 
     my $actual_value = ( $value eq 'false' ) ? 0 : 1;
 
-    $tree->get_app->set_config_statement_status( $keyword, $actual_value );
+    eval {
+        $tree->get_app->set_config_statement_status(
+            $ident,
+            $keyword,
+            $actual_value,
+        );
+    };
+    warn $@ if $@;
 
     $self->complete_update();
 }
 
 sub do_delete_app_config {
     my $self    = shift;
+    my $ident   = shift;
     my $keyword = shift;
 
-    $tree->get_app->delete_config_statement( $keyword );
+    $tree->get_app->delete_config_statement( $ident, $keyword );
 
     $self->complete_update();
 }
@@ -1578,7 +1611,7 @@ sub read_file {
 
     if ( $file_name ) {
         unless ( open $BIGTOP_FILE, '<', $file_name ) {
-            warn 'Couldn\'t read ' . $file_name . "\n";
+            die "Couldn't read '$file_name': $!\n  perhaps you needed -n?\n";
 
             return '';
         }
@@ -1991,6 +2024,10 @@ removed.
 
 Directly calls do_update_block_statement_text, specifying type controller.
 
+=head2 do_update_controller_statement_pair
+
+Directly calls do_update_subblock_statement_pair, specifying type controller.
+
 =head2 do_update_statement
 
 Updates statements at many levels of the tree, including table, join_table,
@@ -2198,6 +2235,11 @@ default) style.
 Used by tests to gain a pseudo-instance through which to call helper methods.
 For instance, some tests call methods on this instance to turn templating
 on an off.  See t/tentmaker/*.t for examples.
+
+=head2 set_testing
+
+Pass this a true value to turn off html dumps from app block creation for
+testing.
 
 =head2 show_idents
 

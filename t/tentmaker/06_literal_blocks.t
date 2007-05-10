@@ -19,6 +19,8 @@ BEGIN {
 use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=TT /;
 use Bigtop::ScriptHelp::Style;
 
+$ENV{ BIGTOP_REAL_DEF } = 1;
+
 my $style = Bigtop::ScriptHelp::Style->get_style();
 
 Bigtop::TentMaker->take_performance_hit( $style );
@@ -46,7 +48,7 @@ file_ok( $expected_file, $ajax, 'create empty literal (alit)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_type_change( 'ident_4', 'Location' );
+$ajax = $tent_maker->do_type_change( 'ident_5', 'Location' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'clittype' );
 
@@ -58,7 +60,7 @@ file_ok( $expected_file, $ajax, 'change literal type (clittype)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_literal( 'ident_4', '    require valid-user' );
+$ajax = $tent_maker->do_update_literal( 'ident_5', '    require valid-user' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'clittext' );
 
@@ -70,7 +72,7 @@ file_ok( $expected_file, $ajax, 'change literal text (clittext)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_delete_block( 'ident_4' );
+$ajax = $tent_maker->do_delete_block( 'ident_5' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rlit' );
 

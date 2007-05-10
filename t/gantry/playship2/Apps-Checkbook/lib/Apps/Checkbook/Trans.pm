@@ -1,6 +1,7 @@
 package Apps::Checkbook::Trans;
 
 use strict;
+use warnings;
 
 use base 'Apps::Checkbook::GEN::Trans';
 
@@ -35,7 +36,6 @@ sub do_detail {
 # $self->form( $row )
 #-----------------------------------------------------------------
 # This method inherited from Apps::Checkbook::GEN::Trans
-
 
 #-----------------------------------------------------------------
 # get_model_name( )

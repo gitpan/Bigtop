@@ -33,7 +33,6 @@ config {
     CGI Gantry {
         gen_root 1;
         with_server 1;
-        flex_db 1;
     }
 }
 app Apps::Checkbook {
@@ -176,34 +175,15 @@ use Apps::Checkbook qw{
     PluginA PluginB
 };
 
-use Getopt::Long;
 use Gantry::Server;
 use Gantry::Engine::CGI;
 
-my $dbd    = 'SQLite';
-my $dbuser = '';
-my $dbpass = '';
-my $dbname = 'app.db';
-
-GetOptions(
-    'dbd|d=s'     => \$dbd,
-    'dbuser|u=s'  => \$dbuser,
-    'dbpass|p=s'  => \$dbpass,
-    'dbname|n=s'  => \$dbname,
-    'help|h'      => \&usage,
-);
-
-my $dsn = "dbi:$dbd:dbname=$dbname";
 
 my $cgi = Gantry::Engine::CGI->new( {
     config => {
-        dbconn => $dsn,
-        dbuser => $dbuser,
-        dbpass => $dbpass,
-        doc_rootp => '/static',
-        show_dev_navigation => 1,
         DB => 'app_db',
         DBName => 'some_user',
+        dbconn => 'dbi:SQLite:dbname=app.db',
         root => 'html:html/templates',
     },
     locations => {
@@ -225,63 +205,6 @@ foreach my $url ( sort keys %{ $cgi->{ locations } } ) {
 print STDERR "\n";
 
 $server->run();
-
-sub usage {
-    print << 'EO_HELP';
-usage: app.server [options] [port]
-    port defaults to 8080
-
-    options:
-    -h  --help    prints this message and quits
-    -d  --dbd     DBD to use with DBI (like Pg or mysql),
-                  defaults to sqlite
-    -u  --dbuser  database user, defaults to the empty string
-    -p  --dbpass  database user's password defaults to the empty string
-    -n  --dbname  database name defaults to app.db
-
-EO_HELP
-
-    exit 0;
-}
-
-=head1 NAME
-
-app.server - A generated server for the Apps::Checkbook app
-
-=head1 SYNOPSIS
-
-    usage: app.server [options] [port]
-
-port defaults to 8080
-
-=head1 DESCRIPTION
-
-This is a Gantry::Server based stand alone server for the Apps::Checkbook
-app.  It was built to use an SQLite database called app.db.  Use the following
-command line flags to change database connection information (all of
-them require a value):
-
-=over 4
-
-=item --dbd (or -d)
-
-The DBD for your database, try SQLite, Pg, or mysql.  Defaults to SQLite.
-
-=item --dbuser (or -u)
-
-The database user name, defaults to the empty string.
-
-=item --dbpass (or -p)
-
-The database user's password, defaults to the empty string.
-
-=item --dbname (or -n)
-
-The name of the database, defaults to app.db.
-
-=back
-
-=cut
 
 EO_CORRECT_SERVER
 
@@ -301,34 +224,15 @@ use Apps::Checkbook qw{
     PluginA PluginB
 };
 
-use Getopt::Long;
 use Gantry::Server;
 use Gantry::Engine::CGI;
 
-my $dbd    = 'SQLite';
-my $dbuser = '';
-my $dbpass = '';
-my $dbname = 'app.db';
-
-GetOptions(
-    'dbd|d=s'     => \$dbd,
-    'dbuser|u=s'  => \$dbuser,
-    'dbpass|p=s'  => \$dbpass,
-    'dbname|n=s'  => \$dbname,
-    'help|h'      => \&usage,
-);
-
-my $dsn = "dbi:$dbd:dbname=$dbname";
 
 my $cgi = Gantry::Engine::CGI->new( {
     config => {
-        dbconn => $dsn,
-        dbuser => $dbuser,
-        dbpass => $dbpass,
-        doc_rootp => '/static',
-        show_dev_navigation => 1,
         DBName => 'prod_user',
         DB => 'app_db',
+        dbconn => 'dbi:SQLite:dbname=app.db',
         root => 'html:html/templates',
     },
     locations => {
@@ -350,63 +254,6 @@ foreach my $url ( sort keys %{ $cgi->{ locations } } ) {
 print STDERR "\n";
 
 $server->run();
-
-sub usage {
-    print << 'EO_HELP';
-usage: app.server [options] [port]
-    port defaults to 8080
-
-    options:
-    -h  --help    prints this message and quits
-    -d  --dbd     DBD to use with DBI (like Pg or mysql),
-                  defaults to sqlite
-    -u  --dbuser  database user, defaults to the empty string
-    -p  --dbpass  database user's password defaults to the empty string
-    -n  --dbname  database name defaults to app.db
-
-EO_HELP
-
-    exit 0;
-}
-
-=head1 NAME
-
-app.server - A generated server for the Apps::Checkbook app
-
-=head1 SYNOPSIS
-
-    usage: app.server [options] [port]
-
-port defaults to 8080
-
-=head1 DESCRIPTION
-
-This is a Gantry::Server based stand alone server for the Apps::Checkbook
-app.  It was built to use an SQLite database called app.db.  Use the following
-command line flags to change database connection information (all of
-them require a value):
-
-=over 4
-
-=item --dbd (or -d)
-
-The DBD for your database, try SQLite, Pg, or mysql.  Defaults to SQLite.
-
-=item --dbuser (or -u)
-
-The database user name, defaults to the empty string.
-
-=item --dbpass (or -p)
-
-The database user's password, defaults to the empty string.
-
-=item --dbname (or -n)
-
-The name of the database, defaults to app.db.
-
-=back
-
-=cut
 
 EO_CORRECT_PROD_SERVER
 
@@ -656,4 +503,5 @@ file_filter_ok(
 );
 
 unlink $server;
+unlink $prod_server;
 

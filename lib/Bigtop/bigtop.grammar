@@ -139,7 +139,7 @@ is_type : 'is' module_ident { $item{module_ident} }
 
 controller_body : controller_statement(s?)
 
-controller_statement : 'method' <commit> IDENT
+controller_statement : 'method' IDENT
                             method_type '{' method_body '}' {
                             bless {
                                 __IDENT__ => Bigtop::Parser->get_ident(),
@@ -148,10 +148,19 @@ controller_statement : 'method' <commit> IDENT
                                 __TYPE__  => $item{method_type},
                             }, 'controller_method'
                         }
+                     | 'method' IDENT '{' {
+                            my $diag_text = $item[1] . ' '
+                                          . $item[2] . ' {'
+                                          . $text;
+                            Bigtop::Parser->fatal_error_two_lines(
+                                'missing method type', $diag_text, $thisline
+                            );
+                     }
          | CONFIG IDENT(?) '{' controller_config_statement(s?) '}' {
                    bless {
-                       __BODY__ => $item{'controller_config_statement(s?)'},
-                       __TYPE__ => $item{'IDENT(?)'}[0],
+                       __IDENT__ => Bigtop::Parser->get_ident(),
+                       __BODY__  => $item{'controller_config_statement(s?)'},
+                       __TYPE__  => $item{'IDENT(?)'}[0],
                    }, 'controller_config_block'
                 }
          | 'literal' keyword[ 'controller_literal' ]
@@ -295,6 +304,7 @@ join_table_statement : 'field' <commit> IDENT '{' field_body '}' {
 
 app_config_block : CONFIG IDENT(?) '{' app_config_statement(s?) '}' {
                    bless {
+                       __IDENT__ => Bigtop::Parser->get_ident(),
                        __BODY__ => $item{'app_config_statement(s?)'},
                        __TYPE__ => $item{'IDENT(?)'}[0],
                    }, 'app_config_block'

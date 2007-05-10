@@ -3,9 +3,11 @@
 package Apps::Checkbook::GEN::SchTbl;
 
 use strict;
+use warnings;
 
 use base 'Apps::Checkbook';
 use JSON;
+use Gantry::Utils::TablePerms;
 
 use Apps::Checkbook::Model::sch_tbl qw(
     $SCH_TBL

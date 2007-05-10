@@ -1,6 +1,7 @@
 package AddressBook;
 
 use strict;
+use warnings;
 
 our $VERSION = '0.01';
 
@@ -69,8 +70,6 @@ You might even want to describe the table this module controls here.
 
 =over 4
 
-=item schema_base_class
-
 =item get_orm_helper
 
 
@@ -81,11 +80,15 @@ You might even want to describe the table this module controls here.
 
 =over 4
 
+=item namespace
+
 =item init
 
 =item do_main
 
 =item site_links
+
+=item schema_base_class
 
 
 =back

@@ -88,10 +88,6 @@
                [% IF tab == 'tab-app-statements' %]class='active'[% END %]
                href='javascript:changetabs( "tab-app-statements" );'
             >App Level Statements</a>
-        <li><a id='tab-app-config-link'
-               [% IF tab == 'tab-app-config' %]class='active'[% END %]
-               href='javascript:changetabs( "tab-app-config" );'
-            >App Config</a>
     </ul>
 </div>
 
@@ -155,16 +151,6 @@
     [% END %]
     id='tab-app-statements'>
     [% INCLUDE app_statements.ttc %]
-  </div>
-
-  <div
-    [% IF tab == 'tab-app-config' %]
-        class='active'
-    [% ELSE %]
-        class='tab'
-    [% END %]
-    id='tab-app-config'>
-    [% INCLUDE app_config.ttc %]
   </div>
 
 </div>

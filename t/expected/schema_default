@@ -1,21 +1,23 @@
 config {
-    engine          CGI;
+    engine MP20;
     template_engine TT;
-
-    Init            Std             {}
-    SQL             SQLite          {}
-    SQL             Postgres        {}
-    SQL             MySQL           {}
-    CGI             Gantry          { with_server 1; gen_root 1; flex_db 1; }
-    Control         Gantry          { dbix 1; }
-    Model           GantryDBIxClass {}
-    SiteLook        GantryDefault   {}
+    Init Std {  }
+    Conf Gantry { conffile `docs/app.gantry.conf`; gen_root 1; instance address; }
+    HttpdConf Gantry { gantry_conf 1; }
+    SQL SQLite {  }
+    SQL Postgres {  }
+    SQL MySQL {  }
+    CGI Gantry { with_server 1; flex_db 1; gantry_conf 1; }
+    Control Gantry { dbix 1; }
+    Model GantryDBIxClass {  }
+    SiteLook GantryDefault {  }
 }
-
 app Address {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
+        doc_rootp `/static` => no_accessor;
+        show_dev_navigation 1 => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {
@@ -28,13 +30,13 @@ app Address {
             is int4, primary_key, auto;
         }
         field ident {
-            is             varchar;
-            label          Ident;
+            is varchar;
+            label Ident;
             html_form_type text;
         }
         field description {
-            is             varchar;
-            label          Description;
+            is varchar;
+            label Description;
             html_form_type text;
         }
         field created {
@@ -45,7 +47,6 @@ app Address {
         }
         foreign_display `%ident`;
         refered_to_by `fam.birth_date`;
-
     }
     controller FamFamilyAddress is AutoCRUD {
         controls_table `fam.family_address`;
@@ -61,7 +62,7 @@ app Address {
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
             extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend => `$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
         }
     }
     table fam.birth_date {
@@ -69,13 +70,13 @@ app Address {
             is int4, primary_key, auto;
         }
         field ident {
-            is             varchar;
-            label          Ident;
+            is varchar;
+            label Ident;
             html_form_type text;
         }
         field description {
-            is             varchar;
-            label          Description;
+            is varchar;
+            label Description;
             html_form_type text;
         }
         field created {
@@ -86,9 +87,9 @@ app Address {
         }
         foreign_display `%ident`;
         field fam_family_address {
-            is             int4;
-            label          `Family Address`;
-            refers_to      `fam.family_address` => id;
+            is int4;
+            label `Family Address`;
+            refers_to `fam.family_address` => id;
             html_form_type select;
         }
     }
@@ -106,8 +107,7 @@ app Address {
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
             extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend => `$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
         }
     }
-
 }

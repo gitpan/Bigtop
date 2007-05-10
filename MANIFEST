@@ -24,6 +24,8 @@ examples/address2.bigtop
 examples/billing.bigtop
 examples/billing_model.png
 examples/checking.bigtop
+examples/default.bigtop
+examples/def.bigtop.tt
 examples/kids.bigtop
 examples/phonelist.bigtop
 examples/Billing-Finished/app.cgi
@@ -89,11 +91,10 @@ lib/Bigtop/bigtop.grammar
 lib/Bigtop/Deparser.pm
 lib/Bigtop/Docs/About.pod
 lib/Bigtop/Docs/AutoBackends.pod
-lib/Bigtop/Docs/AutoKeywords.pod
+lib/Bigtop/Docs/QuickKeywords.pod
+lib/Bigtop/Docs/FullKeywords.pod
 lib/Bigtop/Docs/Cookbook.pod
-lib/Bigtop/Docs/Keywords.pod
 lib/Bigtop/Docs/Modules.pod
-lib/Bigtop/Docs/QuickRef.pod
 lib/Bigtop/Docs/QuickStart.pod
 lib/Bigtop/Docs/Syntax.pod
 lib/Bigtop/Docs/TentRef.pod
@@ -150,8 +151,11 @@ t/bigtop/playship/lib/AddressBook/GEN/Child.pm
 t/bigtop/playship/lib/AddressBook/GEN/Family.pm
 t/bigtop/playship/lib/AddressBook.pm
 t/bigtop/playship/app.server
+t/bigtop/playship/docs/AddressBook.gantry.conf
+t/bigtop/playship/docs/app.gantry.conf
 t/bigtop/playship/docs/schema.mysql
 t/bigtop/playship/docs/addressbook.bigtop
+t/bigtop/playship/docs/httpd.conf
 t/bigtop/playship/docs/schema.postgres
 t/bigtop/playship/docs/schema.sqlite
 t/bigtop/playship/Build.PL
@@ -263,6 +267,7 @@ t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook/GEN/PayeeOr.pm
 t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook/GEN/Trans.pm
 t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook/GEN/Trans/Action.pm
 t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook/NoOp.pm
+t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook/GEN/NoOp.pm
 t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook/PayeeOr.pm
 t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook/Trans.pm
 t/gantry/playship/Apps-Checkbook/lib/Apps/Checkbook/Trans/Action.pm
@@ -278,6 +283,7 @@ t/gantry/playship2/Apps-Checkbook/lib/Apps/Checkbook/GEN/PayeeOr.pm
 t/gantry/playship2/Apps-Checkbook/lib/Apps/Checkbook/GEN/Trans.pm
 t/gantry/playship2/Apps-Checkbook/lib/Apps/Checkbook/GEN/Trans/Action.pm
 t/gantry/playship2/Apps-Checkbook/lib/Apps/Checkbook/NoOp.pm
+t/gantry/playship2/Apps-Checkbook/lib/Apps/Checkbook/GEN/NoOp.pm
 t/gantry/playship2/Apps-Checkbook/lib/Apps/Checkbook/PayeeOr.pm
 t/gantry/playship2/Apps-Checkbook/lib/Apps/Checkbook/Trans.pm
 t/gantry/playship2/Apps-Checkbook/lib/Apps/Checkbook/Trans/Action.pm
@@ -317,6 +323,7 @@ t/sitelook/sample_wrapper.tt
 t/scripthelp/01_shmodule.t
 t/scripthelp/02_kickstart.t
 t/scripthelp/03_pglive.t
+t/scripthelp/kids2.pg_dump
 t/scripthelp/ascii_sample
 t/tentmaker/01_use.t
 t/tentmaker/02_top_levels.t
@@ -398,6 +405,7 @@ tenttemplates/field_block.ttc
 tenttemplates/input_boxes.ttc
 tenttemplates/method_block.ttc
 tenttemplates/new_app_body_div.tt
+tenttemplates/new_controller_config_div.tt
 tenttemplates/new_data_div.ttc
 tenttemplates/new_field_div.tt
 tenttemplates/new_method_div.tt

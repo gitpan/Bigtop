@@ -20,6 +20,8 @@ use Bigtop::ScriptHelp::Style;
 
 use File::Spec;
 
+$ENV{ BIGTOP_REAL_DEF } = 1;
+
 my $tent_maker;
 my @maker_input;
 my @maker_deparse;
@@ -35,13 +37,15 @@ my $style = Bigtop::ScriptHelp::Style->get_style();
 
 @correct_input = split /\n/, <<'EO_sample_input';
 config {
-    engine CGI;
+    engine MP20;
     template_engine TT;
     Init Std {  }
+    Conf Gantry { conffile `docs/app.gantry.conf`; gen_root 1; instance sample; }
+    HttpdConf Gantry { gantry_conf 1; }
     SQL SQLite {  }
     SQL Postgres {  }
     SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    CGI Gantry { with_server 1; flex_db 1; gantry_conf 1; }
     Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
@@ -50,6 +54,8 @@ app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
+        doc_rootp `/static` => no_accessor;
+        show_dev_navigation 1 => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {

@@ -19,6 +19,8 @@ BEGIN {
 use Bigtop::TentMaker qw/ -Engine=CGI -TemplateEngine=TT /;
 use Bigtop::ScriptHelp::Style;
 
+$ENV{ BIGTOP_REAL_DEF } = 1;
+
 my $style = Bigtop::ScriptHelp::Style->get_style();
 
 Bigtop::TentMaker->take_performance_hit( $style );
@@ -29,6 +31,7 @@ my $ajax;
 my $tent_maker = Bigtop::TentMaker->new();
 $tent_maker->uri( '/' );
 $tent_maker->root( 'tenttemplates' );
+$tent_maker->set_testing( 1 );
 
 #--------------------------------------------------------------------
 # Add controller
@@ -49,10 +52,10 @@ file_ok( $expected_file, $ajax, 'create default controller (acontrol)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_create_subblock(
-    'controller::ident_4::method::do_alt_main', 'main_listing'
+    'controller::ident_5::method::do_alt_main', 'main_listing'
 );
 
-# the new method is ident_5
+# the new method is ident_6
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'amethod' );
 
@@ -65,7 +68,7 @@ file_ok( $expected_file, $ajax, 'add method to controller (amethod)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_controller_statement_text(
-    'ident_4::uses', 'Date::Calc][Carp'
+    'ident_5::uses', 'Date::Calc][Carp'
 );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'acontrolst' );
@@ -79,7 +82,7 @@ file_ok( $expected_file, $ajax, 'new controller statement (acontrolst)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_controller_statement_text(
-    'ident_4::uses', 'Carp][Date::Calc'
+    'ident_5::uses', 'Carp][Date::Calc'
 );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'ccontrolst' );
@@ -93,7 +96,7 @@ file_ok( $expected_file, $ajax, 'change controller statement (ccontrolst)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_method_statement_text(
-    'ident_7::title', 'A Label'
+    'ident_8::title', 'A Label'
 );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'amethodst' );
@@ -107,7 +110,7 @@ file_ok( $expected_file, $ajax, 'new method statement (amethodst)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_method_statement_text(
-    'ident_7::title', 'Addresses'
+    'ident_8::title', 'Addresses'
 );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cmethodst' );
@@ -120,7 +123,7 @@ file_ok( $expected_file, $ajax, 'change method statement (cmethodst)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_name( 'controller::ident_4', 'AddressControl' );
+$ajax = $tent_maker->do_update_name( 'controller::ident_5', 'AddressControl' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'ccontrolname' );
 
@@ -132,7 +135,7 @@ file_ok( $expected_file, $ajax, 'change controller name (ccontrolname)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_name( 'method::ident_5', 'do_main_listing' );
+$ajax = $tent_maker->do_update_name( 'method::ident_6', 'do_main_listing' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cmethodname' );
 
@@ -145,7 +148,7 @@ file_ok( $expected_file, $ajax, 'change method name (cmethodname)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_controller_statement_text(
-    'ident_4::uses', 'undefined'
+    'ident_5::uses', 'undefined'
 );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rcontrolst' );
@@ -159,7 +162,7 @@ file_ok( $expected_file, $ajax, 'remove controller statement (rcontrolst)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_method_statement_text(
-    'ident_7::title', 'undefined'
+    'ident_8::title', 'undefined'
 );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rmethodst' );
@@ -173,7 +176,7 @@ file_ok( $expected_file, $ajax, 'remove method statement (rmethodst)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_method_statement_text(
-    'ident_7::paged_conf', 'list_rows'
+    'ident_8::paged_conf', 'list_rows'
 );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'apagedst' );
@@ -192,14 +195,14 @@ $tent_maker->params(
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_method_statement_pair( 'ident_7::row_options' );
+$ajax = $tent_maker->do_update_method_statement_pair( 'ident_8::row_options' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'arowopts' );
 
 file_ok( $expected_file, $ajax, 'add paired method statement (arowopts)' );
 
 $tent_maker->params( { keys   => '', values => '', } );
-$tent_maker->do_update_method_statement_pair( 'ident_7::row_options' );
+$tent_maker->do_update_method_statement_pair( 'ident_8::row_options' );
 
 #--------------------------------------------------------------------
 # Remove method.
@@ -207,7 +210,7 @@ $tent_maker->do_update_method_statement_pair( 'ident_7::row_options' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_delete_block( 'ident_5' );
+$ajax = $tent_maker->do_delete_block( 'ident_6' );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rmethod' );
 
@@ -220,7 +223,7 @@ file_ok( $expected_file, $ajax, 'remove method (rmethod)' );
 $tent_maker->template_disable( 0 );
 
 # first remove the existing one
-my $discard = $tent_maker->do_delete_block( 'ident_3' );
+my $discard = $tent_maker->do_delete_block( 'ident_4' );
 
 $tent_maker->template_disable( 0 );
 

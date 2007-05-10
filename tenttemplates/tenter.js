@@ -83,6 +83,7 @@ function redraw() {
 function redraw_add_div() {
     // break response into parts
     var response     = this.req.responseText;
+    chat( 'debug_chatter', response );
     var break_point  = response.indexOf( "config {" );
     var new_div_text = response.substring( 0, break_point - 1 );
     var new_input    = response.substring( break_point );
@@ -746,6 +747,35 @@ function create_method ( controller_ident ) {
 }
 
 /*
+    create_controller_config creates a new config block in a controller.
+*/
+function create_controller_config ( controller_ident ) {
+
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
+    // Find the new name.
+    var method_namer   = document.getElementById(
+                            'new_controller_config_' + controller_ident
+                         );
+    var new_name       = method_namer.value;
+    method_namer.value = '';
+
+    // Build and send request.
+    var param         = 'controller' + '::' + controller_ident + '::' +
+                        'config' + '::' + new_name;
+
+    var update_url    = '/create_subblock/' + param;
+    var loader        = new net.ContentLoader(
+                          update_url,
+                          redraw_add_div,
+                          "hideable_" + controller_ident
+                        );
+}
+
+/*
     update_tree does an AJAX request which will update the internal
     tree in the server and show the text version of it in the
     raw_output div (output location is goverened by redraw).
@@ -817,8 +847,11 @@ function change_data_statement ( changing_el ) {
     var new_value  = changing_el.value;
     var for_id     = changing_el.id;
 
+    var encoded    = escape( new_value );
+    encoded        = encoded.replace( /\//g, "%2F" );
+
     var update_url = '/update_data_statement/' +
-                     for_id + '/' + new_value;
+                     for_id + '/' + encoded;
 
     var loader     = new net.ContentLoader( update_url, redraw_data, for_id );
 }
@@ -1020,27 +1053,31 @@ function hatch_more_rows ( base_name, key_syb, value_syb ) {
 /*
     add_app_config puts an additional row into the app level config table.
     The name of the new config statement is unloaded from the
-    app_config_new text input box.
+    app_config_new::ident text input box.
 */
-function add_app_config () {
+function add_app_config ( ident ) {
 
     if ( server_stopped == 1 ) {
         alert( 'Your server is stopped.' );
         return;
     }
 
-    var config_table    = document.getElementById( 'app_config_table' );
+    var config_table    = document.getElementById(
+            'app_config_table_' + ident
+    );
     var last_row_number = config_table.rows.length - 1;
     // We subtract one to account for the row with the button in it.
     var first_row       = config_table.rows[ 0 ];
 
-    var keyword_box     = document.getElementById( 'app_config_new' );
+    var keyword_box     = document.getElementById(
+            'app_config_new_' + ident
+    );
     var new_keyword     = keyword_box.value;
     keyword_box.value   = '';
 
     config_table.insertRow( last_row_number );
     var inserted_row    = config_table.rows[ last_row_number ];
-    inserted_row.id     = 'app_config::row::' + new_keyword
+    inserted_row.id     = 'app_config::row::' + ident + '::' + new_keyword;
 
     for ( var i = 0; i < first_row.cells.length; i++ ) {
         inserted_row.insertCell( i );
@@ -1050,7 +1087,7 @@ function add_app_config () {
     inserted_row.cells[0].innerHTML = new_keyword;
 
     // insert the text box for input
-    var value_box_name = 'app_conf_value::' + new_keyword;
+    var value_box_name = 'app_conf_value::' + ident + '::' + new_keyword;
     var value_box = myCreateNodeFromText(
          "<input type='text' name='" + value_box_name + "'" +
          "     value=''                                   " +
@@ -1062,7 +1099,7 @@ function add_app_config () {
     inserted_row.cells[1].appendChild( value_box );
 
     // insert the checkbox for accessor skipping (and check it)
-    var accessor_bool_name = 'app_conf_box::' + new_keyword;
+    var accessor_bool_name = 'app_conf_box::' + ident + '::' + new_keyword;
     var accessor_box     = myCreateNodeFromText(
         "<input type='checkbox' value='" + accessor_bool_name + "'" +
         "       name='" + accessor_bool_name                  + "'" +
@@ -1076,7 +1113,7 @@ function add_app_config () {
     // insert delete button
     var delete_button = myCreateNodeFromText(
           "<button type='button'                                      " +
-          "           name='app_config_delete::" + new_keyword + "' />" +
+          "  name='app_config_delete::" + ident + "::" + new_keyword + "' />" +
           "  Delete                                                   " +
           "</button>                                                  "
     )
@@ -1086,25 +1123,34 @@ function add_app_config () {
 }
 
 /*
-    insert_app_config puts a new config statement into the app config table.
-    It is designed to be used while following an instruction to add a
-    config statement from the server.  Pass it:
-        new_keyword - conf variable to define
-        new_value   - value to give the variable
-        no_accessor - true if you want the box checked, false otherwise
-    this routine is very similar to add_app_config and the two could probably
-    share
+    add_cont_config puts an additional row into the controller level
+    config table.
+    The name of the new config statement is unloaded from the
+    cont_config_new::ident text input box.
 */
-function insert_app_config ( new_keyword, new_value, no_accessor ) {
+function add_cont_config ( ident ) {
 
-    var config_table    = document.getElementById( 'app_config_table' );
+    if ( server_stopped == 1 ) {
+        alert( 'Your server is stopped.' );
+        return;
+    }
+
+    var config_table    = document.getElementById(
+            'app_config_table_' + ident
+    );
     var last_row_number = config_table.rows.length - 1;
     // We subtract one to account for the row with the button in it.
     var first_row       = config_table.rows[ 0 ];
 
+    var keyword_box     = document.getElementById(
+            'app_config_new_' + ident
+    );
+    var new_keyword     = keyword_box.value;
+    keyword_box.value   = '';
+
     config_table.insertRow( last_row_number );
     var inserted_row    = config_table.rows[ last_row_number ];
-    inserted_row.id     = 'app_config::row::' + new_keyword
+    inserted_row.id     = 'app_config::row::' + ident + '::' + new_keyword;
 
     for ( var i = 0; i < first_row.cells.length; i++ ) {
         inserted_row.insertCell( i );
@@ -1114,7 +1160,67 @@ function insert_app_config ( new_keyword, new_value, no_accessor ) {
     inserted_row.cells[0].innerHTML = new_keyword;
 
     // insert the text box for input
-    var value_box_name = 'app_conf_value::' + new_keyword;
+    var value_box_name = 'cont_conf_value::' + ident + '::' + new_keyword;
+    var value_box = myCreateNodeFromText(
+         "<input type='text' name='" + value_box_name + "'" +
+         "     value=''                                   " +
+         "/>                                              "
+    );
+
+    value_box.onblur = config_statement_update;
+
+    inserted_row.cells[1].appendChild( value_box );
+
+    // insert delete button
+    var delete_button = myCreateNodeFromText(
+          "<button type='button'                                      " +
+          "  name='app_config_delete::" + ident + "::" + new_keyword + "' />" +
+          "  Delete                                                   " +
+          "</button>                                                  "
+    )
+    delete_button.onclick = config_statement_delete;
+
+    inserted_row.cells[2].appendChild( delete_button );
+}
+
+/*
+    insert_app_config puts a new config statement into the app config table.
+    It is designed to be used while following an instruction to add a
+    config statement from the server.  Pass it:
+        id          - ident::new_keyword where
+            ident is the ident of config block which gets the new_keyword
+            new_keyword is the new conf variable to define
+        new_value   - value to give the variable
+        no_accessor - true if you want the box checked, false otherwise
+    this routine is very similar to add_app_config and the two could probably
+    share
+*/
+function insert_app_config ( id, new_value, no_accessor ) {
+
+    var name_pieces = id.split( '::' );
+    var ident       = name_pieces[0];
+    var new_keyword = name_pieces[1];
+
+    var config_table    = document.getElementById(
+            'app_config_table_' + ident
+    );
+    var last_row_number = config_table.rows.length - 1;
+    // We subtract one to account for the row with the button in it.
+    var first_row       = config_table.rows[ 0 ];
+
+    config_table.insertRow( last_row_number );
+    var inserted_row    = config_table.rows[ last_row_number ];
+    inserted_row.id     = 'app_config::row::' + id
+
+    for ( var i = 0; i < first_row.cells.length; i++ ) {
+        inserted_row.insertCell( i );
+    }
+
+    // insert the new keyword (once installed, it is imutable)
+    inserted_row.cells[0].innerHTML = new_keyword;
+
+    // insert the text box for input
+    var value_box_name = 'app_conf_value::' + id;
     var value_box = myCreateNodeFromText(
          "<input type='text' name='" + value_box_name + "'" +
          "     value='" + new_value + "'" +
@@ -1126,7 +1232,7 @@ function insert_app_config ( new_keyword, new_value, no_accessor ) {
     inserted_row.cells[1].appendChild( value_box );
 
     // insert the checkbox for accessor skipping (and check it)
-    var accessor_bool_name = 'app_conf_box::' + new_keyword;
+    var accessor_bool_name = 'app_conf_box::' + id;
     var accessor_text      =
         "<input type='checkbox' value='" + accessor_bool_name + "'" +
         "       name='" + accessor_bool_name                  + "'";
@@ -1146,10 +1252,10 @@ function insert_app_config ( new_keyword, new_value, no_accessor ) {
 
     // insert delete button
     var delete_button = myCreateNodeFromText(
-          "<button type='button'                                      " +
-          "           name='app_config_delete::" + new_keyword + "' />" +
-          "  Delete                                                   " +
-          "</button>                                                  "
+          "<button type='button'                             " +
+          "           name='app_config_delete::" + id + "' />" +
+          "  Delete                                          " +
+          "</button>                                         "
     )
     delete_button.onclick = config_statement_delete;
 
@@ -1170,15 +1276,16 @@ function delete_app_config ( delete_button ) {
     }
 
     var name_pieces = delete_button.name.split( '::' );
-    var keyword     = name_pieces[1];
+    var ident       = name_pieces[1];
+    var keyword     = name_pieces[2];
 
     // tell the backend to do the delete
-    var update_url = '/delete_app_config/' + keyword;
+    var update_url = '/delete_app_config/' + ident + '/' + keyword;
     var loader     = new net.ContentLoader( update_url, redraw );
 
     // update the table
     var config_row = document.getElementById(
-            'app_config::row::' + keyword
+            'app_config::row::' + ident + '::' + keyword
     );
     var config_row_number = config_row.rowIndex;
     var parent_table      = config_row.parentNode;
@@ -1199,16 +1306,22 @@ function config_statement_update( event ) {
     }
 
     var source   = event.currentTarget;
-    var keyword  = source.name;
-    keyword      = keyword.replace( 'app_conf_value::', '' );
+    var id       = source.name;
+    id           = id.replace( 'app_conf_value::', '' );
+    id           = id.replace( 'cont_conf_value::', '' );
 
-    accessor_box = document.getElementsByName( 'app_conf_box::' + keyword )[0];
+    accessor_box = document.getElementsByName( 'app_conf_box::' + id )[0];
+
+    var accessor;
+    if ( accessor_box ) {
+        accessor = accessor_box.checked;
+    }
 
     update_tree(
         'app_conf_statement',
-        keyword,
+        id,
         source.value,
-        accessor_box.checked
+        accessor
     );
 }
 
@@ -1220,12 +1333,12 @@ function config_statement_accessor_update( event ) {
     }
 
     var source  = event.currentTarget;
-    var keyword = source.name;
-    keyword     = keyword.replace( 'app_conf_box::', '' );
+    var id      = source.name;
+    id          = id.replace( 'app_conf_box::', '' );
 
     update_tree(
         'app_conf_accessor',
-        keyword,
+        id,
         source.checked
     );
 }

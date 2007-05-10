@@ -72,6 +72,7 @@ app Contact {
             paged_conf        number_rows;
             cols              name, number;
             header_options    Add, CSV;
+            header_option_perms CSV => retrieve;
             row_options       Edit, Delete;
         }
         method form is AutoCRUD_form {

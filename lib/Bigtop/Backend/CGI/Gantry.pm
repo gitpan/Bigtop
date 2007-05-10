@@ -67,7 +67,9 @@ sub gen_CGI {
 
     my $configs      = $tree->get_app_configs();
     my $fast_cgi     = $tree->get_config->{CGI}{fast_cgi} || 0;
+    my $gantry_conf  = $tree->get_config->{CGI}{gantry_conf} || 0;
 
+    CONF_TYPE:
     foreach my $conf_type ( keys %{ $configs } ) {
         my $content      = $class->output_cgi(
             {
@@ -96,6 +98,8 @@ sub gen_CGI {
         chmod 0755, $cgi_file;
 
         if ( $tree->get_config->{CGI}{with_server} ) {
+            next CONF_TYPE if ( $gantry_conf and $conf_type ne 'base' );
+
             my $SERVER;
             unless ( open $SERVER, '>', $server_file ) {
                 warn "Couldn't write file $server_file: $!\n";
@@ -168,26 +172,58 @@ use Gantry::Server;
 use Gantry::Engine::CGI;
 
 [% IF flex_db %]
-my $dbd    = 'SQLite';
-my $dbuser = '';
-my $dbpass = '';
-my $dbname = 'app.db';
+use Gantry::Conf;
+
+my $dbd;
+my $dbuser;
+my $dbpass;
+my $dbname;
+
+my $conf_instance = '[% instance %]';
+my $conf_type;
+my $conf_file     = 'docs/app.gantry.conf';
 
 GetOptions(
-    'dbd|d=s'     => \$dbd,
-    'dbuser|u=s'  => \$dbuser,
-    'dbpass|p=s'  => \$dbpass,
-    'dbname|n=s'  => \$dbname,
-    'help|h'      => \&usage,
+    'dbd|d=s'      => \$dbd,
+    'dbuser|u=s'   => \$dbuser,
+    'dbpass|p=s'   => \$dbpass,
+    'dbname|n=s'   => \$dbname,
+    'instance|i=s' => \$conf_instance,
+    'type|t=s'     => \$conf_type,
+    'file|f=s'     => \$conf_file,
+    'help|h'       => \&usage,
 );
 
-my $dsn = "dbi:$dbd:dbname=$dbname";
-[% END %]
+if ( $conf_type and $conf_type ne 'base' ) {
+    $conf_instance = "[% instance %]_$conf_type";
+}
+
+my $config = Gantry::Conf->retrieve(
+    {
+        instance    => $conf_instance,
+        config_file => $conf_file,
+    }
+);
+
+if ( $dbd or $dbname ) {
+    $dbd ||= 'SQLite';
+    $config->{ dbconn } = "dbi:$dbd:dbname=$dbname";
+}
+
+$config->{ dbuser } = $dbuser if $dbuser;
+$config->{ dbpass } = $dbuser if $dbpass;
+
+my $cgi = Gantry::Engine::CGI->new( {
+    config => $config,
+[% locs %]
+} );
+[% ELSE %]
 
 my $cgi = Gantry::Engine::CGI->new( {
 [% config %]
 [% locs %]
 } );
+[% END %]
 
 my $port = shift || [% port || 8080 %];
 
@@ -209,12 +245,25 @@ usage: app.server [options] [port]
     port defaults to [% port || 8080 +%]
 
     options:
-    -h  --help    prints this message and quits
-    -d  --dbd     DBD to use with DBI (like Pg or mysql),
-                  defaults to sqlite
-    -u  --dbuser  database user, defaults to the empty string
-    -p  --dbpass  database user's password defaults to the empty string
-    -n  --dbname  database name defaults to app.db
+    -h  --help     prints this message and quits
+    -i  --instance name of a Gantry::Conf instance
+                   defaults to [% instance +%]
+    -t  --type     type of one Bigtop config block
+                   defaults to the unnamed block
+    -f  --file     master Gantry::Conf file
+                   defaults to docs/app.gantry.conf
+
+    options which override Gantry::Conf values:
+    -d  --dbd      DBD module name (e.g. Pg, mysql, etc)
+    -n  --dbname   name of database
+    -u  --dbuser   database user name
+    -p  --dbpass   dbuser's database password
+
+Note that -i and -t are incompatible.  The former fully specifies an
+instance name for Gantry::Conf.  The later specifies the config type
+suffix of an instance name.  If you use both, -t takes precedence.
+
+-d defaults to SQLite.
 
 EO_HELP
 
@@ -234,32 +283,69 @@ port defaults to 8080
 =head1 DESCRIPTION
 
 This is a Gantry::Server based stand alone server for the [% app_name +%]
-app.  It was built to use an SQLite database called app.db.  Use the following
-command line flags to change database connection information (all of
-them require a value):
+app.  It was built to use the [% instance %] Gantry::Conf instance in the
+docs directory.
+
+To override the database connection information in your conf file,
+see L<Changing Databases without Changing Conf> below.
+
+To change instances or master conf files, use these
+flags (they all require values):
+
+=over 4
+
+=item --instance (or -i)
+
+(Incompatible with --type)
+
+The full name of your conf instance, defaults to [% instance %].
+
+=item --type (or -t)
+
+(Incompatible with --instance)
+
+Use this if you use named config blocks in your Bigtop file.  Use the
+name of the config block as the value for --type.  This will build the
+corresponding instance name as [% instance %]_TYPE, where TYPE is the value
+of this flag.
+
+If you don't neither --instance nor --type, the instance you get will
+be [% instance %].
+
+=item --file (or -f)
+
+The name of your master Gantry::Conf file, defaults to docs/app.gantry.conf.
+
+=back
+
+=head1 Changing Databases without Changing Conf
+
+You may use the following flags to control database connections.  If you
+supply these flags, they will take precedence over your Gantry::Conf instance.
+All of them require values.
 
 =over 4
 
 =item --dbd (or -d)
 
-The DBD for your database, try SQLite, Pg, or mysql.  Defaults to SQLite.
-
-=item --dbuser (or -u)
-
-The database user name, defaults to the empty string.
-
-=item --dbpass (or -p)
-
-The database user's password, defaults to the empty string.
+The name of your DBD module (like SQLite, Pg, or mysql).  If you use
+dbname, this defaults to SQLite.
 
 =item --dbname (or -n)
 
-The name of the database, defaults to app.db.
+The name of your database.
+
+=item --dbuser (or -u)
+
+Your database user name.
+
+=item --dbpass (or -p)
+
+Your database password.
 
 =back
 
 =cut
-
 [% END %][%# end of if flex_db %]
 [% END %][%# end of stand_alone_server %]
 
@@ -399,7 +485,16 @@ sub output_cgi {
 $conffile_text
     },
 ";
-        $stand_alone_config = $config;
+        if ( $backend_block->{ flex_db } ) {
+           $stand_alone_config =
+'    config => {
+        GantryConfInstance => $conf_instance,
+        GantryConfFile => $conf_file,
+    },' . "\n";
+        }
+        else {
+            $stand_alone_config = $config;
+        }
     }
     else {
         my $config_output = $tree->walk_postorder(
@@ -415,6 +510,10 @@ $conffile_text
 
         $config             = $configs{ cgi_config };
         $stand_alone_config = $configs{ stand_along_config };
+    }
+
+    if ( $backend_block->{ flex_db } and not $instance ) {
+        die "Use of flex_db now requires Conf Gantry backend.\n";
     }
 
     my $port;
@@ -459,6 +558,7 @@ $conffile_text
             flex_db  => $backend_block->{ flex_db },
             %{ $tree->get_config() },  # Go Fish! (think template_engine)
             perl_path => $perl_path,
+            instance  => $instance,
         }
     );
 
@@ -490,14 +590,12 @@ sub output_config {
 
     my @stand_alone_output = @{ $child_output };
     if ( $backend_block->{ flex_db } ) {
-        @stand_alone_output = grep ! /^\s*dbconn|^\s*dbuser|^\s*dbpass/,
+        @stand_alone_output = grep !
+                                 /^\s*GantryConfInstance|^\s*GantryConfFile|/,
                                  @{ $child_output };
         unshift @stand_alone_output,
-            ' ' x 8 . 'dbconn => $dsn,',
-            ' ' x 8 . 'dbuser => $dbuser,',
-            ' ' x 8 . 'dbpass => $dbpass,',
-            ' ' x 8 . q!doc_rootp => '/static',!,
-            ' ' x 8 . 'show_dev_navigation => 1,',
+            ' ' x 8 . q!GantryConfInstance => $conf_instance,!,
+            ' ' x 8 . q!GantryConfFile => $conf_file,!;
     }
 
     my $extra_output = Bigtop::Backend::CGI::Gantry::application_config(

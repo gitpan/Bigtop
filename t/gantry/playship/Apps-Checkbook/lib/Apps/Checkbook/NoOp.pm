@@ -1,9 +1,9 @@
 package Apps::Checkbook::NoOp;
 
 use strict;
+use warnings;
 
-use base 'Apps::Checkbook';
-
+use base 'Apps::Checkbook::GEN::NoOp';
 
 
 1;
@@ -53,6 +53,16 @@ You might even want to describe the table this module controls here.
 =head1 METHODS
 
 =over 4
+
+
+=back
+
+
+=head1 METHODS INHERITED FROM Apps::Checkbook::GEN::NoOp
+
+=over 4
+
+=item namespace
 
 
 =back

@@ -3,9 +3,11 @@
 package AddressBook::GEN::Family;
 
 use strict;
+use warnings;
 
 use base 'AddressBook';
 use JSON;
+use Gantry::Utils::TablePerms;
 
 use AddressBook::Model::family qw(
     $FAMILY
@@ -26,16 +28,18 @@ sub do_main {
         $real_location .= '/';
     }
 
+    my @header_options = (
+        {
+            text => 'Add',
+            link => $real_location . "add",
+            type => 'create',
+        },
+    );
+
     my $retval = {
         headings       => [
             'Name',
             'Street',
-        ],
-        header_options => [
-            {
-                text => 'Add',
-                link => $real_location . "add",
-            },
         ],
     };
 
@@ -59,6 +63,31 @@ sub do_main {
         } if scalar( @searches ) > 0;
     }
 
+    my @row_options = (
+        {
+            text => 'Edit',
+            type => 'update',
+        },
+        {
+            text => 'Delete',
+            type => 'delete',
+        },
+    );
+
+    my $perm_obj = Gantry::Utils::TablePerms->new(
+        {
+            site           => $self,
+            real_location  => $real_location,
+            header_options => \@header_options,
+            row_options    => \@row_options,
+        }
+    );
+
+    $retval->{ header_options } = $perm_obj->real_header_options;
+
+    my $limit_to_user_id = $perm_obj->limit_to_user_id;
+    $search->{ user_id } = $limit_to_user_id if ( $limit_to_user_id );
+
     my $schema = $self->get_schema();
     my @rows   = $FAMILY->get_listing(
         {
@@ -67,24 +96,20 @@ sub do_main {
         }
     );
 
+    ROW:
     foreach my $row ( @rows ) {
+        last ROW if $perm_obj->hide_all_data;
+
         my $id = $row->id;
+
         push(
             @{ $retval->{rows} }, {
+                orm_row => $row,
                 data => [
                     $row->name,
                     $row->street,
                 ],
-                options => [
-                    {
-                        text => 'Edit',
-                        link => $real_location . "edit/$id",
-                    },
-                    {
-                        text => 'Delete',
-                        link => $real_location . "delete/$id",
-                    },
-                ],
+                options => $perm_obj->real_row_options( $row ),
             }
         );
     }
@@ -98,7 +123,7 @@ sub do_main {
             rows            => $retval->{ rows },
         };
 
-        my $json = objToJson( $obj );
+        my $json = objToJson( $obj, { skipinvalid => 1 } );
         return( $json );
     }
 
@@ -117,7 +142,7 @@ sub form {
 
     return {
         row        => $row,
-        legend => $self->path_info =~ /edit/i ? 'Edit' : 'Add',
+        legend => $self->path_info =~ /edit/i ? q!Edit! : q!Add!,
         fields     => [
             {
                 name => 'name',

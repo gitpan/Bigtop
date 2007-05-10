@@ -1,10 +1,10 @@
 <!-- END DATA TABLE --><!-- END QUICK TABLE --><div class='app_block_element'
-         id='div_ident_7'>
+         id='div_ident_8'>
         
          <fieldset>
          <legend>Method 
-            ( <a href='javascript:show_or_hide( "hideable_ident_7" );'>edit or hide</a> |  
-<a href="#" name='app_body_delete::ident_7' onclick='javascript:delete_block( this )'>delete</a>
+            ( <a href='javascript:show_or_hide( "hideable_ident_8" );'>edit or hide</a> |  
+<a href="#" name='app_body_delete::ident_8' onclick='javascript:delete_block( this )'>delete</a>
        
 
             )
@@ -14,11 +14,11 @@
                 <td>Name: </td>
                 <td>
                   <input type='text'
-                         id='method_name::ident_7'
+                         id='method_name::ident_8'
                          value='do_alt_main'
                          onblur='javascript:update_tree(
                              "name",
-                             "method::ident_7",
+                             "method::ident_8",
                              this.value
                          )'
                   />
@@ -28,9 +28,9 @@
                 <td> Type: </td>
                 <td>
                     <select
-                        id='method_type_ident_4::ident_7'
+                        id='method_type_ident_5::ident_8'
                         onchange='javascript:type_change(
-                            "ident_7",
+                            "ident_8",
                             this.value
                         )'
                     >
@@ -50,6 +50,10 @@
      >
                         CRUD_form
                       </option>
+                      <option value='hashref'
+     >
+                        hashref
+                      </option>
                       <option value='base_links'
      >
                         base_links
@@ -68,7 +72,7 @@
             <tr>
                 <td colspan='2'>
                   
-<div id='hideable_ident_7'
+<div id='hideable_ident_8'
   
     style='display: none'
   
@@ -93,11 +97,11 @@
             
 
 <input type='checkbox'
-       value='ident_7::no_gen'
-       id='ident_7::no_gen'
+       value='ident_8::no_gen'
+       id='ident_8::no_gen'
        class='urgency_0'       onchange='javascript:update_tree(
            "method_statement_bool",
-           "ident_7::no_gen",
+           "ident_8::no_gen",
            this.checked
        )'
 />
@@ -122,24 +126,24 @@
         
         
         <input type='text'
-            name='ident_7::extra_args'
+            name='ident_8::extra_args'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_7::extra_args",
+                "ident_8::extra_args",
                 this
             )'
         />
         <br />
         
         <input type='text'
-            name='ident_7::extra_args'
+            name='ident_8::extra_args'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_7::extra_args",
+                "ident_8::extra_args",
                 this
             )'
         />
@@ -165,12 +169,12 @@
 
     
         <input type='text'
-            id='ident_7::order_by'
+            id='ident_8::order_by'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "method_statement_text",
-                "ident_7::order_by",
+                "ident_8::order_by",
                 this.value
             )'
         />
@@ -194,12 +198,12 @@
 
     
         <input type='text'
-            id='ident_7::rows'
+            id='ident_8::rows'
             value=""
             class='urgency_3'
             onblur='javascript:update_tree(
                 "method_statement_text",
-                "ident_7::rows",
+                "ident_8::rows",
                 this.value
             )'
         />
@@ -223,12 +227,12 @@
 
     
         <input type='text'
-            id='ident_7::paged_conf'
+            id='ident_8::paged_conf'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "method_statement_text",
-                "ident_7::paged_conf",
+                "ident_8::paged_conf",
                 this.value
             )'
         />
@@ -254,24 +258,24 @@
         
         
         <input type='text'
-            name='ident_7::cols'
+            name='ident_8::cols'
             value=''
             class='urgency_5'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_7::cols",
+                "ident_8::cols",
                 this
             )'
         />
         <br />
         
         <input type='text'
-            name='ident_7::cols'
+            name='ident_8::cols'
             value=''
             class='urgency_5'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_7::cols",
+                "ident_8::cols",
                 this
             )'
         />
@@ -299,24 +303,24 @@
         
         
         <input type='text'
-            name='ident_7::col_labels'
+            name='ident_8::col_labels'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_7::col_labels",
+                "ident_8::col_labels",
                 this
             )'
         />
         <br />
         
         <input type='text'
-            name='ident_7::col_labels'
+            name='ident_8::col_labels'
             value=''
             class='urgency_0'
             onblur='javascript:update_multivalue(
                 "method_statement_text",
-                "ident_7::col_labels",
+                "ident_8::col_labels",
                 this
             )'
         />
@@ -327,7 +331,7 @@
 
         </td>
         <td>
-            Labels for fields on main_listing [optional default uses field labels]
+            Labels for fields on main_listing<br />[optional default uses field labels]
         </td>
     </tr>
   
@@ -341,11 +345,11 @@
             
 
 <input type='checkbox'
-       value='ident_7::livesearch'
-       id='ident_7::livesearch'
+       value='ident_8::livesearch'
+       id='ident_8::livesearch'
        class='urgency_0'       onchange='javascript:update_tree(
            "method_statement_bool",
-           "ident_7::livesearch",
+           "ident_8::livesearch",
            this.checked
        )'
 />
@@ -366,7 +370,7 @@
             
             
 
-      <table id='ident_7::header_options_input_table'>
+      <table id='ident_8::header_options_input_table'>
         <tr><th> Label </th>
             <th> Location
                  
@@ -377,11 +381,11 @@
             <tr><td>
                 <input
                     type='text'
-                    name='ident_7::header_options_key'
+                    name='ident_8::header_options_key'
                     class='urgency_5'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_7::header_options",
+                        "ident_8::header_options",
                         1,
                         this
                     )'
@@ -390,11 +394,11 @@
             <td>
                 <input
                     type='text'
-                    name='ident_7::header_options_value'
+                    name='ident_8::header_options_value'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_7::header_options",
+                        "ident_8::header_options",
                         1,
                         this
                     )'
@@ -414,28 +418,26 @@
     
     
     <tr>
-        <td> row_options </td>
+        <td> header_option_perms </td>
         <td>
 
             
             
 
-      <table id='ident_7::row_options_input_table'>
-        <tr><th> Label </th>
-            <th> Location
-                 
-                    [optional]
+      <table id='ident_8::header_option_perms_input_table'>
+        <tr><th> Header Option Label </th>
+            <th> Controlling Permission
                  
             </th></tr>
     
             <tr><td>
                 <input
                     type='text'
-                    name='ident_7::row_options_key'
-                    class='urgency_5'
+                    name='ident_8::header_option_perms_key'
+                    class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_7::row_options",
+                        "ident_8::header_option_perms",
                         1,
                         this
                     )'
@@ -444,11 +446,11 @@
             <td>
                 <input
                     type='text'
-                    name='ident_7::row_options_value'
+                    name='ident_8::header_option_perms_value'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "method_statement_pair",
-                        "ident_7::row_options",
+                        "ident_8::header_option_perms",
                         1,
                         this
                     )'
@@ -461,7 +463,142 @@
 
         </td>
         <td>
-            User actions affecting rows [like Edit]
+            The table permission which controls options<br />Pick from create, retrieve, update, or delete
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
+        <td> row_options </td>
+        <td>
+
+            
+            
+
+      <table id='ident_8::row_options_input_table'>
+        <tr><th> Label </th>
+            <th> Location
+                 
+                    [optional]
+                 
+            </th></tr>
+    
+            <tr><td>
+                <input
+                    type='text'
+                    name='ident_8::row_options_key'
+                    class='urgency_5'
+                    onblur='javascript:update_pairs(
+                        "method_statement_pair",
+                        "ident_8::row_options",
+                        1,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_8::row_options_value'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "method_statement_pair",
+                        "ident_8::row_options",
+                        1,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            User actions affecting rows [like Edit]<br />Locations should not end with / or <br />include $id
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
+        <td> row_option_perms </td>
+        <td>
+
+            
+            
+
+      <table id='ident_8::row_option_perms_input_table'>
+        <tr><th> Row Option Label </th>
+            <th> Controlling Permission
+                 
+            </th></tr>
+    
+            <tr><td>
+                <input
+                    type='text'
+                    name='ident_8::row_option_perms_key'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "method_statement_pair",
+                        "ident_8::row_option_perms",
+                        1,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_8::row_option_perms_value'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "method_statement_pair",
+                        "ident_8::row_option_perms",
+                        1,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            The table permission which controls options<br />Pick from create, retrieve, update, or delete
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
+        <td> limit_by </td>
+        <td>
+
+            
+            
+
+    
+        <input type='text'
+            id='ident_8::limit_by'
+            value=""
+            class='urgency_0'
+            onblur='javascript:update_tree(
+                "method_statement_text",
+                "ident_8::limit_by",
+                this.value
+            )'
+        />
+    
+
+
+        </td>
+        <td>
+            If an arg is supplied, show only matching rows
         </td>
     </tr>
   
@@ -476,12 +613,12 @@
 
     
         <input type='text'
-            id='ident_7::title'
+            id='ident_8::title'
             value=""
             class='urgency_3'
             onblur='javascript:update_tree(
                 "method_statement_text",
-                "ident_7::title",
+                "ident_8::title",
                 this.value
             )'
         />
@@ -505,12 +642,12 @@
 
     
         <input type='text'
-            id='ident_7::html_template'
+            id='ident_8::html_template'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "method_statement_text",
-                "ident_7::html_template",
+                "ident_8::html_template",
                 this.value
             )'
         />
@@ -519,39 +656,13 @@
 
         </td>
         <td>
-            Template to use for main_listing [defaults to results.tt or main.tt]
+            Template to use for main_listing<br />[defaults to results.tt or main.tt]
         </td>
     </tr>
   
     
     
-    <tr>
-        <td> limit_by </td>
-        <td>
-
-            
-            
-
     
-        <input type='text'
-            id='ident_7::limit_by'
-            value=""
-            class='urgency_0'
-            onblur='javascript:update_tree(
-                "method_statement_text",
-                "ident_7::limit_by",
-                this.value
-            )'
-        />
-    
-
-
-        </td>
-        <td>
-            If an arg is supplied, show only matching rows
-        </td>
-    </tr>
-  
     
     
     
@@ -569,13 +680,15 @@
         <br style='clear: both' />
 
     </div>config {
-    engine CGI;
+    engine MP20;
     template_engine TT;
     Init Std {  }
+    Conf Gantry { conffile `docs/app.gantry.conf`; gen_root 1; instance sample; }
+    HttpdConf Gantry { gantry_conf 1; }
     SQL SQLite {  }
     SQL Postgres {  }
     SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    CGI Gantry { with_server 1; flex_db 1; gantry_conf 1; }
     Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }
@@ -584,6 +697,8 @@ app Sample {
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
+        doc_rootp `/static` => no_accessor;
+        show_dev_navigation 1 => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {
@@ -601,7 +716,7 @@ app Sample {
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;
             extra_keys
-                legend => `$self->path_info =~ /edit/i ? 'Edit' : 'Add'`;
+                legend => `$self->path_info =~ /edit/i ? q!Edit! : q!Add!`;
         }
         method do_alt_main is main_listing {
         }

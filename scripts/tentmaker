@@ -189,6 +189,34 @@ Allows you to specify the name of the app and optionally its table
 relationships.  Requires a name for the app.  The rest of the command
 line arguments are depend on what style you use, see L<STYLES>.
 
+Normally this flag uses the default bigtop file from L<Bigtop::ScriptHelp>.
+For your convenience, you can see it in examples/default.bigtop.  To
+override it, copy that file to bigtopdef in the directory where you
+invoke tentmaker -n, or to .bigtopdef in your home directory.
+Edit the file to your heart's content.
+
+The result must be a valid bigtop file, with one exception.  The file
+you create will be used as a template toolkit template.  But, only three
+things are available for subsitution:
+
+=over 4
+
+=item app_name
+
+The name of the app from the command line.
+
+=item no_colon_name
+
+The app name, where all ::'s are replaced with underscores.
+
+=item short_name
+
+Everything after the last :: in the app_name in lower case.
+
+=back
+
+For example see examples/def.bigtop.tt.
+
 =item --add (or -a)
 
 Allows you to augment an existing bigtop file prior to editing it.

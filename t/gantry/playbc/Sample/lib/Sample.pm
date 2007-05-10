@@ -1,6 +1,7 @@
 package Sample;
 
 use strict;
+use warnings;
 
 our $VERSION = '0.01';
 
@@ -10,9 +11,6 @@ use base 'GENSample';
 use Sample::Model::tbl1 qw(
     $TBL1
 );
-use Sample::Model;
-sub schema_base_class { return 'Sample::Model'; }
-use Gantry::Plugins::DBIxClassConn qw( get_schema );
 use Gantry::Plugins::NewTwo;
 
 
@@ -103,8 +101,6 @@ You might even want to describe the table this module controls here.
 
 =item text_descr
 
-=item schema_base_class
-
 =item get_orm_helper
 
 
@@ -115,11 +111,15 @@ You might even want to describe the table this module controls here.
 
 =over 4
 
+=item namespace
+
 =item init
 
 =item do_main
 
 =item form
+
+=item schema_base_class
 
 
 =back

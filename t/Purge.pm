@@ -33,7 +33,7 @@ sub strip_copyright {
 
 sub strip_shebang {
     my $line = shift;
-    $line    =~ s/^#!.*//;
+    $line    =~ s/^\s*#!.*//;
     return $line;
 }
 
