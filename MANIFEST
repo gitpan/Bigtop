@@ -397,6 +397,7 @@ tenttemplates/app_config.ttc
 tenttemplates/app_statements.ttc
 tenttemplates/backends.ttc
 tenttemplates/bigtop_config.ttc
+tenttemplates/controller_config_block.ttc
 tenttemplates/data_div.ttc
 tenttemplates/default.css
 tenttemplates/delete_button.ttc

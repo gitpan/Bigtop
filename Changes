@@ -1,5 +1,8 @@
 Revision history for Perl extension Bigtop.
 
+0.28 Fri May 11 14:55:26 CDT 2007
+    - added controller_config_block.ttc to MANIFEST
+
 0.27 Thu May 10 09:10:22 CDT 2007
     - added skipinvalid flag to json converter. ( skips the orm row )
     - added orm row to do_main data
