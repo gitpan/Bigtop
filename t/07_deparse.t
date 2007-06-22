@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 
 use Bigtop::Parser;
 
@@ -26,6 +26,7 @@ my @correct_rebuild = split /\n/, <<EO_CORRECT_REBUILD;
 config {
     engine MP13;
     template_engine TT;
+    plugins `SomePlugin SomeOtherPlugin`;
     Init Std {  }
     SQL Postgres {  }
     Model GantryDBIxClass {  }
@@ -109,10 +110,25 @@ EO_CORRECT_REBUILD
 
 is_deeply( \@redone_pieces, \@correct_rebuild, 'moderate deparse' );
 
+#----------------------------------------------------------------------
+# Check tree getters: get_top_level_configs
+#----------------------------------------------------------------------
+
+my $top_level_configs = $ast->get_top_level_configs();
+
+my $correct_tlcs      = {
+    engine => 'MP13',
+    template_engine => 'TT',
+    plugins => 'SomePlugin SomeOtherPlugin',
+};
+
+is_deeply( $top_level_configs, $correct_tlcs, 'get_top_level_configs' );
+
 __DATA__
 config {
     engine MP13;
     template_engine TT;
+    plugins `SomePlugin SomeOtherPlugin`;
     Init Std {}
     SQL Postgres {  }
     Model GantryDBIxClass {  }

@@ -7,9 +7,6 @@ our $VERSION = '0.01';
 
 use base 'GENContact';
 
-use Contact::Number;
-use Contact::BDay;
-
 
 
 #-----------------------------------------------------------------
@@ -59,6 +56,8 @@ You might even want to describe the table this module controls here.
 =head1 METHODS (inherited from GENContact)
 
 =over 4
+
+=item schema_base_class
 
 =item namespace
 

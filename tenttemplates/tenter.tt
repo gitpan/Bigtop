@@ -41,11 +41,6 @@
 </script>
     </head>
 <body>
-<!--
-<div class='main_title'>
-<h2>tentmaker - A Bigtop Editor</h2>
-</div>
--->
     <div id="save_file">
     <button type='button'
           onclick='javascript:server_stop()'> Stop tentmaker </button>

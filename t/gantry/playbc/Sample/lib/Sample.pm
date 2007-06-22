@@ -7,7 +7,6 @@ our $VERSION = '0.01';
 
 use base 'GENSample';
 
-
 use Sample::Model::tbl1 qw(
     $TBL1
 );

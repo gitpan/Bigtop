@@ -7,6 +7,7 @@ our @EXPORT = qw( valid_ident );
 
 use File::HomeDir;
 use File::Spec;
+use Cwd;
 
 my %non_entry   = (
     id       => 1,
@@ -15,17 +16,22 @@ my %non_entry   = (
 );
 
 sub _get_config_block {
-    my $app_name = shift;
-    
+    my $app_name  = shift;
+    my $build_dir = shift;
+
     $app_name =~ s/::/_/g;
     $app_name = lc( $app_name );
-    
+
+    my $conf_file = File::Spec->catfile(
+            $build_dir, 'docs', 'app.gantry.conf'
+    );
+
     return << "EO_Config_Default";
 config {
     engine          MP20;
     template_engine TT;
     Init            Std             {}
-    Conf Gantry      { gen_root 1; conffile `docs/app.gantry.conf`; instance $app_name; }
+    Conf Gantry      { gen_root 1; conffile `$conf_file`; instance $app_name; }
     HttpdConf Gantry { gantry_conf 1; }
     SQL             SQLite          {}
     SQL             Postgres        {}
@@ -41,6 +47,15 @@ EO_Config_Default
 sub get_minimal_default {
     my $class  = shift;
     my $name   = shift || 'Sample';
+
+    my $cwd       = getcwd();
+    my $dir_name  = $name;
+    $dir_name     =~ s/::/-/g;
+
+    my $cgi       = lc( $dir_name ) . '.cgi';
+
+    my $build_dir = File::Spec->catfile( $cwd, $dir_name );
+    my $app_db    = File::Spec->catfile( $build_dir, 'app.db' );
 
     # See if they have a bigtopdef or ~/.bigtopdef
     # If no .bigtopdef, whip something up from scratch
@@ -58,7 +73,7 @@ sub get_minimal_default {
         return _minimal_from_file( $def_file, $name );
     }
 
-    my $config = _get_config_block( $name );
+    my $config = _get_config_block( $name, $build_dir );
 
     return << "EO_Little_Default";
 $config
@@ -68,6 +83,10 @@ app $name {
         template_wrapper `genwrapper.tt` => no_accessor;
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
+    }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=$app_db` => no_accessor;
+        app_rootp `/cgi-bin/$cgi` => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {

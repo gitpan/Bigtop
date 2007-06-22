@@ -10,6 +10,9 @@ use Bigtop::ScriptHelp::Style;
 use Bigtop::Parser;
 use Bigtop::Deparser;
 
+use lib 't';
+use Purge;
+
 $ENV{ BIGTOP_REAL_DEF } = 1;
 
 my @received;
@@ -49,6 +52,8 @@ is( $controller_label, 'SchBday', 'schema controller name' );
 
 my $mini  = Bigtop::ScriptHelp->get_minimal_default( 'Simple' );
 
+$mini = strip_build_dir( $mini );
+
 $expected_file = File::Spec->catfile( $expected_dir, 'minimal' );
 
 file_ok( $expected_file, $mini, 'minimal default (minimal)' );
@@ -65,6 +70,8 @@ my $max   = Bigtop::ScriptHelp->get_big_default(
         'birth_date->family_address(id:int4:primary_key,identifier:varchar(13),'
         . '+full_description,state=KS,created:date) a<->b'
 );
+
+$max = strip_build_dir( $max );
 
 $expected_file = File::Spec->catfile( $expected_dir, 'big_default' );
 
@@ -88,6 +95,8 @@ Bigtop::ScriptHelp->augment_tree(
 
 my $augmented = Bigtop::Deparser->deparse( $ast );
 
+$augmented = strip_build_dir( $augmented );
+
 $expected_file = File::Spec->catfile( $expected_dir, 'augmented' );
 
 file_ok( $expected_file, $augmented, '(augmented)' );
@@ -99,6 +108,8 @@ file_ok( $expected_file, $augmented, '(augmented)' );
 my $schemer   = Bigtop::ScriptHelp->get_big_default(
         $style, 'Address', 'fam.family_address<-fam.birth_date'
 );
+
+$schemer = strip_build_dir( $schemer );
 
 $expected_file = File::Spec->catfile( $expected_dir, 'schema_default' );
 
@@ -113,7 +124,7 @@ file_ok(
 $ast = Bigtop::Parser->parse_string( $mini );
 Bigtop::ScriptHelp->augment_tree( $style, $ast, 'fam.address<-fam.bday' );
 
-$augmented = Bigtop::Deparser->deparse( $ast );
+$augmented = strip_build_dir( Bigtop::Deparser->deparse( $ast ) );
 
 $expected_file = File::Spec->catfile( $expected_dir, 'schema_aug' );
 

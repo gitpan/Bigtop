@@ -85,6 +85,8 @@ Contact should inherit from this module.
 
 =over 4
 
+=item schema_base_class
+
 =item namespace
 
 =item init

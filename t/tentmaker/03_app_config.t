@@ -4,6 +4,9 @@ use Test::More tests => 4;
 use Test::Files;
 use File::Spec;
 
+use lib 't';
+use Purge;
+
 my $skip_all = 0;
 
 BEGIN {
@@ -58,6 +61,10 @@ app Sample {
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
     }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
+    }
     controller is base_controller {
         method do_main is base_links {
         }
@@ -71,7 +78,7 @@ $tent_maker = Bigtop::TentMaker->new();
 $tent_maker->uri( '/' );
 $tent_maker->root( 'tenttemplates' );
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+@maker_deparse = split /\n/, strip_build_dir( $tent_maker->deparsed() );
 
 is_deeply( \@maker_deparse, \@correct_input, 'simple sample deparse' );
 
@@ -86,6 +93,8 @@ $ajax = $tent_maker->do_update_app_conf_statement(
             'new_value',
             'true'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'aconfst' );
 
@@ -102,10 +111,12 @@ Bigtop::TentMaker->take_performance_hit( $style, $empty_config );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_app_conf_statement(
-        'ident_5::new_conf_st',
+        'ident_6::new_conf_st',
         'value',
         'false'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'aconfstempty' );
 
@@ -118,10 +129,12 @@ file_ok( $expected_file, $ajax, 'first conf statement (aconfstempty)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_app_conf_statement(
-            'ident_5::new_conf_st',
+            'ident_6::new_conf_st',
             'other_value',
             'false',
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cconfstempty' );
 

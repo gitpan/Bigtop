@@ -134,12 +134,12 @@ my %doc_for = (
             descr    => 'top level of Gantry::Conf file',
             sort_order => 10,
         },
-        GantryLocation => {
-            keyword  => 'GantryLocation',
-            label    => 'Root level config',
-            descr    => 'controller level of Gantry::Conf file',
-            sort_order => 20,
-        },
+#        GantryLocation => {
+#            keyword  => 'GantryLocation',
+#            label    => 'Root level config',
+#            descr    => 'controller level of Gantry::Conf file',
+#            sort_order => 20,
+#        },
         PerlTop => {
             keyword  => 'PerlTop',
             label    => 'Preamble',
@@ -274,6 +274,15 @@ my %doc_for = (
             urgency   => 10,
             quick_label => 'SQL Type',
             sort_order  => 30,
+        },
+        accessor => {
+            keyword   => 'accessor',
+            label     => 'Accessor Name',
+            descr     => 'DBIx::Class alternate accessor name for this column',
+            type      => 'text',
+            multiple  => 1,
+            urgency   => 0,
+            sort_order => 35,
         },
         refers_to => {
             keyword       => 'refers_to',
@@ -881,6 +890,21 @@ my %doc_for = (
             multiple      => 0,
             urgency       => 0,
             sort_order    => 68,
+            applies_to    => 'main listing',
+            method_types => {
+                main_listing => 1,
+            },
+        },
+        where_terms => {
+            keyword       => 'where_terms',
+            label         => 'Equality tests on listed columns',
+            descr         => 'Where clause will include these equality tests',
+            type          => 'pair',
+            pair_labels   => [ 'Table', 'Table' ],
+            pair_required => 1,
+            multiple      => 1,
+            urgency       => 0,
+            sort_order    => 69,
             applies_to    => 'main listing',
             method_types => {
                 main_listing => 1,

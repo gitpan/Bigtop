@@ -53,7 +53,7 @@ if ( $dbd or $dbname ) {
 }
 
 $config->{ dbuser } = $dbuser if $dbuser;
-$config->{ dbpass } = $dbuser if $dbpass;
+$config->{ dbpass } = $dbpass if $dbpass;
 
 my $cgi = Gantry::Engine::CGI->new( {
     config => $config,

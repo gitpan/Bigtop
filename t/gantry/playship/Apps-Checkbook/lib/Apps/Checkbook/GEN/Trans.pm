@@ -49,17 +49,20 @@ sub do_main {
         ],
     };
 
-    my %param = $self->get_param_hash;
+    my $params = $self->params;
 
-    my $search = {};
-    if ( $param{ search } ) {
+    my $search = {
+        cleared => 't',
+        amount => { '>', 0 },
+    };
+    if ( $params->{ search } ) {
         my $form = $self->form();
 
         my @searches;
         foreach my $field ( @{ $form->{ fields } } ) {
             if ( $field->{ searchable } ) {
                 push( @searches,
-                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                    ( $field->{ name } => { 'like', "%$params->{ search }%"  } )
                 );
             }
         }
@@ -120,7 +123,7 @@ sub do_main {
         );
     }
 
-    if ( $param{ json } ) {
+    if ( $params->{ json } ) {
         $self->template_disable( 1 );
 
         my $obj = {

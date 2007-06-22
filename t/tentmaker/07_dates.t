@@ -4,6 +4,9 @@ use Test::More tests => 2;
 use Test::Files;
 use File::Spec;
 
+use lib 't';
+use Purge;
+
 my $skip_all = 0;
 
 BEGIN {
@@ -56,6 +59,10 @@ app Address {
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
     }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/address.cgi` => no_accessor;
+    }
     controller is base_controller {
         method do_main is base_links {
         }
@@ -104,7 +111,8 @@ app Address {
 }
 EO_sanity
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+my $deparsed   = strip_build_dir( $tent_maker->deparsed() );
+@maker_deparse = split /\n/, $deparsed;
 
 is_deeply( \@maker_deparse, \@correct_input, 'one table sanity check' );
 
@@ -121,7 +129,7 @@ is_deeply( \@maker_deparse, \@correct_input, 'one table sanity check' );
 #);
 
 $tent_maker->do_update_controller_statement_text(
-    'ident_11::uses', 'Missing][Module'
+    'ident_12::uses', 'Missing][Module'
 );
 
 #$tent_maker->do_update_method_statement_text(
@@ -129,10 +137,17 @@ $tent_maker->do_update_controller_statement_text(
 #);
 
 my $ajax = $tent_maker->do_update_field_statement_text(
-    'ident_8::is', 'date'
+    'ident_9::is', 'date'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 my $expected_file = File::Spec->catfile( qw( t tentmaker ajax_07 todate ) );
 
-file_ok( $expected_file, $ajax, 'field is changed to date (todate)' );
+file_filter_ok(
+    $expected_file,
+    $ajax,
+    \&strip_build_dir,
+    'field is changed to date (todate)'
+);
 

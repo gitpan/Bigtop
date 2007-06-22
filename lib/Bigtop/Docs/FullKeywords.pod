@@ -162,11 +162,6 @@ Where to send complaints (think mailing list)
 top level of Gantry::Conf file
 
 
-=item GantryLocation
-
-controller level of Gantry::Conf file
-
-
 =item PerlTop
 
 immediately after shebang line in httpd.conf
@@ -506,6 +501,14 @@ You may supply a comma separated list of values for
 is statements.
 
 This statement is required.
+
+=item accessor
+
+DBIx::Class alternate accessor name for this column
+
+
+You may supply a comma separated list of values for
+accessor statements.
 
 =item refers_to
 
@@ -898,6 +901,22 @@ If an arg is supplied, show only matching rows
 Applies to methods of type: main_listing.
 
 
+=item where_terms
+
+Where clause will include these equality tests
+
+Applies to methods of type: main_listing.
+
+
+All values for where_terms statements must be pairs like:
+
+    name => its_value
+
+where C<name> is a table and C<its_value> is a table.
+
+You may supply a comma separated list of values for
+where_terms statements.
+
 =item title
 
 Browser title bar title for main_listing
@@ -1135,7 +1154,7 @@ You may use multiple data statements.
 
 =head1 AUTHOR
 
-The skip/podsyntax script generated this file Fri May 11 15:07:42 2007.
+The skip/podsyntax script generated this file Fri Jun 22 09:23:32 2007.
 The script was written by Phil Crow E<lt>crow.phil\@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

@@ -4,7 +4,7 @@ use strict; use warnings;
 use base 'Exporter';
 use File::Find;
 
-our @EXPORT = qw( purge_dir strip_copyright strip_shebang );
+our @EXPORT = qw( purge_dir strip_copyright strip_shebang strip_build_dir );
 
 sub purge_dir {
 }
@@ -34,6 +34,15 @@ sub strip_copyright {
 sub strip_shebang {
     my $line = shift;
     $line    =~ s/^\s*#!.*//;
+    return $line;
+}
+
+sub strip_build_dir {
+    my $line = shift;
+
+    $line    =~ s{`\S+(docs\W)}{`$1};                # master Gantry::Conf file
+    $line    =~ s{dbname=\S+app\.db}{dbname=app.db}; # app.db sqlite database
+
     return $line;
 }
 

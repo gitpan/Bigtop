@@ -4,6 +4,9 @@ use Test::More tests => 2;
 use Test::Files;
 use File::Spec;
 
+use lib 't';  # to get Purge
+use Purge;    # for strippers
+
 my $skip_all = 0;
 
 BEGIN {
@@ -56,6 +59,10 @@ app Sample {
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
     }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
+    }
     controller is base_controller {
         method do_main is base_links {
         }
@@ -70,7 +77,12 @@ unlink $minimal;
 
 $answer     = $tent_maker->do_save( $minimal );
 
-file_ok( $minimal, $correct_input, 'saved minimal default' );
+file_filter_ok(
+    $minimal,
+    $correct_input,
+    \&strip_build_dir,
+    'saved minimal default'
+);
 
 unlink $minimal;
 

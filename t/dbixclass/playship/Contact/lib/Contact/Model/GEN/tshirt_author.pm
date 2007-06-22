@@ -15,18 +15,9 @@ __PACKAGE__->base_model( 'Contact::Model' );
 __PACKAGE__->belongs_to( tshirt => 'Contact::Model::tshirt' );
 __PACKAGE__->belongs_to( author => 'Contact::Model::author' );
 
-sub get_foreign_display_fields {
-    return [ qw(  ) ];
-}
-
 sub get_foreign_tables {
     return qw(
     );
-}
-
-sub foreign_display {
-    my $self = shift;
-
 }
 
 sub table_name {

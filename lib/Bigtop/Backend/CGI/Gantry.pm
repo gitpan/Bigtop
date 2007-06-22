@@ -2,6 +2,7 @@ package Bigtop::Backend::CGI::Gantry;
 
 use strict;
 
+use Bigtop;
 use Bigtop::Backend::CGI;
 use Inline;
 
@@ -69,6 +70,15 @@ sub gen_CGI {
     my $fast_cgi     = $tree->get_config->{CGI}{fast_cgi} || 0;
     my $gantry_conf  = $tree->get_config->{CGI}{gantry_conf} || 0;
 
+    my %cgi_conf_types;
+
+    CGI_ONLY_CHECK:
+    foreach my $conf_type ( keys %{ $configs } ) {
+        $cgi_conf_types{ $conf_type } = 1 if ( $conf_type =~ /^CGI|CGI$/i );
+    }
+
+    my $there_is_a_cgi = keys %cgi_conf_types;
+
     CONF_TYPE:
     foreach my $conf_type ( keys %{ $configs } ) {
         my $content      = $class->output_cgi(
@@ -77,37 +87,36 @@ sub gen_CGI {
                 configs   => $configs,
                 conf_type => $conf_type,
                 fast_cgi  => $fast_cgi,
+                base_dir  => $base_dir,
             }
         );
-        my $file_type    = ( $conf_type eq 'base' ) ? '' : "$conf_type.";
-        my $cgi_file     = File::Spec->catfile(
-                $base_dir, "app.${file_type}cgi"
-        );
-        my $server_file  = File::Spec->catfile(
-                $base_dir, "app.${file_type}server"
-        );
 
-        my $CGI_SCRIPT;
-        unless ( open $CGI_SCRIPT, '>', $cgi_file ) {
-            warn "Couldn't write file $cgi_file: $!\n";
-            return;
+        my $write_cgi   = 1;
+        my $file_type   = ( $conf_type eq 'base' ) ? '' : "$conf_type.";
+        my $server_type = $file_type;
+
+        if ( $there_is_a_cgi ) {
+            $file_type = $conf_type;
+            $write_cgi = 0 if ( $file_type !~ s/^CGI|CGI$// );
         }
 
-        print $CGI_SCRIPT $content->{cgi};
-        close $CGI_SCRIPT or warn "Problem closing $cgi_file: $!\n";
+        my $cgi_file  = File::Spec->catfile(
+                $base_dir, "app.${file_type}cgi"
+        );
+
+        Bigtop::write_file( $cgi_file, $content->{ cgi } ) if $write_cgi;
+
         chmod 0755, $cgi_file;
 
         if ( $tree->get_config->{CGI}{with_server} ) {
             next CONF_TYPE if ( $gantry_conf and $conf_type ne 'base' );
 
-            my $SERVER;
-            unless ( open $SERVER, '>', $server_file ) {
-                warn "Couldn't write file $server_file: $!\n";
-                return;
-            }
+            my $server_file  = File::Spec->catfile(
+                    $base_dir,
+                    "app.${server_type}server"
+            );
 
-            print $SERVER $content->{server};
-            close $SERVER or warn "Problem closing $server_file\n";
+            Bigtop::write_file( $server_file, $content->{ server } );
 
             chmod 0755, $server_file;
         }
@@ -211,7 +220,7 @@ if ( $dbd or $dbname ) {
 }
 
 $config->{ dbuser } = $dbuser if $dbuser;
-$config->{ dbpass } = $dbuser if $dbpass;
+$config->{ dbpass } = $dbpass if $dbpass;
 
 my $cgi = Gantry::Engine::CGI->new( {
     config => $config,
@@ -503,6 +512,7 @@ $conffile_text
                 backend_block => $backend_block,
                 conf_type     => $conf_type,
                 configs       => $configs,
+                base_dir      => $opts->{ base_dir },
             }
         );
 
@@ -513,7 +523,8 @@ $conffile_text
     }
 
     if ( $backend_block->{ flex_db } and not $instance ) {
-        die "Use of flex_db now requires Conf Gantry backend.\n";
+        die "Use of flex_db now requires Conf Gantry backend and "
+            .   "gantry_conf statement.\n";
     }
 
     my $port;
@@ -569,6 +580,8 @@ package # application
     application;
 use strict; use warnings;
 
+use Cwd;
+
 sub output_config {
     my $self          = shift;
     my $child_output  = shift;
@@ -579,7 +592,18 @@ sub output_config {
             and
          $backend_block->{ gen_root }
     ) {
-        push @{ $child_output }, "        root => 'html:html/templates',";
+        my $templates = File::Spec->catdir( qw( html templates ) );
+
+        if ( $data->{ conf_type } =~ /^CGI|CGI$/ ) {
+            my $cwd = getcwd();
+            my $html = File::Spec->catdir( $cwd, $data->{ base_dir }, 'html' );
+            $templates = File::Spec->catdir( $html, 'templates' );
+
+            push @{ $child_output }, "        root => '$html:$templates',";
+        }
+        else {
+            push @{ $child_output }, "        root => 'html:$templates',";
+        }
     }
 
     my $output = Bigtop::Backend::CGI::Gantry::application_config(

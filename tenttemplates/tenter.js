@@ -83,7 +83,7 @@ function redraw() {
 function redraw_add_div() {
     // break response into parts
     var response     = this.req.responseText;
-    chat( 'debug_chatter', response );
+    //chat( 'debug_chatter', response );
     var break_point  = response.indexOf( "config {" );
     var new_div_text = response.substring( 0, break_point - 1 );
     var new_input    = response.substring( break_point );
@@ -248,14 +248,16 @@ function redraw_quickall() {
     var table_ident  = answers[1];
     var field_idents = answers[2].split( /,/ );
 
+    var keyword      = this.data;
+
     // First, set the check marks in the quick edit box.
     // Then, set the check marks in the full edit boxes.
     for ( var i = 0; i < field_idents.length; i++ ) {
 
-        var quick_box_id  = 'quick_html_form_optional_' + field_idents[i];
+        var quick_box_id  = 'quick_' + keyword + '_' + field_idents[i];
         var quick_box     = document.getElementById( quick_box_id );
 
-        var full_box_id   = field_idents[i] + '::html_form_optional';
+        var full_box_id   = field_idents[i] + '::' + keyword;
         var full_box      = document.getElementById( full_box_id );
 
         if ( new_value > 0 ) {
@@ -874,7 +876,7 @@ function quick_all (table_ident, keyword, checked) {
                      '/' + keyword +
                      '/' + checked;
 
-    var loader = new net.ContentLoader( update_url, redraw_quickall );
+    var loader = new net.ContentLoader( update_url, redraw_quickall, keyword );
 }
 
 /*

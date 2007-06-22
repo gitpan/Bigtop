@@ -7,12 +7,6 @@ our $VERSION = '0.01';
 
 use base 'Apps::GENCheckbook';
 
-use Apps::Checkbook::PayeeOr;
-use Apps::Checkbook::Trans;
-use Apps::Checkbook::Trans::Action;
-use Apps::Checkbook::NoOp;
-use Apps::Checkbook::SchTbl;
-
 
 #-----------------------------------------------------------------
 # $self->do_main(  )

@@ -7,6 +7,19 @@ use Inline;
 use Bigtop;
 
 #-----------------------------------------------------------------
+#   Register keywords in the grammar
+#-----------------------------------------------------------------
+
+BEGIN {
+    Bigtop::Parser->add_valid_keywords(
+        Bigtop::Keywords->get_docs_for(
+            'field',
+            'accessor',
+        )
+    );
+}
+
+#-----------------------------------------------------------------
 #   The Default Template
 #-----------------------------------------------------------------
 
@@ -177,6 +190,10 @@ ones listed here:
 =item foreign_display
 
 =item table_name
+[% FOREACH option_field IN option_fields %]
+
+=item [% option_field.name %]_display
+[% END %]
 
 =back
 
@@ -192,10 +209,17 @@ use strict; use warnings;
 __PACKAGE__->load_components( qw/[% IF pk_auto %] PK::Auto[% END %] Core / );
 __PACKAGE__->table( '[% real_table_name %]' );
 __PACKAGE__->add_columns( qw/
-[% FOREACH column IN all_columns %]
+[% FOREACH column IN regular_accessor_columns %]
     [% column +%]
 [% END %]
 / );
+[% IF special_accessor_columns.size > 0 %]
+__PACKAGE__->add_columns(
+[% FOREACH column IN special_accessor_columns %]
+    [% column.name %] => { accessor => '[% column.accessor %]' },
+[% END %]
+);
+[% END %]
 [% IF primary_key.0.defined %]__PACKAGE__->set_primary_key( [ qw( [% FOREACH pk IN primary_key %][% pk %][% UNLESS loop.last %] [% END %]
 [% END %] ) ] );
 [% ELSIF primary_key %]__PACKAGE__->set_primary_key( '[% primary_key +%]' );[% END +%]
@@ -217,10 +241,11 @@ __PACKAGE__->many_to_many(
 );
 [% END %]
 
-sub get_foreign_display_fields {
+[% IF foreign_display_columns %]sub get_foreign_display_fields {
     return [ qw( [% foreign_display_columns %] ) ];
 }
 
+[% END %]
 sub get_foreign_tables {
     return qw(
 [% FOREACH foreign_table IN foreign_tables %]
@@ -229,12 +254,13 @@ sub get_foreign_tables {
     );
 }
 
-sub foreign_display {
+[% IF foreign_display_columns %]sub foreign_display {
     my $self = shift;
 
 [% foreign_display_body %]
 }
 
+[% END %]
 sub table_name {
     return '[% table_name %]';
 }
@@ -348,18 +374,9 @@ __PACKAGE__->base_model( '[% app_name %]::Model' );
 __PACKAGE__->belongs_to( [% other_table %] => '[% app_name %]::Model::[% other_table %]' );
 [% END %]
 
-sub get_foreign_display_fields {
-    return [ qw(  ) ];
-}
-
 sub get_foreign_tables {
     return qw(
     );
-}
-
-sub foreign_display {
-    my $self = shift;
-
 }
 
 sub table_name {
@@ -597,8 +614,11 @@ sub output_dbix_model {
     # get columns sets
     my $lookup       = $table_lookup->{fields};
 
-    my $all        = $self->walk_postorder(
-            'output_all_fields_dbix', $lookup
+    my $regular_accessor_columns = $self->walk_postorder(
+            'output_regular_accessors_dbix', $lookup
+    );
+    my $special_accessor_columns = $self->walk_postorder(
+            'output_special_accessors_dbix', $lookup
     );
     my $essentials = $self->walk_postorder(
             'output_essential_fields_dbix', $lookup
@@ -685,6 +705,7 @@ sub output_dbix_model {
             package_name            => $module_name,
             package_alias           => $alias,
             table_name              => $table,
+            option_fields           => \@option_fields,
         }
     );
 
@@ -707,7 +728,8 @@ sub output_dbix_model {
             pk_auto                 => $pk_auto,
             foreign_display_columns => $foreign_display_columns,
             foreign_display_body    => $foreign_display_body,
-            all_columns             => $all,
+            regular_accessor_columns=> $regular_accessor_columns,
+            special_accessor_columns=> $special_accessor_columns,
             essential_columns       => $essentials,
             has_a_list              => \@has_a_list,
             has_manys               => $has_manys,
@@ -742,7 +764,7 @@ package # table_element_block
     table_element_block;
 use strict; use warnings;
 
-sub output_all_fields_dbix {
+sub output_regular_accessors_dbix {
     my $self         = shift;
     shift;
     my $data         = shift;
@@ -753,7 +775,31 @@ sub output_all_fields_dbix {
 
     return if ( _not_for_model( $field ) );
 
+    return if ( defined $field->{ accessor } );
+
     return [ $self->{__NAME__} ];
+}
+
+sub output_special_accessors_dbix {
+    my $self         = shift;
+    shift;
+    my $data         = shift;
+
+    return unless ( ref( $self->{__BODY__} ) );
+
+    my $field  = $data->{ $self->{__NAME__} };
+
+    return unless ( defined $field->{ accessor } );
+
+    my $special_accessor_name = $field->{ accessor }{ args }->get_first_arg();
+
+    return [
+        {
+            name     => $self->{__NAME__},
+            accessor => $special_accessor_name,
+        }
+    ];
+
 }
 
 sub output_essential_fields_dbix {

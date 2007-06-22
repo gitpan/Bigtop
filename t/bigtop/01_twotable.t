@@ -57,7 +57,11 @@ sub stripper {
         return '';
     }
 
-    $line   =~ s/^\s*#!.*//;
+    $line   =~ s/^\s*#!.*//; # remove all shebang lines, even indented ones
+
+    $line   =~ s{\S+docs\W}{};                      # master conf file
+    $line   =~ s{dbname=\S+app\.db}{dbname=app.db}; # app.db sqlite database
+    $line   =~ s{\S+html\W}{};                      # template dirs
 
     return $line;
 }

@@ -73,6 +73,10 @@ Stand Alone Server
 
 L<How do I make a stand alone server for my app?>
 
+=item *
+
+L<How do I change databases with the generated stand alone server?>
+
 =back
 
 =item *
@@ -313,40 +317,35 @@ in docs/schema.YOUR_DB_NAME to make the additions.
 
 =head2 I don't like the bigtop defaults how can I change them before building?
 
-You don't have to list column information on the command line, if you
-don't bigtop will create your app with default columns you probably won't
-like.  To avoid that, try using tentmaker:
+This question could talk about two things.  If you are using bigtop with
+the --new (-n) or --add (-a) flags, you might want to provide table names
+and their relationships while listing table columns and their SQL types.
+To control these defaults use the kickstart syntax described in
+L<Bigtop::ScriptHelp::Style::Kickstart>.
 
-    tentmaker --new Dancers 'dancer->resume resume->performance'
+To control defaults like author names or copyright statements, keep reading
+here.
 
-This will start a little web server.  When that server starts, it will
-print a URL you can use to contact it.  Point your browser to that
-URL and edit the bigtop file to your heart's content.  See
-Bigtop::Docs::TentTut for advice on what to do while you're there.
+In normal use, I invoke the bigtop script to build new applications with
+the -n flag:
 
-Once you save the file, do this:
+    bigtop -n NewApp file.kickstart
 
-    bigtop --create dancer.bigtop all
+Again, see L<Bigtop::ScriptHelp::Style::Kickstart> for what to put in
+the kickstart file.
 
-Then change the Dancers directory and proceed as before.
+When bigtop builds an application like this, it uses a default bigtop stub
+so that the result will run once the SQLite database is in place.  You
+may replace the default stub with one of your own.  Simply put a file
+called C<.bigtopdef> in your home directory.  Your .bigtopdef file must
+be a valid bigtop file, but you may put any valid bigtop commands in it.
+This allows you to control defaults like authors and copyright statements.
+You can use it to specify C<mod_perl 2> as the default engine.  You
+could even include a default table in every app.
 
-To update the data model with the boss table (and its many-to-many
-relationship to the dancer table), do this:
-
-    tentmaker --add docs/dancers.bigtop 'boss<->dancer'
-
-Again, point your browser to the provided URL and edit away.  After
-saving, this time type:
-
-    bigtop docs/dancers.bigtop all
-
-to regenerate the app.
-
-Note that tentmaker also understands column specifications, so feel free
-to include those when starting it.  But, it allows you to edit many things
-that you can't specify at the command line.  For example, tentmaker
-lets you specify a data validation constraint for each column.  There
-are many other things it can help with.
+Bigtop will use .bigtopdef if it is present in your home directory.  Then,
+it will augent it based on the command line request given to -n flags.
+The same .bigtopdef is used when you start tentmaker with the -n flag.
 
 =head1 Init
 
@@ -479,6 +478,52 @@ This will change the script in only one place:
 
 As you can see, users can supply a port on the command line when they start
 it.
+
+=head2 How do I change databases with the generated stand alone server?
+
+While you could edit your stand alone server, that removes the fun of
+letting bigtop keep it up to date.  Here's how to switch databases.  There
+are really two approaches: (1) specify the database connection info with
+command line flags or (2) put the database connection info into a named
+config block and choose that with command line flags.
+
+The first approach is for those with more impatience than laziness.  But,
+remember that laziness is the chief virtue.  If you have a database built,
+you can specify it (even if Bigtop wouldn't support SQL generation for it):
+
+    ./app.server -d DBDName -n dbname -u username -p password
+
+To make that specific, suppose I have a PostgreSQL database called 'littledb'
+which a user called 'bobby' is allowed to access with password 'valentine':
+
+    ./app.server -d Pg -n littledb -u bobby -p valentine
+
+Yes, that is a lot of typing.  Usually, you do it once and use up arrow
+to find the command again every time you need a restart.  Still, the other
+way is cheaper on the keystrokes.  It just requires a bit of up front work.
+
+In Bigtop files, you may have as many config blocks as you like.  Among
+other things, these include database connection information.  To specify the
+last example database add a config block like this:
+
+    config littledb {
+        dbconn dbi:Pg:dbname=littledb
+        dbuser bobby
+        dbpass valentine
+    }
+
+Note that the name of the config block is arbitrary, except that 'base' is
+reserved as the internal name for the (normally) unnamed block.  With that
+config block in place, you may regen:
+
+    bigtop docs/yourapp.bigtop all
+
+and then start the app server, asking it to use the new config block:
+
+    ./app.server -t littledb
+
+The main idea behind the named config blocks is to allow this sort of quick
+shift.  It also works well for dev vs. qual vs. prod.
 
 =head1 SQL
 
@@ -696,7 +741,8 @@ which is especially useful during testing.
 
 =head2 How do I specify configuration values?
 
-If you want to use Gantry::Conf, see the next question.
+This question does not represent best practice any more.  See the next
+question which explains you to use Gantry::Conf.
 
 Specify CGI configuration values with config blocks as you would for
 mod_perl apps:
@@ -753,10 +799,43 @@ a block like this instead:
         }
     }
 
-If you use a SiteLook backend, you probably want to gen_root in the Conf
+If you use a SiteLook backend, you probably want to set C<gen_root> in the Conf
 Gantry backend, so it will manufacture a path to your wrapper and
-other templates.  Note that this works for either the Conf General or the
-CGI Gantry backend.
+other templates.
+
+Many times config info varies depending on environment.  For instance,
+in production you may need to connect to a different database.  Named
+config blocks help with that.  Example:
+
+    config {
+        # all common config here
+        rows_per_page 25;
+    }
+    config dev {
+        dbconn `dbi:SQLite:dbname=app.db`;
+    }
+    config prod {
+        dbconn `dbi:Pg:dbname=proddb;host=db.example.com`;
+        dbuser someuser;
+        dbpass `$ecr3t`;
+    }
+
+With the Conf Gantry backend, this will lead to a single config file with
+three instances.  Each will begin with the instance prefix from the Conf
+Gantry backend config block ('your_name' in the example above).  The unnamed
+block will have that instance name.  The others will have it as a prefix
+with their config block name (a.k.a. their config type) as a suffix.
+So the instance names will be 'your_name', 'your_name_dev', and
+'your_name_prod'.
+
+How you access these depends on how you deploy the app.  In the stand alone
+server (as we saw in a previous question), you can use the -t flag:
+
+    ./app.server -t dev
+
+In CGI, the script uses the config block named CGI or cgi without
+additional help, though you might want to edit the generated CGI script
+to alter where it looks for the master conf file.  For mod_perl, see below.
 
 =head2 How do I control CGI locations?
 
@@ -797,7 +876,8 @@ apache conf file or as the value of an Include statement there.
 
 =head2 How do I specify PerlSetVar values for mod_perl?
 
-See the next question if you want to use Gantry::Conf with mod_perl.
+The answer to this question no longer represents best practices.  See
+the next question for how to use Gantry::Conf instead.
 
 Use config blocks to specify PerlSetVars:
 
@@ -920,14 +1000,27 @@ Here's docs/httpd.conf:
 Here's docs/Name.gantry.conf:
 
     <instance your_instance>
-    variable_1 value
-    variable_2 multi-word value
-    overriden global
+        variable_1 value
+        variable_2 multi-word value
+        overriden global
 
-    <GantryLocation /subpage>
-        overriden subpage
-    </GantryLocation>
+        <GantryLocation /subpage>
+            overriden subpage
+        </GantryLocation>
     </instance>
+
+You may need to have a variety of different config setups.  For instance, you
+might need one for dev and a different one for prod.  As explained in
+L<How do I specify Gantry::Conf configuration values?>, you can have
+one config block for each deployment.  One of them is unnamed (but is
+called 'base' internally).  The others have names you choose.  Each becomes
+and instance.  The unnamed one has the instance you chose in the
+Conf Gantry backend block.  The others have that as a prefix and the
+config block name as a suffix.
+
+You will need to edit the generated httpd.conf to switch configs.  Just
+change the GantryConfInstance PerlSetVar to match the name of the proper
+instance in the generated docs/App-Name.conf.
 
 =head2 How do I put extra statements into my Apache Perl block?
 

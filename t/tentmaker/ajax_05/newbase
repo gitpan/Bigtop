@@ -20,6 +20,10 @@ app Sample {
         show_dev_navigation 1 => no_accessor;
         list_rows 20;
     }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
+    }
     controller AddressControl is AutoCRUD {
         method form is AutoCRUD_form {
             all_fields_but id, created, modified;

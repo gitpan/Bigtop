@@ -36,6 +36,8 @@ ones listed here:
 
 =item table_name
 
+=item phone_type_display
+
 =back
 
 =cut

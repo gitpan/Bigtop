@@ -5,7 +5,7 @@ use warnings::register;
 use Carp;
 use File::Spec;
 
-our $VERSION = '0.28';
+our $VERSION = '0.29';
 
 sub write_file {
     my $file_name    = shift;
@@ -95,10 +95,21 @@ See L<Bigtop::Docs::TentTut> or L<Bigtop::Docs::Tutorial> for how to create
 a Bigtop file.  L<Bigtop::Docs::TOC> is a guide to all of the
 documentation modules.
 
-The real synopsis:
+The real synopsis (see L<Bigtop::ScriptHelp::Style::Kickstart>):
+
+    bigtop --new AppName 'stock<-lot
+    stock(symbol,name)
+    lot(bought:date,price:int4,shares:int4)'
+
+or go manual:
 
     vi your_app.bigtop (or use tentmaker see Bigtop::Docs::TentTut)
     bigtop --create your_app.bigtop all
+
+Then run your app (if you have sqlite in your path):
+
+    cd AppName
+    ./app.server
 
 Modify your bigtop file and try again:
 

@@ -61,7 +61,7 @@ else { # default, use a file
     my ( $new_app_name, $bigtop_dir ) =
             Bigtop::Parser->gen_from_file( $bigtop_file, $create, @ARGV );
 
-    if ( $create ) {
+    if ( $create and defined $new_app_name ) {
         my $built_sqlite = build_sqlite( $new_app_name, $bigtop_dir );
 
         print_instructions( $new_app_name, $bigtop_dir, $built_sqlite );
@@ -279,14 +279,14 @@ sub help_mysql {
 For MySQL:
 
     cd App-Dir
-    msyqladmin create app.db -u root -p
-    mysql -u root -p app.db < docs/schema.mysql
-    ./app.server --dbd=mysql --dbuser=regular_user --dppass='secret'
+    msyqladmin create app_db -u root -p
+    mysql -u root -p app_db < docs/schema.mysql
+    ./app.server --dbd=mysql --dbuser=regular_user \
+                 --dppass='secret' --dbname=app_db
 
 Supply passwords as prompted when creating and building the database.
-You may abbreviate --dbd as -d, --dbuser as -u, and --dbpass as -p.
-
-If you change the name from app.db, supply --dbname (aka -n) to app.server.
+You may abbreviate --dbd as -d, --dbuser as -u, --dbpass as -p,
+and --dbname as -n.
 
 EO_mysql_help
 

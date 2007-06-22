@@ -28,10 +28,12 @@ sub do_main {
         $real_location .= '/';
     }
 
+    my $header_option_suffix = ( $contact ) ? "/$contact" : '';
+
     my @header_options = (
         {
             text => 'Add',
-            link => $real_location . "add/$contact",
+            link => $real_location . "add$header_option_suffix",
             type => 'create',
         },
     );
@@ -43,17 +45,17 @@ sub do_main {
         ],
     };
 
-    my %param = $self->get_param_hash;
+    my $params = $self->params;
 
     my $search = {};
-    if ( $param{ search } ) {
+    if ( $params->{ search } ) {
         my $form = $self->form();
 
         my @searches;
         foreach my $field ( @{ $form->{ fields } } ) {
             if ( $field->{ searchable } ) {
                 push( @searches,
-                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                    ( $field->{ name } => { 'like', "%$params->{ search }%"  } )
                 );
             }
         }
@@ -121,7 +123,7 @@ sub do_main {
         );
     }
 
-    if ( $param{ json } ) {
+    if ( $params->{ json } ) {
         $self->template_disable( 1 );
 
         my $obj = {

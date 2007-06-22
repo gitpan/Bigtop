@@ -485,6 +485,7 @@ BEGIN {
                 title
                 html_template
                 limit_by
+                where_terms
                 all_fields_but
                 fields
                 extra_keys
@@ -563,10 +564,6 @@ use base '[% gen_package_name %]';
 [% FOREACH module IN external_modules %]
 use [% module %];
 [% END %]
-[% FOREACH module IN sub_modules %]
-use [% module %];
-[% END %]
-
 [% child_output %]
 
 
@@ -1217,6 +1214,10 @@ sub [% config %] {
 [% END %]
 
 [% BLOCK main_heading %]
+[% IF limit_by %]
+    my $header_option_suffix = ( $[% limit_by %] ) ? "/$[% limit_by %]" : '';
+
+[% END %]
     my @header_options = (
 [% FOREACH option IN header_options %]
         {
@@ -1246,17 +1247,25 @@ sub [% config %] {
     $retval->{ livesearch } = 1;
 
     [% END -%]
-    my %param = $self->get_param_hash;
+    my $params = $self->params;
 
+[% IF where_terms.size > 0 %]
+    my $search = {
+[% FOREACH where_term IN where_terms %]
+        [% where_term.col_name %] => [% where_term.value %],
+[% END %]
+    };
+[% ELSE %]
     my $search = {};
-    if ( $param{ search } ) {
+[% END %]
+    if ( $params->{ search } ) {
         my $form = $self->form();
 
         my @searches;
         foreach my $field ( @{ $form->{ fields } } ) {
             if ( $field->{ searchable } ) {
                 push( @searches,
-                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                    ( $field->{ name } => { 'like', "%$params->{ search }%"  } )
                 );
             }
         }
@@ -1293,7 +1302,7 @@ sub [% config %] {
     $search->{ user_id } = $limit_to_user_id if ( $limit_to_user_id );
 
 [% IF dbix AND rows AND limit_by -%]
-    my $page    = $param{ page } || 1;
+    my $page    = $params->{ page } || 1;
 
     if ( $[% limit_by %] ) {
         $search->{ [% limit_by %] } = $[% limit_by %];
@@ -1317,7 +1326,7 @@ sub [% config %] {
     ROW:
     while ( my $row = $rows->next ) {
 [%- ELSIF dbix AND rows -%]
-    my $page    = $param{ page } || 1;
+    my $page    = $params->{ page } || 1;
 
     my $schema  = $self->get_schema();
     my $results = $[% model %]->get_listing(
@@ -1393,7 +1402,7 @@ sub [% config %] {
         );
     }
 
-    if ( $param{ json } ) {
+    if ( $params->{ json } ) {
         $self->template_disable( 1 );
 
         my $obj = {
@@ -1731,10 +1740,11 @@ sub gen_Control {
 
     # Second, make the main modules.
     my $app_configs     = $bigtop_tree->{application}{lookup}{configs};
+    my $config_values   = $bigtop_tree->get_app_configs;
     my $base_controller = $bigtop_tree->walk_postorder( 'base_controller' );
 
     my ( $all_configs, $accessor_configs )
-                          = build_config_lists( $app_configs );
+                          = build_config_lists( $app_configs, $config_values );
 
     my $config_accessors  =
         Bigtop::Backend::Control::Gantry::config_accessors(
@@ -1803,6 +1813,10 @@ sub gen_Control {
         # remember the pod
 
         unshift @pod_methods, qw( namespace init do_main site_links );
+
+        if ( $config_block->{ dbix } ) {
+            unshift @pod_methods, 'schema_base_class';
+        }
 
         my $pod               = Bigtop::Backend::Control::Gantry::pod(
             {
@@ -1950,11 +1964,11 @@ sub gen_Control {
         my $saw_root = 0;
 
         APP_CONFIG:
-        foreach my $var ( sort keys %{ $app_configs } ) {
+        foreach my $var ( sort keys %{ $config_values->{ base } } ) {
 
             next APP_CONFIG if $var eq 'dbconn';
 
-            my $value = $app_configs->{ $var }->get_first_arg();
+            my $value = $config_values->{ base }{ $var };
             if ( ref $value ) {
                 ( $value ) = keys %{ $value };
             }
@@ -2025,17 +2039,22 @@ sub build_init_sub {
 }
 
 sub build_config_lists {
-    my $configs    = shift;
+    my $app_configs   = shift;
+    my $config_values = shift;
 
     my @accessor_configs;
     my @all_configs;
 
     SET_VAR:
-    foreach my $config ( keys %{ $configs } ) {
+    foreach my $config ( keys %{ $app_configs } ) {
+
+        if ( defined $config_values ) {
+            next SET_VAR unless defined $config_values->{ base }{ $config };
+        }
 
         push @all_configs, $config;
 
-        my $item = $configs->{$config}[0];
+        my $item = $app_configs->{$config}[0];
 
         if ( ref( $item ) =~ /HASH/ ) {
 
@@ -2506,7 +2525,8 @@ sub output_controllers {
         if ( $plugins ) {
             my $config            = $data->{ tree }->get_config();
             my $app_level_plugins = $config->{ plugins };
-            $plugins              = "$app_level_plugins $plugins";
+            $plugins              = "$app_level_plugins $plugins"
+                                        if $app_level_plugins;
 
             $inherit_from         = $gen_package_name;
         }
@@ -3486,7 +3506,7 @@ sub output_main_listing {
     # put options in the heading bar
     my $header_options = [];
     if ( $choices->{header_options} ) {
-        my $url_suffix = ( defined $limit_by ) ? '/$' . $limit_by : '';
+        my $url_suffix = ( defined $limit_by ) ? '$header_option_suffix' : '';
 
         my $perms;
         if ( $choices->{ header_option_perms } ) {
@@ -3503,7 +3523,11 @@ sub output_main_listing {
     }
 
     my $heading = Bigtop::Backend::Control::Gantry::main_heading(
-        { headings => \@col_labels, header_options => $header_options }
+        {
+            headings       => \@col_labels,
+            header_options => $header_options,
+            limit_by       => $limit_by,
+        }
     );
 
     my $order_by;
@@ -3528,6 +3552,17 @@ sub output_main_listing {
         #, '/$id' );
     }
 
+    my @where_terms;
+    if ( $choices->{ where_terms } ) {
+        foreach my $where_term ( @{ $choices->{ where_terms } } ) {
+            my ( $col_name, $value ) = %{ $where_term };
+            push @where_terms, {
+                col_name => $col_name,
+                value    => $value,
+            };
+        }
+    }
+
     my $main_table = Bigtop::Backend::Control::Gantry::main_table(
         {
             model       => $data->{model_alias},
@@ -3539,6 +3574,7 @@ sub output_main_listing {
             foreigners  => \@foreigners,
             livesearch  => $choices->{livesearch}[0],
             order_by    => $order_by,
+            where_terms => \@where_terms,
         }
     );
 

@@ -24,7 +24,10 @@ sub deparse {
             push @source, "    $type $backend { $content }";
         }
         else {
-            push @source, "    $keyword $value;";
+            my $quoted_value = ( $value =~ /^[\w\d_]+$/ )
+                             ? $value
+                             : "`$value`";
+            push @source, "    $keyword $quoted_value;";
         }
     }
 

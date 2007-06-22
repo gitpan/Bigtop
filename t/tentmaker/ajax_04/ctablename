@@ -1,5 +1,5 @@
 [
-  { "keyword" : "ident_11::controls_table", "value" : "address_tbl" }
+  { "keyword" : "ident_12::controls_table", "value" : "address_tbl" }
 ]
 config {
     engine MP20;
@@ -21,6 +21,10 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
+    }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {

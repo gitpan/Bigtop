@@ -189,6 +189,7 @@ app Apps::Checkbook {
             header_options    Add;
             row_options       Edit, Delete;
             order_by          `trans_date DESC`;
+            where_terms       cleared => `'t'`, amount => `{ '>', 0 }`;
         }
         method form is AutoCRUD_form {
             all_fields_but    id;

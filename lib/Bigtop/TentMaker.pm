@@ -527,14 +527,14 @@ sub do_update_app_statement_bool {
 sub do_update_app_statement_pair {
     my $self      = shift;
     my $keyword   = shift;
-    my %params    = $self->get_param_hash();
+    my $params    = $self->params();
 
-    if ( defined $params{keys} and $params{keys} ) {
+    if ( defined $params->{keys} and $params->{keys} ) {
         eval {
             $tree->get_app->set_app_statement_pairs(
                 {
                     keyword   => $keyword,
-                    new_value => \%params,
+                    new_value => $params,
                 }
             );
         };

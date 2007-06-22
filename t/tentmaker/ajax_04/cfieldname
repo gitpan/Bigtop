@@ -1,26 +1,26 @@
 [
-  { "keyword" : "ident_15::label", "value" : "Street Address" },
-  { "keyword" : "ident_5::foreign_display", "value" : "%street_address" },
-  { "keyword" : "ident_12::cols", "values" : [
+  { "keyword" : "ident_16::label", "value" : "Street Address" },
+  { "keyword" : "ident_6::foreign_display", "value" : "%street_address" },
+  { "keyword" : "ident_13::cols", "values" : [
       "ident",
       "street_address",
       "description"
     ]
   },
-  { "keyword" : "ident_13::all_fields_but", "values" : [
+  { "keyword" : "ident_14::all_fields_but", "values" : [
       "id",
       "created",
       "street_address",
       "modified"
     ]
   },
-  { "keyword" : "ident_13::fields", "values" : [
+  { "keyword" : "ident_14::fields", "values" : [
       "street_address"
     ]
   },
-  { "keyword" : "field_edit_option::ident_15", "text" : "street_address" },
-  { "keyword" : "field_name::ident_15", "value" : "street_address" },
-  { "keyword" : "quick_label_ident_15", "value" : "Street Address" }
+  { "keyword" : "field_edit_option::ident_16", "text" : "street_address" },
+  { "keyword" : "field_name::ident_16", "value" : "street_address" },
+  { "keyword" : "quick_label_ident_16", "value" : "Street Address" }
 ]
 config {
     engine MP20;
@@ -42,6 +42,10 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
+    }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {

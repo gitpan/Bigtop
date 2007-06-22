@@ -162,6 +162,7 @@ sub _parse_columns {
         created  => 1,
         modified => 1,
     );
+    my %you_dont_want;
 
     my @columns;
     foreach my $piece ( @pieces ) {
@@ -183,19 +184,20 @@ sub _parse_columns {
 
         push @columns, \%col_hash;
 
-        $you_dont_want_em++ if defined $is_normal_default{ $name };
+        $you_dont_want{ $name }++ if defined $is_normal_default{ $name };
     }
 
-    unless ( $you_dont_want_em ) {
-        unshift @columns, {
-                    name  => 'id',
-                    types => [ 'int4', 'primary_key', 'auto' ]
-                };
+    unshift @columns, {
+                name  => 'id',
+                types => [ 'int4', 'primary_key', 'auto' ]
+            }
+            unless $you_dont_want{ id };
 
-        push @columns,
-             { name => 'created',  types => [ 'datetime' ] },
-             { name => 'modified', types => [ 'datetime' ] };
-    }
+    push @columns, { name => 'created',  types => [ 'datetime' ] }
+            unless $you_dont_want{ created };
+
+    push @columns, { name => 'modified', types => [ 'datetime' ] }
+            unless $you_dont_want{ modified };
 
     return \@columns;
 }

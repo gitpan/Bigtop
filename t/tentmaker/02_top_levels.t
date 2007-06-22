@@ -3,6 +3,9 @@ use strict;
 use Test::More tests => 8;
 use Test::Files;
 
+use lib 't';
+use Purge;
+
 my $skip_all = 0;
 
 BEGIN {
@@ -57,6 +60,10 @@ app Sample {
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
     }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
+    }
     controller is base_controller {
         method do_main is base_links {
         }
@@ -73,7 +80,7 @@ $tent_maker  = Bigtop::TentMaker->new();
 $tent_maker->uri( '/' );
 $tent_maker->root( 'tenttemplates' );
 
-@maker_input = split /\n/, $tent_maker->input();
+@maker_input = split /\n/, strip_build_dir( $tent_maker->input() );
 
 is_deeply( \@maker_input, \@correct_input, 'simple sample input' );
 
@@ -81,7 +88,7 @@ is_deeply( \@maker_input, \@correct_input, 'simple sample input' );
 # Deparsing __DATA__ input
 #--------------------------------------------------------------------
 
-@maker_deparse = split /\n/, $tent_maker->deparsed();
+@maker_deparse = split /\n/, strip_build_dir( $tent_maker->deparsed() );
 
 is_deeply( \@maker_deparse, \@correct_input, 'simple sample deparse' );
 
@@ -90,6 +97,8 @@ is_deeply( \@maker_deparse, \@correct_input, 'simple sample deparse' );
 #--------------------------------------------------------------------
 
 $ajax = $tent_maker->do_update_std( 'appname', 'MySample' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cappname' );
 
@@ -105,6 +114,8 @@ $ajax = $tent_maker->do_update_conf_text(
     'SiteLook::GantryDefault::gantry_wrapper', '/path/to/gantry/root'
 );
 
+$ajax = strip_build_dir( $ajax );
+
 $expected_file = File::Spec->catfile( $ajax_dir, 'abackword' );
 
 file_ok( $expected_file, $ajax, 'add backend keyword (abackword)' );
@@ -118,6 +129,8 @@ $tent_maker->template_disable( 0 );
 $ajax = $tent_maker->do_update_conf_text(
     'SiteLook::GantryDefault::gantry_wrapper', 'meaning_less_value'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cbackword' );
 
@@ -134,6 +147,8 @@ $ajax = $tent_maker->do_update_conf_bool(
             'true'
 );
 
+$ajax = strip_build_dir( $ajax );
+
 $expected_file = File::Spec->catfile( $ajax_dir, 'abackbool' );
 
 file_ok( $expected_file, $ajax, 'add backend boolean (abackbool)' );
@@ -149,6 +164,8 @@ $ajax = $tent_maker->do_update_conf_bool(
             'false'
 );
 
+$ajax = strip_build_dir( $ajax );
+
 $expected_file = File::Spec->catfile( $ajax_dir, 'cbackbool' );
 
 file_ok( $expected_file, $ajax, 'change backend boolean (cbackbool)' );
@@ -160,6 +177,8 @@ file_ok( $expected_file, $ajax, 'change backend boolean (cbackbool)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_app_statement_text( 'location', '/site' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'aappst' );
 

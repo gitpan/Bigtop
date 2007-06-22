@@ -73,7 +73,7 @@ is_deeply( $struct, $correct_struct, 'original ascii art' );
 # specifying some columns for one table
 #--------------------------------------------------------------------
 
-$struct = $style->get_db_layout( 'job(ident,descr)' );
+$struct = $style->get_db_layout( 'job(ident,descr,created:date)' );
 
 $correct_struct = {
     joiners => [],
@@ -86,7 +86,7 @@ $correct_struct = {
               types => [ 'int4', 'primary_key', 'auto'     ], },
             { name => 'ident', types => [ 'varchar' ] },
             { name => 'descr', types => [ 'varchar' ] },
-            { name => 'created',     types => [ 'datetime' ], },
+            { name => 'created',     types => [ 'date' ], },
             { name => 'modified',    types => [ 'datetime' ], },
         ],
     },
@@ -131,6 +131,8 @@ $correct_struct = {
               types => [ 'integer', 'pk', 'auto'    ], },
             { name => 'name', types => [ 'varchar'  ], default => 'Phil' },
             { name => 'body', types => [ 'text'     ], optional => 1 },
+            { name => 'created',     types => [ 'datetime' ], },
+            { name => 'modified',    types => [ 'datetime' ], },
         ],
         'job'   => [
             { name => 'id',

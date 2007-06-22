@@ -78,6 +78,7 @@ app Contact {
             is               date;
             label            `Birth Day`;
             html_form_type   text;
+            accessor         bday_acc;
         }
     }
     table tshirt {

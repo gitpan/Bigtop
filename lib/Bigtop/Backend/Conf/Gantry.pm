@@ -48,7 +48,7 @@ sub gen_Conf {
     my $base_dir     = shift;
     my $tree         = shift;
 
-    my $conf_content = $class->output_conf( $tree );
+    my $conf_content = $class->output_conf( $tree, $base_dir );
 
     my $docs_dir     = File::Spec->catdir( $base_dir, 'docs' );
     mkdir $docs_dir;
@@ -74,8 +74,9 @@ sub gen_Conf {
 }
 
 sub output_conf {
-    my $class = shift;
-    my $tree  = shift;
+    my $class    = shift;
+    my $tree     = shift;
+    my $base_dir = shift;
 
     my $app_config_blocks = $tree->get_app_configs();
     my $bigtop_config     = $tree->get_config->{Conf};
@@ -102,6 +103,7 @@ sub output_conf {
                     configs   => $app_config_blocks,
                     conf_type => $conf_type,
                     controller_configs => $controller_configs,
+                    base_dir  => $base_dir,
                 }
         );
         my $name = $instance;
@@ -212,6 +214,8 @@ package # app_config_block
     app_config_block;
 use strict; use warnings;
 
+use Cwd;
+
 sub output_configs_gantry {
     my $self         = shift;
     my $child_output = shift;
@@ -238,12 +242,28 @@ sub output_configs_gantry {
     }
 
     if ( $gen_root ) {
-        $output .= Bigtop::Backend::Conf::Gantry::config(
-            {
-                var   => 'root',
-                value => 'html:html/templates',
-            }
-        );
+        my $templates = File::Spec->catdir( qw( html templates ) );
+
+        if ( $conf_type =~ /^CGI|CGI$/i ) {
+            my $cwd  = getcwd();
+            my $html = File::Spec->catdir( $cwd, $data->{ base_dir }, 'html' );
+            $templates = File::Spec->catdir( $html, 'templates' );
+
+            $output .= Bigtop::Backend::Conf::Gantry::config(
+                {
+                    var   => 'root',
+                    value => "$html:$templates",
+                }
+            );
+        }
+        else {
+            $output .= Bigtop::Backend::Conf::Gantry::config(
+                {
+                    var   => 'root',
+                    value => "html:$templates",
+                }
+            );
+        }
         $config_set_for{ root }++;
     }
 

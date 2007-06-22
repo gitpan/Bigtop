@@ -3,10 +3,13 @@ config {
     template_engine TT;
     Init            Std             {}
     SQL             SQLite          {}
-    CGI             Gantry          { with_server 1; flex_db 1; gen_root 1; }
+    CGI             Gantry          {
+            gantry_conf 1; with_server 1; flex_db 1; gen_root 1;
+    }
     Control         Gantry          { dbix 1; }
     Model           GantryDBIxClass {}
     SiteLook        GantryDefault   {}
+    Conf            Gantry          { instance address; }
 }
 app Apps::AddressBook {
     authors `Phil Crow` => `crow.phil@gmail.com`,

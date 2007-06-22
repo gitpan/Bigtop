@@ -7,8 +7,6 @@ our $VERSION = '0.01';
 
 use base 'Apps::GENCheckbook';
 
-use Apps::Checkbook::SOAP;
-
 
 #-----------------------------------------------------------------
 # $self->do_main(  )

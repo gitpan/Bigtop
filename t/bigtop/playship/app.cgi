@@ -13,7 +13,7 @@ use Gantry::Engine::CGI;
 
 my $cgi = Gantry::Engine::CGI->new( {
     config => {
-        GantryConfInstance => 'addressbook',
+        GantryConfInstance => 'addressbook_CGI',
         GantryConfFile => 'docs/app.gantry.conf',
     },
     locations => {

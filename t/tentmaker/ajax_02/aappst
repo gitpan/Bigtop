@@ -13,13 +13,17 @@ config {
     SiteLook GantryDefault { no_gen 0; gantry_wrapper meaning_less_value; }
 }
 app MySample {
-    location `/site`;
     config {
         dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
         template_wrapper `genwrapper.tt` => no_accessor;
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
     }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
+    }
+    location `/site`;
     controller is base_controller {
         method do_main is base_links {
         }

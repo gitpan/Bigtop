@@ -28,5 +28,7 @@
 # Avoid inline's dropings
 _Inline
 
-# a place to hide things
+# places to hide things
 skip
+^notes
+^play

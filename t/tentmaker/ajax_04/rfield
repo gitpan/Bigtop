@@ -1,12 +1,12 @@
 [
-  { "keyword" : "ident_5::foreign_display", "value" : "%ident " },
-  { "keyword" : "ident_12::cols", "values" : [
+  { "keyword" : "ident_6::foreign_display", "value" : "%ident " },
+  { "keyword" : "ident_13::cols", "values" : [
       "ident",
       "description",
       ""
     ]
   },
-  { "keyword" : "ident_13::all_fields_but", "values" : [
+  { "keyword" : "ident_14::all_fields_but", "values" : [
       "id",
       "created",
       "modified",
@@ -34,6 +34,10 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
+    }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {

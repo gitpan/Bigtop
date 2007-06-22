@@ -2,16 +2,16 @@
 
 
   <div class='app_block_literal'
-       id='div_ident_5'>
+       id='div_ident_6'>
       
       
         
         <fieldset>
         <legend>
             Literal 
-            ( <a href='javascript:show_or_hide( "hideable_ident_5" );'>
+            ( <a href='javascript:show_or_hide( "hideable_ident_6" );'>
                 edit or hide</a> |  
-<a href="#" name='app_body_delete::ident_5' onclick='javascript:delete_block( this )'>delete</a>
+<a href="#" name='app_body_delete::ident_6' onclick='javascript:delete_block( this )'>delete</a>
        
 
             )
@@ -20,9 +20,9 @@
             <tr><td> Literal Type: </td>
                 <td>
                     <select
-                        id='Literal::type_select::ident_5'
+                        id='Literal::type_select::ident_6'
                         onchange='javascript:type_change(
-                            "ident_5",
+                            "ident_6",
                             this.value
                         )'
                     >
@@ -57,11 +57,11 @@
             <tr>
                 <td> String: </td>
                 <td>
-                    <textarea id='app_block::ident_5'
+                    <textarea id='app_block::ident_6'
                               cols='80' rows='7'
                               onblur='javascript:update_tree(
                                 "literal",
-                                "ident_5",
+                                "ident_6",
                                 this.value
                               )'
                     ></textarea>
@@ -110,6 +110,10 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
+    }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {

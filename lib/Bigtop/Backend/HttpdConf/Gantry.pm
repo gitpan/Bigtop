@@ -69,6 +69,7 @@ sub gen_HttpdConf {
     ALT_CONF:
     foreach my $alt_conf ( keys %{ $configs } ) {
         next ALT_CONF if $alt_conf eq 'base';
+        next ALT_CONF if $alt_conf =~ /CGI/i;
         $conf_content = $class->output_httpd_conf(
                 $tree, $configs, $alt_conf, $controller_configs
         );

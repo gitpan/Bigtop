@@ -36,7 +36,6 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
         key value => no_accessor; - just does #1 from above
 
     literal Conf `...`; - top level of Gantry::Conf file
-    literal GantryLocation `...`; - controller level of Gantry::Conf file
     literal PerlTop `...`; - immediately after shebang line in httpd.conf
                              <Perl> block and in the CGI scripts
     literal PerlBlock `...`; - in the httpd.conf <Perl> block (in order
@@ -57,6 +56,7 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
       no_gen - Skip this field completely
       not_for - Tell Model and/or SQL to skip this field
       is - SQL type clause phrases, e.g.:int4, varchar, primary_key, auto
+      accessor - DBIx::Class alternate accessor name for this column
       refers_to - Where this foreign key points
       on_delete - What to do when foreign key column's row dies
       on_update - What to do when foreign key column's row changes
@@ -137,6 +137,7 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
         row_option_perms - The table permission which controls options
                            Pick from create, retrieve, update, or delete
         limit_by - If an arg is supplied, show only matching rows
+        where_terms - Where clause will include these equality tests
       main listing and links
         title - Browser title bar title for main_listing
         html_template - Template to use for main_listing
@@ -158,7 +159,7 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
 
 =head1 AUTHOR
 
-The skip/keywords script generated this file Fri May 11 15:07:42 2007.
+The skip/keywords script generated this file Fri Jun 22 09:23:32 2007.
 The script was written by Phil Crow E<lt>crow.phil@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

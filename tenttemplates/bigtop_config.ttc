@@ -32,9 +32,20 @@
                 method_group   = 'top_config'
                 key            = statement.keyword
                 values         = selected_value
+                single_value   = selected_value.0
         %]
     </td>
+<!--
+    <td>
+      <pre>[% USE dumper; dumper.dump( statement ) %]
+      </pre>
+    </td>
+-->
   </tr>
 [% END %]
 </table>
 
+<!--
+      <pre>[% dumper.dump( view.data.top_level_configs ) %]
+      </pre>
+-->

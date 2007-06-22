@@ -4,6 +4,9 @@ use Test::More tests => 4;
 use Test::Files;
 use File::Spec;
 
+use lib 't';
+use Purge;
+
 my $skip_all = 0;
 
 BEGIN {
@@ -38,9 +41,16 @@ $tent_maker->root( 'tenttemplates' );
 
 $ajax = $tent_maker->do_create_app_block( 'literal::' );
 
+$ajax = strip_build_dir( $ajax );
+
 $expected_file = File::Spec->catfile( $ajax_dir, 'alit' );
 
-file_ok( $expected_file, $ajax, 'create empty literal (alit)' );
+file_filter_ok(
+    $expected_file,
+    $ajax,
+    \&strip_build_dir,
+    'create empty literal (alit)'
+);
 
 #--------------------------------------------------------------------
 # Change literal type
@@ -48,11 +58,18 @@ file_ok( $expected_file, $ajax, 'create empty literal (alit)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_type_change( 'ident_5', 'Location' );
+$ajax = $tent_maker->do_type_change( 'ident_6', 'Location' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'clittype' );
 
-file_ok( $expected_file, $ajax, 'change literal type (clittype)' );
+file_filter_ok(
+    $expected_file,
+    $ajax,
+    \&strip_build_dir,
+    'change literal type (clittype)'
+);
 
 #--------------------------------------------------------------------
 # Change literal value
@@ -60,11 +77,18 @@ file_ok( $expected_file, $ajax, 'change literal type (clittype)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_literal( 'ident_5', '    require valid-user' );
+$ajax = $tent_maker->do_update_literal( 'ident_6', '    require valid-user' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'clittext' );
 
-file_ok( $expected_file, $ajax, 'change literal text (clittext)' );
+file_filter_ok(
+    $expected_file,
+    $ajax,
+    \&strip_build_dir,
+    'change literal text (clittext)'
+);
 
 #--------------------------------------------------------------------
 # Delete literal
@@ -72,9 +96,16 @@ file_ok( $expected_file, $ajax, 'change literal text (clittext)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_delete_block( 'ident_5' );
+$ajax = $tent_maker->do_delete_block( 'ident_6' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rlit' );
 
-file_ok( $expected_file, $ajax, 'remove literal (rlit)' );
+file_filter_ok(
+    $expected_file,
+    $ajax,
+    \&strip_build_dir,
+    'remove literal (rlit)'
+);
 

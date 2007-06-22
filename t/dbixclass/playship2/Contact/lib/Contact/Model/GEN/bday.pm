@@ -14,19 +14,10 @@ __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->belongs_to( contact => 'Contact::Model::number' );
 __PACKAGE__->base_model( 'Contact::Model' );
 
-sub get_foreign_display_fields {
-    return [ qw(  ) ];
-}
-
 sub get_foreign_tables {
     return qw(
         Contact::Model::number
     );
-}
-
-sub foreign_display {
-    my $self = shift;
-
 }
 
 sub table_name {

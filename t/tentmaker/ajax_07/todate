@@ -1,20 +1,20 @@
 [
-  { "keyword" : "ident_11::uses", "values" : [
+  { "keyword" : "ident_12::uses", "values" : [
       "Missing",
       "Module",
       "Gantry::Plugins::Calendar"
     ]
   },
-  { "keyword" : "ident_13::form_name", "value" : "family" },
-  { "keyword" : "ident_13::extra_keys", "hashes" : [
+  { "keyword" : "ident_14::form_name", "value" : "family" },
+  { "keyword" : "ident_14::extra_keys", "hashes" : [
       { "keyword" : "legend",
         "value" : "$self->path_info =~ /edit/i ? q!Edit! : q!Add!" },
       { "keyword" : "javascript",
         "value" : "$self->calendar_month_js( 'family' )" }
     ]
   },
-  { "keyword" : "ident_8::html_form_type", "value" : "text" },
-  { "keyword" : "ident_8::date_select_text", "value" : "Select Date" }
+  { "keyword" : "ident_9::html_form_type", "value" : "text" },
+  { "keyword" : "ident_9::date_select_text", "value" : "Select Date" }
 ]
 config {
     engine MP20;
@@ -36,6 +36,10 @@ app Address {
         template_wrapper `genwrapper.tt` => no_accessor;
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
+    }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/address.cgi` => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {

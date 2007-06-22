@@ -1,4 +1,4 @@
-<table class='bordered' id='data_table::ident_5'>
+<table class='bordered' id='data_table::ident_6'>
 
 
 
@@ -16,78 +16,78 @@
   
   
   <tr>
-    <th id='data_for_field::ident_6'> id </th>
+    <th id='data_for_field::ident_7'> id </th>
     
     
         <td>
             <input type='text'
                    value=''
-                   id='data_value::ident_5::ident_6::1'
+                   id='data_value::ident_6::ident_7::1'
                    onchange='javascript:change_data_statement( this )' />
         </td>
   </tr>
     
   
   <tr>
-    <th id='data_for_field::ident_7'> ident </th>
+    <th id='data_for_field::ident_8'> ident </th>
     
     
         <td>
             <input type='text'
                    value=''
-                   id='data_value::ident_5::ident_7::1'
+                   id='data_value::ident_6::ident_8::1'
                    onchange='javascript:change_data_statement( this )' />
         </td>
   </tr>
     
   
   <tr>
-    <th id='data_for_field::ident_8'> description </th>
+    <th id='data_for_field::ident_9'> description </th>
     
     
         <td>
             <input type='text'
                    value=''
-                   id='data_value::ident_5::ident_8::1'
+                   id='data_value::ident_6::ident_9::1'
                    onchange='javascript:change_data_statement( this )' />
         </td>
   </tr>
     
   
   <tr>
-    <th id='data_for_field::ident_9'> created </th>
+    <th id='data_for_field::ident_10'> created </th>
     
     
         <td>
             <input type='text'
                    value=''
-                   id='data_value::ident_5::ident_9::1'
+                   id='data_value::ident_6::ident_10::1'
                    onchange='javascript:change_data_statement( this )' />
         </td>
   </tr>
     
   
   <tr>
-    <th id='data_for_field::ident_10'> modified </th>
+    <th id='data_for_field::ident_11'> modified </th>
     
     
         <td>
             <input type='text'
                    value=''
-                   id='data_value::ident_5::ident_10::1'
+                   id='data_value::ident_6::ident_11::1'
                    onchange='javascript:change_data_statement( this )' />
         </td>
   </tr>
     
   
   <tr>
-    <th id='data_for_field::ident_14'> name </th>
+    <th id='data_for_field::ident_15'> name </th>
     
     
         <td>
             <input type='text'
                    value=''
-                   id='data_value::ident_5::ident_14::1'
+                   id='data_value::ident_6::ident_15::1'
                    onchange='javascript:change_data_statement( this )' />
         </td>
   </tr>
@@ -107,6 +107,8 @@
             
             
         </th>
+      
+      
       
       
       
@@ -160,10 +162,10 @@
                    
                 
             <input type='checkbox'
-                   name='quick_all_searchable_ident_5'
+                   name='quick_all_searchable_ident_6'
                    
                    onchange='javascript:quick_all(
-                        "ident_5",
+                        "ident_6",
                         "searchable",
                         this.checked
                    )'
@@ -210,10 +212,10 @@
                    
                 
             <input type='checkbox'
-                   name='quick_all_html_form_optional_ident_5'
+                   name='quick_all_html_form_optional_ident_6'
                    
                    onchange='javascript:quick_all(
-                        "ident_5",
+                        "ident_6",
                         "html_form_optional",
                         this.checked
                    )'
@@ -268,168 +270,10 @@
       
       
       
-    <tr id='quick_row::ident_7'>
-      <td>
-        <input type='text' id='field_name_quick::ident_7'
-               value='ident'
-               onblur='javascript:update_tree(
-                    "name",
-                    "field::ident_7",
-                    this.value
-               )'
-        />
-      </td>
-      
-        
-      
-        
-      <td style='text-align: center' >
-          
-        <input type='text'
-               id='quick_is_ident_7'
-               value='varchar'
-               onblur='javascript:update_tree(
-                    "field_statement_text",
-                    "ident_7::is",
-                    this.value,
-                    "",
-                    "quick_edit"
-               )'
-        />
-          
-      </td>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      <td style='text-align: center' >
-          
-        <input type='text'
-               id='quick_label_ident_7'
-               value='Ident'
-               onblur='javascript:update_tree(
-                    "field_statement_text",
-                    "ident_7::label",
-                    this.value,
-                    "",
-                    "quick_edit"
-               )'
-        />
-          
-      </td>
-        
-      
-        
-      <td style='text-align: center' >
-          
-        <input type='checkbox'
-               id='quick_searchable_ident_7'
-               value=''
-               
-               onchange='javascript:update_tree(
-                    "field_statement_bool",
-                    "ident_7::searchable",
-                    this.checked,
-                    "",
-                    "quick_edit"
-               )'
-        />
-          
-      </td>
-        
-      
-        
-      
-        
-      <td style='text-align: center' >
-          
-        <input type='checkbox'
-               id='quick_html_form_optional_ident_7'
-               value=''
-               
-               onchange='javascript:update_tree(
-                    "field_statement_bool",
-                    "ident_7::html_form_optional",
-                    this.checked,
-                    "",
-                    "quick_edit"
-               )'
-        />
-          
-      </td>
-        
-      
-        
-      <td style='text-align: center' >
-          
-        <input type='text'
-               id='quick_html_form_constraint_ident_7'
-               value=''
-               onblur='javascript:update_tree(
-                    "field_statement_text",
-                    "ident_7::html_form_constraint",
-                    this.value,
-                    "",
-                    "quick_edit"
-               )'
-        />
-          
-      </td>
-        
-      
-        
-      <td style='text-align: center' >
-          
-        <input type='text'
-               id='quick_html_form_default_value_ident_7'
-               value=''
-               onblur='javascript:update_tree(
-                    "field_statement_text",
-                    "ident_7::html_form_default_value",
-                    this.value,
-                    "",
-                    "quick_edit"
-               )'
-        />
-          
-      </td>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    </tr>
-    
-      
-      
     <tr id='quick_row::ident_8'>
       <td>
         <input type='text' id='field_name_quick::ident_8'
-               value='description'
+               value='ident'
                onblur='javascript:update_tree(
                     "name",
                     "field::ident_8",
@@ -465,11 +309,13 @@
         
       
         
+      
+        
       <td style='text-align: center' >
           
         <input type='text'
                id='quick_label_ident_8'
-               value='Description'
+               value='Ident'
                onblur='javascript:update_tree(
                     "field_statement_text",
                     "ident_8::label",
@@ -587,7 +433,7 @@
     <tr id='quick_row::ident_9'>
       <td>
         <input type='text' id='field_name_quick::ident_9'
-               value='created'
+               value='description'
                onblur='javascript:update_tree(
                     "name",
                     "field::ident_9",
@@ -603,7 +449,7 @@
           
         <input type='text'
                id='quick_is_ident_9'
-               value='datetime'
+               value='varchar'
                onblur='javascript:update_tree(
                     "field_statement_text",
                     "ident_9::is",
@@ -623,11 +469,13 @@
         
       
         
+      
+        
       <td style='text-align: center' >
           
         <input type='text'
                id='quick_label_ident_9'
-               value=''
+               value='Description'
                onblur='javascript:update_tree(
                     "field_statement_text",
                     "ident_9::label",
@@ -745,7 +593,7 @@
     <tr id='quick_row::ident_10'>
       <td>
         <input type='text' id='field_name_quick::ident_10'
-               value='modified'
+               value='created'
                onblur='javascript:update_tree(
                     "name",
                     "field::ident_10",
@@ -772,6 +620,8 @@
         />
           
       </td>
+        
+      
         
       
         
@@ -900,13 +750,13 @@
     
       
       
-    <tr id='quick_row::ident_14'>
+    <tr id='quick_row::ident_11'>
       <td>
-        <input type='text' id='field_name_quick::ident_14'
-               value='name'
+        <input type='text' id='field_name_quick::ident_11'
+               value='modified'
                onblur='javascript:update_tree(
                     "name",
-                    "field::ident_14",
+                    "field::ident_11",
                     this.value
                )'
         />
@@ -918,11 +768,171 @@
       <td style='text-align: center' >
           
         <input type='text'
-               id='quick_is_ident_14'
+               id='quick_is_ident_11'
+               value='datetime'
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_11::is",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_label_ident_11'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_11::label",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_searchable_ident_11'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_11::searchable",
+                    this.checked,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='checkbox'
+               id='quick_html_form_optional_ident_11'
+               value=''
+               
+               onchange='javascript:update_tree(
+                    "field_statement_bool",
+                    "ident_11::html_form_optional",
+                    this.checked,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_constraint_ident_11'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_11::html_form_constraint",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_html_form_default_value_ident_11'
+               value=''
+               onblur='javascript:update_tree(
+                    "field_statement_text",
+                    "ident_11::html_form_default_value",
+                    this.value,
+                    "",
+                    "quick_edit"
+               )'
+        />
+          
+      </td>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </tr>
+    
+      
+      
+    <tr id='quick_row::ident_15'>
+      <td>
+        <input type='text' id='field_name_quick::ident_15'
+               value='name'
+               onblur='javascript:update_tree(
+                    "name",
+                    "field::ident_15",
+                    this.value
+               )'
+        />
+      </td>
+      
+        
+      
+        
+      <td style='text-align: center' >
+          
+        <input type='text'
+               id='quick_is_ident_15'
                value='varchar'
                onblur='javascript:update_tree(
                     "field_statement_text",
-                    "ident_14::is",
+                    "ident_15::is",
                     this.value,
                     "",
                     "quick_edit"
@@ -939,14 +949,16 @@
         
       
         
+      
+        
       <td style='text-align: center' >
           
         <input type='text'
-               id='quick_label_ident_14'
+               id='quick_label_ident_15'
                value='Name'
                onblur='javascript:update_tree(
                     "field_statement_text",
-                    "ident_14::label",
+                    "ident_15::label",
                     this.value,
                     "",
                     "quick_edit"
@@ -960,12 +972,12 @@
       <td style='text-align: center' >
           
         <input type='checkbox'
-               id='quick_searchable_ident_14'
+               id='quick_searchable_ident_15'
                value=''
                
                onchange='javascript:update_tree(
                     "field_statement_bool",
-                    "ident_14::searchable",
+                    "ident_15::searchable",
                     this.checked,
                     "",
                     "quick_edit"
@@ -981,12 +993,12 @@
       <td style='text-align: center' >
           
         <input type='checkbox'
-               id='quick_html_form_optional_ident_14'
+               id='quick_html_form_optional_ident_15'
                value=''
                
                onchange='javascript:update_tree(
                     "field_statement_bool",
-                    "ident_14::html_form_optional",
+                    "ident_15::html_form_optional",
                     this.checked,
                     "",
                     "quick_edit"
@@ -1000,11 +1012,11 @@
       <td style='text-align: center' >
           
         <input type='text'
-               id='quick_html_form_constraint_ident_14'
+               id='quick_html_form_constraint_ident_15'
                value=''
                onblur='javascript:update_tree(
                     "field_statement_text",
-                    "ident_14::html_form_constraint",
+                    "ident_15::html_form_constraint",
                     this.value,
                     "",
                     "quick_edit"
@@ -1018,11 +1030,11 @@
       <td style='text-align: center' >
           
         <input type='text'
-               id='quick_html_form_default_value_ident_14'
+               id='quick_html_form_default_value_ident_15'
                value=''
                onblur='javascript:update_tree(
                     "field_statement_text",
-                    "ident_14::html_form_default_value",
+                    "ident_15::html_form_default_value",
                     this.value,
                     "",
                     "quick_edit"
@@ -1060,12 +1072,12 @@
   <br />
   <button type='button' > Apply Quick Edit </button>
   </fieldset><!-- END QUICK TABLE --><div class='app_block_element'
-         id='div_ident_14'>
+         id='div_ident_15'>
         
          <fieldset>
          <legend>Field
-            ( <a href='javascript:show_or_hide( "hideable_ident_14" );'>edit or hide</a> |
-<a href="#" name='field_block_delete::ident_14' onclick='javascript:delete_block( this )'>delete</a>
+            ( <a href='javascript:show_or_hide( "hideable_ident_15" );'>edit or hide</a> |
+<a href="#" name='field_block_delete::ident_15' onclick='javascript:delete_block( this )'>delete</a>
        
 
             )
@@ -1075,11 +1087,11 @@
                 <td> Name: </td>
                 <td>
                   <input type='text'
-                         id='field_name::ident_14'
+                         id='field_name::ident_15'
                          value='name'
                          onblur='javascript:update_tree(
                              "name",
-                             "field::ident_14",
+                             "field::ident_15",
                              this.value
                          )'
                   />
@@ -1088,7 +1100,7 @@
             <tr>
                 <td colspan='2'>
                   
-<div id='hideable_ident_14'
+<div id='hideable_ident_15'
   
     style='display: none'
   
@@ -1111,12 +1123,12 @@
             
 
     <select multiple
-            name='ident_14::not_for'            class='urgency_0'
+            name='ident_15::not_for'            class='urgency_0'
             onchange='javascript:
               myvalue = walk_selections( this );
               update_tree(
                 "field_statement_text",
-                "ident_14::not_for",
+                "ident_15::not_for",
                 myvalue
               )'
     >
@@ -1149,12 +1161,12 @@
     
         
             <input type='text'
-                name='ident_14::is'
+                name='ident_15::is'
                 value="varchar"
                 class='urgency_10'
                 onblur='javascript:update_multivalue(
                     "field_statement_text",
-                    "ident_14::is",
+                    "ident_15::is",
                     this,
                     "full_edit"
                 )'
@@ -1163,12 +1175,12 @@
         
         
         <input type='text'
-            name='ident_14::is'
+            name='ident_15::is'
             value=''
             class='urgency_10'
             onblur='javascript:update_multivalue(
                 "field_statement_text",
-                "ident_14::is",
+                "ident_15::is",
                 this,
                 "full_edit"
             )'
@@ -1176,12 +1188,12 @@
         <br />
         
         <input type='text'
-            name='ident_14::is'
+            name='ident_15::is'
             value=''
             class='urgency_10'
             onblur='javascript:update_multivalue(
                 "field_statement_text",
-                "ident_14::is",
+                "ident_15::is",
                 this,
                 "full_edit"
             )'
@@ -1202,13 +1214,57 @@ auto</pre>
   
     
     <tr>
+        <td> accessor </td>
+        <td>
+
+            
+            
+
+    
+        
+        
+        <input type='text'
+            name='ident_15::accessor'
+            value=''
+            class='urgency_0'
+            onblur='javascript:update_multivalue(
+                "field_statement_text",
+                "ident_15::accessor",
+                this
+            )'
+        />
+        <br />
+        
+        <input type='text'
+            name='ident_15::accessor'
+            value=''
+            class='urgency_0'
+            onblur='javascript:update_multivalue(
+                "field_statement_text",
+                "ident_15::accessor",
+                this
+            )'
+        />
+        
+        
+    
+
+
+        </td>
+        <td>
+            DBIx::Class alternate accessor name for this column
+        </td>
+    </tr>
+  
+    
+    <tr>
         <td> refers_to </td>
         <td>
 
             
             
 
-      <table id='ident_14::refers_to_input_table'>
+      <table id='ident_15::refers_to_input_table'>
         <tr><th> Table </th>
             <th> Column
                  
@@ -1219,11 +1275,11 @@ auto</pre>
             <tr><td>
                 <input
                     type='text'
-                    name='ident_14::refers_to_key'
+                    name='ident_15::refers_to_key'
                     class='urgency_1'
                     onblur='javascript:update_pairs(
                         "field_statement_pair",
-                        "ident_14::refers_to",
+                        "ident_15::refers_to",
                         0,
                         this
                     )'
@@ -1232,11 +1288,11 @@ auto</pre>
             <td>
                 <input
                     type='text'
-                    name='ident_14::refers_to_value'
+                    name='ident_15::refers_to_value'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "field_statement_pair",
-                        "ident_14::refers_to",
+                        "ident_15::refers_to",
                         0,
                         this
                     )'
@@ -1263,12 +1319,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::on_delete'
+            id='ident_15::on_delete'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::on_delete",
+                "ident_15::on_delete",
                 this.value
             )'
         />
@@ -1291,12 +1347,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::on_update'
+            id='ident_15::on_update'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::on_update",
+                "ident_15::on_update",
                 this.value
             )'
         />
@@ -1319,12 +1375,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::label'
+            id='ident_15::label'
             value="Name"
             class='urgency_5'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::label",
+                "ident_15::label",
                 this.value,
                 "",
                 "full_edit"
@@ -1348,11 +1404,11 @@ auto</pre>
             
 
 <input type='checkbox'
-       value='ident_14::searchable'
-       id='ident_14::searchable'
+       value='ident_15::searchable'
+       id='ident_15::searchable'
        class='urgency_0'       onchange='javascript:update_tree(
            "field_statement_bool",
-           "ident_14::searchable",
+           "ident_15::searchable",
            this.checked,
            "",
            "full_edit"
@@ -1374,12 +1430,12 @@ auto</pre>
             
             
 
-    <select             id='ident_14::html_form_type'            class='urgency_5'
+    <select             id='ident_15::html_form_type'            class='urgency_5'
             onchange='javascript:
               myvalue = walk_selections( this );
               update_tree(
                 "field_statement_text",
-                "ident_14::html_form_type",
+                "ident_15::html_form_type",
                 myvalue
               )'
     >
@@ -1422,11 +1478,11 @@ auto</pre>
             
 
 <input type='checkbox'
-       value='ident_14::html_form_optional'
-       id='ident_14::html_form_optional'
+       value='ident_15::html_form_optional'
+       id='ident_15::html_form_optional'
        class='urgency_0'       onchange='javascript:update_tree(
            "field_statement_bool",
-           "ident_14::html_form_optional",
+           "ident_15::html_form_optional",
            this.checked,
            "",
            "full_edit"
@@ -1450,12 +1506,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::html_form_constraint'
+            id='ident_15::html_form_constraint'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::html_form_constraint",
+                "ident_15::html_form_constraint",
                 this.value,
                 "",
                 "full_edit"
@@ -1480,12 +1536,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::html_form_default_value'
+            id='ident_15::html_form_default_value'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::html_form_default_value",
+                "ident_15::html_form_default_value",
                 this.value,
                 "",
                 "full_edit"
@@ -1510,12 +1566,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::html_form_cols'
+            id='ident_15::html_form_cols'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::html_form_cols",
+                "ident_15::html_form_cols",
                 this.value
             )'
         />
@@ -1538,12 +1594,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::html_form_rows'
+            id='ident_15::html_form_rows'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::html_form_rows",
+                "ident_15::html_form_rows",
                 this.value
             )'
         />
@@ -1566,12 +1622,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::html_form_display_size'
+            id='ident_15::html_form_display_size'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::html_form_display_size",
+                "ident_15::html_form_display_size",
                 this.value
             )'
         />
@@ -1594,12 +1650,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::html_form_class'
+            id='ident_15::html_form_class'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::html_form_class",
+                "ident_15::html_form_class",
                 this.value
             )'
         />
@@ -1622,12 +1678,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::html_form_hint'
+            id='ident_15::html_form_hint'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::html_form_hint",
+                "ident_15::html_form_hint",
                 this.value
             )'
         />
@@ -1648,7 +1704,7 @@ auto</pre>
             
             
 
-      <table id='ident_14::html_form_options_input_table'>
+      <table id='ident_15::html_form_options_input_table'>
         <tr><th> Label </th>
             <th> Database Value
                  
@@ -1657,11 +1713,11 @@ auto</pre>
             <tr><td>
                 <input
                     type='text'
-                    name='ident_14::html_form_options_key'
+                    name='ident_15::html_form_options_key'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "field_statement_pair",
-                        "ident_14::html_form_options",
+                        "ident_15::html_form_options",
                         1,
                         this
                     )'
@@ -1670,11 +1726,11 @@ auto</pre>
             <td>
                 <input
                     type='text'
-                    name='ident_14::html_form_options_value'
+                    name='ident_15::html_form_options_value'
                     class='urgency_0'
                     onblur='javascript:update_pairs(
                         "field_statement_pair",
-                        "ident_14::html_form_options",
+                        "ident_15::html_form_options",
                         1,
                         this
                     )'
@@ -1700,11 +1756,11 @@ auto</pre>
             
 
 <input type='checkbox'
-       value='ident_14::html_form_foreign'
-       id='ident_14::html_form_foreign'
+       value='ident_15::html_form_foreign'
+       id='ident_15::html_form_foreign'
        class='urgency_0'       onchange='javascript:update_tree(
            "field_statement_bool",
-           "ident_14::html_form_foreign",
+           "ident_15::html_form_foreign",
            this.checked
        )'
 />
@@ -1726,12 +1782,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::html_form_onchange'
+            id='ident_15::html_form_onchange'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::html_form_onchange",
+                "ident_15::html_form_onchange",
                 this.value
             )'
         />
@@ -1754,12 +1810,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::date_select_text'
+            id='ident_15::date_select_text'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::date_select_text",
+                "ident_15::date_select_text",
                 this.value,
                 "",
                 "full_edit"
@@ -1784,12 +1840,12 @@ auto</pre>
 
     
         <input type='text'
-            id='ident_14::html_form_raw_html'
+            id='ident_15::html_form_raw_html'
             value=""
             class='urgency_0'
             onblur='javascript:update_tree(
                 "field_statement_text",
-                "ident_14::html_form_raw_html",
+                "ident_15::html_form_raw_html",
                 this.value
             )'
         />
@@ -1811,11 +1867,11 @@ auto</pre>
             
 
 <input type='checkbox'
-       value='ident_14::non_essential'
-       id='ident_14::non_essential'
+       value='ident_15::non_essential'
+       id='ident_15::non_essential'
        class='urgency_0'       onchange='javascript:update_tree(
            "field_statement_bool",
-           "ident_14::non_essential",
+           "ident_15::non_essential",
            this.checked
        )'
 />
@@ -1858,6 +1914,10 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
+    }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {

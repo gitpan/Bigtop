@@ -1,5 +1,0 @@
-app Apps::Checkbook {
-    table payeepayor {
-        field id    { is int4, primary_key, assign_by_sequence; }
-    }
-}

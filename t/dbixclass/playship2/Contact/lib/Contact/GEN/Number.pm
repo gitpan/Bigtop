@@ -48,17 +48,17 @@ sub do_main {
         ],
     };
 
-    my %param = $self->get_param_hash;
+    my $params = $self->params;
 
     my $search = {};
-    if ( $param{ search } ) {
+    if ( $params->{ search } ) {
         my $form = $self->form();
 
         my @searches;
         foreach my $field ( @{ $form->{ fields } } ) {
             if ( $field->{ searchable } ) {
                 push( @searches,
-                    ( $field->{ name } => { 'like', "%$param{ search }%"  } )
+                    ( $field->{ name } => { 'like', "%$params->{ search }%"  } )
                 );
             }
         }
@@ -93,7 +93,7 @@ sub do_main {
     my $limit_to_user_id = $perm_obj->limit_to_user_id;
     $search->{ user_id } = $limit_to_user_id if ( $limit_to_user_id );
 
-    my $page    = $param{ page } || 1;
+    my $page    = $params->{ page } || 1;
 
     my $schema  = $self->get_schema();
     my $results = $NUMBER->get_listing(
@@ -126,7 +126,7 @@ sub do_main {
         );
     }
 
-    if ( $param{ json } ) {
+    if ( $params->{ json } ) {
         $self->template_disable( 1 );
 
         my $obj = {

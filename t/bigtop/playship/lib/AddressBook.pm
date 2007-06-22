@@ -7,9 +7,6 @@ our $VERSION = '0.01';
 
 use base 'GENAddressBook';
 
-use AddressBook::Family;
-use AddressBook::Child;
-
 
 #-----------------------------------------------------------------
 # $self->do_main(  )

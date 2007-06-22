@@ -1,6 +1,6 @@
 [
-  { "keyword" : "ident_15::refers_to", "value" : "new_table_name" },
-  { "keyword" : "ident_22::controls_table", "value" : "new_table_name" }
+  { "keyword" : "ident_16::refers_to", "value" : "new_table_name" },
+  { "keyword" : "ident_23::controls_table", "value" : "new_table_name" }
 ]
 config {
     engine MP20;
@@ -22,6 +22,10 @@ app Sample {
         template_wrapper `genwrapper.tt` => no_accessor;
         doc_rootp `/static` => no_accessor;
         show_dev_navigation 1 => no_accessor;
+    }
+    config CGI {
+        dbconn `dbi:SQLite:dbname=app.db` => no_accessor;
+        app_rootp `/cgi-bin/sample.cgi` => no_accessor;
     }
     controller is base_controller {
         method do_main is base_links {

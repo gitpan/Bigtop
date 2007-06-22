@@ -372,7 +372,9 @@ sub gen_from_string {
     }
 
     if ( $backends_called == 0 ) {
-        warn "I didn't build anything, please check for no_gen in\n"
+        rmdir $build_dir;
+        _purge_inline();
+        die "I didn't build anything, please check for no_gen in\n"
             .   "$bigtop_file and choose from:\n"
             .   "   @available_backends\n";
     }
@@ -526,6 +528,23 @@ sub _validate_build_dir {
         die "$build_dir doesn't look like a build dir (level=$warning_signs),\n"
           . "  use --create to force a build in or under $config_build_dir\n";
     }
+}
+
+sub _purge_inline {
+    my $doomed_dir = '_Inline';
+    return unless -d $doomed_dir;
+
+    my $purger = sub {
+        my $name = $_;
+
+        if    ( -f $name ) { unlink $name; }
+        elsif ( -d $name ) { rmdir  $name; }
+    };
+
+    require File::Find;
+
+    File::Find::finddepth( $purger, $doomed_dir );
+    rmdir $doomed_dir;
 }
 
 sub parse_config_string {
@@ -1512,7 +1531,7 @@ sub add_last_statement {
     my $index         = $self->last_statement_index();
 
     if ( $index >= 0 ) {
-        splice @{ $self->{ 'block(s?)' } }, $index, 0, $new_statement;
+        splice @{ $self->{ 'block(s?)' } }, $index + 1, 0, $new_statement;
     }
     else { # We're so excited, this is our first child!!!
         $self->{ 'block(s?)' } = [ $new_statement ];

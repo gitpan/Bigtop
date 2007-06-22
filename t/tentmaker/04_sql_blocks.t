@@ -4,6 +4,9 @@ use Test::More tests => 28;
 use Test::Files;
 use Test::Warn;
 
+use lib 't';
+use Purge;
+
 # This script uses Test::Files in an unconventional way.  Normally one
 # generates a file, then checks to see if that file was correctly built.
 # Here ajax returns from tentmaker arrives as strings which are compared
@@ -49,11 +52,13 @@ $tent_maker->set_testing( 1 );
 
 $ajax = $tent_maker->do_create_app_block( 'table::street_address' );
 
+$ajax = strip_build_dir( $ajax );
+
 # ident counting:
-#   5     table address
-#   6-10  its fields
-#   11    controller Address
-#   12-13 its methods
+#   6     table address
+#   7-11  its fields
+#   12    controller Address
+#   13-14 its methods
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'atable' );
 
@@ -65,7 +70,9 @@ file_ok( $expected_file, $ajax, 'add table (atable)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_move_block_after( 'ident_5', 'ident_11' );
+$ajax = $tent_maker->do_move_block_after( 'ident_6', 'ident_12' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'reorder' );
 
@@ -77,9 +84,11 @@ file_ok( $expected_file, $ajax, 'reorder blocks (reorder)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_create_subblock( 'table::ident_5::field::name' );
+$ajax = $tent_maker->do_create_subblock( 'table::ident_6::field::name' );
 
-# this field becomes ident_22
+$ajax = strip_build_dir( $ajax );
+
+# this field becomes ident_23
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cfield' );
 
@@ -99,7 +108,9 @@ warning_like { $tent_maker->do_create_subblock( 'table::missing::field::id' ); }
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_name( 'table::ident_5', 'address_tbl' );
+$ajax = $tent_maker->do_update_name( 'table::ident_6', 'address_tbl' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'ctablename' );
 
@@ -112,8 +123,10 @@ file_ok( $expected_file, $ajax, 'create table name (ctablename)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_table_statement_text(
-    'ident_5::foreign_display', '%name'
+    'ident_6::foreign_display', '%name'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'atablest' );
 
@@ -126,8 +139,10 @@ file_ok( $expected_file, $ajax, 'new table statement (atablest)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_table_statement_text(
-    'ident_5::foreign_display', 'undefined'
+    'ident_6::foreign_display', 'undefined'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'remtablest' );
 
@@ -140,8 +155,10 @@ file_ok( $expected_file, $ajax, 'remove table statement (remtablest)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_field_statement_bool(
-    'ident_14::html_form_optional', 'true'
+    'ident_15::html_form_optional', 'true'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'afieldbool' );
 
@@ -154,8 +171,10 @@ file_ok( $expected_file, $ajax, 'new boolean statement (afieldbool)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_field_statement_text(
-    'ident_6::is', 'int8][primary_key][assign_by_sequence'
+    'ident_7::is', 'int8][primary_key][assign_by_sequence'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cis' );
 
@@ -165,15 +184,17 @@ file_ok( $expected_file, $ajax, 'change is field statement (cis)' );
 # Third field.
 #--------------------------------------------------------------------
 
-$tent_maker->do_create_subblock( 'table::ident_5::field::street' );
+$tent_maker->do_create_subblock( 'table::ident_6::field::street' );
 
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_table_statement_text(
-    'ident_5::foreign_display', '%street'
+    'ident_6::foreign_display', '%street'
 );
 
-# this field is ident_15
+$ajax = strip_build_dir( $ajax );
+
+# this field is ident_16
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'afieldcst' );
 
@@ -189,20 +210,22 @@ file_ok(
 
 # pretend street was popular in the controller
 $tent_maker->do_update_method_statement_text(
-    'ident_12::cols', 'ident][street][description'
+    'ident_13::cols', 'ident][street][description'
 );
 # pretend street was unpopular in the form
 $tent_maker->do_update_method_statement_text(
-    'ident_13::all_fields_but', 'id][created][street][modified'
+    'ident_14::all_fields_but', 'id][created][street][modified'
 );
 # ... or not  (This combination is no illegal.)
 $tent_maker->do_update_method_statement_text(
-    'ident_13::fields', 'street'
+    'ident_14::fields', 'street'
 );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_name( 'field::ident_15', 'street_address' );
+$ajax = $tent_maker->do_update_name( 'field::ident_16', 'street_address' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cfieldname' );
 
@@ -210,13 +233,13 @@ file_ok( $expected_file, $ajax, 'change field name (cfieldname)' );
 
 # put things back the way they were
 $tent_maker->do_update_method_statement_text(
-    'ident_12::cols', 'ident][description'
+    'ident_13::cols', 'ident][description'
 );
 $tent_maker->do_update_method_statement_text(
-    'ident_13::all_fields_but', 'id][created][modified'
+    'ident_14::all_fields_but', 'id][created][modified'
 );
 $tent_maker->do_update_method_statement_text(
-    'ident_13::fields', 'undef'
+    'ident_14::fields', 'undef'
 );
 
 #--------------------------------------------------------------------
@@ -224,14 +247,16 @@ $tent_maker->do_update_method_statement_text(
 #--------------------------------------------------------------------
 # first, get rid of foreign display
 $tent_maker->do_update_table_statement_text(
-    'ident_5::foreign_display', 'undef'
+    'ident_6::foreign_display', 'undef'
 );
 
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_field_statement_text(
-    'ident_15::label', 'Their Street Address'
+    'ident_16::label', 'Their Street Address'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'clabel' );
 
@@ -244,8 +269,10 @@ file_ok( $expected_file, $ajax, 'set multi-word label (clabel)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_field_statement_text(
-    'ident_15::label', 'undefined'
+    'ident_16::label', 'undefined'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rlabel' );
 
@@ -265,8 +292,10 @@ $tent_maker->params(
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_field_statement_pair(
-    'ident_15::html_form_options'
+    'ident_16::html_form_options'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'apair' );
 
@@ -286,8 +315,10 @@ $tent_maker->params(
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_field_statement_pair(
-    'ident_15::html_form_options'
+    'ident_16::html_form_options'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'cpair' );
 
@@ -306,8 +337,10 @@ $tent_maker->params(
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_field_statement_pair(
-    'ident_15::html_form_options'
+    'ident_16::html_form_options'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rpair' );
 
@@ -320,8 +353,10 @@ file_ok( $expected_file, $ajax, 'remove pair statement (rpair)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_field_statement_text(
-    'ident_15::refers_to', 'addresses'
+    'ident_16::refers_to', 'addresses'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'afieldtext' );
 
@@ -341,7 +376,9 @@ $tent_maker->do_create_app_block( 'table::addresses' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_update_name( 'table::ident_16', 'new_table_name' );
+$ajax = $tent_maker->do_update_name( 'table::ident_17', 'new_table_name' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'ctablename2' );
 
@@ -360,18 +397,20 @@ my $tree = $tent_maker->get_tree;
 $tent_maker->template_disable( 0 );
 
 $tent_maker->do_update_method_statement_text(
-        'ident_12::cols', 'ident][street_address][description'
+        'ident_13::cols', 'ident][street_address][description'
 );
 
 $tent_maker->do_update_method_statement_text(
-        'ident_13::all_fields_but', 'id][street_address][created][modified'
+        'ident_14::all_fields_but', 'id][street_address][created][modified'
 );
 
 $tent_maker->do_update_table_statement_text(
-        'ident_5::foreign_display', '%ident %street_address'
+        'ident_6::foreign_display', '%ident %street_address'
 );
 
-$ajax = $tent_maker->do_delete_block( 'ident_15' );
+$ajax = $tent_maker->do_delete_block( 'ident_16' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rfield' );
 
@@ -383,7 +422,9 @@ file_ok( $expected_file, $ajax, 'remove field (rfield)' );
 
 $tent_maker->template_disable( 0 );
 
-$ajax = $tent_maker->do_delete_block( 'ident_5' );
+$ajax = $tent_maker->do_delete_block( 'ident_6' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'rtable' );
 
@@ -405,7 +446,7 @@ Bigtop::TentMaker->take_performance_hit( $style, $sql_config );
 
 warning_like {
     $tent_maker->do_update_table_statement_text(
-        'ident_28::sequence', 'new_seq'
+        'ident_29::sequence', 'new_seq'
     )
 } qr/Couldn't change table statement/,
   'attempt to change statement in missing table';
@@ -417,8 +458,10 @@ warning_like {
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_table_statement_text(
-    'ident_26::sequence', 'new_seq'
+    'ident_27::sequence', 'new_seq'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'scratchctst' );
 
@@ -435,8 +478,10 @@ file_ok(
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_table_statement_text(
-    'ident_26::foreign_display', '%name'
+    'ident_27::foreign_display', '%name'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'scratchctst2' );
 
@@ -449,6 +494,8 @@ file_ok( $expected_file, $ajax, 'new table statement (scratchctst2)' );
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_create_app_block( 'join_table::fox_sock' );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'scratchaj' );
 
@@ -468,8 +515,10 @@ $tent_maker->params(
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_join_table_statement_pair(
-    'ident_27::joins'
+    'ident_28::joins'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'scratchajst' );
 
@@ -489,8 +538,10 @@ $tent_maker->params(
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_join_table_statement_pair(
-    'ident_27::joins'
+    'ident_28::joins'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'scratchcjst' );
 
@@ -509,7 +560,7 @@ my $expected_blocks  = [
         body => undef,
         name => 'address_seq',
         type => 'sequence',
-        ident => 'ident_25',
+        ident => 'ident_26',
     },
     {
         body => {
@@ -521,7 +572,7 @@ my $expected_blocks  = [
         },
         name => 'address',
         type => 'table',
-        ident => 'ident_26',
+        ident => 'ident_27',
     },
     {
         body => {
@@ -531,7 +582,7 @@ my $expected_blocks  = [
         },
         name => 'fox_sock',
         type => 'join_table',
-        ident => 'ident_27',
+        ident => 'ident_28',
     },
 ];
 
@@ -553,8 +604,10 @@ $tent_maker->params(
 $tent_maker->template_disable( 0 );
 
 $ajax = $tent_maker->do_update_join_table_statement_pair(
-    'ident_27::joins'
+    'ident_28::joins'
 );
+
+$ajax = strip_build_dir( $ajax );
 
 $expected_file = File::Spec->catfile( $ajax_dir, 'scratchrjst' );
 

@@ -1,5 +1,27 @@
 Revision history for Perl extension Bigtop.
 
+0.29 Fri Jun 22 09:23:20 CDT 2007
+    - absolute paths are now used for conf file specification to aid CGIs
+      you should still remove explicit conf files and use the default
+      /etc/gantry.conf for production environments
+    - CGI scripts are now confed according to the config CGI {} block
+    - limit_by no longer causes a warning when no limit parameters is used
+    - added where_terms keyword for main listing methods
+    - added accessor keyword for table fields, to rename default DBIx accessor
+    - corrected app.server so dbpass is not always set to dbuser's value
+      thanks to Tim Allwine for pointing out the bug.
+    - Stub base modules no longer use their children.
+    - bigtop no longer prints instructions when no_gen tells it not to build
+    - kickstart syntax no longer treats id, created, and modified as a group
+      which is left out whenever you mention one of them.  Now you are
+      responsible for any that you do mention and the others are still made.
+    - when you have html_form_options, your stub model gets enough pod for
+      its tests to pass (as long as the field is in before the stub is made)
+    - bigtop with -c no longer litters on the disk if the list of things to
+      build doesn't list any valid backend types (or the word all).
+    - schema_base_class methods get POD to keep coverage tests happy
+    - tests liter less
+
 0.28 Fri May 11 14:55:26 CDT 2007
     - added controller_config_block.ttc to MANIFEST
 
