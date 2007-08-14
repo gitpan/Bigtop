@@ -1,5 +1,13 @@
 Revision history for Perl extension Bigtop.
 
+0.30 Tue Aug 14 17:15:11 CDT 2007
+    - fix DBIx::Class paging routine in the generated do_main subroutines.
+    - gen_root no longer creates duplicate root config vars, in fact it
+      is completely ignored.  By default, all appropriate backends make
+      a root whenever you don't make one yourself.
+    - fixed bug with literal GantryLocations which ignored them unless
+      you already had a controller level config block.
+
 0.29 Fri Jun 22 09:23:20 CDT 2007
     - absolute paths are now used for conf file specification to aid CGIs
       you should still remove explicit conf files and use the default

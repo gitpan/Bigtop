@@ -1,12 +1,15 @@
 ---
 name: Bigtop
-version: 0.29
+version: 0.30
 author:
   - 'Phil Crow, E<lt>crow.phil@gmail.comE<gt>'
 abstract: A web application data language processor
 license: perl
+resources:
+  license: http://dev.perl.org/licenses/
 requires:
   Config::General: 0
+  DBIx::Class: 0
   File::HomeDir: 0
   Gantry: 3.48
   HTTP::Server::Simple: 0.27
@@ -21,14 +24,10 @@ build_requires:
   Test::Files: 0.13
   Test::More: 0
   Test::Warn: 0
-generated_by: Module::Build version 0.2805
-meta-spec:
-  url: http://module-build.sourceforge.net/META-spec-v1.2.html
-  version: 1.2
 provides:
   Bigtop:
     file: lib/Bigtop.pm
-    version: 0.29
+    version: 0.30
   Bigtop::Backend::CGI:
     file: lib/Bigtop/Backend/CGI.pm
   Bigtop::Backend::CGI::Gantry:
@@ -88,5 +87,7 @@ provides:
     file: lib/Bigtop/TentMakerPath.pm
   Parse::RecDescent::Bigtop::Grammar:
     file: lib/Bigtop/Grammar.pm
-resources:
-  license: http://dev.perl.org/licenses/
+generated_by: Module::Build version 0.2808
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.2.html
+  version: 1.2

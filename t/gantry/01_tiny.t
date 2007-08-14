@@ -60,7 +60,7 @@ is_deeply( \@split_dollar_at, \@correct_dollar_at, 'no location' );
 
 $bigtop_string = << 'EO_correct_bigtop';
 config {
-    HttpdConf Gantry { gen_root 1; full_use 0; }
+    HttpdConf Gantry { full_use 0; }
 }
 app Apps::Checkbook {
     location `/app_base`;

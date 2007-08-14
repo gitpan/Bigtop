@@ -735,7 +735,7 @@
     engine MP20;
     template_engine TT;
     Init Std {  }
-    Conf Gantry { conffile `docs/app.gantry.conf`; gen_root 1; instance sample; }
+    Conf Gantry { conffile `docs/app.gantry.conf`; instance sample; }
     HttpdConf Gantry { gantry_conf 1; }
     SQL SQLite {  }
     SQL Postgres {  }

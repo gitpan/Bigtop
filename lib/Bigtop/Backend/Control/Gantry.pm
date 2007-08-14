@@ -1313,15 +1313,14 @@ sub [% config %] {
         {
             schema   => $schema,
             rows     => [% rows %],
-            page     => $page,
             where    => $search,[% IF order_by %]
 
             order_by => '[% order_by %]',[% END +%]
         }
     );
 
-    $retval->{ page } = $results->pager();
-    my $rows          = $results->page();
+    my $rows          = $results->page( $page );
+    $retval->{ page } = $rows->pager();
 
     ROW:
     while ( my $row = $rows->next ) {
@@ -1333,15 +1332,13 @@ sub [% config %] {
         {
             schema   => $schema,
             rows     => [% rows %],
-            page     => $page,
             where    => $search,[% IF order_by %]
-
             order_by => '[% order_by %]',[% END +%]
         }
     );
 
-    $retval->{ page } = $results->pager();
-    my $rows          = $results->page();
+    my $rows          = $results->page( $page );
+    $retval->{ page } = $rows->pager();
 
     ROW:
     while ( my $row = $rows->next ) {

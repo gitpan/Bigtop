@@ -282,8 +282,9 @@ my %select_map_for = (
 
 sub [% option_field.name %]_display {
     my $self = shift;
-    return $select_map_for{ [% option_field.name %] }{ $self->[% option_field.name %] }
-           || $self->[% option_field.name %];
+    my $[% option_field.name %] = $self->[% option_field.name %] || '';
+    return $select_map_for{ [% option_field.name %] }{ $[% option_field.name %] }
+           || $[% option_field.name %];
 }
 [% END %]
 [% END %]

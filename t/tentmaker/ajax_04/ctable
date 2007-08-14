@@ -5702,7 +5702,7 @@ config {
     SQL SQLite {  }
     SQL Postgres {  }
     SQL MySQL {  }
-    CGI Gantry { gen_root 1; with_server 1; flex_db 1; }
+    CGI Gantry { with_server 1; flex_db 1; }
     Control Gantry { dbix 1; }
     Model GantryDBIxClass {  }
     SiteLook GantryDefault {  }

@@ -1154,7 +1154,7 @@ You may use multiple data statements.
 
 =head1 AUTHOR
 
-The skip/podsyntax script generated this file Fri Jun 22 09:23:32 2007.
+The skip/podsyntax script generated this file Tue Aug 14 17:16:34 2007.
 The script was written by Phil Crow E<lt>crow.phil\@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

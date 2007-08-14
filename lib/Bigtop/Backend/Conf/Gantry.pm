@@ -32,8 +32,9 @@ sub backend_block_keywords {
 
         { keyword => 'gen_root',
           label   => 'Generate Root Path',
-          descr   => q!Adds a root => 'html' statement to config!,
-          type    => 'boolean' },
+          descr   => q!used to make a default root on request, !
+                        .   q!now you get defaults by defaul!,
+          type    => 'deprecated' },
 
         { keyword => 'template',
           label   => 'Alternate Template',
@@ -80,7 +81,6 @@ sub output_conf {
 
     my $app_config_blocks = $tree->get_app_configs();
     my $bigtop_config     = $tree->get_config->{Conf};
-    my $gen_root          = $bigtop_config->{gen_root} || 0;
     my $instance          = $bigtop_config->{instance} || 'missing_instance';
 
     my $controller_configs = $tree->get_controller_configs();
@@ -99,7 +99,6 @@ sub output_conf {
                 'output_glocations_gantry',
                 {
                     location  => $location,
-                    gen_root  => $gen_root,
                     configs   => $app_config_blocks,
                     conf_type => $conf_type,
                     controller_configs => $controller_configs,
@@ -220,7 +219,6 @@ sub output_configs_gantry {
     my $self         = shift;
     my $child_output = shift;
     my $data         = shift;
-    my $gen_root     = $data->{ gen_root };
     my $conf_type    = $data->{ conf_type };
     my $configs      = $data->{ configs };
     my $own_type     = $self->{__TYPE__} || 'base';
@@ -231,6 +229,8 @@ sub output_configs_gantry {
     my $output;
     my %config_set_for;
 
+    my $gen_root = 1;
+
     foreach my $config ( @{ $child_output } ) {
         $output .= Bigtop::Backend::Conf::Gantry::config(
             {
@@ -239,6 +239,8 @@ sub output_configs_gantry {
             }
         );
         $config_set_for{ $config->{__KEYWORD__} }++;
+
+        $gen_root = 0 if ( $config->{__KEYWORD__} eq 'root' );
     }
 
     if ( $gen_root ) {
@@ -349,7 +351,7 @@ sub output_glocations_gantry {
         $child_location = $child_loc{location};
     }
 
-    return unless ( @{ $loc_configs } );
+    return unless ( @{ $loc_configs } or @{ $literals } );
 
     my $output = Bigtop::Backend::Conf::Gantry::sub_locations(
         {
@@ -504,7 +506,6 @@ Tells tentmaker that I understand these config section backend block keywords:
 
     no_gen
     instance
-    gen_root
     template
 
 =item what_do_you_make

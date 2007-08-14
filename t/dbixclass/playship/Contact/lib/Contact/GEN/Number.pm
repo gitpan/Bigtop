@@ -100,13 +100,12 @@ sub do_main {
         {
             schema   => $schema,
             rows     => 25,
-            page     => $page,
             where    => $search,
         }
     );
 
-    $retval->{ page } = $results->pager();
-    my $rows          = $results->page();
+    my $rows          = $results->page( $page );
+    $retval->{ page } = $rows->pager();
 
     ROW:
     while ( my $row = $rows->next ) {

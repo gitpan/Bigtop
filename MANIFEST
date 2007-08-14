@@ -118,7 +118,6 @@ lib/Bigtop/Docs/AutoBackends.pod
 lib/Bigtop/Docs/Cookbook.pod
 lib/Bigtop/Docs/FullKeywords.pod
 lib/Bigtop/Docs/Modules.pod
-lib/Bigtop/Docs/OldSyntax.pd
 lib/Bigtop/Docs/outliner
 lib/Bigtop/Docs/QuickKeywords.pod
 lib/Bigtop/Docs/QuickStart.pod
@@ -435,7 +434,6 @@ t/tentmaker/ajax_06/rlit
 t/tentmaker/ajax_07/todate
 t/tentmaker/ajax_09/billing_initial
 t/tentmaker/billing.bigtop
-t/tentmaker/config.ajax
 t/tentmaker/sample
 t/tentmaker/sql.bigtop
 tenttemplates/app_body.ttc

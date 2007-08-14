@@ -40,6 +40,7 @@
 <td valign='top'>
     <table>
     [% FOREACH statement IN type_hash.$backend.keywords %]
+        [% NEXT IF statement.type == 'deprecated' %]
         [% INCLUDE backend_statement
                    statements = type_hash.$backend.statements %]
     [% END %]

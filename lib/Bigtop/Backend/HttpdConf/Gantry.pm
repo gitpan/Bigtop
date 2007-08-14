@@ -38,8 +38,9 @@ sub backend_block_keywords {
 
         { keyword => 'gen_root',
           label   => 'Generate Root Path',
-          descr   => q!Adds a root => 'html' statement to config!,
-          type    => 'boolean' },
+          descr   => q!used to make a default root on request, !
+                        .   q!now you get defaults by defaul!,
+          type    => 'deprecated' },
 
         { keyword => 'template',
           label   => 'Alternate Template',
@@ -90,7 +91,6 @@ sub output_httpd_conf {
     my $config      = $tree->get_config->{HttpdConf};
 
     my $skip_config = $config->{skip_config} || 0;
-    my $gen_root    = $config->{gen_root   } || 0;
     my $gconf       = $config->{gantry_conf} || 0;
 
     my $instance;
@@ -132,7 +132,6 @@ sub output_httpd_conf {
                 skip_config  => $skip_config,
                 instance     => $instance,
                 conffile     => $conffile,
-                gen_root     => $gen_root,
                 base_handler => $base_handler,
                 configs      => $configs,
                 config_type  => $config_type,
@@ -324,7 +323,6 @@ sub output_httpd_conf_locations {
     my $data          = shift;
     my $location      = $data->{location};
     my $skip_config   = $data->{skip_config};
-    my $gen_root      = $data->{gen_root};
     my $configs       = $data->{configs};
     my $config_type   = $data->{config_type};
 
@@ -351,7 +349,6 @@ sub output_httpd_conf_locations {
     else {
         $config_output  = $self->walk_postorder(
                 'output_configs', {
-                    gen_root    => $gen_root,
                     configs     => $configs,
                     config_type => $config_type,
                 }
@@ -388,7 +385,6 @@ sub output_configs {
     my $self         = shift;
     my $child_output = shift;
     my $data         = shift;
-    my $gen_root     = $data->{ gen_root };
     my $configs      = $data->{ configs };
     my $desired_type = $data->{ config_type } || 'base';
 
@@ -416,14 +412,11 @@ sub output_configs {
     }
 
     # fill in missing values from base config
+    my $gen_root = 1;
+
     BASE_KEY:
     foreach my $base_key ( keys %{ $configs->{ base } } ) {
         next BASE_KEY if $configs_set{ $base_key };
-        next BASE_KEY if ( $base_key eq 'root'
-                                and
-                            defined $gen_root
-                                and
-                            $gen_root );
 
         $output .= Bigtop::Backend::HttpdConf::Gantry::config(
             {
@@ -431,9 +424,11 @@ sub output_configs {
                 value => $configs->{ base }{ $base_key },
             }
         );
+
+        $gen_root = 0 if ( $base_key eq 'root' );
     }
 
-    if ( defined $gen_root and $gen_root ) {
+    if ( $gen_root ) {
         $output .= Bigtop::Backend::HttpdConf::Gantry::config(
             {
                 var   => 'root',

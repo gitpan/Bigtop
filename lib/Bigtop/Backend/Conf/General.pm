@@ -20,8 +20,9 @@ sub backend_block_keywords {
 
         { keyword => 'gen_root',
           label   => 'Generate Root Path',
-          descr   => q!Adds a root => 'html' statement to config!,
-          type    => 'boolean' },
+          descr   => q!used to make a default root on request, !
+                        .   q!now you get defaults by defaul!,
+          type    => 'deprecated' },
 
         { keyword => 'template',
           label   => 'Alternate Template',
@@ -52,8 +53,6 @@ sub output_conf {
     my $class = shift;
     my $tree  = shift;
 
-    my $gen_root = $tree->get_config->{Conf}{gen_root} || 0;
-
     # first find the base location
     my $location_output = $tree->walk_postorder(
             'output_base_location_general'
@@ -65,7 +64,6 @@ sub output_conf {
             'output_gantry_locations_general',
             {
                 location => $location,
-                gen_root => $gen_root,
             }
     );
 
@@ -131,10 +129,9 @@ sub output_gantry_locations_general {
     my $child_output = shift;
     my $data         = shift;
     my $location     = $data->{ location } || '/';
-    my $gen_root     = $data->{ gen_root };
 
     # handle set vars at root location
-    my $config   = $self->walk_postorder( 'output_conf_general', $gen_root );
+    my $config   = $self->walk_postorder( 'output_conf_general' );
     my $literals = $self->walk_postorder( 'output_top_level_literal_general' );
 
     my $output   = Bigtop::Backend::Conf::General::all_locations(
@@ -172,11 +169,11 @@ use strict; use warnings;
 sub output_conf_general {
     my $self         = shift;
     my $child_output = shift;
-    my $gen_root     = shift;
 
     return unless $child_output;
 
     my $output;
+    my $gen_root = 1;
 
     foreach my $config ( @{ $child_output } ) {
         $output .= Bigtop::Backend::Conf::General::config(
@@ -185,6 +182,8 @@ sub output_conf_general {
                 value => $config->{__ARGS__},
             }
         );
+
+        $gen_root = 0 if ( $config->{__KEYWORD__} eq 'root' );
     }
 
     if ( $gen_root ) {
@@ -401,7 +400,6 @@ To keep podcoverage tests happy.
 Tells tentmaker that I understand these config section backend block keywords:
 
     no_gen
-    gen_root
     template
 
 =item what_do_you_make

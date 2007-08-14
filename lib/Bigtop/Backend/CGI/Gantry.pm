@@ -43,8 +43,9 @@ sub backend_block_keywords {
 
         { keyword => 'gen_root',
           label   => 'Generate Root Path',
-          descr   => q!Adds a root => 'html' statement to config!,
-          type    => 'boolean' },
+          descr   => q!used to make a default root on request, !
+                        .   q!now you get defaults by defaul!,
+          type    => 'deprecated' },
 
         { keyword => 'flex_db',
           label   => 'Database Flexibility',
@@ -588,10 +589,20 @@ sub output_config {
     my $data          = shift;
     my $backend_block = $data->{ backend_block };
 
-    if ( defined $backend_block->{ gen_root }
-            and
-         $backend_block->{ gen_root }
-    ) {
+    # see if there is already a root variable
+    my $gen_root = 1;
+    CONFIG_VAR:
+    foreach my $var ( @{ $child_output } ) {
+        $var =~ /^\s+(\S+)/;
+        my $var_name = $1;
+        if ( $var_name eq 'root' ) {
+            $gen_root = 0;
+            last CONFIG_VAR;
+        }
+    }
+
+    # if no root, make one no questions asked
+    if ( $gen_root ) {
         my $templates = File::Spec->catdir( qw( html templates ) );
 
         if ( $data->{ conf_type } =~ /^CGI|CGI$/ ) {
@@ -835,7 +846,6 @@ Tells tentmaker that I understand these config section backend block keywords:
         fast_cgi
         with_server
         server_port
-        gen_root
         flex_db
         gantry_conf
         template

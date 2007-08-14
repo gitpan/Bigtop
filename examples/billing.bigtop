@@ -2,19 +2,25 @@ config {
     engine          CGI;
     template_engine TT;
     Init            Std             {}
-    CGI             Gantry          { with_server 1; gen_root 1; flex_db 1; }
+    CGI             Gantry          {
+            with_server 1;
+            flex_db 1;
+            gantry_conf 1;
+    }
     SQL             Postgres        {}
     SQL             MySQL           {}
     SQL             SQLite          {}
     Control         Gantry          { dbix 1; }
     Model           GantryDBIxClass {}
     SiteLook        GantryDefault   {}
+    Conf            Gantry          { instance billing; gen_root 1; }
 }
 app Billing {
     authors `Phil Crow`, `Tim Keefer`;
     config {
-        dbconn           `dbi:SLQite:dbname=app.db` => no_accessor;
-        template_wrapper `genwrapper.tt`  => no_accessor;
+        dbconn              `dbi:SQLite:dbname=app.db` => no_accessor;
+        template_wrapper    `genwrapper.tt`            => no_accessor;
+        show_dev_navigation 1                          => no_accessor;
     }
     table    my_company      {
         foreign_display `%name`;
@@ -354,7 +360,7 @@ app Billing {
             cols             number, customer, status;
             header_options   Add;
             row_options
-                Tasks => `"/lineitem/main/$id"`, PDF, Edit, Delete;
+                Tasks => `"/lineitem/main"`, PDF, Edit, Delete;
         }
         method form is AutoCRUD_form {
             form_name        invoice;

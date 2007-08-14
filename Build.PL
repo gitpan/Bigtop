@@ -23,6 +23,7 @@ my $build = $subclass->new(
         'HTTP::Server::Simple' => 0.27, # for tentmaker
         'JSON'            => 0, # because gantry controllers will want it
         'File::HomeDir'   => 0, # bigtop defaults come from home dirs
+        'DBIx::Class'     => 0, # kickstarted apps assume you have this
     },
     build_requires      => {
         'Test'        => 0,

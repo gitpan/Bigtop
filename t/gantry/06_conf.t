@@ -39,13 +39,15 @@ Purge::real_purge_dir( $t_dir );
 
 $bigtop_string = << 'EO_correct_bigtop';
 config {
-    Conf General { gen_root 1; }
+    Conf General { }
 }
 app Apps::Checkbook {
     location `/app_base`;
     config {
         DB     app_db => no_accessor;
         DBName some_user;
+        two_word `Two Words`;
+        root `/my/very/own`;
     }
     literal Conf `hello shane`;
     controller PayeeOr {
@@ -69,7 +71,8 @@ Bigtop::Backend::Conf::General->gen_Conf( $base_dir, $tree );
 $correct_conf = <<'EO_CORRECT_CONF';
 DB app_db
 DBName some_user
-root html:html/templates
+two_word Two Words
+root /my/very/own
 hello shane
 
 <GantryLocation /app_base/payee>
@@ -91,7 +94,7 @@ Purge::real_purge_dir( $docs_dir );
 $bigtop_string = << 'EO_correct_bigtop';
 config {
     template_engine TT;
-    Conf Gantry { gen_root 1; instance happy; }
+    Conf Gantry { instance happy; }
     Control Gantry { }
 }
 app Apps::Checkbook {

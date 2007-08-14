@@ -46,8 +46,9 @@ my %select_map_for = (
 
 sub phone_type_display {
     my $self = shift;
-    return $select_map_for{ phone_type }{ $self->phone_type }
-           || $self->phone_type;
+    my $phone_type = $self->phone_type || '';
+    return $select_map_for{ phone_type }{ $phone_type }
+           || $phone_type;
 }
 
 

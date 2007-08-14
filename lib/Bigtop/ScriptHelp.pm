@@ -31,7 +31,7 @@ config {
     engine          MP20;
     template_engine TT;
     Init            Std             {}
-    Conf Gantry      { gen_root 1; conffile `$conf_file`; instance $app_name; }
+    Conf Gantry      { conffile `$conf_file`; instance $app_name; }
     HttpdConf Gantry { gantry_conf 1; }
     SQL             SQLite          {}
     SQL             Postgres        {}

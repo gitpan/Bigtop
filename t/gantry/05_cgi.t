@@ -31,7 +31,6 @@ config {
     template_engine TT;
     plugins `PluginA PluginB`;
     CGI Gantry {
-        gen_root 1;
         with_server 1;
     }
 }
@@ -319,6 +318,7 @@ my $cgi = Gantry::Engine::CGI->new( {
     config => {
         DB => 'app_db',
         DBName => 'some_user',
+        root => 'html:html/templates',
     },
     locations => {
         '/' => 'Apps::Checkbook',
