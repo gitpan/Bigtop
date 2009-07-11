@@ -474,6 +474,7 @@ BEGIN {
                 paged_conf
                 cols
                 col_labels
+                pseudo_cols
                 header_options
                 header_option_perms
                 authed_methods
@@ -502,6 +503,8 @@ BEGIN {
             qw(
                 label
                 searchable
+                pseudo_value
+                unique_name
                 html_form_type
                 html_form_optional
                 html_form_constraint
@@ -514,6 +517,7 @@ BEGIN {
                 html_form_options
                 html_form_foreign
                 html_form_onchange
+                html_form_fieldset
                 date_select_text
                 html_form_raw_html
             )
@@ -1022,7 +1026,7 @@ use warnings;
 [% IF wsdl %]
 use [% app_name %] qw(
     -PluginNamespace=[% package_name +%]
-    SOAP::RPC
+    SOAP::[% soap_style +%]
 );
 
 our @ISA = qw( [% app_name %] );
@@ -1232,9 +1236,9 @@ sub [% config %] {
         headings       => [
 [% FOREACH heading IN headings %]
 [% IF heading.simple %]
-            '[% heading.simple %]',
+            [% IF heading.simple.match( "'" ) %]q[[% heading.simple %]][% ELSE %]'[% heading.simple %]'[% END %],
 [% ELSIF heading.href %]
-            '<a href=' . [% heading.href.link %] . '>[% heading.href.text %]</a>',
+            '<a href=' . [% heading.href.link %] . [% IF heading.href.text.match( "'" ) %]q[>[% heading.href.text %]</a>][% ELSE %]'>[% heading.href.text %]</a>'[% END %],
 [% END %]
 [% END %]
         ],
@@ -1311,11 +1315,13 @@ sub [% config %] {
     my $schema  = $self->get_schema();
     my $results = $[% model %]->get_listing(
         {
-            schema   => $schema,
-            rows     => [% rows %],
-            where    => $search,[% IF order_by %]
-
-            order_by => '[% order_by %]',[% END +%]
+[% IF pseudo_cols.size > 0 %]
+            '+select'   => [[% FOREACH pseudo_col IN pseudo_cols %][% pseudo_col.field %][% UNLESS loop.last %] [% END %][% END %]],
+            '+as'       => [[% FOREACH pseudo_col IN pseudo_cols %]'[% pseudo_col.alias %]'[% UNLESS loop.last %] [% END %][% END %]],
+[% END %]
+            schema      => $schema,
+            rows        => [% rows %],
+            where       => $search,[% IF order_by %][% "\n" %]            order_by    => '[% order_by %]',[% END +%]
         }
     );
 
@@ -1330,10 +1336,13 @@ sub [% config %] {
     my $schema  = $self->get_schema();
     my $results = $[% model %]->get_listing(
         {
-            schema   => $schema,
-            rows     => [% rows %],
-            where    => $search,[% IF order_by %]
-            order_by => '[% order_by %]',[% END +%]
+[% IF pseudo_cols.size > 0 %]
+            '+select'   => [[% FOREACH pseudo_col IN pseudo_cols %][% pseudo_col.field %][% UNLESS loop.last %] [% END %][% END %]],
+            '+as'       => [[% FOREACH pseudo_col IN pseudo_cols %]'[% pseudo_col.alias %]'[% UNLESS loop.last %] [% END %][% END %]],
+[% END %]
+            schema      => $schema,
+            rows        => [% rows %],
+            where       => $search,[% IF order_by %][% "\n" %]            order_by    => '[% order_by %]',[% END +%]
         }
     );
 
@@ -1350,9 +1359,12 @@ sub [% config %] {
     my $schema = $self->get_schema();
     my @rows   = $[% model %]->get_listing(
         {
-            schema   => $schema,
-            where    => $search,[% IF order_by %]
-            order_by => '[% order_by %]',[% END +%]
+[% IF pseudo_cols.size > 0 %]
+            '+select'   => [[% FOREACH pseudo_col IN pseudo_cols %][% pseudo_col.field %][% UNLESS loop.last %] [% END %][% END %]],
+            '+as'       => [[% FOREACH pseudo_col IN pseudo_cols %]'[% pseudo_col.alias %]'[% UNLESS loop.last %] [% END %][% END %]],
+[% END %]
+            schema      => $schema,
+            where       => $search,[% IF order_by %][% "\n" %]            order_by    => '[% order_by %]',[% END +%]
         }
     );
 
@@ -1362,9 +1374,12 @@ sub [% config %] {
     my $schema = $self->get_schema();
     my @rows   = $[% model %]->get_listing(
         {
-            schema   => $schema,
-            where    => $search,[% IF order_by %]
-            order_by => '[% order_by %]',[% END +%]
+[% IF pseudo_cols.size > 0 %]
+            '+select'   => [[% FOREACH pseudo_col IN pseudo_cols %][% pseudo_col.field %][% UNLESS loop.last %] [% END %][% END %]],
+            '+as'       => [[% FOREACH pseudo_col IN pseudo_cols %]'[% pseudo_col.alias %]'[% UNLESS loop.last %] [% END %][% END %]],
+[% END %]
+            schema      => $schema,
+            where       => $search,[% IF order_by %][% "\n" %]            order_by    => '[% order_by %]',[% END +%]
         }
     );
 
@@ -1408,7 +1423,7 @@ sub [% config %] {
             rows            => $retval->{ rows },
         };
 
-        my $json = objToJson( $obj, { skipinvalid => 1 } );
+        my $json = to_json( $obj, { allow_blessed => 1 } );
         return( $json );
     }
 
@@ -1419,7 +1434,16 @@ sub [% config %] {
 [% arg_capture %]
 [%- IF dbix -%]
     my $selections = $[% model %]->get_form_selections(
-            { schema => $self->get_schema() }
+        {
+            schema          => $self->get_schema(),
+[% IF refers_to.size > 0 %]
+            foreign_tables  => {
+[% FOREACH rt_table IN refers_to %]
+                '[% rt_table %]' => 1,
+[% END %]
+            }
+[% END -%]
+        }
     );
 
 [%- ELSE -%]
@@ -1454,7 +1478,7 @@ sub [% config %] {
 [% END %]
                 ],
 [% ELSE %]
-                [% key %] => '[% field.$key %]',
+                [% key %] => [% IF field.$key.match( "'" ) %]q[[% field.$key %]][% ELSE %]'[% field.$key %]'[% END %],
 [% END %]
 [% END %]
             },
@@ -1623,7 +1647,53 @@ sub get_soap_ops {
 [% END %]
         ],
     };
-} # END get_description
+} # END get_soap_ops
+[% END %]
+[% BLOCK soap_doc_advice %]
+#-----------------------------------------------------------------
+# $self->[% handler_method %](  )
+#-----------------------------------------------------------------
+sub [% handler_method %] {
+[% arg_capture %]
+
+    my $params = $self->params();  # easy way
+
+[% FOREACH expected_param IN soap_params.expects %]
+    my $[% expected_param.name %] = $params->{ [% expected_param.name %] };
+[% END %]
+
+# hard way:
+#    my $xmlobj   = XML::LibXML->new();
+#    my $dom      = $xmlobj->parse_string( $self->get_post_body() )
+#            or return return_error( "Mal-formed XML request: $!" );
+#
+[% FOREACH expected_param IN soap_params.expects %]
+#    my ( $[% expected_param.name %]_node ) = $dom->getElementsByLocalName( '[% expected_param.name %]' );
+#    my $[% expected_param.name %]          = $[% expected_param.name %]_node->textContent;
+[% END %]
+
+[% FOREACH returned_param IN soap_params.returns %]
+    my $[% returned_param.name %];
+[% END %]
+
+    my $time = $self->soap_current_time();
+
+    my $ret_struct = [
+        {
+            GantrySoapServiceResponse => [
+[% FOREACH returned_param IN soap_params.returns %]
+                { [% returned_param.name %] => $[% returned_param.name %] },
+[% END %]
+            ]
+        }
+    ];
+
+    $self->soap_namespace_set(
+        'http://usegantry.org/soapservice'
+    );
+
+    return $self->soap_out( $ret_struct, 'internal', 'pretty' );
+} # END [% handler_method %]
 [% END %]
 EO_TT_blocks
 
@@ -2289,6 +2359,9 @@ sub output_controllers {
     my $stub_method_names = $output_hash->{stub_method_name};
     my $gen_method_names  = $output_hash->{gen_method_name};
     my $crud_doc_methods  = $output_hash->{crud_doc_methods};
+    my $soap_style        = _extract_soap_style(
+                                $output_hash->{ soap_style }
+                            );
 
     # gen_method_names is an array ref of names or undef if there are none
 
@@ -2319,7 +2392,7 @@ sub output_controllers {
         $gen_output_str   = "\n$gen_extra_use" . $gen_output_str;
     }
 
-    # deal with SOAP stubs
+    # deal with SOAP rpc stubs
     if ( defined $output_hash->{ extra_stub_method_name } ) {
         push @{ $stub_method_names },
              @{ $output_hash->{ extra_stub_method_name } };
@@ -2538,6 +2611,8 @@ sub output_controllers {
                 class_accessors   => $class_access,
                 pod               => $pod,
                 sub_modules       => $data->{sub_modules},
+                wsdl              => $wsdl,
+                soap_style        => $soap_style,
             }
         );
 
@@ -2561,6 +2636,7 @@ sub output_controllers {
                 export_array     => $export_array,
                 gen_pod          => $gen_pod,
                 wsdl             => $wsdl,
+                soap_style       => $soap_style,
                 plugins          => $plugins,
                 config_accessors => $config_accessors,
                 init_sub         => $init_sub,
@@ -2701,6 +2777,23 @@ sub _extract_output_from {
         $gen_output,
         \%all_output,
     );
+}
+
+sub _extract_soap_style {
+    my $soap_styles = shift;
+
+    return unless ref $soap_styles eq 'ARRAY';
+
+    my %soap_styles = map { $_ => 1 } @{ $soap_styles };
+
+    if ( keys %soap_styles > 1 ) {
+        die "Mixing SOAP styles is not supported by Bigtop.\n";
+    }
+    else {
+        return 'RPC' if defined $soap_styles{ 'SOAP' };
+        return 'Doc' if defined $soap_styles{ 'SOAPDoc' };
+        return undef;
+    }
 }
 
 sub output_nav_links {
@@ -3064,6 +3157,9 @@ sub output_controller {
     if ( $type eq 'stub' ) {
         $stub_method_name = $self->{__NAME__};
     }
+    elsif ( defined $child_output->{ stub_method_name } ) {
+        $stub_method_name = $child_output->{ stub_method_name };
+    }
 
     my $gen_method_name;
     if ( defined $child_output->{gen_output}
@@ -3106,7 +3202,7 @@ sub output_controller {
     }
 
     if ( $child_output->{stub_output} ) {
-        $output = Bigtop::Backend::Control::Gantry::gen_controller_method(
+        $output .= Bigtop::Backend::Control::Gantry::gen_controller_method(
             {
                 method_name  => $self->{__NAME__},
                 child_output => $child_output->{stub_output},
@@ -3181,6 +3277,9 @@ sub output_controller {
             gen_method_name  => $gen_method_name,
             extra_stub_method_name => $extra_stub_method,
             soap_params      => $child_output->{ soap_params },
+            soap_style       => ( $child_output->{ soap_params } )
+                             ? $type
+                             : undef,
             crud_doc_methods => $crud_doc_methods,
         ]
     ];
@@ -3448,6 +3547,7 @@ sub output_main_listing {
     # set up headings
     my @col_labels;
     my @cols;
+    my @pseudo_cols;
     my @foreigners;
     my %name_of;
 
@@ -3460,6 +3560,11 @@ sub output_main_listing {
 
     foreach my $col ( @{ $choices->{cols} } ) {
         my $field = get_field_for( $col, $fields, \%name_of );
+
+        # Push column onto pseudo_cols array if it's a requested pseudo column.
+        if ($fields->{$col}{pseudo_value}) {
+            push @pseudo_cols, { alias => $col, field => $fields->{$col}{pseudo_value}{args}[0] }
+        }
 
         # get the field's label
         my $label;
@@ -3498,6 +3603,12 @@ sub output_main_listing {
         else {
             push @cols, "\$row->$col";
         }
+    }
+
+    # Populate pseudo_cols array for any pseudo columns that weren't requested
+    # in $choices->{cols}.
+    foreach my $pseudo_col ( @{ $choices->{pseudo_cols} } ) {
+        push @pseudo_cols, { alias => $pseudo_col, field => $fields->{$pseudo_col}{pseudo_value}{args}[0] }
     }
 
     # put options in the heading bar
@@ -3562,16 +3673,17 @@ sub output_main_listing {
 
     my $main_table = Bigtop::Backend::Control::Gantry::main_table(
         {
-            model       => $data->{model_alias},
-            rows        => $rows,
-            data_cols   => \@cols,
-            row_options => $row_options,
-            dbix        => $self->is_dbix_class( $data ),
-            limit_by    => $limit_by,
-            foreigners  => \@foreigners,
-            livesearch  => $choices->{livesearch}[0],
-            order_by    => $order_by,
-            where_terms => \@where_terms,
+            model           => $data->{model_alias},
+            rows            => $rows,
+            data_cols       => \@cols,
+            pseudo_cols     => \@pseudo_cols,
+            row_options     => $row_options,
+            dbix            => $self->is_dbix_class( $data ),
+            limit_by        => $limit_by,
+            foreigners      => \@foreigners,
+            livesearch      => $choices->{livesearch}[0],
+            order_by        => $order_by,
+            where_terms     => \@where_terms,
         }
     );
 
@@ -3625,6 +3737,64 @@ sub output_SOAP {
         }
     );
 
+    my $soap_params = _extract_soap_params( $choices, $internal_method );
+
+    return [
+        extra_for_stub => {
+            name     => $internal_method,
+            full_sub => $extra_sub,
+        },
+        extra_comment_methods => $extra_comment_methods,
+        soap_params => $soap_params,
+        soap_style  => 'RPC',
+    ];
+}
+
+sub output_SOAPDoc {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+    my $choices      = { @{ $child_output } };
+
+    my $extra_comment_methods;
+    if ( not defined $data->{ WSDL_COMMENTS } ) {
+        $extra_comment_methods = [ qw( namespace get_soap_ops ) ],
+
+        $data->{ WSDL_COMMENTS } = 'done';
+    }
+
+    # set up args
+    my ( $arg_capture, @doc_args )
+            = _build_arg_capture( @{ $choices->{extra_args} } );
+
+    my $handler_method  = $self->get_method_name();
+    ( my $internal_method = $handler_method ) =~ s/^do_//;
+
+    my $soap_params = _extract_soap_params( $choices, $internal_method );
+
+    my $body_advice = Bigtop::Backend::Control::Gantry::soap_doc_advice(
+        {
+            arg_capture    => $arg_capture,
+            soap_params    => $soap_params,
+            handler_method => $handler_method,
+        }
+    );
+
+    return [
+        soap_style  => 'SOAPDoc',
+        extra_for_stub => {
+            name     => $handler_method,
+            full_sub => $body_advice,
+        },
+        soap_params => $soap_params,
+        extra_comment_methods => $extra_comment_methods,
+    ];
+}
+
+sub _extract_soap_params {
+    my $choices         = shift;
+    my $internal_method = shift;
+
     my %soap_params;
     $soap_params{ name } = $internal_method;
 
@@ -3652,14 +3822,7 @@ sub output_SOAP {
         }
     }
 
-    return [
-        extra_for_stub => {
-            name     => $internal_method,
-            full_sub => $extra_sub,
-        },
-        extra_comment_methods => $extra_comment_methods,
-        soap_params => \%soap_params,
-    ];
+    return \%soap_params;
 }
 
 # Given
@@ -3807,6 +3970,7 @@ sub _crud_form_outputer {
     }
 
     my @field_lookups;
+    my @refers_to;
     foreach my $field_name ( @{ $requested_fields } ) {
         my $field = get_field_for( $field_name, $fields, \%name_of );
 
@@ -3831,6 +3995,7 @@ sub _crud_form_outputer {
                     ( $clean_value ) = %{ $clean_value };
                 }
                 $clean_value =~ s/\./_/; # might have schema prefix
+                push( @refers_to, $clean_value );
                 $clean_value = '$selections->{' . $clean_value . '}';
             }
             # pull out all pairs
@@ -3865,6 +4030,7 @@ sub _crud_form_outputer {
             model      => $data->{model_alias},
             form_name  => $choices->{form_name}[0],
             fields     => \@field_lookups,
+            refers_to  => \@refers_to,
             extra_keys => \%extra_keys,
             raw_row    => $auto_crud,
             dbix       => $self->is_dbix_class( $data ),
@@ -3953,5 +4119,6 @@ sub output_links         { goto &walker_output; }
 
 sub output_SOAP          { goto &walker_output; }
 
+sub output_SOAPDoc       { goto &walker_output; }
 
 1;

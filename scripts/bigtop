@@ -64,7 +64,8 @@ else { # default, use a file
     if ( $create and defined $new_app_name ) {
         my $built_sqlite = build_sqlite( $new_app_name, $bigtop_dir );
 
-        print_instructions( $new_app_name, $bigtop_dir, $built_sqlite );
+        $script_help_style->print_instructions(
+            $new_app_name, $bigtop_dir, $built_sqlite );
     }
 }
 
@@ -155,7 +156,8 @@ sub make_new {
     if ( $made_tables ) {
         my $built_sqlite = build_sqlite( $new, $bigtop_dir );
 
-        print_instructions( $new, $bigtop_dir, $built_sqlite );
+        $script_help_style->print_instructions(
+            $new, $bigtop_dir, $built_sqlite );
     }
 }
 
@@ -212,7 +214,7 @@ sub build_sqlite {
     return $built_sqlite;
 }
 
-sub print_instructions {
+sub bprint_instructions {
     my $app_name     = shift;
     my $build_dir    = shift;
     my $built_sqlite = shift;
@@ -254,42 +256,14 @@ EO_Instructions
 }
 
 sub help_pg {
-    print << "EO_pg_help";
-
-From your build directory:
-
-    createdb app.db -U postgres
-    psql app.db -U regular_user < docs/schema.postgres
-    ./app.server --dbd=Pg --dbuser=regular_user --dppass='secret'
-
-Supply passwords as prompted when creating and building the database.
-You may abbreviate --dbd as -d, --dbuser as -u, and --dbpass as -p.
-
-If you change the name from app.db, supply --dbname (aka -n) to app.server.
-
-EO_pg_help
-
+    my $script_help_style = Bigtop::ScriptHelp::Style->get_style( $style );
+    $script_help_style->help_pg();
     exit 0;
 }
 
 sub help_mysql {
-    my $build_dir = shift;
-
-    print << "EO_mysql_help";
-For MySQL:
-
-    cd App-Dir
-    msyqladmin create app_db -u root -p
-    mysql -u root -p app_db < docs/schema.mysql
-    ./app.server --dbd=mysql --dbuser=regular_user \
-                 --dppass='secret' --dbname=app_db
-
-Supply passwords as prompted when creating and building the database.
-You may abbreviate --dbd as -d, --dbuser as -u, --dbpass as -p,
-and --dbname as -n.
-
-EO_mysql_help
-
+    my $script_help_style = Bigtop::ScriptHelp::Style->get_style( $style );
+    $script_help_style->help_mysql();
     exit 0;
 }
 
@@ -521,7 +495,7 @@ home directory etc., the script will not affect it.
 
 =item --style (or -s)
 
-Defaults to Original.  This can be the name of any Bigtop::ScriptHelp::Style::
+Defaults to Kickstart.  This can be the name of any Bigtop::ScriptHelp::Style::
 module.  These styles control how your command line args, and
 standard input, turn into bigtop descriptions.  See the docs for you
 style to see what input is legal and how it is treated.
@@ -551,16 +525,16 @@ reach that database.
 
 This section used to explain ASCII art, which was the original style of
 command line input.  Since then, that code has been factored out.
-The original style, or more precisely
-C<Bigtop::ScriptHelp::Style::Orginal> is still the default.  See
+The original style is now called the kickstart style, or more precisely
+C<Bigtop::ScriptHelp::Style::Kickstart> and is still the default.  See
 its docs for a description of ASCII art.
 
 You may explicitly choose the original style:
 
-    bigtop -n|-a -s Original 'ascii_art'
+    bigtop -n|-a -s Kickstart 'ascii_art'
 
-But, you may omit -s to get Original by default.  Further, you can
-replace Original with any module in the Bigtop::ScriptHelp::Style::
+But, you may omit -s to get Kickstart by default.  Further, you can
+replace Kickstart with any module in the Bigtop::ScriptHelp::Style::
 namespace.  For example:
 
     bigtop -n|-a -s Pg8Live 'dbi:Pg:dbname=yourdb' user pass [schema]

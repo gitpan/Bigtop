@@ -45,7 +45,7 @@ sub do_main {
             'Cleared',
             '<a href=' . $site->location() . '/date_order' . '>Date</a>',
             'Amount',
-            'Paid To/Rec\'v\'d From',
+            q[Paid To/Rec'v'd From],
         ],
     };
 
@@ -132,7 +132,7 @@ sub do_main {
             rows            => $retval->{ rows },
         };
 
-        my $json = objToJson( $obj, { skipinvalid => 1 } );
+        my $json = to_json( $obj, { allow_blessed => 1 } );
         return( $json );
     }
 
@@ -189,7 +189,7 @@ sub form {
             {
                 options => $selections->{payee},
                 name => 'payee_payor',
-                label => 'Paid To/Rec\'v\'d From',
+                label => q[Paid To/Rec'v'd From],
                 type => 'select',
                 is => 'int',
             },

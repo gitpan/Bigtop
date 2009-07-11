@@ -22,7 +22,7 @@ BEGIN {
     $skip_all = ( $@ ) ? 1 : 0;
 
     SKIP: {
-        skip "tentmaker requires Gantry", 22 if $skip_all;
+        skip "tentmaker requires Gantry", 28 if $skip_all;
     }
     exit 0 if $skip_all;
 }

@@ -295,7 +295,7 @@ This statement is virtually required.
 Location of this controller relative to app location
 [non-base controllers must have location or rel_location.]
 
-Applies to controllers of type: AutoCRUD, CRUD, SOAP, and stub.
+Applies to controllers of type: AutoCRUD, CRUD, SOAP, SOAPDoc, and stub.
 
 
 This statement is virtually required.
@@ -418,7 +418,7 @@ This field is boolean, use 1 for true or 0 for false.
 
 Base of all WSDL names
 
-Applies to controllers of type: SOAP.
+Applies to controllers of type: SOAP and SOAPDoc.
 
 
 This statement is required.
@@ -427,7 +427,7 @@ This statement is required.
 
 Base URL of WSDL namespace including domain
 
-Applies to controllers of type: SOAP.
+Applies to controllers of type: SOAP and SOAPDoc.
 
 
 This statement is required.
@@ -509,6 +509,20 @@ DBIx::Class alternate accessor name for this column
 
 You may supply a comma separated list of values for
 accessor statements.
+
+=item add_columns
+
+DBIx::Class alternate column addition
+
+
+All values for add_columns statements must be pairs like:
+
+    name => its_value
+
+where C<name> is a key and C<its_value> is a value.
+
+You may supply a comma separated list of values for
+add_columns statements.
 
 =item refers_to
 
@@ -672,6 +686,11 @@ Name of Javascript function to call on change
 Applies only to fields of type select.
 
 
+=item html_form_fieldset
+
+Name of fieldset to group this field into
+
+
 =item date_select_text
 
 link text for date popup window
@@ -690,6 +709,16 @@ Tells modeler: retrieve only when accessed
 
 
 This field is boolean, use 1 for true or 0 for false.
+
+
+=item pseudo_value
+
+This is the definition for a pseudo field. By defining it, you're declaring the field as a pseudo field
+
+
+=item unique_name
+
+Declare this field as unique, and use the value for the constraint name
 
 
 =back
@@ -809,6 +838,18 @@ Applies to methods of type: main_listing.
 
 You may supply a comma separated list of values for
 col_labels statements.
+
+=item pseudo_cols
+
+Pseudo Fields to include in main_listing
+
+Applies to methods of type: main_listing.
+
+
+You may supply a comma separated list of values for
+pseudo_cols statements.
+
+This statement is virtually required.
 
 =item livesearch
 
@@ -1028,7 +1069,7 @@ Applies to methods of type: AutoCRUD_form and CRUD_form.
 
 Things your SOAP method receives
 
-Applies to methods of type: SOAP.
+Applies to methods of type: SOAP and SOAPDoc.
 
 
 Values for expects statements may be individual values
@@ -1047,7 +1088,7 @@ This statement is required.
 
 Things your SOAP method returns
 
-Applies to methods of type: SOAP.
+Applies to methods of type: SOAP and SOAPDoc.
 
 
 Values for returns statements may be individual values
@@ -1154,7 +1195,7 @@ You may use multiple data statements.
 
 =head1 AUTHOR
 
-The skip/podsyntax script generated this file Tue Aug 14 17:16:34 2007.
+The skip/podsyntax script generated this file Sat Jul 11 10:16:26 2009.
 The script was written by Phil Crow E<lt>crow.phil\@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

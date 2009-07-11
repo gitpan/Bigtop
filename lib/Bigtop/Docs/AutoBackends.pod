@@ -468,6 +468,10 @@ Defaults to Gantry::Utils::DBIxClass
 
 A custom TT template.
 
+=item extra_components
+
+Things other than PK::Auto and Core to load. Separate multiples with spaces.
+
 =back
 
 =back
@@ -475,6 +479,34 @@ A custom TT template.
 =head2 SQL
 
 =over 4
+
+=item DB2
+
+This SQL DB2 makes the following:
+
+=over 4
+
+=item docs/schema.db2
+
+SQL for DB2 database creation
+
+=back
+
+This backend understands these config block keywords:
+
+=over 4
+
+=item no_gen
+
+This statement takes a boolean value use 0 or 1.
+
+Skip everything for this backend
+
+=item template
+
+A custom TT template.
+
+=back
 
 =item MySQL
 
@@ -598,7 +630,7 @@ Path to sample_wrapper.tt in the Gantry distribution [defaults to ./html]
 
 =head1 AUTHOR
 
-The skip/backends script generated this file Tue Aug 14 17:16:34 2007.
+The skip/backends script generated this file Sat Jul 11 10:16:26 2009.
 The script was written by Phil Crow E<lt>crow.phil@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

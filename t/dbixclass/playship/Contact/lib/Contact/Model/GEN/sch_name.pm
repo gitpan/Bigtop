@@ -3,7 +3,7 @@
 package Contact::Model::sch_name;
 use strict; use warnings;
 
-__PACKAGE__->load_components( qw/ PK::Auto Core / );
+__PACKAGE__->load_components( qw/ InflateColumn::DateTime Core / );
 __PACKAGE__->table( 'sch.name' );
 __PACKAGE__->add_columns( qw/
     id

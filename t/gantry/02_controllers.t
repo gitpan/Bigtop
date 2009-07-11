@@ -34,7 +34,7 @@ SKIP: {
     eval { require Gantry::Plugins::AutoCRUD; };
     my $skip_all = ( $@ ) ? 1 : 0;
 
-    skip "Gantry::Plugins::AutoCRUD not installed", 3 if $skip_all;
+    skip "Gantry::Plugins::AutoCRUD not installed", 4 if $skip_all;
 
 #------------------------------------------------------------------------
 # Comprehensive test of controller generation for Gantry
@@ -114,7 +114,7 @@ app Apps::Checkbook {
         field payee_payor {
             is                     int; 
             refers_to              payee;
-            label                  `Paid To/Rec\\'v\\'d From`;
+            label                  `Paid To/Rec'v'd From`;
             html_form_type         select;
         }
         field descr {
@@ -382,7 +382,7 @@ app Apps::Checkbook {
         field payee_payor {
             is                     int; 
             refers_to              payee;
-            label                  `Paid To/Rec\\'v\\'d From`;
+            label                  `Paid To/Rec'v'd From`;
             html_form_type         select;
         }
         field descr {

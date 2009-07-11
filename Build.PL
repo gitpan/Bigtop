@@ -34,7 +34,7 @@ my $build = $subclass->new(
     script_files        => [ glob( 'scripts/*' ) ],
     tentmaker_files     => [ glob( 'tenttemplates/*' ) ],
     test_files          => [
-#        't/gantry/07_base_cont.t',
+#        't/dbixclass/01_dbixclass.t',
         't/*.t',
         't/scripthelp/*.t',
         't/bigtop/*.t',
@@ -43,6 +43,7 @@ my $build = $subclass->new(
         't/postgres/*.t',
         't/sqlite/*.t',
         't/mysql/*.t',
+        't/db2/*.t',
         't/gantry/*.t',
         't/sitelook/*.t',
         't/dbixclass/*.t',
@@ -56,31 +57,39 @@ my $try_for_tentmaker = ( $@ ) ? 0 : 1;
 
 if ( $try_for_tentmaker ) {
 
-    my $default_template_path = '/usr/local/share/TentMaker';
+    my $default_template_path = $ENV{'TENTMAKER_TEMPLATE_PATH'} || '/usr/local/share/TentMaker';
 
     eval {
         require Bigtop::TentMakerPath;
         $default_template_path = Bigtop::TentMakerPath->get_template_path;
     };
 
-    print "\n\nBigtop has an editor called tentmaker.  It allows\n";
-    print "you to edit bigtop files with a DOM compatible browser\n";
-    print "(like Firefox).  tentmaker requires some templates.\n\n";
+    my $install_tentmaker = 'y';
+    if (! $ENV{'TENTMAKER_TEMPLATE_PATH'}) {
+        print "\n\nBigtop has an editor called tentmaker.  It allows\n";
+        print "you to edit bigtop files with a DOM compatible browser\n";
+        print "(like Firefox).  tentmaker requires some templates.\n\n";
 
-    my $install_tentmaker = $build->y_n(
+        my $install_tentmaker = $build->y_n(
             "Do you want to install the tentmaker templates?",
             'y'
-    );
+        );
+    }
+    
     $build->notes( install_tentmaker => $install_tentmaker );
 
     if ( $install_tentmaker ) {
-        print "\n\nTentMaker needs to store some templates on your system.\n";
-        print "Please choose a location for them.\n\n";
+        my $tentmaker_template_path = $default_template_path;
+        if (! $ENV{'TENTMAKER_TEMPLATE_PATH'}) {
+            print "\n\nTentMaker needs to store some templates on your system.\n";
+            print "Please choose a location for them.\n\n";
 
-        my $tentmaker_template_path = $build->prompt(
-            "Path for TentMaker templates",
-            $default_template_path,
-        );
+            $tentmaker_template_path = $build->prompt(
+                "Path for TentMaker templates",
+                $default_template_path,
+            );
+        }
+        
         $build->notes( tentmaker_template_path => $tentmaker_template_path );
 
         # Write a module which tentmaker can use to find its templates.

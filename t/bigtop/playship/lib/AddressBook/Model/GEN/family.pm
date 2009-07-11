@@ -15,7 +15,7 @@ __PACKAGE__->add_columns( qw/
 / );
 __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->base_model( 'AddressBook::Model' );
-__PACKAGE__->has_many( childs => 'AddressBook::Model::child' );
+__PACKAGE__->has_many( childs => 'AddressBook::Model::child', 'family' );
 
 sub get_foreign_display_fields {
     return [ qw( name ) ];

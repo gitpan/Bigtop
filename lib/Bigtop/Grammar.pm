@@ -11727,7 +11727,7 @@ sub Parse::RecDescent::Bigtop::Grammar::sql_block
 	while (!$_matched && !$commit)
 	{
 		
-		Parse::RecDescent::_trace(q{Trying production: ['join_table' <commit> IDENT '\{' join_table_body '\}']},
+		Parse::RecDescent::_trace(q{Trying production: ['join_table' <commit> table_ident '\{' join_table_body '\}']},
 					  Parse::RecDescent::_tracefirst($_[1]),
 					  q{sql_block},
 					  $tracelevel)
@@ -11791,17 +11791,17 @@ sub Parse::RecDescent::Bigtop::Grammar::sql_block
 		push @item, $item{__DIRECTIVE1__}=$_tok;
 		
 
-		Parse::RecDescent::_trace(q{Trying subrule: [IDENT]},
+		Parse::RecDescent::_trace(q{Trying subrule: [table_ident]},
 				  Parse::RecDescent::_tracefirst($text),
 				  q{sql_block},
 				  $tracelevel)
 					if defined $::RD_TRACE;
 		if (1) { no strict qw{refs};
-		$expectation->is(q{IDENT})->at($text);
-		unless (defined ($_tok = Parse::RecDescent::Bigtop::Grammar::IDENT($thisparser,$text,$repeating,$_noactions,sub { \@arg })))
+		$expectation->is(q{table_ident})->at($text);
+		unless (defined ($_tok = Parse::RecDescent::Bigtop::Grammar::table_ident($thisparser,$text,$repeating,$_noactions,sub { \@arg })))
 		{
 			
-			Parse::RecDescent::_trace(q{<<Didn't match subrule: [IDENT]>>},
+			Parse::RecDescent::_trace(q{<<Didn't match subrule: [table_ident]>>},
 						  Parse::RecDescent::_tracefirst($text),
 						  q{sql_block},
 						  $tracelevel)
@@ -11809,14 +11809,14 @@ sub Parse::RecDescent::Bigtop::Grammar::sql_block
 			$expectation->failed();
 			last;
 		}
-		Parse::RecDescent::_trace(q{>>Matched subrule: [IDENT]<< (return value: [}
+		Parse::RecDescent::_trace(q{>>Matched subrule: [table_ident]<< (return value: [}
 					. $_tok . q{]},
 					  
 					  Parse::RecDescent::_tracefirst($text),
 					  q{sql_block},
 					  $tracelevel)
 						if defined $::RD_TRACE;
-		$item{q{IDENT}} = $_tok;
+		$item{q{table_ident}} = $_tok;
 		push @item, $_tok;
 		
 		}
@@ -11911,7 +11911,7 @@ sub Parse::RecDescent::Bigtop::Grammar::sql_block
 		$_tok = ($_noactions) ? 0 : do {
                 bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
-                            __NAME__  => $item{IDENT},
+                            __NAME__  => $item{table_ident},
                             __BODY__  => $item{join_table_body}
                                               {'join_table_statement(s?)'},
                 }, 'join_table'
@@ -11931,7 +11931,7 @@ sub Parse::RecDescent::Bigtop::Grammar::sql_block
 		
 
 
-		Parse::RecDescent::_trace(q{>>Matched production: ['join_table' <commit> IDENT '\{' join_table_body '\}']<<},
+		Parse::RecDescent::_trace(q{>>Matched production: ['join_table' <commit> table_ident '\{' join_table_body '\}']<<},
 					  Parse::RecDescent::_tracefirst($text),
 					  q{sql_block},
 					  $tracelevel)
@@ -15534,8 +15534,8 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                    'table_ident',
                                                                    'sequence_body',
                                                                    'table_body',
-                                                                   'IDENT',
-                                                                   'join_table_body'
+                                                                   'join_table_body',
+                                                                   'IDENT'
                                                                  ],
                                                       'changed' => 0,
                                                       'opcount' => 0,
@@ -15704,7 +15704,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'code' => '$commit = 1'
                                                                                                 }, 'Parse::RecDescent::Directive' ),
                                                                                          bless( {
-                                                                                                  'subrule' => 'IDENT',
+                                                                                                  'subrule' => 'table_ident',
                                                                                                   'matchrule' => 0,
                                                                                                   'implicit' => undef,
                                                                                                   'argcode' => undef,
@@ -15740,7 +15740,7 @@ package Bigtop::Grammar; sub new { my $self = bless( {
                                                                                                   'code' => '{
                 bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
-                            __NAME__  => $item{IDENT},
+                            __NAME__  => $item{table_ident},
                             __BODY__  => $item{join_table_body}
                                               {\'join_table_statement(s?)\'},
                 }, \'join_table\'

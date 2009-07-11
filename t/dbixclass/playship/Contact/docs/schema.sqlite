@@ -8,7 +8,9 @@ CREATE TABLE number (
 CREATE TABLE bday (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     contact INTEGER,
-    bday date
+    bday date,
+    anniversary date,
+    known_since date
 );
 
 CREATE TABLE tshirt (

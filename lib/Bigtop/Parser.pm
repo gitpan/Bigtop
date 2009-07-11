@@ -340,7 +340,22 @@ sub gen_from_string {
     my $build_dir = _build_app_home_dir( $bigtop_tree, $create );
 
     # make sure we are in the right place
-    _validate_build_dir( $build_dir, $bigtop_tree, $create );
+    # if there are init backends, ask the first one to verify build dir
+    if ( $config->{__BACKENDS__}{ Init } ) {
+        my $module = join '::', (
+            'Bigtop',
+            'Backend',
+            'Init',
+            $config->{__BACKENDS__}{ Init }[0]{__NAME__}
+        );
+        $module->validate_build_dir( $build_dir, $bigtop_tree, $create );
+    }
+    else {
+        my $init_str = 'Init=Std';
+        $class->import( $init_str );
+        my $init_pack = 'Bigtop::Backend::Init::Std';
+        $init_pack->validate_build_dir( $build_dir, $bigtop_tree, $create );
+    }
 
     # replace all with a list of all available backends
     my @gen_list;
@@ -393,8 +408,12 @@ sub load_backends {
     my @build_types;
     my %seen_build_type;
 
-    foreach my $backend_type ( keys %{ $config->{__BACKENDS__} } ) {
-
+    my $saw_init = 0;
+    BACKEND:
+    foreach my $backend_statement ( @{ $config->{__STATEMENTS__} } ) {
+        my $backend_type = $backend_statement->[0];
+        next BACKEND unless $config->{__BACKENDS__}{$backend_type};
+        $saw_init = 1 if $backend_type eq 'Init';
         foreach my $backend ( @{ $config->{__BACKENDS__}{$backend_type} } ) {
             my $backend_name = $backend->{__NAME__};
             my $template     = $backend->{template} || '';
@@ -408,6 +427,8 @@ sub load_backends {
     }
 
     $class->import( @modules_to_require );
+
+    push @build_types, 'Init' if $saw_init;
 
     return \@build_types;
 }
@@ -476,58 +497,6 @@ sub _form_build_dir {
     }
 
     return File::Spec->catdir( $base_dir, $app_dir );
-}
-
-sub _validate_build_dir {
-    my $build_dir  = shift;
-    my $tree       = shift;
-    my $create     = shift;
-
-    my $warning_signs = 0;
-    if ( -d $build_dir ) {
-        unless ( $create ) {
-            # see if there are familiar surroundings in the build_dir
-            my $buildpl = File::Spec->catfile( $build_dir, 'Build.PL' );
-            my $changes = File::Spec->catfile( $build_dir, 'Changes'  );
-            my $t       = File::Spec->catdir(  $build_dir, 't'        );
-            my $lib     = File::Spec->catdir(  $build_dir, 'lib'      );
-
-            $warning_signs++ unless ( -f $buildpl );
-            $warning_signs++ unless ( -f $changes );
-            $warning_signs++ unless ( -d $t       );
-            $warning_signs++ unless ( -d $lib     );
-
-            # dig deep for the main module
-            my $app_name   = $tree->get_appname();
-            my @mod_pieces = split /::/, $app_name;
-            my $main_mod   = pop @mod_pieces;
-            $main_mod      .= '.pm';
-
-            my $saw_base   = 0;
-            my $wanted     = sub {
-                $saw_base++ if ( $_ eq $main_mod );
-            };
-
-            find( $wanted, $build_dir );
-
-            $warning_signs++ unless ( $saw_base );
-        }
-    }
-    else {
-        die "$build_dir does not exist, and I couldn't make it.\n";
-    }
-
-    if ( $warning_signs > 2 ) {
-        my $base_dir          = $tree->{configuration}{base_dir} || '.';
-        my $config_build_dir  = $base_dir;
-        if ( $tree->{configuration}{app_dir} ) {
-            $config_build_dir = File::Spec->catdir(
-                $base_dir, $tree->{configuration}{app_dir}
-            );
-        }
-        die "$build_dir doesn't look like a build dir (level=$warning_signs),\n"
-          . "  use --create to force a build in or under $config_build_dir\n";
-    }
 }
 
 sub _purge_inline {
@@ -634,6 +603,80 @@ sub dumpme {
     use Data::Dumper; warn Dumper( $self );
 
     $self->{__PARENT__} = $parent;
+}
+
+sub find_primary_key {
+    my $self   = shift;
+    my $table  = shift;
+    my $lookup = shift;
+
+    my $fields = $lookup->{ tables }{ $table }{ fields };
+
+    my @primaries;
+
+    FIELD:
+    foreach my $field_name ( keys %{ $fields } ) {
+
+        my $field = $fields->{$field_name};
+
+        foreach my $statement_keyword ( keys %{ $field } ) {
+
+            next unless $statement_keyword eq 'is';
+
+            my $statement = $field->{ $statement_keyword };
+
+            foreach my $arg ( @{ $statement->{args} } ) {
+                if ( $arg eq 'primary_key' ) {
+                    push @primaries, $field_name;
+                }
+            } # end of foreach argument
+        } # end of foreach statement
+    } # end of foreach field
+
+    if ( @primaries > 1 ) {
+        return \@primaries;
+    }
+    elsif ( @primaries == 1 ) {
+        return $primaries[0];
+    }
+    else {
+        return;
+    }
+}
+
+sub find_unique_name {
+    my $self   = shift;
+    my $table  = shift;
+    my $lookup = shift;
+
+    my $fields = $lookup->{ tables }{ $table }{ fields };
+
+    my $uniques;
+
+    FIELD:
+    foreach my $field_name ( keys %{ $fields } ) {
+
+        my $field = $fields->{$field_name};
+
+        foreach my $statement_keyword ( keys %{ $field } ) {
+
+            next unless $statement_keyword eq 'unique_name';
+
+            my $statement = $field->{ $statement_keyword };
+
+            my $constraint_name = $statement->{args}[0];
+
+            push( @{$uniques->{$constraint_name}}, $field_name );
+        } # end of foreach statement
+    } # end of foreach field
+
+    if ( scalar(keys %{$uniques}) > 0 ) {
+        return $uniques;
+    }
+
+    else {
+        return;
+    }
 }
 
 package # bigtop_file
@@ -2330,45 +2373,6 @@ sub set_name {
     # update lookup hash?
 }
 
-sub find_primary_key {
-    my $self   = shift;
-    my $table  = shift;
-    my $lookup = shift;
-
-    my $fields = $lookup->{ tables }{ $table }{ fields };
-
-    my @primaries;
-
-    FIELD:
-    foreach my $field_name ( keys %{ $fields } ) {
-
-        my $field = $fields->{$field_name};
-
-        foreach my $statement_keyword ( keys %{ $field } ) {
-
-            next unless $statement_keyword eq 'is';
-
-            my $statement = $field->{ $statement_keyword };
-
-            foreach my $arg ( @{ $statement->{args} } ) {
-                if ( $arg eq 'primary_key' ) {
-                    push @primaries, $field_name;
-                }
-            } # end of foreach argument
-        } # end of foreach statement
-    } # end of foreach field
-
-    if ( @primaries > 1 ) {
-        return \@primaries;
-    }
-    elsif ( @primaries == 1 ) {
-        return $primaries[0];
-    }
-    else {
-        return;
-    }
-}
-
 sub show_idents {
     my $self = shift;
     my $child_output = shift;
@@ -3637,11 +3641,13 @@ sub build_lookup_hash {
     while ( my $output_type = shift @{ $child_output } ) {
         my $hash = shift @{ $child_output };
 
-        if ( defined $child_hash{ $output_type } ) {
-            die "join_table $self->{__NAME__} has multiple "
-                .   "$output_type statement.\n";
+        if ( $output_type ne 'data' ) {
+            if ( defined $child_hash{ $output_type } ) {
+                die "join_table $self->{__NAME__} has multiple "
+                    .   "$output_type statement.\n";
+            }
+            $child_hash{ $output_type } = $hash;
         }
-        $child_hash{ $output_type } = $hash;
     }
 
     if ( not defined $child_hash{ joins } ) {

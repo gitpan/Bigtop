@@ -338,6 +338,51 @@
     
     
     <tr>
+        <td> pseudo_cols </td>
+        <td>
+
+            
+            
+
+    
+        
+        
+        <input type='text'
+            name='ident_9::pseudo_cols'
+            value=''
+            class='urgency_5'
+            onblur='javascript:update_multivalue(
+                "method_statement_text",
+                "ident_9::pseudo_cols",
+                this
+            )'
+        />
+        <br />
+        
+        <input type='text'
+            name='ident_9::pseudo_cols'
+            value=''
+            class='urgency_5'
+            onblur='javascript:update_multivalue(
+                "method_statement_text",
+                "ident_9::pseudo_cols",
+                this
+            )'
+        />
+        
+        
+    
+
+
+        </td>
+        <td>
+            Pseudo Fields to include in main_listing
+        </td>
+    </tr>
+  
+    
+    
+    <tr>
         <td> livesearch </td>
         <td>
 

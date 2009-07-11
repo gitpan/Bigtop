@@ -14,7 +14,7 @@ BEGIN {
     $skip_all = ( $@ ) ? 1 : 0;
 
     SKIP: {
-        skip "tentmaker requires Gantry", 4 if $skip_all;
+        skip "tentmaker requires Gantry", 2 if $skip_all;
     }
     exit 0 if $skip_all;
 }

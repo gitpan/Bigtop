@@ -9,6 +9,17 @@ use File::Find;
 use lib 't';
 use Purge;
 
+my $skip_all = 0;
+BEGIN {
+    eval { require Gantry; };
+    $skip_all = ( $@ ) ? 1 : 0;
+
+    SKIP: {
+        skip "tentmaker requires Gantry", 3 if $skip_all;
+    }
+    exit 0 if $skip_all;
+}
+
 use Bigtop::Parser qw/Model=GantryDBIxClass Control=Gantry/;
 
 #$::RD_TRACE = 1;
@@ -30,7 +41,9 @@ config {
     engine          MP20;
     template_engine TT;
     app_dir         ``;
-    Model           GantryDBIxClass { }
+    Model           GantryDBIxClass {
+        extra_components `InflateColumn::DateTime`;
+    }
     Control         Gantry { dbix 1; full_use 1; }
     SQL             Postgres { }
     SQL             MySQL    { }
@@ -79,6 +92,16 @@ app Contact {
             label            `Birth Day`;
             html_form_type   text;
             accessor         bday_acc;
+        }
+        field anniversary {
+            is             date;
+            label          `Anniversary`;
+            html_form_type text;
+            add_columns    `data_type` => `datetime`;
+        }
+        field known_since {
+            is date;
+            add_columns data_type => datetime;
         }
     }
     table tshirt {

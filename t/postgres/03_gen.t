@@ -40,7 +40,7 @@ app Apps::Checkbook {
         field not_much { is varchar; }
     }
     table other {
-        field id       { is int4, primary_key; }
+        field id_col   { is int4, primary_key; }
         field bday     { is datetime; }
     }
     join_table payeeor_other {
@@ -71,14 +71,14 @@ INSERT INTO payeepayor ( id, name )
 
 CREATE INDEX payor_name_ind ON payeepayor ( name );
 CREATE TABLE other (
-    id int4 PRIMARY KEY,
+    id_col int4 PRIMARY KEY,
     bday TIMESTAMP WITH TIME ZONE
 );
 
 CREATE TABLE payeeor_other (
     id SERIAL PRIMARY KEY,
-    payeepayor int4,
-    other int4
+    payeepayor int4 REFERENCES payeepayor(id),
+    other int4 REFERENCES other(id_col)
 );
 EO_CORRECT_SQL
 

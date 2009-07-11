@@ -98,9 +98,9 @@ sub do_main {
     my $schema  = $self->get_schema();
     my $results = $NUMBER->get_listing(
         {
-            schema   => $schema,
-            rows     => 25,
-            where    => $search,
+            schema      => $schema,
+            rows        => 25,
+            where       => $search,
         }
     );
 
@@ -134,7 +134,7 @@ sub do_main {
             rows            => $retval->{ rows },
         };
 
-        my $json = objToJson( $obj, { skipinvalid => 1 } );
+        my $json = to_json( $obj, { allow_blessed => 1 } );
         return( $json );
     }
 
@@ -148,7 +148,9 @@ sub form {
     my ( $self, $row ) = @_;
 
     my $selections = $NUMBER->get_form_selections(
-            { schema => $self->get_schema() }
+        {
+            schema          => $self->get_schema(),
+        }
     );
 
     return {

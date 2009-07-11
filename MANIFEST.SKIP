@@ -16,6 +16,9 @@
 \bBuild$
 \b_build
 
+# Avoid distros
+\bBigtop-.*gz$
+
 # Avoid temp and backup files.
 ~$
 \.tmp$
@@ -32,3 +35,5 @@ _Inline
 skip
 ^notes
 ^play
+^examples
+^simple

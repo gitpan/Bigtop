@@ -226,10 +226,10 @@ sql_block : 'sequence' <commit> table_ident  '{' sequence_body   '}' {
                                               {'table_element_block(s?)'},
                 }, 'table_block'
             }
-          | 'join_table' <commit> IDENT      '{' join_table_body '}' {
+          | 'join_table' <commit> table_ident '{' join_table_body '}' {
                 bless {
                             __IDENT__ => Bigtop::Parser->get_ident(),
-                            __NAME__  => $item{IDENT},
+                            __NAME__  => $item{table_ident},
                             __BODY__  => $item{join_table_body}
                                               {'join_table_statement(s?)'},
                 }, 'join_table'

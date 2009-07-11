@@ -9,7 +9,9 @@ CREATE TABLE number (
 CREATE TABLE bday (
     id SERIAL PRIMARY KEY,
     contact int4,
-    bday date
+    bday date,
+    anniversary date,
+    known_since date
 );
 
 CREATE TABLE tshirt (
@@ -25,13 +27,13 @@ CREATE TABLE color (
 
 CREATE TABLE tshirt_color (
     id SERIAL PRIMARY KEY,
-    tshirt int4,
-    color int4
+    tshirt int4 REFERENCES tshirt(id),
+    color int4 REFERENCES color(id)
 );
 CREATE TABLE tshirt_author (
     id SERIAL PRIMARY KEY,
-    tshirt int4,
-    author int4
+    tshirt int4 REFERENCES tshirt(id),
+    author int4 REFERENCES author(id)
 );
 CREATE TABLE author (
     id SERIAL PRIMARY KEY,
@@ -45,8 +47,8 @@ CREATE TABLE book (
 
 CREATE TABLE author_book (
     id SERIAL PRIMARY KEY,
-    author int4,
-    book int4,
+    author int4 REFERENCES author(id),
+    book int4 REFERENCES book(id),
     extra_field varchar,
     second_extra boolean
 );

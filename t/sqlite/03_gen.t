@@ -44,6 +44,8 @@ app Apps::Checkbook {
     }
     join_table payeeor_other {
         joins payeepayor => other;
+        data payeepayor => 1, other => 1;
+        data payeepayor => 2, other => 2;
     }
 }
 EO_Bigtop_STRING
@@ -78,6 +80,13 @@ CREATE TABLE payeeor_other (
     payeepayor INTEGER,
     other INTEGER
 );
+
+INSERT INTO payeeor_other ( payeepayor, other )
+    VALUES ( 1, 1 );
+
+INSERT INTO payeeor_other ( payeepayor, other )
+    VALUES ( 2, 2 );
+
 EO_CORRECT_SQL
 
 file_ok( $sql_file, $correct_sql, 'tiny gened sql file' );

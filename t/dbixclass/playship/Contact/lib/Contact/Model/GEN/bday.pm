@@ -3,14 +3,22 @@
 package Contact::Model::bday;
 use strict; use warnings;
 
-__PACKAGE__->load_components( qw/ PK::Auto Core / );
+__PACKAGE__->load_components( qw/ InflateColumn::DateTime Core / );
 __PACKAGE__->table( 'bday' );
 __PACKAGE__->add_columns( qw/
     id
     contact
 / );
 __PACKAGE__->add_columns(
-    bday => { accessor => 'bday_acc' },
+    bday => { accessor => 'bday_acc', },
+);
+__PACKAGE__->add_columns(
+    anniversary => {
+        data_type => 'datetime',
+    },
+    known_since => {
+        data_type => 'datetime',
+    },
 );
 __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->belongs_to( contact => 'Contact::Model::number' );

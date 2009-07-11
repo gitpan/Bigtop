@@ -284,6 +284,17 @@ my %doc_for = (
             urgency   => 0,
             sort_order => 35,
         },
+        add_columns => {
+            keyword   => 'add_columns',
+            label     => 'Custom add_columns',
+            descr     => 'DBIx::Class alternate column addition',
+            type      => 'pair',
+            pair_labels => [ 'Key', 'Value' ],
+            pair_required => 1,
+            multiple  => 1,
+            urgency   => 0,
+            sort_order => 36,
+        },
         refers_to => {
             keyword       => 'refers_to',
             label         => 'Foreign Key Table',
@@ -447,6 +458,14 @@ my %doc_for = (
             multiple   => 0,
             sort_order => 146,
         },
+        html_form_fieldset => {
+            keyword    => 'html_form_fieldset',
+            label      => 'Fieldset',
+            descr      => 'Name of fieldset to group this field into',
+            type       => 'text',
+            multiple   => 0,
+            sort_order => 147,
+        },
         date_select_text => {
             keyword    => 'date_select_text',
             label      => 'Date Popup Link Text',
@@ -472,6 +491,20 @@ my %doc_for = (
             type     => 'boolean',
             sort_order => 170,
         },
+        pseudo_value => {
+            keyword  => 'pseudo_value',
+            label    => 'Value for Pseudo Field',
+            descr    => q[This is the definition for a pseudo field. By defining it, you're declaring the field as a pseudo field],
+            type     => 'text',
+            sort_order => 180,
+        },
+        unique_name => {
+            keyword  => 'unique_name',
+            label    => 'Unique constraint name',
+            descr    => q[Declare this field as unique, and use the value for the constraint name],
+            type     => 'text',
+            sort_order => 190,
+        }
     },
 
     join_table => {
@@ -550,6 +583,7 @@ my %doc_for = (
                 AutoCRUD  => 1,
                 CRUD      => 1,
                 SOAP      => 1,
+                SOAPDoc   => 1,
             },
         },
         controls_table => {
@@ -676,6 +710,7 @@ my %doc_for = (
             sort_order => 100,
             controller_types => {
                 SOAP => 1,
+                SOAPDoc => 1,
             },
         },
         namespace_base => {
@@ -687,6 +722,7 @@ my %doc_for = (
             sort_order => 110,
             controller_types => {
                 SOAP => 1,
+                SOAPDoc => 1,
             },
         },
     },
@@ -799,6 +835,19 @@ my %doc_for = (
             multiple    => 1,
             urgency     => 0,
             sort_order  => 40,
+            applies_to  => 'main listing',
+            method_types => {
+                main_listing => 1,
+            },
+        },
+        pseudo_cols => {
+            keyword     => 'pseudo_cols',
+            label       => 'Include These Pseudo Fields',
+            descr       => 'Pseudo Fields to include in main_listing',
+            type        => 'text',
+            multiple    => 1,
+            urgency     => 5,
+            sort_order  => 45,
             applies_to  => 'main listing',
             method_types => {
                 main_listing => 1,
@@ -1055,6 +1104,7 @@ my %doc_for = (
             applies_to    => 'SOAP',
             method_types  => {
                 SOAP => 1,
+                SOAPDoc => 1,
             },
         },
         returns => {
@@ -1070,6 +1120,7 @@ my %doc_for = (
             applies_to    => 'SOAP',
             method_types  => {
                 SOAP => 1,
+                SOAPDoc => 1,
             },
         },
     },

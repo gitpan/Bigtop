@@ -80,7 +80,7 @@ app Apps::Checkbook {
         field payee_payor {
             is                     int; 
             refers_to              payee;
-            label                  `Paid To/Rec\\'v\\'d From`;
+            label                  `Paid To/Rec'v'd From`;
             html_form_type         select;
         }
         field descr {

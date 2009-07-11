@@ -34,7 +34,7 @@ sub gen_SQL {
     my $sql          = $tree->walk_postorder( 'output_sql_mysql', $lookup );
     my $sql_output   = join '', @{ $sql };
 
-    # write the schema.postgres
+    # write the schema.mysql
     my $docs_dir     = File::Spec->catdir( $base_dir, 'docs' );
     mkdir $docs_dir;
 
@@ -168,6 +168,8 @@ sub output_sql_mysql {
             $output_pieces{ $type } = $output;
         }
 
+        return if $output_pieces{ skip_column };
+
         my $child_out_str = $output_pieces{ base_col_def };
         if ( $output_pieces{ foreign_key_col } ) {
             unless ( $output_pieces{ foreign_table } ) {
@@ -248,7 +250,13 @@ sub output_sql_mysql {
 
     my $keyword = $self->get_name();
 
-    if ( $keyword eq 'is' ) {
+    if ($keyword eq 'pseudo_value') {
+        if ($self->{__DEF__}{__ARGS__}[0]) {
+            return [ { skip_column => 1 } ];
+        }
+    }
+
+    elsif ( $keyword eq 'is' ) {
         my @keywords;
         foreach my $arg ( @{ $self->{__DEF__}{__ARGS__} } ) {
             my $expanded_form = $expansion_for{$arg};
@@ -400,7 +408,7 @@ If your bigtop file looks like this:
     }
 
 and there are table and/or sequence blocks in the app block, this
-module will make docs/schema.postgres (relative to the build_dir) when
+module will make docs/schema.mysql (relative to the build_dir) when
 you type:
 
     bigtop app.bigtop SQL

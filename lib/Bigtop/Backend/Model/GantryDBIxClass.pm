@@ -15,6 +15,7 @@ BEGIN {
         Bigtop::Keywords->get_docs_for(
             'field',
             'accessor',
+            'add_columns',
         )
     );
 }
@@ -206,7 +207,7 @@ ones listed here:
 package [% package_name %];
 use strict; use warnings;
 
-__PACKAGE__->load_components( qw/[% IF pk_auto %] PK::Auto[% END %] Core / );
+__PACKAGE__->load_components( qw/ [% load_components %] / );
 __PACKAGE__->table( '[% real_table_name %]' );
 __PACKAGE__->add_columns( qw/
 [% FOREACH column IN regular_accessor_columns %]
@@ -216,19 +217,35 @@ __PACKAGE__->add_columns( qw/
 [% IF special_accessor_columns.size > 0 %]
 __PACKAGE__->add_columns(
 [% FOREACH column IN special_accessor_columns %]
-    [% column.name %] => { accessor => '[% column.accessor %]' },
+    [% column.name %] => { accessor => '[% column.accessor %]', },
+[% END %]
+);
+[% END %]
+[% IF add_columns.size > 0 %]
+__PACKAGE__->add_columns(
+[% FOREACH column IN add_columns %]
+    [% column.name %] => {
+[% FOREACH pair IN column.pairs %]
+        [% pair.key %] => '[% pair.value %]',
+[% END %]
+    },
 [% END %]
 );
 [% END %]
 [% IF primary_key.0.defined %]__PACKAGE__->set_primary_key( [ qw( [% FOREACH pk IN primary_key %][% pk %][% UNLESS loop.last %] [% END %]
 [% END %] ) ] );
 [% ELSIF primary_key %]__PACKAGE__->set_primary_key( '[% primary_key +%]' );[% END +%]
+[% FOREACH uq_cons_name IN unique_name.keys.sort %]
+__PACKAGE__->add_unique_constraint(
+    [% uq_cons_name %] => [ qw/[% FOREACH uq IN unique_name.${uq_cons_name} %][% uq %][% UNLESS loop.last %] [% END %][% END %]/ ]
+);
+[% END %]
 [% FOREACH has_a IN has_a_list %]
 __PACKAGE__->belongs_to( [% has_a.column %] => '[% base_package_name %]::[% has_a.table %]' );
 [% END %]
 __PACKAGE__->base_model( '[% app_name %]::Model' );
 [% FOREACH has_many IN has_manys %]
-__PACKAGE__->has_many( [% has_many.name %] => '[% app_name %]::Model::[% has_many.table %]' );
+__PACKAGE__->has_many( [% has_many.name %] => '[% app_name %]::Model::[% has_many.table %]'[% IF has_many.field.defined %], '[% has_many.field %]'[% END %] );
 [% END %]
 [% FOREACH has_many IN three_ways %]
 __PACKAGE__->has_many(
@@ -282,7 +299,7 @@ my %select_map_for = (
 
 sub [% option_field.name %]_display {
     my $self = shift;
-    my $[% option_field.name %] = $self->[% option_field.name %] || '';
+    my $[% option_field.name %] = defined $self->[% option_field.name %] ? $self->[% option_field.name %] : '';
     return $select_map_for{ [% option_field.name %] }{ $[% option_field.name %] }
            || $[% option_field.name %];
 }
@@ -476,6 +493,12 @@ sub backend_block_keywords {
           label   => 'Alternate Template',
           descr   => 'A custom TT template.',
           type    => 'text' },
+
+        { keyword => 'extra_components',
+          label   => 'Extras for load_components',
+          descr   => 'Things other than PK::Auto and Core to load. '
+                     . 'Separate multiples with spaces.',
+          type    => 'text' },
     ];
 }
 
@@ -524,6 +547,7 @@ sub gen_Model {
             lookup           => $bigtop_tree->{application}{lookup},
             model_base_class => $config_block->{model_base_class}
                                     || 'Gantry::Utils::DBIxClass',
+            extra_components => $config_block->{extra_components},
         },
     );
 
@@ -621,6 +645,9 @@ sub output_dbix_model {
     my $special_accessor_columns = $self->walk_postorder(
             'output_special_accessors_dbix', $lookup
     );
+    my $add_columns = $self->walk_postorder(
+            'output_add_columns_dbix', $lookup
+    );
     my $essentials = $self->walk_postorder(
             'output_essential_fields_dbix', $lookup
     );
@@ -632,7 +659,7 @@ sub output_dbix_model {
 
     # deal with foreign keys pointing toward this table
     my $has_manys = $self->walk_postorder(
-            'output_has_manys', $lookup
+            'output_has_manys', $data->{lookup}->{tables}
     );
 
     my @foreign_table_names;
@@ -674,6 +701,10 @@ sub output_dbix_model {
             $data->{ lookup },
     );
 
+    my $unique_name = $self->find_unique_name(
+            $self->{__NAME__},
+            $data->{ lookup },
+    );
 
     my $foreign_display_columns;
     my $foreign_display_body;
@@ -715,6 +746,18 @@ sub output_dbix_model {
         $pk_auto = 0;
     }
 
+    my @load_components = ( 'Core' );
+    if ( defined $data->{ extra_components }
+            and
+        $data->{ extra_components } =~ /InflateColumn::DateTime/
+    ) {
+        unshift @load_components, $data->{ extra_components };
+    }
+    elsif ( $pk_auto ) {
+        unshift @load_components, 'PK::Auto';
+    }
+    my $load_components = join ' ', @load_components;
+
     my $gen_content =
         Bigtop::Backend::Model::GantryDBIxClass::gen_table_module(
         {
@@ -726,11 +769,13 @@ sub output_dbix_model {
             table_name              => $table,
             sequence_name           => $sequence_name,
             primary_key             => $primary_key,
-            pk_auto                 => $pk_auto,
+            unique_name             => $unique_name,
+            load_components         => $load_components,
             foreign_display_columns => $foreign_display_columns,
             foreign_display_body    => $foreign_display_body,
             regular_accessor_columns=> $regular_accessor_columns,
             special_accessor_columns=> $special_accessor_columns,
+            add_columns             => $add_columns,
             essential_columns       => $essentials,
             has_a_list              => \@has_a_list,
             has_manys               => $has_manys,
@@ -776,7 +821,11 @@ sub output_regular_accessors_dbix {
 
     return if ( _not_for_model( $field ) );
 
-    return if ( defined $field->{ accessor } );
+    return if $field->{ pseudo_value };
+
+    return if ( defined $field->{ accessor }
+                    or
+                defined $field->{ add_columns } );
 
     return [ $self->{__NAME__} ];
 }
@@ -801,6 +850,33 @@ sub output_special_accessors_dbix {
         }
     ];
 
+}
+
+sub output_add_columns_dbix {
+    my $self         = shift;
+    shift;
+    my $data         = shift;
+
+    return unless ( ref( $self->{__BODY__} ) );
+
+    my $field  = $data->{ $self->{__NAME__} };
+
+    return unless ( defined $field->{ add_columns } );
+
+    my $args = $field->{ add_columns }{ args };
+
+    my @pairs;
+    foreach my $col ( @{ $args } ) {
+        my ( $key, $value ) = %{ $col };
+        push @pairs, { key => $key, value => $value };
+    }
+
+    return [
+        {
+            name  => $self->{__NAME__},
+            pairs => \@pairs,
+        }
+    ];
 }
 
 sub output_essential_fields_dbix {
@@ -847,20 +923,46 @@ sub output_foreign_tables_dbix {
 }
 
 sub output_has_manys {
-    my $self = shift;
+    my $self    = shift;
+    shift;
+    my $data    = shift;
 
     return unless ( $self->{__TYPE__} eq 'refered_to_by' );
 
     my @retval;
     foreach my $arg ( @{ $self->{__ARGS__} } ) {
-        if ( ref( $arg ) eq 'HASH' ) {
-            my ( $refering_table, $has_many_name ) = %{ $arg };
+        my ( $refering_table, $has_many_name, $field_name );
 
-            push @retval, { name => $has_many_name, table => $refering_table };
+        if ( ref( $arg ) eq 'HASH' ) {
+            ( $refering_table, $has_many_name ) = %{ $arg };
         }
         else {
-            push @retval, { name => $arg . 's', table => $arg };
+            ( $refering_table, $has_many_name ) = ( $arg, $arg . 's' );
         }
+
+        # Get the name of the field in the table that is refering to this one.
+        FIELD_SEARCH:
+        foreach my $field ( %{ $data->{$refering_table}->{fields} } ) {
+            if ( $data->{$refering_table}->{fields}->{$field}->{refers_to} ) {
+                foreach my $refers_to_arg ( @{ $data->{$refering_table}->{fields}->{$field}->{refers_to}->{args} } ) {
+                    my $refered_to_table;
+
+                    if ( ref( $refers_to_arg ) eq 'HASH' ) {
+                        ( $refered_to_table, undef ) = %{ $refers_to_arg };
+                    }
+                    else {
+                        $refered_to_table = $refers_to_arg;
+                    }
+
+                    if ( $refered_to_table eq $self->{__PARENT__}->{__NAME__}) {
+                        $field_name = $field;
+                        last FIELD_SEARCH;
+                    }
+                }
+            }
+        }
+
+        push @retval, { name => $has_many_name, table => $refering_table, field => $field_name };
     }
 
     return \@retval;

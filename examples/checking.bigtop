@@ -81,7 +81,7 @@ app Checkbook {
         field payee_payor {
             is                     int4;
             refers_to              payeepayor;
-            label                  `Paid To/Rec\'v\'d From`;
+            label                  `Paid To/Rec'v'd From`;
             html_form_type         select;
         }
         field category {

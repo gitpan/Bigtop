@@ -52,7 +52,7 @@ sub get_soap_ops {
             },
         ],
     };
-} # END get_description
+} # END get_soap_ops
 
 1;
 

@@ -3,7 +3,7 @@
 package Contact::Model::number;
 use strict; use warnings;
 
-__PACKAGE__->load_components( qw/ PK::Auto Core / );
+__PACKAGE__->load_components( qw/ InflateColumn::DateTime Core / );
 __PACKAGE__->table( 'number' );
 __PACKAGE__->add_columns( qw/
     id
@@ -13,7 +13,7 @@ __PACKAGE__->add_columns( qw/
 / );
 __PACKAGE__->set_primary_key( 'id' );
 __PACKAGE__->base_model( 'Contact::Model' );
-__PACKAGE__->has_many( birth_days => 'Contact::Model::bday' );
+__PACKAGE__->has_many( birth_days => 'Contact::Model::bday', 'contact' );
 __PACKAGE__->has_many( missings => 'Contact::Model::missing' );
 
 sub get_foreign_display_fields {
@@ -46,7 +46,7 @@ my %select_map_for = (
 
 sub phone_type_display {
     my $self = shift;
-    my $phone_type = $self->phone_type || '';
+    my $phone_type = defined $self->phone_type ? $self->phone_type : '';
     return $select_map_for{ phone_type }{ $phone_type }
            || $phone_type;
 }

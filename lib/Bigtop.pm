@@ -5,7 +5,7 @@ use warnings::register;
 use Carp;
 use File::Spec;
 
-our $VERSION = '0.30';
+our $VERSION = '0.33';
 
 sub write_file {
     my $file_name    = shift;

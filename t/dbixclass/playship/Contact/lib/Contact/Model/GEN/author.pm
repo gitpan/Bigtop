@@ -3,7 +3,7 @@
 package Contact::Model::author;
 use strict; use warnings;
 
-__PACKAGE__->load_components( qw/ PK::Auto Core / );
+__PACKAGE__->load_components( qw/ InflateColumn::DateTime Core / );
 __PACKAGE__->table( 'author' );
 __PACKAGE__->add_columns( qw/
     id

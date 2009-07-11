@@ -1,6 +1,6 @@
 ---
 name: Bigtop
-version: 0.30
+version: 0.33
 author:
   - 'Phil Crow, E<lt>crow.phil@gmail.comE<gt>'
 abstract: A web application data language processor
@@ -27,7 +27,7 @@ build_requires:
 provides:
   Bigtop:
     file: lib/Bigtop.pm
-    version: 0.30
+    version: 0.33
   Bigtop::Backend::CGI:
     file: lib/Bigtop/Backend/CGI.pm
   Bigtop::Backend::CGI::Gantry:
@@ -57,6 +57,8 @@ provides:
     file: lib/Bigtop/Backend/Model/GantryDBIxClass.pm
   Bigtop::Backend::SQL:
     file: lib/Bigtop/Backend/SQL.pm
+  Bigtop::Backend::SQL::DB2:
+    file: lib/Bigtop/Backend/SQL/DB2.pm
   Bigtop::Backend::SQL::MySQL:
     file: lib/Bigtop/Backend/SQL/MySQL.pm
   Bigtop::Backend::SQL::Postgres:

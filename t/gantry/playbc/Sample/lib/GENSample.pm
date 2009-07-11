@@ -124,8 +124,8 @@ sub do_main {
     my $schema = $self->get_schema();
     my @rows   = $TBL1->get_listing(
         {
-            schema   => $schema,
-            where    => $search,
+            schema      => $schema,
+            where       => $search,
         }
     );
 
@@ -156,7 +156,7 @@ sub do_main {
             rows            => $retval->{ rows },
         };
 
-        my $json = objToJson( $obj, { skipinvalid => 1 } );
+        my $json = to_json( $obj, { allow_blessed => 1 } );
         return( $json );
     }
 
@@ -170,7 +170,9 @@ sub form {
     my ( $self, $row ) = @_;
 
     my $selections = $TBL1->get_form_selections(
-            { schema => $self->get_schema() }
+        {
+            schema          => $self->get_schema(),
+        }
     );
 
     return {

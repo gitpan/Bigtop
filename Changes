@@ -1,5 +1,51 @@
 Revision history for Perl extension Bigtop.
 
+0.33 Sat Jul 11 10:05:26 CDT 2009
+    - Added ability to specify fields as being unique.
+    - Added gantry backend counterpart to gantry commit r1451:
+            * Skip querying of foreign tables unless a foreign key is actually
+              used on the form. This gives a huge speed increase when dealing
+              with foreign tables with many rows.
+    - Added html_form_fieldset keyword to fields. This allows you to specify
+      the fieldset to group a field into.
+    - Corrected several tests so they can pass when Gantry is not installed.
+    - Corrected some documentation related to kickstart syntax.
+    - Refactored Kickstart.pm so you can easily subclass it to control
+      what columns are placed in tables during kickstart.
+    - Backends now fire in the order they are listed, except that Init
+      backends are run again after the others (so they can build manifests).
+    - Moved build directory validation from parser to Init:: modules.
+      Default is in Init::Std.  This allows non-CPAN style builds if you
+      have your own Init:: module.
+    - Moved instructional messages from bigtop script to style files
+      (default is in Kickstart.pm).  This means exotic build styles can
+      now print their own messages.
+    - Added DB2 SQL backend.
+    - Fixed (I hope) an ordering bug in DBIx::Class model backend when
+      using InflateColumn::DateTime.
+    - Changed grammar to permit schemas in join table names.  However,
+      Model backends may not yet know what to do when schemas are present.
+
+0.32 not released to CPAN
+    - Fixed long standing bug which prevented join_tables from having
+      multiple data statements.
+
+0.31 Wed Jun 11 09:37:05 CDT 2008 (Not released to CPAN)
+    - Added foreign key creation for join_tables at the request of
+      Stewart Heckenberg.  (Currently PostgreSQL only.)
+    - Added add_columns field statement to support arbitrary entries in
+      calls to it for DBIx::Class usrs (notably Kevin Esteb).
+      To use it well, also add extra_components `InflateColumn::DateTime`;
+      or something similar to the Model backend block in the top level config
+      section.
+    - Updated Gantry backend control module to work with JSON 2.x as some
+      things have changed with its API. Tests were also updated to reflect
+      this change.
+    - Added pseudo column support
+        - see docs/keyword_cookbook/field/pseudo_value for documentation
+    - Update to allow labels to have single quotes in them without having
+      to be escaped.
+
 0.30 Tue Aug 14 17:15:11 CDT 2007
     - fix DBIx::Class paging routine in the generated do_main subroutines.
     - gen_root no longer creates duplicate root config vars, in fact it

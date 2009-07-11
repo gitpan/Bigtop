@@ -82,7 +82,7 @@ INSERT INTO [% table %] ( [% columns.join( ', ' ) %] )
 CREATE TABLE [% table_name %] (
     id SERIAL PRIMARY KEY,
 [% FOREACH foreign_key IN foreign_keys %]
-    [% foreign_key %] int4[% IF ! loop.last || other_fields.0 %],[% END +%]
+    [% foreign_key.table %] int4 REFERENCES [% foreign_key.table %]([% foreign_key.pk %])[% IF ! loop.last || other_fields.0 %],[% END +%]
 [% END %]
 [%- FOREACH other_field IN other_fields %]
 [% other_field %][% IF ! loop.last %],[% END +%]
@@ -215,6 +215,8 @@ sub output_sql {
             $output_pieces{ $type } = $output;
         }
 
+        return if $output_pieces{ skip_column };
+
         my $child_out_str = $output_pieces{ base_col_def };
         if ( $output_pieces{ foreign_key_col } ) {
             unless ( $output_pieces{ foreign_table } ) {
@@ -319,7 +321,13 @@ sub output_sql {
 
     my $keyword = $self->get_name();
 
-    if ( $keyword eq 'is' ) {
+    if ($keyword eq 'pseudo_value') {
+        if ($self->{__DEF__}{__ARGS__}[0]) {
+            return [ { skip_column => 1 } ];
+        }
+    }
+
+    elsif ( $keyword eq 'is' ) {
         my @keywords;
         foreach my $arg ( @{ $self->{__DEF__}{__ARGS__} } ) {
             my $code = $code_for{$arg};
@@ -381,6 +389,7 @@ use strict; use warnings;
 sub output_sql {
     my $self         = shift;
     my $child_output = shift;
+    my $lookup       = shift;
 
     my @foreign_keys;
     my @other_fields;
@@ -398,7 +407,19 @@ sub output_sql {
             }
         }
         else {
-            push @foreign_keys, $child_bit;
+            # find the foreign table's unique primary key
+            my $pk = $self->find_primary_key( $child_bit, $lookup );
+
+            # if the pk is compound, scream and punt
+            if ( ref $pk eq 'ARRAY' ) {
+                warn 'join_table '
+                     . $self->{__NAME__}
+                     . " cannot join $child_bit,"
+                     . " because it has a compound primary key\n";
+                $pk = 'id';
+            }
+
+            push @foreign_keys, { table => $child_bit, pk => $pk };
         }
     }
 

@@ -57,6 +57,59 @@ sub backend_block_keywords {
     ];
 }
 
+sub validate_build_dir {
+    my $class      = shift;
+    my $build_dir  = shift;
+    my $tree       = shift;
+    my $create     = shift;
+
+    my $warning_signs = 0;
+    if ( -d $build_dir ) {
+        unless ( $create ) {
+            # see if there are familiar surroundings in the build_dir
+            my $buildpl = File::Spec->catfile( $build_dir, 'Build.PL' );
+            my $changes = File::Spec->catfile( $build_dir, 'Changes'  );
+            my $t       = File::Spec->catdir(  $build_dir, 't'        );
+            my $lib     = File::Spec->catdir(  $build_dir, 'lib'      );
+
+            $warning_signs++ unless ( -f $buildpl );
+            $warning_signs++ unless ( -f $changes );
+            $warning_signs++ unless ( -d $t       );
+            $warning_signs++ unless ( -d $lib     );
+
+            # dig deep for the main module
+            my $app_name   = $tree->get_appname();
+            my @mod_pieces = split /::/, $app_name;
+            my $main_mod   = pop @mod_pieces;
+            $main_mod      .= '.pm';
+
+            my $saw_base   = 0;
+            my $wanted     = sub {
+                $saw_base++ if ( $_ eq $main_mod );
+            };
+
+            find( $wanted, $build_dir );
+
+            $warning_signs++ unless ( $saw_base );
+        }
+    }
+    else {
+        die "$build_dir does not exist, and I couldn't make it.\n";
+    }
+
+    if ( $warning_signs > 2 ) {
+        my $base_dir          = $tree->{configuration}{base_dir} || '.';
+        my $config_build_dir  = $base_dir;
+        if ( $tree->{configuration}{app_dir} ) {
+            $config_build_dir = File::Spec->catdir(
+                $base_dir, $tree->{configuration}{app_dir}
+            );
+        }
+        die "$build_dir doesn't look like a build dir (level=$warning_signs),\n"
+          . "  use --create to force a build in or under $config_build_dir\n";
+    }
+}
+
 our $template_is_setup     = 0;
 our $default_template_text = <<'EO_Template';
 [% BLOCK Changes %]
@@ -410,6 +463,11 @@ Tells tentmaker that I understand these config section backend block keywords:
 =item what_do_you_make
 
 Tells tentmaker what this module makes.  Summary: roughly what h2xs makes.
+
+=item validate_build_dir
+
+Called by Bigtop::Parser to make sure a non-create build is happening
+in a valid build dir.
 
 =item gen_Init
 

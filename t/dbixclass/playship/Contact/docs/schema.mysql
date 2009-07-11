@@ -8,7 +8,9 @@ CREATE TABLE number (
 CREATE TABLE bday (
     id MEDIUMINT PRIMARY KEY AUTO_INCREMENT,
     contact MEDIUMINT,
-    bday date
+    bday date,
+    anniversary date,
+    known_since date
 );
 
 CREATE TABLE tshirt (

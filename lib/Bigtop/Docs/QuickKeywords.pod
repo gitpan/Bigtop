@@ -57,6 +57,7 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
       not_for - Tell Model and/or SQL to skip this field
       is - SQL type clause phrases, e.g.:int4, varchar, primary_key, auto
       accessor - DBIx::Class alternate accessor name for this column
+      add_columns - DBIx::Class alternate column addition
       refers_to - Where this foreign key points
       on_delete - What to do when foreign key column's row dies
       on_update - What to do when foreign key column's row changes
@@ -75,9 +76,12 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
                           [ignored for refers_to fields]
       html_form_foreign - Display field is a foreign key
       html_form_onchange - Name of Javascript function to call on change
+      html_form_fieldset - Name of fieldset to group this field into
       date_select_text - link text for date popup window
       html_form_raw_html - appears before this field's table row
       non_essential - Tells modeler: retrieve only when accessed
+      pseudo_value - This is the definition for a pseudo field. By defining it, you're declaring the field as a pseudo field
+      unique_name - Declare this field as unique, and use the value for the constraint name
 
   join_table name {}
     joins - Which tables does this one join?
@@ -127,6 +131,7 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
         cols - Fields to include in main_listing
         col_labels - Labels for fields on main_listing
                      [optional default uses field labels]
+        pseudo_cols - Pseudo Fields to include in main_listing
         livesearch - Places a search box on results page
         header_options - User actions affecting the table [like Add]
         header_option_perms - The table permission which controls options
@@ -159,7 +164,7 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
 
 =head1 AUTHOR
 
-The skip/keywords script generated this file Tue Aug 14 17:16:34 2007.
+The skip/keywords script generated this file Sat Jul 11 10:16:26 2009.
 The script was written by Phil Crow E<lt>crow.phil@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

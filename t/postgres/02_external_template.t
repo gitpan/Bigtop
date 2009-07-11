@@ -24,7 +24,7 @@ CREATE TABLE payeepayor {
 }
 EO_CORRECT_SQL
 
-is_deeply( \@sql, \@correct_sql, 'tiny sql' );
+is_deeply( \@sql, \@correct_sql, 'external template' );
 
 __DATA__
 config { }
