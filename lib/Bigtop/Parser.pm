@@ -13,6 +13,7 @@ use Bigtop::ScriptHelp;
 # These don't work since we moved grammar to bigtop.grammar.
         # $::RD_TRACE = 1;
         # $::RD_HINT = 1;
+# Set them in Grammar.pm directly under the use Parse::RecDescent statement.
 
 my $ident_counter = 0;
 my $parser;
@@ -3499,6 +3500,132 @@ sub update_label {
 
     return [ $self->{ __ARGS__ }->get_first_arg ];
 }
+
+sub walk_postorder {
+    my $self   = shift;
+    my $action = shift;
+    my $data   = shift;
+    my $parent = shift;
+
+    if ( $self->can( $action ) ) {
+        return $self->$action( undef, $data, $parent );
+    }
+    else {
+        return;
+    }
+}
+
+sub build_lookup_hash {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    return [ 'args' => $self->{__ARGS__} ];
+}
+
+package # extra_sql_block
+    extra_sql_block;
+use strict; use warnings;
+
+use base 'application_ancestor';
+
+sub walk_postorder {
+    my $self   = shift;
+    my $action = shift;
+    my $data   = shift;
+    my $parent = shift;
+
+    my $output;
+
+    # if we add more extra_sql types, we might need this:
+    #if ( $self->{__TYPE__} eq 'extra_sql' ) {
+    foreach my $stmnt ( @{ $self->{__BODY__} } ) {
+        my $child_output = $stmnt->walk_postorder(
+            $action, $data, $self
+        );
+ 
+        push @{ $output }, @{ $child_output } if $child_output;
+    }
+    #}
+
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
+
+    ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
+}
+
+sub build_lookup_hash {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    my %output;
+
+    if ( $child_output ) {
+        my %sub_output;
+
+        foreach my $element ( @{ $child_output } ) {
+            my $output_type                      = $element->{__TYPE__};
+            my $name                             = $element->{__DATA__}[0];
+            $sub_output{ $output_type }{ $name } = $element->{__DATA__}[1];
+        }
+
+        $sub_output{ __IDENT__ } = $self->{ __IDENT__ };
+
+        %output = (
+            '__TYPE__' => 'extra_sqls',
+            '__DATA__' => [
+                $self->{__NAME__} => \%sub_output,
+            ],
+        );
+    }
+    return [ \%output ];
+}
+
+package # extra_sql_statement
+    extra_sql_statement;
+use strict; use warnings;
+
+use base 'application_ancestor';
+
+sub walk_postorder {
+    my $self   = shift;
+    my $action = shift;
+    my $data   = shift;
+    my $parent = shift;
+
+    my $output;
+    
+    if ( $self->{__DEF__}->can( 'walk_postorder' ) ) {
+        $output = $self->{__DEF__}->walk_postorder( $action, $data, $self );
+    }
+
+    if ( $self->can( $action ) ) {
+        $output = $self->$action( $output, $data, $parent );
+    }
+
+    ( ref( $output ) =~ /ARRAY/ ) ? return $output : return;
+}
+
+sub build_lookup_hash {
+    my $self         = shift;
+    my $child_output = shift;
+    my $data         = shift;
+
+    return [ 
+        {
+            '__TYPE__' => $self->{__KEYWORD__},
+            '__DATA__' => [ @{ $child_output } ],
+        }
+    ];
+}
+
+package # extra_sql_statement_def
+    extra_sql_statement_def;
+use strict; use warnings;
+
+use base 'application_ancestor';
 
 sub walk_postorder {
     my $self   = shift;

@@ -216,6 +216,7 @@ lib/Bigtop/Backend/Conf/Gantry.pm
 lib/Bigtop/Backend/Conf/General.pm
 lib/Bigtop/Backend/Control.pm
 lib/Bigtop/Backend/Control/Gantry.pm
+lib/Bigtop/Backend/Diagram/GraphvizSql.pm
 lib/Bigtop/Backend/HttpdConf.pm
 lib/Bigtop/Backend/HttpdConf/Gantry.pm
 lib/Bigtop/Backend/Init/Std.pm
@@ -297,7 +298,7 @@ t/bigtop/playship/lib/AddressBook/Model/GEN/family.pm
 t/bigtop/playship/lib/GENAddressBook.pm
 t/bigtop/playship/MANIFEST
 t/bigtop/playship/MANIFEST.SKIP
-t/bigtop/playship/MANIFEST.BAK
+t/bigtop/playship/MANIFEST.bak
 t/bigtop/playship/README
 t/bigtop/playship/t/01_use.t
 t/bigtop/playship/t/02_pod.t
@@ -397,6 +398,7 @@ t/dbixclass/playship2/Contact/lib/GENContact.pm
 t/dbixclass/playship2/Contact/t/01_use.t
 t/dbixclass/playship2/Contact/t/02_pod.t
 t/dbixclass/playship2/Contact/t/03_podcover.t
+t/diagram/01_tiny.t
 t/expected/augmented
 t/expected/big_default
 t/expected/minimal

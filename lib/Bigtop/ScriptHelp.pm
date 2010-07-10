@@ -430,14 +430,16 @@ sub augment_tree {
                 _get_controller_fields( $columns->{ $table } );
 
         # set a foreign display
-        $ast->change_statement(
-            {
-                type      => 'table',
-                ident     => $new_table{ $table }->get_ident,
-                keyword   => 'foreign_display',
-                new_value => "%$foreign_display",
-            }
-        );
+        if ( defined $foreign_display ) {
+            $ast->change_statement(
+                {
+                    type      => 'table',
+                    ident     => $new_table{ $table }->get_ident,
+                    keyword   => 'foreign_display',
+                    new_value => "%$foreign_display",
+                }
+            );
+        }
 
         # make a controller for the new table
         $new_controller_for{ $table } = $ast->create_block(
@@ -585,7 +587,9 @@ sub augment_tree {
     # Make three ways.
     foreach my $joiner ( @{ $joiners } ) {
         my ( $table1, $table2 ) = @{ $joiner };
-        my $join_name = "${table1}_${table2}";
+        my $second = $table2;
+        $second    =~ s/.*\.//;
+        my $join_name = "${table1}_${second}";
         my $join_table = $ast->create_block( 'join_table', $join_name, {} );
 
         $ast->change_statement(

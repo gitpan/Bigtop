@@ -1,6 +1,30 @@
 Revision history for Perl extension Bigtop.
 
-0.33 Sat Jul 11 10:05:26 CDT 2009
+0.38 Sat Jul 10 17:02:39 CDT 2010 for CPAN distribution
+    - Corrected various pod flaws.
+    - Added a gaurd so the full bigtop test is skipped if there are spaces
+      in the path.  This finishes my work on making Bigtop work on cygwin.
+
+0.37 Fri Jul 09 12:25:26 CDT 2010
+    - Add missing UNIQUE constraint generation for Postgres, MySQL, and SQLite.
+
+0.36
+    - Corrected instructions for users of --mysql_help bigtop script flag.
+
+0.35 Thurs Sept 3 11:26:00 CDT 2009
+    - Always include PluginNamespace in app use statement since its now
+      used by gantry as the namespace for all plugins except the engine.
+
+0.34
+    - Added table level block extra_sql so models could take custom queries
+      into account.  None of the shipping backend models know what to do
+      with these yet.  Nor, does tentmaker know about them.
+    - Corrected bug which formed illegal table names for three way joins
+      requested during kickstart.
+    - Suppressed foreign_display generation during kickstart if your table
+      has no columns for it to display.
+
+0.33 Sat Jul 11 10:16:26 CDT 2009
     - Added ability to specify fields as being unique.
     - Added gantry backend counterpart to gantry commit r1451:
             * Skip querying of foreign tables unless a foreign key is actually

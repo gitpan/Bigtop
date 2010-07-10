@@ -339,9 +339,9 @@ $correct_conf = <<'EO_CORRECT_CONF';
 
 
     use Apps::Checkbook qw{
+        -PluginNamespace=Apps::Checkbook
         -Engine=MP13
         -TemplateEngine=TT
-        -PluginNamespace=Apps::Checkbook
         PluginA PluginB
     };
     use Apps::Checkbook::PayeeOr;

@@ -143,6 +143,11 @@ Do not use if you have a Base Controller.
 You may supply a comma separated list of values for
 uses statements.
 
+=item label
+
+Documentation label for app
+
+
 =item email
 
 DEPRECATED
@@ -450,6 +455,53 @@ in GantryLocation block for this controller
 
 =back
 
+=head2 extra_sql
+
+=over 4
+
+=item sql
+
+Literal SQL, use bind parameters, see below.
+
+
+This statement is required.
+
+=item expects
+
+What your SQL needs for positional binding.  [optional, omit if you have no bound parameters]
+
+
+Values for expects statements may be individual values
+or pairs like:
+
+    name => optional_value
+
+where C<name> is a name and C<optional_value> is a type.
+
+You may supply a comma separated list of values for
+expects statements.
+
+This statement is virtually required.
+
+=item returns
+
+Names of columns in SQL output.  [optional, omit if you expect no returned rows]
+
+
+Values for returns statements may be individual values
+or pairs like:
+
+    name => optional_value
+
+where C<name> is a name and C<optional_value> is a type.
+
+You may supply a comma separated list of values for
+returns statements.
+
+This statement is virtually required.
+
+=back
+
 =head2 field
 
 =over 4
@@ -537,6 +589,18 @@ or pairs like:
 where C<name> is a table and C<optional_value> is a column.
 
 This statement is only occasionally used.
+
+=item quasi_refers_to
+
+Where this column usually points
+
+
+Values for quasi_refers_to statements may be individual values
+or pairs like:
+
+    name => optional_value
+
+where C<name> is a table and C<optional_value> is a column.
 
 =item on_delete
 
@@ -1175,6 +1239,11 @@ Which sequence to take default keys from
 
 This statement is only occasionally used.
 
+=item label
+
+Documentation label for table
+
+
 =item data
 
 What to INSERT INTO table upon initial creation
@@ -1195,7 +1264,7 @@ You may use multiple data statements.
 
 =head1 AUTHOR
 
-The skip/podsyntax script generated this file Sat Jul 11 10:16:26 2009.
+The skip/podsyntax script generated this file Sat Jul 10 17:04:08 2010.
 The script was written by Phil Crow E<lt>crow.phil\@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

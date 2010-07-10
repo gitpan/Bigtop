@@ -125,6 +125,16 @@ my %doc_for = (
             urgency  => 0,
             sort_order => 70,
         },
+        label => {
+            keyword     => 'label',
+            label       => 'Label',
+            descr       => 'Documentation label for app',
+            type        => 'text',
+            multiple    => 0,
+            urgency     => 0,
+            quick_label => 'Label',
+            sort_order  => 80,
+        },
     },
 
     app_literal => {
@@ -242,6 +252,16 @@ my %doc_for = (
             urgency   => 1,
             sort_order => 50,
         },
+        label => {
+            keyword     => 'label',
+            label       => 'Label',
+            descr       => 'Documentation label for table',
+            type        => 'text',
+            multiple    => 0,
+            urgency     => 0,
+            quick_label => 'Label',
+            sort_order  => 60,
+        },
     },
 
     field      => {
@@ -305,6 +325,17 @@ my %doc_for = (
             multiple      => 0,
             urgency       => 1,
             sort_order    => 40,
+        },
+        quasi_refers_to => {
+            keyword       => 'quasi_refers_to',
+            label         => 'Quasi-Foreign Key Table',
+            descr         => 'Where this column usually points',
+            type          => 'pair',
+            pair_labels   => [ 'Table', 'Column' ],
+            pair_required => 0,
+            multiple      => 0,
+            urgency       => 0,
+            sort_order    => 45,
         },
         on_delete => {
             keyword  => 'on_delete',
@@ -505,6 +536,44 @@ my %doc_for = (
             type     => 'text',
             sort_order => 190,
         }
+    },
+
+    extra_sql => {
+        sql => {
+            keyword       => 'sql',
+            label         => 'SQL',
+            descr         => 'Literal SQL, use bind parameters, see below.',
+            type          => 'text',
+            multiplie     => 0,
+            urgency       => 10,
+            sort_order    => 10,
+        },
+        expects => {
+            keyword       => 'expects',
+            label         => 'Bind Parameters',
+            descr         =>
+                'What your SQL needs for positional binding.'
+              . '  [optional, omit if you have no bound parameters]',
+            type          => 'pair',
+            pair_required => 0,
+            pair_labels   => [ 'Name', 'Type' ],
+            multiple      => 1,
+            urgency       => 5,
+            sort_order    => 20,
+        },
+        returns => {
+            keyword       => 'returns',
+            label         => 'Returned Columns',
+            descr         =>
+                'Names of columns in SQL output.'
+              . '  [optional, omit if you expect no returned rows]',
+            type          => 'pair',
+            pair_required => 0,
+            pair_labels   => [ 'Name', 'Type' ],
+            multiple      => 1,
+            urgency       => 5,
+            sort_order    => 30,
+        },
     },
 
     join_table => {

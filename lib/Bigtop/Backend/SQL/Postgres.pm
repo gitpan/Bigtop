@@ -61,6 +61,9 @@ CREATE [% keyword %] [% name %][% child_output %]
 
 [% END %]
 );
+[% FOREACH uq_cons_name IN unique_name.keys.sort %]
+ALTER TABLE [% name %] ADD CONSTRAINT [% uq_cons_name %] UNIQUE ( [% unique_name.${uq_cons_name}.join(', ') %] );
+[% END %]
 [% END %]
 
 [% BLOCK pk_text %]
@@ -136,8 +139,17 @@ sub output_sql {
         push @{ $output{ table_body } }, $pk_text;
     }
 
+    my $unique_name = $self->find_unique_name(
+            $self->{__NAME__},
+            $lookup,
+    );
+
     $child_out_str = Bigtop::Backend::SQL::Postgres::table_body(
-        { child_output => $output{table_body} }
+        {
+            child_output => $output{table_body},
+            unique_name  => $unique_name,
+            name         => $self->get_name()
+        }
     );
 
     if ( defined $output{insert_statements} ) {
@@ -149,7 +161,7 @@ sub output_sql {
         {
             keyword      => $self->get_create_keyword(),
             child_output => $child_out_str,
-            name         => $self->get_name(),
+            name         => $self->get_name()
         }
     );
 

@@ -120,6 +120,8 @@
       
       
       
+      
+      
         <th>
             Label
             <br />
@@ -321,6 +323,8 @@
         
       
         
+      
+        
       <td style='text-align: center' >
           
         <input type='text'
@@ -476,6 +480,8 @@
         />
           
       </td>
+        
+      
         
       
         
@@ -657,6 +663,8 @@
         
       
         
+      
+        
       <td style='text-align: center' >
           
         <input type='text'
@@ -825,6 +833,8 @@
         
       
         
+      
+        
       <td style='text-align: center' >
           
         <input type='text'
@@ -980,6 +990,8 @@
         />
           
       </td>
+        
+      
         
       
         
@@ -1405,6 +1417,59 @@ auto</pre>
         </td>
         <td>
             Where this foreign key points
+        </td>
+    </tr>
+  
+    
+    <tr>
+        <td> quasi_refers_to </td>
+        <td>
+
+            
+            
+
+      <table id='ident_15::quasi_refers_to_input_table'>
+        <tr><th> Table </th>
+            <th> Column
+                 
+                    [optional]
+                 
+            </th></tr>
+    
+            <tr><td>
+                <input
+                    type='text'
+                    name='ident_15::quasi_refers_to_key'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_15::quasi_refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+            <td>
+                <input
+                    type='text'
+                    name='ident_15::quasi_refers_to_value'
+                    class='urgency_0'
+                    onblur='javascript:update_pairs(
+                        "field_statement_pair",
+                        "ident_15::quasi_refers_to",
+                        0,
+                        this
+                    )'
+                />
+            </td>
+        </tr>
+      
+      </table>
+
+
+        </td>
+        <td>
+            Where this column usually points
         </td>
     </tr>
   

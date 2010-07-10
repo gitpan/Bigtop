@@ -310,7 +310,7 @@ Or, to bring a postgres 8 databases into bigtop:
 
     bigtop -n AppName -s Pg8Live 'dbi:Pg:dbname=yourdb' user pass [schema]
 
-See L<STYLES> below for how this script handles ASCII art or other
+See L</STYLES> below for how this script handles ASCII art or other
 extra command line args (and possibly standard in).
 
 =head1 DESCRIPTION
@@ -333,7 +333,7 @@ If you already have a bigtop file, you can add to it with the --add (or
 
     bigtop --add file.bigtop table3 table4
 
-But, see L<STYLES> below for more interesting options than a list of
+But, see L</STYLES> below for more interesting options than a list of
 table names.
 
 Both new and add options do an all build when they finish making/updating
@@ -397,7 +397,7 @@ warning.
 
 =item --new (or -n) App::Name style_info...
 
-See L<STYLES> below for what C<style_info> can be.  (Hint: it depends on
+See L</STYLES> below for what C<style_info> can be.  (Hint: it depends on
 which style you are using.)
 
 Use this option to create a working application from scratch.  If you only
@@ -464,7 +464,7 @@ controllers to it, use this option like this:
 
     bigtop --add file.bigtop style_info...
 
-See L<STYLES> below for how to specify table relationships.
+See L</STYLES> below for how to specify table relationships.
 
 This option reads an existing file.bigtop and adds tables and controllers
 to it, before doing an all build.  (If you don't want an all build,

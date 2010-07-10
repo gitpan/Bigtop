@@ -312,10 +312,10 @@ sub help_mysql {
 
 For MySQL, in your build directory:
 
-    msyqladmin create app_db -u root -p
+    mysqladmin create app_db -u root -p
     mysql -u root -p app_db < docs/schema.mysql
     ./app.server --dbd=mysql --dbuser=regular_user \
-                 --dppass='secret' --dbname=app_db
+                 --dbpass='secret' --dbname=app_db
 
 Supply passwords as prompted when creating and building the database.
 You may abbreviate --dbd as -d, --dbuser as -u, --dbpass as -p,

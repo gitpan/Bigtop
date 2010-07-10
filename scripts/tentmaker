@@ -167,7 +167,7 @@ Or, to augment an existing bigtop file:
 
     tentmaker --add file.bigtop style_info
 
-See L<SYTLES> below for what style_info can be.
+See L</STYLES> below for what style_info can be.
 
 =head1 DESCRIPTION
 
@@ -187,7 +187,7 @@ Specifies a port for the server.  Defaults to 8080.
 
 Allows you to specify the name of the app and optionally its table
 relationships.  Requires a name for the app.  The rest of the command
-line arguments are depend on what style you use, see L<STYLES>.
+line arguments are depend on what style you use, see L</STYLES>.
 
 Normally this flag uses the default bigtop file from L<Bigtop::ScriptHelp>.
 For your convenience, you can see it in examples/default.bigtop.  To
@@ -221,7 +221,7 @@ For example see examples/def.bigtop.tt.
 
 Allows you to augment an existing bigtop file prior to editing it.
 Requires a bigtop file name.  The rest of the command line arguments
-as the same as for -n, see L<STYLES>.
+as the same as for -n, see L</STYLES>.
 
 =item --style (or -s)
 

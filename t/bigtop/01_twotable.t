@@ -15,7 +15,18 @@ BEGIN {
 
         die "no path to templates\n" unless -d $path;
 
-        plan tests => 1;
+        eval {
+            my $test_ship_dir = File::Spec->catdir( qw( t bigtop ) );
+            my $abs_path      = File::Spec->rel2abs( $test_ship_dir );
+            die "spaces in path\n" if ( $abs_path =~ /\s/ );
+
+        };
+        if ( $@ ) {
+            plan skip_all => 'Spaces found in build path';
+        }
+        else {
+            plan tests => 1;
+        }
     };
     if ( $@ ) {
         plan skip_all => 'Could not find Gantry templates';

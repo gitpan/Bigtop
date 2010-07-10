@@ -260,6 +260,54 @@ A custom TT template.
 
 =back
 
+=head2 Diagram
+
+=over 4
+
+=item GraphvizSql
+
+This Diagram GraphvizSql makes the following:
+
+=over 4
+
+=item docs/schema.diagram
+
+Graphviz dot file for SQL data model
+
+=back
+
+This backend understands these config block keywords:
+
+=over 4
+
+=item no_gen
+
+This statement takes a boolean value use 0 or 1.
+
+Skip everything for this backend
+
+=item template
+
+A custom TT template.
+
+=item skip_layout
+
+This statement takes a boolean value use 0 or 1.
+
+Do NOT run a Graphviz layout program like dot.
+
+=item layout_program
+
+Some Graphviz layout program like neato. [Default is dot]
+
+=item layout_flags
+
+Command line flags for Graphviz layout program. [Default is -Tpdf]
+
+=back
+
+=back
+
 =head2 HttpdConf
 
 =over 4
@@ -630,7 +678,7 @@ Path to sample_wrapper.tt in the Gantry distribution [defaults to ./html]
 
 =head1 AUTHOR
 
-The skip/backends script generated this file Sat Jul 11 10:16:26 2009.
+The skip/backends script generated this file Sat Jul 10 17:04:09 2010.
 The script was written by Phil Crow E<lt>crow.phil@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

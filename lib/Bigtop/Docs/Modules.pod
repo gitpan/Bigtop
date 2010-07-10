@@ -25,7 +25,7 @@ Bigtop files.  Interactions with this parser are usually indirect.
 End users use the bigtop script, which in turn uses the parser to first build
 an abstract syntax tree (AST) and then to generate output by passing the AST
 to the backends.  Developers should write backends which receive the AST
-in methods named for what they should produce (see L<Backends> below).
+in methods named for what they should produce (see L</Backends> below).
 
 =head3 Parsing Bigtop specifications
 

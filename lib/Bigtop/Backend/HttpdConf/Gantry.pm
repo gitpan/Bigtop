@@ -197,13 +197,13 @@ our $default_template_text = <<'EO_TT_BLOCKS';
 [% line %]
 [% END %]
 [% IF full_base_use %]
-    use [% base_module %] qw{[% IF engine %]
+    use [% base_module %] qw{
+        -PluginNamespace=[% base_module +%][% IF engine %]
 
         -Engine=[% engine %][% END %][% IF template_engine %]
 
         -TemplateEngine=[% template_engine %][% END %][% IF plugins %]
 
-        -PluginNamespace=[% base_module +%]
         [% plugins %]
 [% END %][%# end of IF plugins +%]
     };

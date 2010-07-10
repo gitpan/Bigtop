@@ -261,6 +261,16 @@ table_element_block : 'field' <commit> IDENT '{' field_body '}' {
                                     $item{field_body}{'field_statement(s?)'},
                            }, 'table_element_block'
                        }
+                     | 'extra_sql' <commit> IDENT '{' extra_sql_body '}' {
+                           bless {
+                               __IDENT__ => Bigtop::Parser->get_ident(),
+                               __TYPE__  => 'extra_sql',
+                               __NAME__  => $item{IDENT},
+                               __BODY__  =>
+                                    $item{extra_sql_body}
+                                         {'extra_sql_statement(s?)'},
+                           }, 'extra_sql_block'
+                       }
                      | keyword['table'] arg_list SEMI_COLON {
                            bless {
                                __TYPE__  => $item[1],
@@ -283,6 +293,20 @@ field_statement_def : arg_list(?) {
                             __ARGS__ => $item[1]->[0]
                         }, 'field_statement_def'
                       }
+
+extra_sql_body : extra_sql_statement(s?)
+
+extra_sql_statement : keyword['extra_sql'] extra_sql_statement_def SEMI_COLON {
+                        bless {
+                            __KEYWORD__ => $item[1], __DEF__ => $item[2]
+                        }, 'extra_sql_statement'
+                      }
+
+extra_sql_statement_def : arg_list(?) {
+                    bless {
+                        __ARGS__ => $item[1]->[0]
+                    }, 'extra_sql_statement_def'
+                }
 
 join_table_body : join_table_statement(s?)
 

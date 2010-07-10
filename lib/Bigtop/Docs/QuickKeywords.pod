@@ -26,6 +26,7 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
     license_text - Restrictions [defaults to Perl license]
     uses - List of modules used by base module
            Do not use if you have a Base Controller.
+    label - Documentation label for app
 
     config {}
         any_keyword its_value;    - creates:
@@ -51,6 +52,7 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
     refered_to_by - Table has many rows from this other table
     model_base_class - Models inherit from this [has good default]
     sequence - Which sequence to take default keys from
+    label - Documentation label for table
     data - What to INSERT INTO table upon initial creation
     field name {}
       no_gen - Skip this field completely
@@ -59,6 +61,7 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
       accessor - DBIx::Class alternate accessor name for this column
       add_columns - DBIx::Class alternate column addition
       refers_to - Where this foreign key points
+      quasi_refers_to - Where this column usually points
       on_delete - What to do when foreign key column's row dies
       on_update - What to do when foreign key column's row changes
       label - Default on-screen label for field
@@ -164,7 +167,7 @@ See C<Bigtop::Docs::TOC> for an annotated list of all doc files.
 
 =head1 AUTHOR
 
-The skip/keywords script generated this file Sat Jul 11 10:16:26 2009.
+The skip/keywords script generated this file Sat Jul 10 17:04:08 2010.
 The script was written by Phil Crow E<lt>crow.phil@gmail.comE<gt>.
 
 =head1 COPYRIGHT and LICENSE

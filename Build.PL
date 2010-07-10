@@ -48,6 +48,7 @@ my $build = $subclass->new(
         't/sitelook/*.t',
         't/dbixclass/*.t',
         't/cdbi/*.t',
+        't/diagram/*.t',
         't/cleanup/*.t',
 	],
 );
